@@ -5,12 +5,9 @@ import {
   SearchNFTsArgs,
   SearchNFTsResponse,
 } from '../types/collection';
-import {
-  TradincActivityArgs,
-  TradingActivityQueryFilter,
-  TradingActivityResponse,
-} from '../types/trading';
+import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
 import { APIClient } from '../utils/api';
+import { getActivity } from '../utils/getActivity';
 import { isValidCollectionTicker } from '../utils/regex';
 
 /**
@@ -40,7 +37,7 @@ export class CollectionModule {
     if (!isValidCollectionTicker(collection)) {
       throw new Error('Invalid collection ticker: ' + collection);
     }
-    const response = await this.api.fetchWithTimeout(
+    const response = await this.api.fetchWithTimeout<ICollectionProfile>(
       `/getCollectionProfile/${collection}`
     );
     return response;
@@ -60,7 +57,7 @@ export class CollectionModule {
     if (!isValidCollectionTicker(collection)) {
       throw new Error('Invalid collection ticker: ' + collection);
     }
-    const response = await this.api.fetchWithTimeout(
+    const response = await this.api.fetchWithTimeout<number>(
       `/getFloorPrice/${collection}/${token}`
     );
     return response;
@@ -78,7 +75,7 @@ export class CollectionModule {
     if (!isValidCollectionTicker(collection)) {
       throw new Error('Invalid collection ticker: ' + collection);
     }
-    const response = await this.api.fetchWithTimeout(
+    const response = await this.api.fetchWithTimeout<ICollectionAttributes>(
       `/getCollectionAttributes/${collection}`
     );
     return response;
@@ -126,12 +123,13 @@ export class CollectionModule {
       name: args.searchName || '',
       orderBy: args.orderBy || undefined,
       collection: args.collection,
+      select: args.onlySelectFields || undefined,
       top: args.top || 35,
       skip: args.skip || 0,
     };
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
-    const response: SearchNFTsResponse = await this.api.fetchWithTimeout(
+    const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
       `/searchNFTs/${buffer}`
     );
     return {
@@ -146,49 +144,15 @@ export class CollectionModule {
   };
 
   /**
-   * Retrieves global offers based on the provided arguments.
+   * Retrieves trading history based on the provided arguments.
    *
-   * @param {TradincActivityArgs} args - The arguments for filtering global offers.
-   * @returns {Promise<TradingActivityResponse>} A promise resolving to a TradingActivityResponse object containing the global offers.
+   * @param {TradincActivityArgs} args - The arguments for filtering the trading activity.
+   * @returns {Promise<TradingActivityResponse>} A promise resolving to a TradingActivityResponse object containing the activity.
    * @throws {Error} Throws an error if the 'top' argument is greater than 35.
    */
-  public getGlobalOffers = async (
+  public getTradingActivity = async (
     args: TradincActivityArgs
   ): Promise<TradingActivityResponse> => {
-    if (args.top && args.top > 35) {
-      throw new Error('Top cannot be greater than 35');
-    }
-
-    const payloadBody: TradingActivityQueryFilter = {
-      filters: {
-        collection: args.collections,
-        identifier: args.identifier || undefined,
-        address: args.owners || undefined,
-        tokens: args.placedInToken || undefined,
-        marketplace: args.marketplaces || undefined,
-        action: args.actions || undefined,
-        range: args.priceRange,
-        rankRange: args.rankRange,
-        timestampRange: args.timestampRange,
-        attributes: args.attributes,
-      },
-      orderBy: args.orderBy,
-      select: args.select,
-      top: args.top || 35,
-      skip: args.skip || 0,
-    };
-
-    const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
-    const response: TradingActivityResponse = await this.api.fetchWithTimeout(
-      `/getGlobalOffers/${buffer}`
-    );
-    return {
-      ...response,
-      getNextPagePayload: {
-        ...args,
-        skip: response.lastSkip,
-      },
-      empty: response.resources.length === 0,
-    };
+    return await getActivity(args, this.api);
   };
 }

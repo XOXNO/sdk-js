@@ -111,44 +111,40 @@ export enum Marketplace {
 export interface GlobalOffer {
   attributes: MetadataAttribute[];
   collection: string;
-  dataType: string;
-  id: string;
   isActive: boolean;
   marketplace: string;
   offer_id: number;
   owner: string;
-  ownerProfile: string;
-  ownerUsername: string;
+  ownerProfile?: string;
+  ownerUsername?: string;
   payment_nonce: number;
   payment_token: string;
   price: string;
   quantity: number;
   short_price: number;
   timestamp: number;
-  uniqueKey: string;
-  _ts: number;
 }
 
-export enum FieldsToSelect {
-  'metadata/rarity/rank',
-  'metadata/attributes',
-  'metadata/description',
-  'name',
-  'onSale',
-  'saleInfoNft',
-  'royalties',
-  'identifier',
-  'collection',
-  'url',
-  'nonce',
-  'originalMedia/contentType',
-  'wasProcessed',
-  'avifUrl',
-  'webpUrl',
-  'type',
+export const enum FieldsToSelect {
+  Rank = 'metadata/rarity/rank',
+  Attributes = 'metadata/attributes',
+  Description = 'metadata/description',
+  Name = 'name',
+  OnSale = 'onSale',
+  SaleInfo = 'saleInfoNft',
+  Royalties = 'royalties',
+  Identifier = 'identifier',
+  Collection = 'collection',
+  OriginalURL = 'url',
+  Nonce = 'nonce',
+  ContentType = 'originalMedia/contentType',
+  WasProcessed = 'wasProcessed',
+  AvifURL = 'avifUrl',
+  WebpURL = 'webpUrl',
+  Type = 'type',
 }
 
-export enum SearchOrderBy {
+export const enum SearchOrderBy {
   PriceHighToLow = 'saleInfoNft/min_bid_short desc',
   PriceLowToHigh = 'saleInfoNft/min_bid_short asc',
   RarityHighToLow = 'metadata/rarity/rank desc',
@@ -191,36 +187,81 @@ export interface SearchNFTs {
 }
 
 export interface SearchNFTsArgs {
+  /**  The collection to search in */
   collection: string;
+  /** If true, will return only NFTs that are on sale */
   onlyOnSale?: boolean;
+  /** If true, will return only NFTs that are on auction */
   onlyAuctions?: boolean;
+  /** If set, will return only NFTs with a price in the specified range */
   priceRange?: {
     min: number;
     max: number;
   };
+  /** If set, will return only NFTs listed in the specified tokens */
   listedInToken?: string[];
+  /** If set, will return only NFTs with a rank in the specified range */
   rankRange?: {
     min: number;
     max: number;
   };
+  /** If set, will return only NFTs with a cantina level in the specified range */
   cantinaLevelRange?: {
     min: number;
     max: number;
   };
+  /** If set, will return only NFTs with a name that contains the specified string */
   searchName?: string;
+  /** The number of results to return */
   top?: number;
+  /** The order by to use */
   skip?: number;
+  /** The order of the results based on a field */
   orderBy?: SearchOrderBy[];
+  /** If set, will return only the specified fields */
   onlySelectFields?: FieldsToSelect[];
+  /** If set, will return only NFTs listed in the specified marketplaces */
   listedOnlyOn?: Marketplace[];
+  /** If set, will return only NFTs with the specified attributes */
   attributes?: MetadataAttribute[];
 }
 
 export interface SearchNFTsResponse {
+  /** The total count of the results for the specific query */
   count: number;
+  /** The results count for the current page */
   resultsCount: number;
+  /** The results for the current page */
   results: NftData[];
+  /** If the results are empty */
   empty: boolean;
+  /** The payload to use to get the next page */
   getNextPagePayload: SearchNFTsArgs;
+  /** If there are more results to fetch */
   hasMoreResults: boolean;
+}
+
+export interface TradingActivity {
+  action: string;
+  attributes: MetadataAttribute[];
+  avifUrl: string;
+  buyer: string;
+  buyerUsername: string;
+  collection: string;
+  egldValue: number;
+  id: string;
+  identifier: string;
+  marketplace: Marketplace;
+  name: string;
+  paymentToken: string;
+  price: number;
+  rank: number;
+  seller: string;
+  sellerUsername: string;
+  timestamp: number;
+  txHash: string;
+  url: string;
+  usdPrice: number;
+  webpUrl: string;
+  _ts: number;
 }

@@ -4,9 +4,12 @@ export interface NFTAttribute {
   occurance: number;
   rarity: number;
   frequency: number;
+  OnSale?: number;
+  FloorPrice?: number;
 }
 
 export interface NFTMetadata {
+  description?: string;
   attributes: NFTAttribute[];
   rarity: {
     rank: number;
@@ -15,6 +18,7 @@ export interface NFTMetadata {
 
 export interface OriginalMedia {
   contentType: string;
+  contentLength: number;
 }
 
 export interface SaleInfoNft {
@@ -39,21 +43,58 @@ export interface SaleInfoNft {
   usd_max_bid: string;
 }
 
+export interface NftValue {
+  floorValue: number;
+  avgValue: number;
+  maxValue: number;
+  collectionFp: number;
+}
+
+export interface GameData {
+  name: string;
+  value: number;
+}
+
+export interface OffersInfo {
+  EgldValue: number;
+  UsdValue: number;
+  deadline: number;
+  isActive: boolean;
+  offer_id: number;
+  owner: string;
+  ownerUsername: string;
+  payment_nonce: number;
+  payment_token: string;
+  price: string;
+  price_short: number;
+  quantity: number;
+  timestamp: number;
+}
+
 export interface NftData {
   identifier: string;
   collection: string;
+  attributes?: string;
   nonce: number;
   type: string;
   name: string;
+  creator?: string;
   royalties: number;
   url: string;
   avifUrl: string;
   webpUrl: string;
   wasProcessed: boolean;
   onSale: boolean;
+  hasOffers?: boolean;
   metadata: Metadata;
   originalMedia: OriginalMedia;
   saleInfoNft: SaleInfoNft;
+  offersInfo: OffersInfo[];
+  gameData: GameData[]; // Only for Cantina Rolaye
+  owner?: string;
+  ownerCount?: number; // Only for SFTs with over 1 owner
+  ownerUsername?: string;
   isVerified: boolean;
   isVisible: boolean;
+  nftValue?: NftValue;
 }

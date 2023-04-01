@@ -1,16 +1,70 @@
+import axios from 'axios';
+import {
+  API_URL,
+  DR_SC,
+  FM_SC,
+  KG_SC,
+  Manager_SC,
+  Manager_SC_DEV,
+  P2P_SC,
+  P2P_SC_DEV,
+  Staking_SC,
+  Staking_SC_DEV,
+  XOXNO_SC,
+  XOXNO_SC_DEV,
+} from './const';
+export const enum Chain {
+  MAINNET = '1',
+  DEVNET = 'D',
+}
 export class APIClient {
   private static instance: APIClient;
-  private apiUrl: string;
+  public apiUrl: string;
   private apiKey: string;
+  public chain: Chain;
+  public config: {
+    XO_SC: string;
+    FM_SC: string;
+    DR_SC: string;
+    KG_SC: string;
+    Staking_SC: string;
+    Manager_SC: string;
+    P2P_SC: string;
+  };
 
-  private constructor(apiUrl: string, apiKey: string) {
+  private constructor(apiUrl: string, apiKey: string, chain: Chain) {
     this.apiUrl = apiUrl;
     this.apiKey = apiKey;
+    this.chain = chain;
+    this.config =
+      chain === Chain.MAINNET
+        ? {
+            XO_SC: XOXNO_SC,
+            FM_SC: FM_SC,
+            DR_SC,
+            KG_SC,
+            Staking_SC,
+            Manager_SC,
+            P2P_SC,
+          }
+        : {
+            XO_SC: XOXNO_SC_DEV,
+            FM_SC,
+            DR_SC,
+            KG_SC,
+            Staking_SC: Staking_SC_DEV,
+            Manager_SC: Manager_SC_DEV,
+            P2P_SC: P2P_SC_DEV,
+          };
   }
 
-  public static init(apiUrl: string, apiKey: string): APIClient {
+  public static init(
+    apiUrl: string = API_URL,
+    apiKey = '',
+    chain: Chain = Chain.MAINNET
+  ): APIClient {
     if (!APIClient.instance) {
-      APIClient.instance = new APIClient(apiUrl, apiKey);
+      APIClient.instance = new APIClient(apiUrl, apiKey, chain);
     }
     return APIClient.instance;
   }
@@ -21,25 +75,18 @@ export class APIClient {
     }
     return APIClient.instance;
   }
-  public fetchWithTimeout = async (
+
+  public fetchWithTimeout = async <T>(
     path: string,
     options: Record<string, unknown> = {},
     timeout = 40000
-  ) => {
-    const controller = new AbortController();
-    const { signal } = controller as any;
-
+  ): Promise<T> => {
     const timestamp = Math.round(new Date().getTime() / 1000);
-    const handle = setTimeout(() => {
-      controller.abort();
-    }, timeout);
-
-    let response;
 
     const headers = {
       'Accept-Encoding': 'gzip,deflate,br',
       'xo-time': `Sent-At:${timestamp}`,
-      Referer: 'https://xoxno.dev',
+      Referer: 'https://xoxno.sdk',
       'User-Agent': 'XOXNO/1.0/SDK',
       ...(options.method === 'POST'
         ? { 'Content-Type': 'application/json' }
@@ -47,7 +94,7 @@ export class APIClient {
       ...((options.headers as object) ?? {}),
     };
     try {
-      response = await fetch(
+      const { data } = await axios(
         `${this.apiUrl}${path}${
           options.params
             ? '?' +
@@ -61,24 +108,16 @@ export class APIClient {
             : ''
         }`,
         {
-          signal,
+          timeout,
           ...options,
           ...(Object.keys(headers).length ? { headers } : {}),
           method: (options.method as any) ?? 'GET',
         }
       );
 
-      if (!response.ok) {
-        await response?.text().then((text) => {
-          throw new Error(text);
-        });
-      }
+      const result = data;
 
-      clearTimeout(handle);
-
-      const result = await response.json();
-
-      return result;
+      return result as T;
     } catch (error) {
       throw new Error(
         'Something went wrong inside fetchWithTimeout' +
