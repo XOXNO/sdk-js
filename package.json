@@ -1,5 +1,5 @@
 {
-  "name": "xoxno-sdk-js",
+  "name": "@xoxno/sdk-js",
   "version": "0.0.1",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "main": "./src/index.ts",
@@ -9,6 +9,7 @@
     "lint": "eslint 'src/**/*.ts'",
     "format": "prettier --write 'src/**/*.ts'",
     "commit": "git-cz",
+    "release": "semantic-release",
     "docs": "typedoc --out docs src/**/*.ts"
   },
   "config": {
