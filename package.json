@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/XOXNO/xoxno-sdk-js.git"
+    "url": "git+https://github.com/XOXNO/sdk-js.git"
   },
   "husky": {
     "hooks": {
@@ -38,9 +38,9 @@
   "author": "Mihai Eremia",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/XOXNO/xoxno-sdk-js/issues"
+    "url": "https://github.com/XOXNO/sdk-js/issues"
   },
-  "homepage": "https://github.com/XOXNO/xoxno-sdk-js#readme",
+  "homepage": "https://github.com/XOXNO/sdk-js#readme",
   "devDependencies": {
     "@commitlint/cli": "^17.5.0",
     "@commitlint/config-conventional": "^17.4.4",
