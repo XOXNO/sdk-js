@@ -155,6 +155,43 @@ export const enum SearchOrderBy {
   OldestListed = 'saleInfoNft/timestamp asc',
 }
 
+export const enum CollectionsOrderBy {
+  WeekVolumeHighToLow = 'statistics.tradeData.weekEgldVolume desc',
+  WeekVolumeLowToHigh = 'statistics.tradeData.weekEgldVolume asc',
+  DailyVolumeHighToLow = 'statistics.tradeData.dayEgldVolume desc',
+  DailyVolumeLowToHigh = 'statistics.tradeData.dayEgldVolume asc',
+  TotalVolumeHighToLow = 'statistics.tradeData.totalEgldVolume desc',
+  TotalVolumeLowToHigh = 'statistics.tradeData.totalEgldVolume asc',
+  AvgVolumePriceHighToLow = 'statistics.tradeData.averageEgldPrice desc',
+  AvgVolumePriceLowToHigh = 'statistics.tradeData.averageEgldPrice asc',
+  ATHHighToLow = 'statistics.tradeData.athEgldPrice desc',
+  ATHLowToHigh = 'statistics.tradeData.athEgldPrice asc',
+  TotalTradesHighToLow = 'statistics.tradeData.totalTrades desc',
+  TotalTradesLowToHigh = 'statistics.tradeData.totalTrades asc',
+  SupplyHighToLow = 'statistics.other.nftCount desc',
+  SupplyLowToHigh = 'statistics.other.nftCount asc',
+  FollowersHighToLow = 'statistics.other.followCount desc',
+  FollowersLowToHigh = 'statistics.other.followCount asc',
+}
+
+export const enum CollectionsFieldsToSelect {
+  Profile = 'profile',
+  Description = 'description',
+  Creator = 'creator',
+  Owner = 'owner',
+  Socials = 'socials',
+  Type = 'type',
+  HasStaking = 'hasStaking',
+  MintInfo = 'mintInfo',
+  MintStages = 'mintStages',
+  Name = 'name',
+  Banner = 'banner',
+  IsVerified = 'isVerified',
+  IsMintable = 'isMintable',
+  Statistics = 'statistics',
+  Collection = 'collection',
+}
+
 export interface Filter {
   marketplace?: Marketplace[];
   onSale?: boolean;
@@ -264,4 +301,32 @@ export interface TradingActivity {
   usdPrice: number;
   webpUrl: string;
   _ts: number;
+}
+
+export interface GetCollectionsArgs {
+  /**  The collections to fetch the profile */
+  collections?: string[];
+  /** If true, will return only NFTs that are mintable */
+  onlyMintable?: boolean;
+  /** The number of results to return */
+  top?: number;
+  /** The order by to use */
+  skip?: number;
+  /** The order of the results based on a field */
+  orderBy?: CollectionsOrderBy;
+  /** If set, will return only the specified fields */
+  onlySelectFields?: CollectionsFieldsToSelect[];
+}
+
+export interface CollectionsNFTsResponse {
+  /** The results count for the current page */
+  resultsCount: number;
+  /** The results for the current page */
+  results: ICollectionProfile[];
+  /** If the results are empty */
+  empty: boolean;
+  /** The payload to use to get the next page */
+  getNextPagePayload: GetCollectionsArgs;
+  /** If there are more results to fetch */
+  hasMoreResults: boolean;
 }

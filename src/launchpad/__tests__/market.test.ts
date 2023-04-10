@@ -20,6 +20,6 @@ describe('SCInteraction', () => {
     const tags = await sc.getStages('Elonverse');
     expect(tags).toBeDefined();
     // expect(tags).toContain('Elonverse');
-    console.log(tags);
+    // console.log(tags);
   });
 });

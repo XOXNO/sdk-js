@@ -1,4 +1,6 @@
 import {
+  CollectionsNFTsResponse,
+  GetCollectionsArgs,
   ICollectionAttributes,
   ICollectionProfile,
   SearchNFTs,
@@ -83,8 +85,8 @@ export class CollectionModule {
 
   /**
    * Searches for NFTs in a collection based on the provided arguments.
-   * @param args - The SearchNFTsArgs object containing the search parameters.
-   * @returns A Promise that resolves to the SearchNFTsResponse object.
+   * @param {SearchNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
+   * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
    * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 35.
    */
   public searchNFTs = async (
@@ -154,5 +156,49 @@ export class CollectionModule {
     args: TradincActivityArgs
   ): Promise<TradingActivityResponse> => {
     return await getActivity(args, this.api);
+  };
+
+  /**
+   * Searches for NFTs in a collection based on the provided arguments.
+   * @param {GetCollectionsArgs} args - The SearchNFTsArgs object containing the search parameters.
+   * @returns {Promise<CollectionsNFTsResponse>} A Promise that resolves to the CollectionsNFTsResponse object.
+   * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 35.
+   */
+  public getCollections = async (
+    args?: GetCollectionsArgs
+  ): Promise<CollectionsNFTsResponse> => {
+    if (args?.top && args.top > 25) {
+      throw new Error('Top cannot be greater than 25');
+    }
+
+    const payloadBody = {
+      skip: args?.skip || 0,
+      top: args?.top || 25,
+      select: args?.onlySelectFields || [],
+      filters: {
+        dataType: 'collectionProfile',
+        isMintable: args?.onlyMintable || undefined,
+        ...(args?.collections &&
+          args.collections.length > 0 && {
+            collection: args.collections,
+          }),
+      },
+      orderBy: [args?.orderBy || 'statistics.tradeData.weekEgldVolume desc'],
+    };
+
+    const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
+    const response = await this.api.fetchWithTimeout<ICollectionProfile[]>(
+      `/collections/${buffer}`
+    );
+    return {
+      results: response,
+      resultsCount: response.length,
+      empty: response.length === 0,
+      getNextPagePayload: {
+        ...args,
+        skip: (args?.skip || 0) + (args?.top || 25),
+      },
+      hasMoreResults: response.length < (args?.top || 25),
+    };
   };
 }

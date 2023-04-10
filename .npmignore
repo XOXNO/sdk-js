@@ -1,2 +1,9 @@
 docs
+<<<<<<< Updated upstream
 coverage
+=======
+coverage
+.vscode
+.vscode-test
+.github
+>>>>>>> Stashed changes

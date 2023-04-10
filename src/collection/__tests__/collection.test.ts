@@ -1,12 +1,12 @@
 import { CollectionModule } from './../index';
 import { APIClient } from '../../utils/api';
-import { FieldsToSelect } from '../../types';
+import { CollectionsFieldsToSelect, FieldsToSelect } from '../../types';
 
 describe('CollectionModule', () => {
   let collectionModule: CollectionModule;
   const inputCollection = 'BANANA-e955fd';
   beforeAll(() => {
-    APIClient.init('https://api.xoxno.com', '');
+    APIClient.init('https://proxy-api.xoxno.com', '');
     collectionModule = new CollectionModule();
   });
 
@@ -14,6 +14,13 @@ describe('CollectionModule', () => {
     const collectionModule = new CollectionModule();
     const result = await collectionModule.getCollectionProfile(inputCollection);
     expect(result.collection).toEqual(inputCollection);
+  });
+
+  test('getCollectionProfiles should return the correct results', async () => {
+    const collectionModule = new CollectionModule();
+    const result = await collectionModule.getCollections();
+    expect(result).toBeDefined();
+    expect(result.results).toHaveLength(25);
   });
 
   it('should get the floor price of a collection', async () => {
