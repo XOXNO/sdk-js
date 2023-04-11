@@ -1,9 +1,17 @@
 docs
-<<<<<<< Updated upstream
-coverage
-=======
 coverage
 .vscode
 .vscode-test
 .github
->>>>>>> Stashed changes
+
+src/
+
+# Ignore config files
+.eslintrc
+.prettierrc
+.editorconfig
+commitlint.config.js
+.releaserc
+jest.config.js
+tsconfig.json
+webpack.config.js
