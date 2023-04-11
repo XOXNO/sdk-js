@@ -6,7 +6,7 @@ module.exports = {
   entry: './src/index.ts',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'xoxno.min.js',
+    filename: 'index.min.js',
     library: {
       name: 'XOXNO',
       type: 'umd',

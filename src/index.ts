@@ -1,4 +1,3 @@
-import { CollectionModule } from './collection';
 import { APIClient } from './utils/api';
 import { API_URL } from './utils/const';
 
@@ -7,7 +6,6 @@ import { API_URL } from './utils/const';
  * interacting with an XOXNO API.
  */
 export class XOXNO {
-  public collection: CollectionModule;
   /**
    * Creates a new XOXNO instance.
    * @param apiUrl - The base URL of the XOXNO API.
@@ -15,6 +13,5 @@ export class XOXNO {
    */
   constructor(apiUrl: string = API_URL, apiKey = '') {
     APIClient.init(apiUrl, apiKey);
-    this.collection = new CollectionModule();
   }
 }

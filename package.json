@@ -2,7 +2,8 @@
   "name": "@xoxno/sdk-js",
   "version": "0.0.5-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
-  "main": "./dist/xoxno.min.js",
+  "main": "./dist/index.min.js",
+  "types": "./dist/index.d.js",
   "scripts": {
     "test": "jest",
     "build": "webpack",
