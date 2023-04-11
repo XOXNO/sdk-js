@@ -1,4 +1,4 @@
-import { Marketplace, MetadataAttribute } from './collection';
+import { Marketplace, MetadataAttribute, TradingActivity } from './collection';
 
 export interface TradingActivityQueryFilter {
   filters: {
@@ -67,14 +67,14 @@ export interface TradincActivityArgs {
   attributes?: MetadataAttribute[];
 }
 
-export const enum OrderByTradingActivity {
+export enum OrderByTradingActivity {
   PriceHighToLow = 'short_price desc',
   PriceLowToHigh = 'short_price asc',
   RecentPlaced = 'timestamp desc',
   OldestPlaced = 'timestamp asc',
 }
 
-export const enum SelectFieldsTradingActivity {
+export enum SelectFieldsTradingActivity {
   'attributes',
   'collection',
   'offer_id',

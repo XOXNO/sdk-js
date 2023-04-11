@@ -3,13 +3,12 @@ import {
   ProxyNetworkProvider,
 } from '@multiversx/sdk-network-providers';
 import { INetworkProvider } from '@multiversx/sdk-network-providers/out/interface';
-import {
-  ResultsParser,
-  SmartContract,
-  Interaction,
-  TypedOutcomeBundle,
-} from '@multiversx/sdk-core';
+
 import { APIClient } from './api';
+import { ResultsParser } from '@multiversx/sdk-core/out/smartcontracts/resultsParser';
+import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract';
+import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
+import type { TypedOutcomeBundle } from '@multiversx/sdk-core/out/smartcontracts/interface';
 
 export class ContractQueryRunner {
   private readonly proxy: INetworkProvider;

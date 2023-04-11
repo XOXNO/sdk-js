@@ -1,4 +1,4 @@
-type Offer = {
+export type Offer = {
   offer_id: number;
   collection: string;
   quantity: number;

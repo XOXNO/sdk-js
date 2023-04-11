@@ -125,7 +125,7 @@ export interface GlobalOffer {
   timestamp: number;
 }
 
-export const enum FieldsToSelect {
+export enum FieldsToSelect {
   Rank = 'metadata/rarity/rank',
   Attributes = 'metadata/attributes',
   Description = 'metadata/description',
@@ -144,7 +144,7 @@ export const enum FieldsToSelect {
   Type = 'type',
 }
 
-export const enum SearchOrderBy {
+export enum SearchOrderBy {
   PriceHighToLow = 'saleInfoNft/min_bid_short desc',
   PriceLowToHigh = 'saleInfoNft/min_bid_short asc',
   RarityHighToLow = 'metadata/rarity/rank desc',
@@ -155,7 +155,7 @@ export const enum SearchOrderBy {
   OldestListed = 'saleInfoNft/timestamp asc',
 }
 
-export const enum CollectionsOrderBy {
+export enum CollectionsOrderBy {
   WeekVolumeHighToLow = 'statistics.tradeData.weekEgldVolume desc',
   WeekVolumeLowToHigh = 'statistics.tradeData.weekEgldVolume asc',
   DailyVolumeHighToLow = 'statistics.tradeData.dayEgldVolume desc',
@@ -174,7 +174,7 @@ export const enum CollectionsOrderBy {
   FollowersLowToHigh = 'statistics.other.followCount asc',
 }
 
-export const enum CollectionsFieldsToSelect {
+export enum CollectionsFieldsToSelect {
   Profile = 'profile',
   Description = 'description',
   Creator = 'creator',

@@ -1,17 +1,10 @@
-import {
-  AbiRegistry,
-  Address,
-  SmartContract,
-  SmartContractAbi,
-} from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core/out/address';
+import { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract';
+import type { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry';
 
-export const getSmartContract = (
-  abiRegistry: AbiRegistry,
-  address: Address,
-  implementedInterface: string
-) => {
+export const getSmartContract = (abiRegistry: AbiRegistry, address: string) => {
   return new SmartContract({
-    address: address,
-    abi: new SmartContractAbi(abiRegistry, [implementedInterface]),
+    address: new Address(address),
+    abi: abiRegistry,
   });
 };

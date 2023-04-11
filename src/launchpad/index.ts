@@ -1,7 +1,8 @@
-import { SmartContract, Address, Interaction } from '@multiversx/sdk-core/out';
+import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { SmartContractAbis } from '../utils/SmartContractAbis';
 import { getSmartContract } from '../utils/SmartContractService';
 import { ContractQueryRunner } from '../utils/scCalls';
+import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract';
 
 /**
  * LaunchpadModule provides methods to interact with the minter smart contract.
@@ -37,11 +38,7 @@ export class LaunchpadModule {
    */
   static async init(minterSC: string) {
     const minterAbiXOXNO = await SmartContractAbis.getMinter();
-    const minter_abi = getSmartContract(
-      minterAbiXOXNO,
-      new Address(minterSC),
-      'Minter'
-    );
+    const minter_abi = getSmartContract(minterAbiXOXNO, minterSC);
     return new LaunchpadModule(minter_abi);
   }
 
