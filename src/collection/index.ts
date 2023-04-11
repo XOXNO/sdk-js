@@ -198,7 +198,7 @@ export class CollectionModule {
         ...args,
         skip: (args?.skip || 0) + (args?.top || 25),
       },
-      hasMoreResults: response.length < (args?.top || 25),
+      hasMoreResults: response.length >= (args?.top || 25),
     };
   };
 }
