@@ -1,12 +1,13 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.0.8-alpha",
+  "version": "0.0.9-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
-  "main": "./dist/index.min.js",
-  "types": "./dist/index.d.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "scripts": {
     "test": "jest",
-    "build": "webpack",
+    "build": "tsc -p tsconfig.json",
     "lint": "eslint 'src/**/*.ts'",
     "format": "prettier --write 'src/**/*.ts'",
     "commit": "git-cz",
@@ -63,9 +64,7 @@
     "ts-jest": "^29.0.5",
     "ts-loader": "^9.4.2",
     "typedoc": "^0.23.28",
-    "typescript": "^5.0.2",
-    "webpack": "^5.76.3",
-    "webpack-cli": "^5.0.1"
+    "typescript": "^5.0.2"
   },
   "dependencies": {
     "@multiversx/sdk-core": "^12",
