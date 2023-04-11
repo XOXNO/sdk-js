@@ -159,10 +159,10 @@ export class CollectionModule {
   };
 
   /**
-   * Searches for NFTs in a collection based on the provided arguments.
-   * @param {GetCollectionsArgs} args - The SearchNFTsArgs object containing the search parameters.
+   * Fetch collections profiles based on the provided arguments.
+   * @param {GetCollectionsArgs} args - The GetCollectionsArgs object containing the search parameters.
    * @returns {Promise<CollectionsNFTsResponse>} A Promise that resolves to the CollectionsNFTsResponse object.
-   * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 35.
+   * @throws An error if the 'top' value is greater than 35.
    */
   public getCollections = async (
     args?: GetCollectionsArgs
