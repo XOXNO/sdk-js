@@ -17,8 +17,8 @@ export enum Chain {
   MAINNET = '1',
   DEVNET = 'D',
 }
-export class APIClient {
-  private static instance: APIClient;
+export class XOXNOClient {
+  private static instance: XOXNOClient;
   public apiUrl: string;
   private apiKey: string;
   public chain: Chain;
@@ -32,7 +32,11 @@ export class APIClient {
     P2P_SC: string;
   };
 
-  private constructor(apiUrl: string, apiKey: string, chain: Chain) {
+  private constructor(
+    apiUrl: string = API_URL,
+    apiKey = '',
+    chain: Chain = Chain.MAINNET
+  ) {
     this.apiUrl = apiUrl;
     this.apiKey = apiKey;
     this.chain = chain;
@@ -62,18 +66,18 @@ export class APIClient {
     apiUrl: string = API_URL,
     apiKey = '',
     chain: Chain = Chain.MAINNET
-  ): APIClient {
-    if (!APIClient.instance) {
-      APIClient.instance = new APIClient(apiUrl, apiKey, chain);
+  ): XOXNOClient {
+    if (!XOXNOClient.instance) {
+      XOXNOClient.instance = new XOXNOClient(apiUrl, apiKey, chain);
     }
-    return APIClient.instance;
+    return XOXNOClient.instance;
   }
 
-  public static getClient(): APIClient {
-    if (!APIClient.instance) {
-      throw new Error('APIClient has not been initialized');
+  public static getClient(): XOXNOClient {
+    if (!XOXNOClient.instance) {
+      this.init();
     }
-    return APIClient.instance;
+    return XOXNOClient.instance;
   }
 
   public fetchWithTimeout = async <T>(

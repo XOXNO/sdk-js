@@ -1,6 +1,6 @@
 import { NftData } from '../types/nft';
 import { TradingActivityResponse, TradincActivityArgs } from '../types/trading';
-import { APIClient } from '../utils/api';
+import { XOXNOClient } from '../utils/api';
 import { getActivity } from '../utils/getActivity';
 import { getIdentifierFromColAndNonce } from '../utils/helpers';
 import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex';
@@ -15,9 +15,9 @@ import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex';
  */
 
 export class NFTModule {
-  private api: APIClient;
+  private api: XOXNOClient;
   constructor() {
-    this.api = APIClient.getClient();
+    this.api = XOXNOClient.getClient();
   }
 
   /**

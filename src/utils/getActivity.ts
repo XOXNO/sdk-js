@@ -3,7 +3,7 @@ import {
   TradingActivityResponse,
   TradingActivityQueryFilter,
 } from '../types/trading';
-import { APIClient } from '../utils/api';
+import { XOXNOClient } from '../utils/api';
 
 /**
  * Fetches the trading activity of the given collections
@@ -14,7 +14,7 @@ import { APIClient } from '../utils/api';
  */
 export const getActivity = async (
   args: TradincActivityArgs,
-  api: APIClient
+  api: XOXNOClient
 ): Promise<TradingActivityResponse> => {
   if (args.top && args.top > 35) {
     throw new Error('Top cannot be greater than 35');

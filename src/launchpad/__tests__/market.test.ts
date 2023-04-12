@@ -1,10 +1,10 @@
 import { LaunchpadModule } from '../index';
-import { APIClient } from '../../utils/api';
+import { XOXNOClient } from '../../utils/api';
 
 describe('SCInteraction', () => {
   let sc: LaunchpadModule;
   beforeAll(async () => {
-    APIClient.init();
+    XOXNOClient.init();
     sc = await LaunchpadModule.init(
       'erd1qqqqqqqqqqqqqpgqtwtp5uz97u232zvzd973upqxwe2xnqv2ys5s3c7jx9'
     );

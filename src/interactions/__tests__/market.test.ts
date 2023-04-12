@@ -1,10 +1,10 @@
 import { SCInteraction } from '../index';
-import { APIClient } from '../../utils/api';
+import { XOXNOClient } from '../../utils/api';
 
 describe('SCInteraction', () => {
   let sc: SCInteraction;
   beforeAll(async () => {
-    APIClient.init();
+    XOXNOClient.init();
     sc = await SCInteraction.create();
   });
 

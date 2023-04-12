@@ -8,7 +8,7 @@ import {
   SearchNFTsResponse,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
-import { APIClient } from '../utils/api';
+import { XOXNOClient } from '../utils/api';
 import { getActivity } from '../utils/getActivity';
 import { isValidCollectionTicker } from '../utils/regex';
 
@@ -22,9 +22,9 @@ import { isValidCollectionTicker } from '../utils/regex';
  * const collectionModule = xoxno.collection;
  */
 export class CollectionModule {
-  private api: APIClient;
+  private api: XOXNOClient;
   constructor() {
-    this.api = APIClient.getClient();
+    this.api = XOXNOClient.getClient();
   }
 
   /**

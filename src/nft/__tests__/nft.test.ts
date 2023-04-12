@@ -1,5 +1,5 @@
 import { NFTModule } from '../index';
-import { APIClient } from '../../utils/api';
+import { XOXNOClient } from '../../utils/api';
 import { OrderByTradingActivity } from '../../types';
 
 describe('NFTModule', () => {
@@ -9,7 +9,7 @@ describe('NFTModule', () => {
   const nonce = 1;
   const nonceHex = '01';
   beforeAll(() => {
-    APIClient.init();
+    XOXNOClient.init();
     nftModule = new NFTModule();
   });
 

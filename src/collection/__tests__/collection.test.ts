@@ -1,12 +1,12 @@
 import { CollectionModule } from './../index';
-import { APIClient } from '../../utils/api';
+import { XOXNOClient } from '../../utils/api';
 import { CollectionsFieldsToSelect, FieldsToSelect } from '../../types';
 
 describe('CollectionModule', () => {
   let collectionModule: CollectionModule;
   const inputCollection = 'BANANA-e955fd';
   beforeAll(() => {
-    APIClient.init('https://proxy-api.xoxno.com', '');
+    XOXNOClient.init('https://proxy-api.xoxno.com', '');
     collectionModule = new CollectionModule();
   });
 
