@@ -6,17 +6,36 @@ XOXNO SDK is a JavaScript library that simplifies the interaction with the XOXNO
 
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Initialization](#initialization)
-  - [Fetching Data](#fetching-data)
-  - [Interacting with the Smart Contract](#interacting-with-the-smart-contract)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [License](#license)
+- [Documentation](#docs)
 
 ## Installation
 
 To install the XOXNO SDK, simply run the following command in your project's root directory:
 
 ```bash
-npm install xoxno-sdk
+npm i @xoxno/sdk-js
 ```
+
+## Usage
+
+The SDK follows a scheleton model where the API configuration has to be initiated only once anywhere in your application
+
+```javascript
+import { XOXNOClient } from '@xoxno/sdk-js';
+XOXNOClient.init();
+// By default calling init() without arguments will set the entire SDK to the mainnet ENV using the public API https://api.xoxno.com
+```
+
+After the client has been created you can now import different modules anywhere in the application:
+
+```javascript
+import CollectionModule from '@xoxno/sdk-js';
+const collection = new CollectionModule(); // In case the above .init() call was not set before creating any module instance will auto trigger .init() using the default parameters described above
+const profile = await collection.getCollectionProfile('MONKEY-ac9bdf');
+// or similar with 
+const profile = await new CollectionModule().getCollectionProfile('MONKEY-ac9bdf');
+```
+
+## Docs
+
+For more modules and typescript interfaces you can check our documentation at [https://sdk.xoxno.com](https://sdk.xoxno.com)

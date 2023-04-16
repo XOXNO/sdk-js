@@ -1,6 +1,6 @@
-import { CollectionModule } from './../index';
-import { XOXNOClient } from '../../utils/api';
-import { CollectionsFieldsToSelect, FieldsToSelect } from '../../types';
+import CollectionModule from './../index';
+import XOXNOClient from '../../utils/api';
+import { FieldsToSelect } from '../../types';
 
 describe('CollectionModule', () => {
   let collectionModule: CollectionModule;
@@ -8,6 +8,10 @@ describe('CollectionModule', () => {
   beforeAll(() => {
     XOXNOClient.init('https://proxy-api.xoxno.com', '');
     collectionModule = new CollectionModule();
+  });
+
+  beforeEach(async () => {
+    return new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   test('getCollectionProfile should return the correct result', async () => {

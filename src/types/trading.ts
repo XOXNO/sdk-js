@@ -32,8 +32,8 @@ export interface TradincActivityArgs {
   collections?: string[];
   /** The identifier of the NFTs to fetch the trading activity from */
   identifiers?: string[];
-  /** The owners of the NFTs to fetch the trading activity from */
-  owners?: string[];
+  /** The wallets for which to fetch the trading activity */
+  wallets?: string[];
   /** The marketplaces to fetch the trading activity from */
   marketplaces?: Marketplace[];
   /** The tokens to fetch the trading activity from */

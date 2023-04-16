@@ -1,6 +1,6 @@
-export interface NFTAttribute {
-  trait_type: string;
-  value: string;
+import { MetadataAttribute } from './collection';
+
+export interface NFTAttribute extends MetadataAttribute {
   occurance: number;
   rarity: number;
   frequency: number;
@@ -10,8 +10,8 @@ export interface NFTAttribute {
 
 export interface NFTMetadata {
   description?: string;
-  attributes: NFTAttribute[];
-  rarity: {
+  attributes?: NFTAttribute[];
+  rarity?: {
     rank: number;
   };
 }
@@ -97,4 +97,6 @@ export interface NftData {
   isVerified: boolean;
   isVisible: boolean;
   nftValue?: NftValue;
+  pool_id?: number; // Only for Staked NFTs
+  isStaked?: boolean; // Only for Staked NFTs
 }

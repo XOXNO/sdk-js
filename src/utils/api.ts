@@ -17,7 +17,7 @@ export enum Chain {
   MAINNET = '1',
   DEVNET = 'D',
 }
-export class XOXNOClient {
+export default class XOXNOClient {
   private static instance: XOXNOClient;
   public apiUrl: string;
   private apiKey: string;
@@ -69,13 +69,6 @@ export class XOXNOClient {
   ): XOXNOClient {
     if (!XOXNOClient.instance) {
       XOXNOClient.instance = new XOXNOClient(apiUrl, apiKey, chain);
-    }
-    return XOXNOClient.instance;
-  }
-
-  public static getClient(): XOXNOClient {
-    if (!XOXNOClient.instance) {
-      this.init();
     }
     return XOXNOClient.instance;
   }

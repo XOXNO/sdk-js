@@ -1,11 +1,15 @@
-import { SCInteraction } from '../index';
-import { XOXNOClient } from '../../utils/api';
+import SCInteraction from '../index';
+import XOXNOClient from '../../utils/api';
 
 describe('SCInteraction', () => {
   let sc: SCInteraction;
   beforeAll(async () => {
     XOXNOClient.init();
     sc = await SCInteraction.create();
+  });
+
+  beforeEach(async () => {
+    return new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   it('should return the XOXNO marketplace cut fees from SC', async () => {

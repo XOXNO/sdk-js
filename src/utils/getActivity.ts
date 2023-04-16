@@ -3,7 +3,7 @@ import {
   TradingActivityResponse,
   TradingActivityQueryFilter,
 } from '../types/trading';
-import { XOXNOClient } from '../utils/api';
+import XOXNOClient from '../utils/api';
 
 /**
  * Fetches the trading activity of the given collections
@@ -24,7 +24,7 @@ export const getActivity = async (
     filters: {
       collection: args.collections,
       identifier: args.identifiers || undefined,
-      address: args.owners || undefined,
+      address: args.wallets || undefined,
       tokens: args.placedInToken || undefined,
       marketplace: args.marketplaces || undefined,
       action: args.actions || undefined,

@@ -1,13 +1,13 @@
 import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { GlobalOffer } from '../types/collection';
-import { XOXNOClient } from '../utils/api';
+import XOXNOClient from '../utils/api';
 import { ContractQueryRunner } from '../utils/scCalls';
 import { SmartContractAbis } from '../utils/SmartContractAbis';
 import { getSmartContract } from '../utils/SmartContractService';
 import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract';
 import { BigUIntValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical';
 
-export class SCInteraction {
+export default class SCInteraction {
   private xo: SmartContract;
   private call: ContractQueryRunner;
   constructor(marketAbiXOXNO: SmartContract) {
@@ -16,7 +16,7 @@ export class SCInteraction {
   }
 
   static async create() {
-    const config = XOXNOClient.getClient().config;
+    const config = XOXNOClient.init().config;
     const marketAbiXOXNO = await SmartContractAbis.getMarket();
     const xo_abi = getSmartContract(marketAbiXOXNO, config.XO_SC);
 

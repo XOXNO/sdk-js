@@ -8,7 +8,7 @@ import {
   SearchNFTsResponse,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
-import { XOXNOClient } from '../utils/api';
+import XOXNOClient from '../utils/api';
 import { getActivity } from '../utils/getActivity';
 import { isValidCollectionTicker } from '../utils/regex';
 
@@ -18,13 +18,12 @@ import { isValidCollectionTicker } from '../utils/regex';
  * collection attributes, and searching NFTs within a collection.
  *
  * @example
- * const xoxno = new XOXNO({ apiURL: 'https://api.xoxno.com', apiKey: 'your-api-key' });
- * const collectionModule = xoxno.collection;
+ * const collectionModule = new CollectionModule();
  */
-export class CollectionModule {
+export default class CollectionModule {
   private api: XOXNOClient;
   constructor() {
-    this.api = XOXNOClient.getClient();
+    this.api = XOXNOClient.init();
   }
 
   /**

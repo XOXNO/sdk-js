@@ -1,5 +1,5 @@
-import { LaunchpadModule } from '../index';
-import { XOXNOClient } from '../../utils/api';
+import LaunchpadModule from '../index';
+import XOXNOClient from '../../utils/api';
 
 describe('SCInteraction', () => {
   let sc: LaunchpadModule;
@@ -8,6 +8,10 @@ describe('SCInteraction', () => {
     sc = await LaunchpadModule.init(
       'erd1qqqqqqqqqqqqqpgqtwtp5uz97u232zvzd973upqxwe2xnqv2ys5s3c7jx9'
     );
+  });
+
+  beforeEach(async () => {
+    return new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   it('should return all the unique tags of the launchpad SC', async () => {
