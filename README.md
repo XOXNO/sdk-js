@@ -21,7 +21,7 @@ npm i @xoxno/sdk-js
 The SDK follows a scheleton model where the API configuration has to be initiated only once anywhere in your application
 
 ```javascript
-import { XOXNOClient } from '@xoxno/sdk-js';
+import XOXNOClient from '@xoxno/sdk-js';
 XOXNOClient.init();
 // By default calling init() without arguments will set the entire SDK to the mainnet ENV using the public API https://api.xoxno.com
 ```
