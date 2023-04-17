@@ -1,13 +1,17 @@
-import { LaunchpadModule } from '../index';
-import { APIClient } from '../../utils/api';
+import LaunchpadModule from '../index';
+import XOXNOClient from '../../utils/api';
 
 describe('SCInteraction', () => {
   let sc: LaunchpadModule;
   beforeAll(async () => {
-    APIClient.init();
+    XOXNOClient.init();
     sc = await LaunchpadModule.init(
       'erd1qqqqqqqqqqqqqpgqtwtp5uz97u232zvzd973upqxwe2xnqv2ys5s3c7jx9'
     );
+  });
+
+  beforeEach(async () => {
+    return new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   it('should return all the unique tags of the launchpad SC', async () => {
@@ -20,6 +24,6 @@ describe('SCInteraction', () => {
     const tags = await sc.getStages('Elonverse');
     expect(tags).toBeDefined();
     // expect(tags).toContain('Elonverse');
-    console.log(tags);
+    // console.log(tags);
   });
 });

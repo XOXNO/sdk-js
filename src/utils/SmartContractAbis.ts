@@ -47,7 +47,7 @@ export class SmartContractAbis {
   public static async getStaking(): Promise<AbiRegistry> {
     if (!SmartContractAbis.staking) {
       const { data } = await axios(
-        `${'https://media.xoxno.com/'}smartcontractabi/staking-nfts.abi.json`
+        'https://media.xoxno.com/smartcontractabi/staking-nfts.abi.json'
       );
       const abiRegistry = AbiRegistry.create(data);
       SmartContractAbis.staking = abiRegistry;

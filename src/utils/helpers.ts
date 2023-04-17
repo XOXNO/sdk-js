@@ -1,3 +1,5 @@
+import { Address } from '@multiversx/sdk-core/out/address';
+
 export const nonceToHex = (nonce: number): string => {
   let nonceHex = nonce.toString(16);
   if (nonceHex.length % 2 !== 0) {
@@ -11,4 +13,13 @@ export const getIdentifierFromColAndNonce = (
   nonce: number
 ): string => {
   return [collection, nonceToHex(nonce)].join('-');
+};
+
+export const isAddressValid = (address: string | Buffer): boolean => {
+  try {
+    new Address(address);
+    return true && address.includes('erd1');
+  } catch (error) {
+    return false;
+  }
 };

@@ -1,2 +1,17 @@
 docs
 coverage
+.vscode
+.vscode-test
+.github
+
+src/
+
+# Ignore config files
+.eslintrc
+.prettierrc
+.editorconfig
+commitlint.config.js
+.releaserc
+jest.config.js
+tsconfig.json
+webpack.config.js

@@ -3,20 +3,19 @@ import {
   ProxyNetworkProvider,
 } from '@multiversx/sdk-network-providers';
 import { INetworkProvider } from '@multiversx/sdk-network-providers/out/interface';
-import {
-  ResultsParser,
-  SmartContract,
-  Interaction,
-  TypedOutcomeBundle,
-} from '@multiversx/sdk-core';
-import { APIClient } from './api';
+
+import XOXNOClient from './api';
+import { ResultsParser } from '@multiversx/sdk-core/out/smartcontracts/resultsParser';
+import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract';
+import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
+import type { TypedOutcomeBundle } from '@multiversx/sdk-core/out/smartcontracts/interface';
 
 export class ContractQueryRunner {
   private readonly proxy: INetworkProvider;
   private readonly parser: ResultsParser = new ResultsParser();
 
   constructor() {
-    const api = APIClient.getClient().apiUrl;
+    const api = XOXNOClient.init().apiUrl;
     this.proxy = new ProxyNetworkProvider(api, {
       timeout: 10000,
     });

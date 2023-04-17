@@ -1,6 +1,6 @@
 import { NftData } from '../types/nft';
 import { TradingActivityResponse, TradincActivityArgs } from '../types/trading';
-import { APIClient } from '../utils/api';
+import XOXNOClient from '../utils/api';
 import { getActivity } from '../utils/getActivity';
 import { getIdentifierFromColAndNonce } from '../utils/helpers';
 import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex';
@@ -10,14 +10,13 @@ import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex';
  * It includes methods for getting single NFT information, and searching NFTs by collection and nonce.
  *
  * @example
- * const xoxno = new XOXNO({ apiURL: 'https://api.xoxno.com', apiKey: 'your-api-key' });
- * const nftModule = xoxno.nft;
+ * const nftModule = new NFTModule();
  */
 
-export class NFTModule {
-  private api: APIClient;
+export default class NFTModule {
+  private api: XOXNOClient;
   constructor() {
-    this.api = APIClient.getClient();
+    this.api = XOXNOClient.init();
   }
 
   /**
