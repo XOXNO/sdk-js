@@ -10,6 +10,8 @@ export type StakingPool = {
   whitelist_pool: boolean;
   is_active: boolean;
   is_stake_enabled: boolean;
+  daily_reward_in_egld?: number;
+  daily_reward_in_usd?: number;
   expiration_in_days: number;
   profile: string;
   unbound_period: number;
@@ -38,6 +40,7 @@ export enum IssuingType {
 export enum PoolType {
   Duo = 'Duo',
   Single = 'Single',
+  Perk = 'Perk',
 }
 
 export type Reward = {
