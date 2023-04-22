@@ -5,14 +5,35 @@ import { ContractQueryRunner } from '../utils/scCalls';
 import { SmartContractAbis } from '../utils/SmartContractAbis';
 import { getSmartContract } from '../utils/SmartContractService';
 import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract';
-import { BigUIntValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical';
-
+import {
+  BigUIntType,
+  BigUIntValue,
+  U64Type,
+  U64Value,
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical';
+import { Auction, AuctionType, ChangeListing } from '../types/interactions';
+import { TokenTransfer } from '@multiversx/sdk-core/out/tokenTransfer';
+import BigNumber from 'bignumber.js';
+import {
+  Struct,
+  StructType,
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem/struct';
+import {
+  TokenIdentifierType,
+  TokenIdentifierValue,
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem/tokenIdentifier';
+import {
+  Field,
+  FieldDefinition,
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem/fields';
 export default class SCInteraction {
   private xo: SmartContract;
   private call: ContractQueryRunner;
+  private api: XOXNOClient;
   constructor(marketAbiXOXNO: SmartContract) {
     this.xo = marketAbiXOXNO;
     this.call = new ContractQueryRunner();
+    this.api = XOXNOClient.init();
   }
 
   static async create() {
@@ -138,6 +159,41 @@ export default class SCInteraction {
     return body as GlobalOffer;
   };
 
+  /**
+   * Returns the auction struct for the given id.
+   *
+   * @param auctionID The id of the auction for which to return the data.
+   *
+   * @returns {Auction} An object containing the auction data for the given id. If the auction id is invalid, the return value will be null.
+   */
+
+  public getAuctionInfo = async (
+    auctionID: number
+  ): Promise<Auction | null> => {
+    const interaction = this.xo.methods.getFullAuctionData([auctionID]);
+    const result = await this.getResult(interaction);
+    const body = result.firstValue?.valueOf();
+    if (!body) {
+      return null;
+    }
+    body.auctioned_token_nonce = parseInt(body.auctioned_token_nonce.valueOf());
+    body.nr_auctioned_tokens = parseInt(body.nr_auctioned_tokens.valueOf());
+    body.auction_type = body.auction_type.name;
+    body.payment_token_nonce = parseInt(body.payment_token_nonce.valueOf());
+    body.min_bid = body.min_bid.valueOf();
+    body.max_bid = body.max_bid.valueOf();
+    body.start_time = parseInt(body.start_time.valueOf());
+    body.deadline = parseInt(body.deadline.valueOf());
+    body.original_owner = body.original_owner.valueOf().toString();
+    body.current_winner = body.current_winner.valueOf().toString();
+    body.current_bid = body.current_bid.valueOf().toString();
+    body.marketplace_cut_percentage = body.marketplace_cut_percentage.valueOf();
+    body.creator_royalties_percentage =
+      body.creator_royalties_percentage.valueOf();
+
+    return body as Auction;
+  };
+
   /** Gets the number of listings.
    * @returns {number} The number of listings.
    * */
@@ -218,4 +274,285 @@ export default class SCInteraction {
     const ids = result.firstValue?.valueOf().map((id: string) => parseInt(id));
     return ids;
   }
+
+  /**
+   * Withdraw auctions from the smart contract.
+   *
+   * @param auctionIDs The IDs of the auctions to withdraw from
+   * @returns {Interaction} The interaction object of the smart contract
+   */
+
+  public withdrawAuctions(auctionIDs: number[]): Interaction {
+    const interaction = this.xo.methods.withdraw(auctionIDs);
+
+    return interaction
+      .withChainID(this.api.chain)
+      .withGasLimit(
+        Math.min(600_000_000, 15_000_000 + auctionIDs.length * 5_000_000)
+      );
+  }
+
+  /**
+   * Withdraw global offer from the smart contract.
+   *
+   * @param auctionIDs The IDs of the global offer to withdraw
+   * @returns {Interaction} The interaction object of the smart contract
+   */
+
+  public withdrawGlobalOffer(offerID: number): Interaction {
+    const interaction = this.xo.methods.withdrawGlobalOffer([offerID]);
+
+    return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
+  }
+
+  /**
+   * Withdraws a custom offer
+   *
+   * @param offerID The offer ID
+   * @returns {Interaction} The interaction object of the smart contract
+   */
+
+  public withdrawCustomOffer(offerID: number): Interaction {
+    const interaction = this.xo.methods.withdrawOffer([offerID]);
+
+    return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
+  }
+
+  /**
+   * @public
+   * @function endAuction
+   * @param {number} auctionID - The unique identifier of the auction.
+   * @returns {Interaction} The resulting interaction with the specified chainID and gas limit.
+   *
+   * This function allows ending an auction by its auctionID. It takes the following parameter:
+   * - auctionID (number): The unique identifier of the auction.
+   *
+   * The function calls the `endAuction` method on the smart contract with the provided auctionID.
+   * Finally, it returns the resulting interaction with the specified chainID and gas limit.
+   */
+
+  public endAuction(auctionID: number): Interaction {
+    const interaction = this.xo.methods.endAuction([auctionID]);
+
+    return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
+  }
+
+  /**
+   * @public
+   * @async
+   * @function buyAuctionById
+   * @param {Object} options - An object containing the necessary parameters to buy an auction.
+   * @param {number} options.auctionID - The unique identifier of the auction.
+   * @param {string} [options.collection] - The collection the auctioned token belongs to (optional).
+   * @param {number} [options.nonce] - The nonce of the auctioned token (optional).
+   * @param {number} [options.quantity=1] - The quantity of tokens to buy (default is 1).
+   * @param {string} [options.token='EGLD'] - The payment token (default is 'EGLD').
+   * @param {number} [options.paymentAmount] - The payment amount for the auction (optional).
+   * @param {boolean} [options.withCheck=true] - Whether to check the auction information (default is true).
+   * @param {boolean} [options.isBigUintPayment=false] - Whether the payment amount is a big integer (default is false).
+   * @returns {Promise<Interaction>} The resulting interaction with the specified chainID and gas limit.
+   *
+   * This function allows a user to buy an auction by its auctionID. It takes an object with the following properties:
+   * - auctionID (number): The unique identifier of the auction.
+   * - collection (string, optional): The collection the auctioned token belongs to.
+   * - nonce (number, optional): The nonce of the auctioned token.
+   * - quantity (number, optional): The quantity of tokens to buy (default is 1).
+   * - token (string, optional): The payment token (default is 'EGLD').
+   * - paymentAmount (number, optional): The payment amount for the auction.
+   * - withCheck (boolean, optional): Whether to check the auction information (default is true).
+   * - isBigUintPayment (boolean, optional): Whether the payment amount is a big integer (default is false).
+   *
+   * The function first checks if the auction exists and if its type is NFT or SftOnePerPayment. If not, an error is thrown.
+   * Then, it calculates the payment amount and calls the `buy` method on the smart contract with the provided parameters.
+   * Finally, the function returns the resulting interaction with the specified chainID and gas limit.
+   */
+  public async buyAuctionById({
+    auctionID,
+    collection,
+    nonce,
+    paymentAmount,
+    quantity = 1,
+    token = 'EGLD',
+    withCheck = true,
+    isBigUintPayment = false,
+  }: {
+    auctionID: number;
+    collection?: string;
+    nonce?: number;
+    quantity?: number;
+    token?: string;
+    paymentAmount?: number;
+    withCheck?: boolean;
+    isBigUintPayment?: boolean;
+  }): Promise<Interaction> {
+    if (!auctionID) {
+      throw new Error('AuctionID not provided');
+    }
+    let auction: Auction | null = null;
+    if (!paymentAmount || !token || !collection || !nonce || withCheck) {
+      auction = await this.getAuctionInfo(auctionID);
+      if (auction === null) {
+        throw new Error('Auction not found');
+      }
+      if (
+        auction.auction_type === AuctionType.Nft ||
+        auction.auction_type === AuctionType.SftOnePerPayment
+      ) {
+        throw new Error('Auction type is not NFT or SftOnePerPayment');
+      }
+    }
+    const paymentToken = auction?.payment_token_type ?? token;
+    const bigNumber = auction ? true : isBigUintPayment;
+    let amount = auction?.min_bid ?? paymentAmount;
+    if (!amount) {
+      throw new Error('Payment amount not provided');
+    }
+
+    const interaction = this.xo.methods.buy([
+      auctionID,
+      auction?.auctioned_token_type ?? collection,
+      auction?.auctioned_token_nonce ?? nonce,
+      quantity ?? 1,
+    ]);
+
+    if (token === 'EGLD') {
+      interaction.withValue(
+        bigNumber
+          ? TokenTransfer.egldFromBigInteger(
+              new BigNumber(amount).multipliedBy(quantity)
+            )
+          : TokenTransfer.egldFromAmount(
+              new BigNumber(amount).multipliedBy(quantity)
+            )
+      );
+    } else {
+      if (!bigNumber) {
+        auction = await this.getAuctionInfo(auctionID);
+        if (auction === null) {
+          throw new Error('Auction not found');
+        }
+        amount = auction.min_bid;
+      }
+      interaction.withSingleESDTTransfer(
+        TokenTransfer.fungibleFromBigInteger(paymentToken, amount)
+      );
+    }
+
+    return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
+  }
+
+  /**
+   * @docutype
+   * @public
+   * @async
+   * @function changeListing
+   * @param {ChangeListing[]} listings - An array of objects containing the information needed to change a listing.
+   * @returns {Interaction} The resulting interaction with the specified chainID and gas limit.
+   *
+   * This function takes an array of `ChangeListing` objects and constructs `Struct` instances using the provided
+   * information. Each `ChangeListing` object should have the following properties:
+   * - paymentToken (string): The identifier of the payment token type.
+   * - price (BigInt): The new price for the listing.
+   * - auctionID (number): The unique identifier of the auction.
+   * - deadline (number): The deadline (in Unix time) for the listing.
+   *
+   * The function then calls the `changeListing` method on the smart contract and returns the resulting interaction
+   * with the specified chainID and gas limit.
+   */
+  public async changeListing(listings: ChangeListing[]) {
+    const fooType = new StructType('BulkUpdateListing', [
+      new FieldDefinition('payment_token_type', '', new TokenIdentifierType()),
+      new FieldDefinition('new_price', '', new BigUIntType()),
+      new FieldDefinition('auction_id', '', new U64Type()),
+      new FieldDefinition('deadline', '', new U64Type()),
+    ]);
+    const structs: Struct[] = [];
+    listings.forEach(({ paymentToken, price, auctionID, deadline }) => {
+      structs.push(
+        new Struct(fooType, [
+          new Field(
+            new TokenIdentifierValue(paymentToken),
+            'payment_token_type'
+          ),
+          new Field(new BigUIntValue(price), 'new_price'),
+          new Field(new U64Value(auctionID), 'auction_id'),
+          new Field(new U64Value(deadline), 'deadline'),
+        ])
+      );
+    });
+    const interaction = this.xo.methods.changeListing(structs);
+    return interaction
+      .withChainID(this.api.chain)
+      .withGasLimit(
+        Math.min(600_000_000, 8_000_000 + listings.length * 2_000_000)
+      );
+  }
+
+  // public async listNFTs(listings: NewListingArgs[]) {
+  //   const fooType = new StructType('BulkListing', [
+  //     new FieldDefinition('min_bid', '', new BigUIntType()),
+  //     new FieldDefinition('max_bid', '', new BigUIntType()),
+  //     new FieldDefinition('deadline', '', new U64Type()),
+  //     new FieldDefinition(
+  //       'accepted_payment_token',
+  //       '',
+  //       new TokenIdentifierType()
+  //     ),
+  //     new FieldDefinition('bid', '', new BooleanType()),
+  //     new FieldDefinition('opt_sft_max_one_per_payment', '', new BooleanType()),
+  //     new FieldDefinition('opt_start_time', '', new U64Type()),
+  //     new FieldDefinition('collection', '', new TokenIdentifierType()),
+  //     new FieldDefinition('nonce', '', new U64Type()),
+  //     new FieldDefinition('nft_amount', '', new BigUIntType()),
+  //   ]);
+  //   const structs: Struct[] = [];
+  //   listings.forEach((listing: NewListingArgs) => {
+  //     structs.push(
+  //       new Struct(fooType, [
+  //         new Field(new BigUIntValue(minBID), 'min_bid'),
+  //         new Field(new BigUIntValue(maxBID), 'max_bid'),
+  //         new Field(
+  //           new U64Value(
+  //             new BigNumber(
+  //               Boolean(listing.deadline)
+  //                 ? getTimestampFromDate(listing.deadline)
+  //                 : 0
+  //             )
+  //           ),
+  //           'deadline'
+  //         ),
+  //         new Field(
+  //           new TokenIdentifierValue(listing.paymentToken || 'EGLD'),
+  //           'accepted_payment_token'
+  //         ),
+  //         new Field(new BooleanValue(isBid), 'bid'),
+  //         new Field(
+  //           new BooleanValue(!isSftPack),
+  //           'opt_sft_max_one_per_payment'
+  //         ),
+  //         new Field(
+  //           new U64Value(
+  //             new BigNumber(listing.startTime != '' ? listing.startTime : 0)
+  //           ),
+  //           'opt_start_time'
+  //         ),
+  //         new Field(
+  //           new TokenIdentifierValue(listing.nft.collection),
+  //           'collection'
+  //         ),
+  //         new Field(new U64Value(listing.nft.nonce), 'nonce'),
+  //         new Field(
+  //           new BigUIntValue(new BigNumber(listing.quantity)),
+  //           'nft_amount'
+  //         ),
+  //       ])
+  //     );
+  //   });
+  //   const interaction = this.xo.methods.listings(structs);
+  //   return interaction
+  //     .withChainID(this.api.chain)
+  //     .withGasLimit(
+  //       Math.min(600_000_000, 8_000_000 + listings.length * 2_000_000)
+  //     );
+  // }
 }

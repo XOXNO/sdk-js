@@ -93,4 +93,25 @@ describe('SCInteraction', () => {
     expect(isListed).toBeDefined();
     expect(isListed).toEqual(true);
   });
+
+  it('should create the transaction to withdraw auctions', async () => {
+    const interaction = await sc.withdrawAuctions([1]);
+    expect(interaction).toBeDefined();
+    expect(interaction.buildTransaction().toSendable()).toEqual({
+      nonce: 0,
+      value: '0',
+      receiver:
+        'erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8',
+      sender: '',
+      gasPrice: 1000000000,
+      gasLimit: 20000000,
+      data: 'd2l0aGRyYXdAMDE=',
+      chainID: '1',
+      version: 1,
+      options: undefined,
+      guardian: undefined,
+      signature: undefined,
+      guardianSignature: undefined,
+    });
+  });
 });

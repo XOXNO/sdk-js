@@ -1,5 +1,5 @@
 export * from './types';
-export { default as Collection } from './collection';
+export * from './collection';
 export * from './launchpad';
 export * from './interactions';
 export * from './nft';

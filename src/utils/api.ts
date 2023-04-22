@@ -13,6 +13,7 @@ import {
   XOXNO_SC,
   XOXNO_SC_DEV,
 } from './const';
+import { IChainID } from '@multiversx/sdk-core/out/interface';
 export enum Chain {
   MAINNET = '1',
   DEVNET = 'D',
@@ -21,7 +22,7 @@ export default class XOXNOClient {
   private static instance: XOXNOClient;
   public apiUrl: string;
   private apiKey: string;
-  public chain: Chain;
+  public chain: IChainID;
   public config: {
     XO_SC: string;
     FM_SC: string;
