@@ -101,5 +101,6 @@ export interface NftData {
   isStaked?: boolean; // Only for Staked NFTs
   currentEpoch?: number; // Only for Staked NFTs
   hasUboundPeriod?: boolean; // Only for Staked NFTs
+  unboundEpoch?: number; // Only for Staked NFTs
   balance?: number; // Only for non listed NFTs
 }
