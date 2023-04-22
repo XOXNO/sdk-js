@@ -91,7 +91,7 @@ export interface NftData {
   saleInfoNft: SaleInfoNft;
   offersInfo: OffersInfo[];
   gameData: GameData[]; // Only for Cantina Rolaye
-  owner?: string;
+  owner?: string; // Only for inventory and single NFT
   ownerCount?: number; // Only for SFTs with over 1 owner
   ownerUsername?: string;
   isVerified: boolean;
