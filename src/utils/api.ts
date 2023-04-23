@@ -1,4 +1,3 @@
-import axios from 'axios';
 import {
   API_URL,
   DR_SC,
@@ -92,7 +91,9 @@ export default class XOXNOClient {
       ...((options.headers as object) ?? {}),
     };
     try {
-      const { data } = await axios(
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), timeout);
+      const res = await fetch(
         `${this.apiUrl}${path}${
           options.params
             ? '?' +
@@ -106,16 +107,15 @@ export default class XOXNOClient {
             : ''
         }`,
         {
-          timeout,
           ...options,
+          signal: controller.signal,
           ...(Object.keys(headers).length ? { headers } : {}),
           method: (options.method as any) ?? 'GET',
         }
       );
 
-      const result = data;
-
-      return result as T;
+      if (!res.ok) throw new Error(res.statusText);
+      return res.json() as T;
     } catch (error) {
       throw new Error(
         'Something went wrong inside fetchWithTimeout' +

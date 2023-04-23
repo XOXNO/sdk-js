@@ -63,4 +63,34 @@ export default class StakingModule {
     });
     return response;
   };
+
+  /**
+   * Returns the a list of NFTs which can be used for the specified pool id
+   * @param poolId - The pool id
+   * @param address - The user's address
+   * @param tickers - The collection tickers
+   * @returns {Nfts} - A list of token ids and the price
+   * @example
+   * const nfts = await new StakingModule().getPerkNFTsByWallet(1, 'erd111', ['EGIRL-absd123']);
+   * @throws an error if the pool id is not a number
+   * @throws an error if the address is not valid
+   * @throws an error if the tickers are not valid
+   **/
+  public getPerkNFTsByWallet = async (
+    poolId: number,
+    address: string,
+    tickers: string[]
+  ): Promise<Nfts> => {
+    if (typeof poolId !== 'number') throw new Error('Invalid pool id');
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+    const response = await this.api.fetchWithTimeout<Nfts>('/getNftsForPerk', {
+      method: 'POST',
+      body: JSON.stringify({
+        poolId,
+        address,
+        tickers,
+      }),
+    });
+    return response;
+  };
 }
