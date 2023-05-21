@@ -1,4 +1,5 @@
 import { NftData } from './nft';
+import { IUserProfile } from './user';
 
 export interface ISocials {
   twitter: string;
@@ -34,25 +35,9 @@ export interface ICollectionProfile {
   profile: string;
   banner: string;
   statistics: {
-    tradeData: {
-      dayEgldVolume: number;
-      weekEgldVolume: number;
-      totalEgldVolume: number;
-      averageEgldPrice: number;
-      athEgldPrice: number;
-      athTxHash: string;
-      totalTrades: number;
-    };
-    mintData: {
-      totalMintEgldVolume: number;
-      weekMintEgldVolume: number;
-      dayMintEgldVolume: number;
-    };
-    other: {
-      nftCount: number;
-      followCount: number;
-      holdersCount?: number;
-    };
+    tradeData: TradeData;
+    mintData: MintStatistics;
+    other: OtherStatistics;
   };
   owner: string;
   creator: string;
@@ -101,6 +86,7 @@ export interface TraitValues {
 export interface ICollectionAttributes {
   [traitType: string]: TraitValues;
 }
+
 export enum Marketplace {
   XO = 'XO',
   FM = 'FM',
@@ -153,6 +139,14 @@ export enum SearchOrderBy {
   NonceLowToHigh = 'nonce asc',
   RecentListed = 'saleInfoNft/timestamp desc',
   OldestListed = 'saleInfoNft/timestamp asc',
+}
+
+export enum SuggestOrderBy {
+  TotalVolumeHighToLow = 'statistics/tradeData/totalEgldVolume desc',
+  FollowersHighToLow = 'statistics/other/followCount desc',
+  IsVerifiedTrueToFalse = 'isVerified desc',
+  HasImageTrueToFalse = 'profile desc',
+  HasBannerTrueToFalse = 'banner desc',
 }
 
 export enum CollectionsOrderBy {
@@ -216,16 +210,23 @@ export interface Filter {
 export interface SearchNFTs {
   filters: Filter;
   name?: string;
+  collections?: string[];
+  curated?: boolean;
+  search?: string[];
   orderBy?: SearchOrderBy[];
-  collection: string;
+  collection?: string;
   top: number;
   skip: number;
   select?: FieldsToSelect[];
 }
 
-export interface SearchNFTsArgs {
+export interface GetCollectionNFTsArgs {
   /**  The collection to search in */
-  collection: string;
+  collection?: string;
+  /** If set, will return only NFTs from the specified collections */
+  collections?: string[];
+  /** If set, will return only NFTs from verified collections */
+  onlyVerified?: boolean;
   /** If true, will return only NFTs that are on sale */
   onlyOnSale?: boolean;
   /** If true, will return only NFTs that are on auction */
@@ -247,6 +248,8 @@ export interface SearchNFTsArgs {
     min: number;
     max: number;
   };
+  /** If set, will apply the extra manual filters on top of the main payload */
+  extraSearch?: string[];
   /** If set, will return only NFTs with a name that contains the specified string */
   searchName?: string;
   /** The number of results to return */
@@ -263,6 +266,17 @@ export interface SearchNFTsArgs {
   attributes?: MetadataAttribute[];
 }
 
+export interface SuggestNFTsArgs {
+  /** If set, will return only collections or users with a name that contains the specified string */
+  name: string;
+  /** The number of results to return */
+  top?: number;
+  /** The order by to use */
+  skip?: number;
+  /** The order of the results based on a field */
+  orderBy?: SuggestOrderBy[];
+}
+
 export interface SearchNFTsResponse {
   /** The total count of the results for the specific query */
   count: number;
@@ -273,7 +287,7 @@ export interface SearchNFTsResponse {
   /** If the results are empty */
   empty: boolean;
   /** The payload to use to get the next page */
-  getNextPagePayload: SearchNFTsArgs;
+  getNextPagePayload: GetCollectionNFTsArgs;
   /** If there are more results to fetch */
   hasMoreResults: boolean;
 }
@@ -329,4 +343,117 @@ export interface CollectionsNFTsResponse {
   getNextPagePayload: GetCollectionsArgs;
   /** If there are more results to fetch */
   hasMoreResults: boolean;
+}
+
+export interface SuggestResults {
+  count: number;
+  results: ResultsBody;
+}
+
+export interface ResultsBody {
+  collections: ICollectionProfile[];
+  users: IUserProfile[];
+  nft: NftData[];
+}
+
+export interface OtherStatistics {
+  nftCount: number;
+  followCount: number;
+  holdersCount?: number;
+}
+
+export interface TradeData {
+  dayEgldVolume: number;
+  weekEgldVolume: number;
+  totalEgldVolume: number;
+  averageEgldPrice: number;
+  athEgldPrice: number;
+  athTxHash: string;
+  totalTrades: number;
+}
+
+export interface MintStatistics {
+  totalMintEgldVolume: number;
+  weekMintEgldVolume: number;
+  dayMintEgldVolume: number;
+}
+
+export interface CollectionVolume {
+  Day: string;
+  FM_Trades: number;
+  FM_Volume: number;
+  KG_Trades: number;
+  KG_Volume: number;
+  Total_Trades: number;
+  Total_Volume: number;
+  XO_Trades: number;
+  XO_Volume: number;
+}
+
+export interface FloorPriceHistory {
+  Day: string;
+  FloorPrice: number;
+  AveragePrice: number;
+}
+
+export interface CollectionHoldersInfo {
+  totalSupply: number;
+  onMarketInfo: OnMarketInfo;
+  stakingInfo: StakingInfo;
+  otherHolders: OtherHolders;
+  hodlersInfo: HodlersInfo;
+}
+
+export interface HodlersInfo {
+  hodlCount: number;
+  hodlWeight: number;
+  uniqueHodlWeight: number;
+  uniqueHodlers: number;
+  avgPerHodler: number;
+  hodlersSummary: HodlersSummary;
+  hodlers: OtherSc[];
+}
+
+export interface OtherSc {
+  address: string;
+  count: number;
+  weight: number;
+}
+
+export interface HodlersSummary {
+  one: number;
+  twoToFive: number;
+  six20ToFour: number;
+  twenty5ToFifthy: number;
+  fifthy1ToHoundred: number;
+  overHoundred: number;
+}
+
+export interface OnMarketInfo {
+  tradingCount: number;
+  tradingWeight: number;
+  holders: OnMarketInfoHolders;
+}
+
+export interface OnMarketInfoHolders {
+  listedOnXO: OtherSc;
+  listedOnFM: OtherSc;
+  listedOnKG: OtherSc;
+  listedOnIG: OtherSc;
+  listedOnET: OtherSc;
+  lotteryFM: OtherSc;
+}
+
+export interface OtherHolders {
+  otherSC: OtherSc;
+}
+
+export interface StakingInfo {
+  stakingCount: number;
+  stakingWeight: number;
+  holders: StakingInfoHolders;
+}
+
+export interface StakingInfoHolders {
+  stakingOnXO: OtherSc;
 }

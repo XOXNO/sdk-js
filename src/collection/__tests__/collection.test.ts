@@ -1,6 +1,6 @@
 import CollectionModule from './../index';
 import XOXNOClient from '../../utils/api';
-import { FieldsToSelect } from '../../types';
+import { FieldsToSelect, SearchNFTsResponse } from '../../types';
 
 describe('CollectionModule', () => {
   let collectionModule: CollectionModule;
@@ -73,7 +73,7 @@ describe('CollectionModule', () => {
   });
 
   it('should get fetch and filter NFTs from a collection', async () => {
-    const nfts = await collectionModule.searchNFTs({
+    const nfts: SearchNFTsResponse = await collectionModule.getCollectionNFTs({
       collection: inputCollection,
       onlyOnSale: true,
       top: 1,
@@ -96,7 +96,7 @@ describe('CollectionModule', () => {
       },
     });
 
-    const nftsSecondPage = await collectionModule.searchNFTs(
+    const nftsSecondPage = await collectionModule.getCollectionNFTs(
       nfts.getNextPagePayload
     );
     expect(nftsSecondPage).toMatchObject({

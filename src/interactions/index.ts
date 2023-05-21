@@ -11,7 +11,17 @@ import {
   U64Type,
   U64Value,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical';
-import { Auction, AuctionType, ChangeListing } from '../types/interactions';
+import {
+  AcceptGlobalOffer,
+  Auction,
+  AuctionType,
+  ChangeListing,
+  NFTBody,
+  NewListingArgs,
+  Payment,
+  SendCustomOffer,
+  SendGlobalOffer,
+} from '../types/interactions';
 import { TokenTransfer } from '@multiversx/sdk-core/out/tokenTransfer';
 import BigNumber from 'bignumber.js';
 import {
@@ -26,17 +36,21 @@ import {
   Field,
   FieldDefinition,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem/fields';
+import {
+  BooleanType,
+  BooleanValue,
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem/boolean';
 export default class SCInteraction {
   private xo: SmartContract;
   private call: ContractQueryRunner;
   private api: XOXNOClient;
-  constructor(marketAbiXOXNO: SmartContract) {
+  private constructor(marketAbiXOXNO: SmartContract) {
     this.xo = marketAbiXOXNO;
     this.call = new ContractQueryRunner();
     this.api = XOXNOClient.init();
   }
 
-  static async create() {
+  static async init() {
     const config = XOXNOClient.init().config;
     const marketAbiXOXNO = await SmartContractAbis.getMarket();
     const xo_abi = getSmartContract(marketAbiXOXNO, config.XO_SC);
@@ -306,6 +320,103 @@ export default class SCInteraction {
   }
 
   /**
+   * Accept a global offer
+   *
+   * @param offerID The offer ID
+   * @returns {Interaction} The interaction object of the smart contract
+   */
+
+  public acceptGlobalOffer({
+    signature,
+    offer_id,
+    auction_id_opt,
+    nft,
+  }: AcceptGlobalOffer): Interaction {
+    const interaction = signature
+      ? this.xo.methods.acceptGlobalOffer([offer_id, auction_id_opt, signature])
+      : this.xo.methods.acceptGlobalOffer([offer_id, auction_id_opt]);
+    if (nft) {
+      interaction.withSingleESDTNFTTransfer(
+        TokenTransfer.semiFungible(nft.collection, nft.nonce, nft.amount ?? 1)
+      );
+    }
+    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
+  }
+
+  /**
+   * Send a global offer
+   * @param payment_token The token used for payment
+   * @param payment_nonce The nonce of the payment token
+   * @param price The price of the offer
+   * @param collection The collection of the NFT
+   * @param attributes The attributes of the NFT
+   * @param depositAmount The deposit amount
+   * @returns {Interaction} The interaction object of the smart contract
+   * */
+  public sendGlobalOffer({
+    payment_token,
+    payment_nonce,
+    price,
+    collection,
+    attributes,
+    depositAmount,
+  }: SendGlobalOffer): Interaction {
+    const interaction = attributes
+      ? this.xo.methods.sendGlobalOffer([
+          payment_token,
+          payment_nonce,
+          TokenTransfer.egldFromAmount(price).toString(),
+          collection,
+          attributes,
+        ])
+      : this.xo.methods.sendGlobalOffer([
+          payment_token,
+          payment_nonce,
+          TokenTransfer.egldFromAmount(price).toString(),
+          collection,
+        ]);
+
+    if (depositAmount) {
+      interaction.withValue(TokenTransfer.egldFromAmount(depositAmount));
+    }
+    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
+  }
+
+  /**
+   * Send a custom offer
+   * @param payment_token The token used for payment
+   * @param payment_nonce The nonce of the payment token
+   * @param price The price of the offer
+   * @param deadline The deadline of the offer
+   * @param nft The NFT to be sold
+   * @param depositAmount The deposit amount
+   * @returns {Interaction} The interaction object of the smart contract
+   * */
+  public sendCustomOffer({
+    payment_token,
+    payment_nonce,
+    price,
+    deadline,
+    nft,
+    depositAmount,
+  }: SendCustomOffer): Interaction {
+    const interaction = this.xo.methods.sendOffer([
+      payment_token,
+      payment_nonce,
+      TokenTransfer.egldFromAmount(price).toString(),
+      nft.collection,
+      nft.nonce,
+      nft.amount ?? 1,
+      deadline,
+    ]);
+
+    if (depositAmount) {
+      interaction.withValue(TokenTransfer.egldFromAmount(depositAmount));
+    }
+    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
+  }
+
+  /**
    * Withdraws a custom offer
    *
    * @param offerID The offer ID
@@ -316,6 +427,40 @@ export default class SCInteraction {
     const interaction = this.xo.methods.withdrawOffer([offerID]);
 
     return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
+  }
+
+  /**
+   * Decline a custom offer
+   *
+   * @param offerID The offer ID
+   * @returns {Interaction} The interaction object of the smart contract
+   */
+
+  public declineCustomOffer(offerID: number, nft?: NFTBody): Interaction {
+    const interaction = this.xo.methods.declineOffer([offerID]);
+    if (nft) {
+      interaction.withSingleESDTNFTTransfer(
+        TokenTransfer.semiFungible(nft.collection, nft.nonce, nft.amount ?? 1)
+      );
+    }
+    return interaction.withChainID(this.api.chain).withGasLimit(20_000_000);
+  }
+
+  /**
+   * Accept a custom offer
+   *
+   * @param offerID The offer ID
+   * @returns {Interaction} The interaction object of the smart contract
+   */
+
+  public acceptCustomOffer(offerID: number, nft?: NFTBody): Interaction {
+    const interaction = this.xo.methods.acceptOffer([offerID]);
+    if (nft) {
+      interaction.withSingleESDTNFTTransfer(
+        TokenTransfer.semiFungible(nft.collection, nft.nonce, nft.amount ?? 1)
+      );
+    }
+    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
   }
 
   /**
@@ -335,6 +480,71 @@ export default class SCInteraction {
     const interaction = this.xo.methods.endAuction([auctionID]);
 
     return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
+  }
+
+  /**
+   * Bid on an auction
+   *
+   * @param auctionID The auction ID
+   * @param collection The NFT Collection
+   * @param nonce The NFT nonce
+   * @param payment The payment object
+   * @returns {Interaction} The interaction object of the smart contract
+   */
+
+  public bidOnAuctionId(
+    auctionID: number,
+    collection: string,
+    nonce: number,
+    payment: Payment
+  ): Interaction {
+    const interaction = this.xo.methods.bid([auctionID, collection, nonce]);
+    if (!payment.amount) {
+      throw new Error('Payment amount is required');
+    }
+    if (payment.collection == 'EGLD' && payment.amount) {
+      interaction.withValue(TokenTransfer.egldFromAmount(payment.amount));
+    } else {
+      interaction.withSingleESDTTransfer(
+        TokenTransfer.fungibleFromAmount(
+          payment.collection,
+          payment.amount,
+          payment.decimals ?? 18
+        )
+      );
+    }
+    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
+  }
+
+  /**
+   * Bulk buy  auctions
+   *
+   * @param auctionIDs The auction IDs
+   * @param payment The payment object
+   * @returns {Interaction} The interaction object of the smart contract
+   */
+
+  public bulkBuy(auctionIDs: number[], payment: Payment): Interaction {
+    const interaction = this.xo.methods.bid(auctionIDs);
+    if (!payment.amount) {
+      throw new Error('Payment amount is required');
+    }
+    if (payment.collection == 'EGLD' && payment.amount) {
+      interaction.withValue(TokenTransfer.egldFromAmount(payment.amount));
+    } else {
+      interaction.withSingleESDTTransfer(
+        TokenTransfer.fungibleFromAmount(
+          payment.collection,
+          payment.amount,
+          payment.decimals ?? 18
+        )
+      );
+    }
+    return interaction
+      .withChainID(this.api.chain)
+      .withGasLimit(
+        Math.min(600_000_000, 20_000_000 + auctionIDs.length * 5_000_000)
+      );
   }
 
   /**
@@ -488,71 +698,77 @@ export default class SCInteraction {
       );
   }
 
-  // public async listNFTs(listings: NewListingArgs[]) {
-  //   const fooType = new StructType('BulkListing', [
-  //     new FieldDefinition('min_bid', '', new BigUIntType()),
-  //     new FieldDefinition('max_bid', '', new BigUIntType()),
-  //     new FieldDefinition('deadline', '', new U64Type()),
-  //     new FieldDefinition(
-  //       'accepted_payment_token',
-  //       '',
-  //       new TokenIdentifierType()
-  //     ),
-  //     new FieldDefinition('bid', '', new BooleanType()),
-  //     new FieldDefinition('opt_sft_max_one_per_payment', '', new BooleanType()),
-  //     new FieldDefinition('opt_start_time', '', new U64Type()),
-  //     new FieldDefinition('collection', '', new TokenIdentifierType()),
-  //     new FieldDefinition('nonce', '', new U64Type()),
-  //     new FieldDefinition('nft_amount', '', new BigUIntType()),
-  //   ]);
-  //   const structs: Struct[] = [];
-  //   listings.forEach((listing: NewListingArgs) => {
-  //     structs.push(
-  //       new Struct(fooType, [
-  //         new Field(new BigUIntValue(minBID), 'min_bid'),
-  //         new Field(new BigUIntValue(maxBID), 'max_bid'),
-  //         new Field(
-  //           new U64Value(
-  //             new BigNumber(
-  //               Boolean(listing.deadline)
-  //                 ? getTimestampFromDate(listing.deadline)
-  //                 : 0
-  //             )
-  //           ),
-  //           'deadline'
-  //         ),
-  //         new Field(
-  //           new TokenIdentifierValue(listing.paymentToken || 'EGLD'),
-  //           'accepted_payment_token'
-  //         ),
-  //         new Field(new BooleanValue(isBid), 'bid'),
-  //         new Field(
-  //           new BooleanValue(!isSftPack),
-  //           'opt_sft_max_one_per_payment'
-  //         ),
-  //         new Field(
-  //           new U64Value(
-  //             new BigNumber(listing.startTime != '' ? listing.startTime : 0)
-  //           ),
-  //           'opt_start_time'
-  //         ),
-  //         new Field(
-  //           new TokenIdentifierValue(listing.nft.collection),
-  //           'collection'
-  //         ),
-  //         new Field(new U64Value(listing.nft.nonce), 'nonce'),
-  //         new Field(
-  //           new BigUIntValue(new BigNumber(listing.quantity)),
-  //           'nft_amount'
-  //         ),
-  //       ])
-  //     );
-  //   });
-  //   const interaction = this.xo.methods.listings(structs);
-  //   return interaction
-  //     .withChainID(this.api.chain)
-  //     .withGasLimit(
-  //       Math.min(600_000_000, 8_000_000 + listings.length * 2_000_000)
-  //     );
-  // }
+  public async listNFTs(listings: NewListingArgs[]) {
+    const fooType = new StructType('BulkListing', [
+      new FieldDefinition('min_bid', '', new BigUIntType()),
+      new FieldDefinition('max_bid', '', new BigUIntType()),
+      new FieldDefinition('deadline', '', new U64Type()),
+      new FieldDefinition(
+        'accepted_payment_token',
+        '',
+        new TokenIdentifierType()
+      ),
+      new FieldDefinition('bid', '', new BooleanType()),
+      new FieldDefinition('opt_sft_max_one_per_payment', '', new BooleanType()),
+      new FieldDefinition('opt_start_time', '', new U64Type()),
+      new FieldDefinition('collection', '', new TokenIdentifierType()),
+      new FieldDefinition('nonce', '', new U64Type()),
+      new FieldDefinition('nft_amount', '', new BigUIntType()),
+    ]);
+    const structs: Struct[] = [];
+    const tokens: any = [];
+    listings.forEach((listing: NewListingArgs) => {
+      const decimals = listing.accepted_payment_token_decimals ?? 18;
+      const minBID = new BigNumber(listing.min_bid).shiftedBy(decimals);
+      const maxBID = new BigNumber(listing.max_bid ?? 0).shiftedBy(decimals);
+
+      tokens.push(
+        TokenTransfer.semiFungible(
+          listing.collection,
+          listing.nonce,
+          listing.nft_amount
+        )
+      );
+
+      structs.push(
+        new Struct(fooType, [
+          new Field(new BigUIntValue(minBID), 'min_bid'),
+          new Field(new BigUIntValue(maxBID), 'max_bid'),
+          new Field(
+            new U64Value(new BigNumber(listing.deadline ?? 0)),
+            'deadline'
+          ),
+          new Field(
+            new TokenIdentifierValue(listing.accepted_payment_token ?? 'EGLD'),
+            'accepted_payment_token'
+          ),
+          new Field(new BooleanValue(listing.bid ?? false), 'bid'),
+          new Field(
+            new BooleanValue(listing.isSFTPack ?? false),
+            'opt_sft_max_one_per_payment'
+          ),
+          new Field(
+            new U64Value(
+              new BigNumber(listing.opt_start_time ? listing.opt_start_time : 0)
+            ),
+            'opt_start_time'
+          ),
+          new Field(new TokenIdentifierValue(listing.collection), 'collection'),
+          new Field(new U64Value(listing.nonce), 'nonce'),
+          new Field(
+            new BigUIntValue(new BigNumber(listing.nft_amount)),
+            'nft_amount'
+          ),
+        ])
+      );
+    });
+
+    const interaction = this.xo.methods.listings(structs);
+    interaction.withMultiESDTNFTTransfer(tokens);
+    return interaction
+      .withChainID(this.api.chain)
+      .withGasLimit(
+        Math.min(600_000_000, 8_000_000 + listings.length * 2_000_000)
+      );
+  }
 }

@@ -38,6 +38,40 @@ export interface Auction {
   marketplace_cut_percentage: string;
   creator_royalties_percentage: string;
 }
+export interface NFTBody {
+  collection: string;
+  nonce: number;
+  amount?: number;
+}
+
+export interface Payment extends NFTBody {
+  decimals?: number;
+}
+
+export interface SendGlobalOffer {
+  payment_token: string;
+  payment_nonce: number;
+  price: number;
+  collection: string;
+  attributes?: string;
+  depositAmount?: number;
+}
+
+export interface SendCustomOffer {
+  payment_token: string;
+  payment_nonce: number;
+  price: number;
+  nft: NFTBody;
+  deadline: number;
+  depositAmount?: number;
+}
+
+export interface AcceptGlobalOffer {
+  nft?: NFTBody; // Should be provided if the offer is for an NFT not listed on the marketplace
+  offer_id: number;
+  auction_id_opt?: number; //  Only when the NFT you want to sell is listed, if signature is required, it will be 0 in case the NFT is not listed
+  signature?: string; // Only when the offer has required attribute
+}
 
 export interface ChangeListing {
   paymentToken: string;
@@ -51,8 +85,10 @@ export interface NewListingArgs {
   max_bid?: string;
   deadline?: number;
   accepted_payment_token: string;
+  accepted_payment_token_decimals?: number;
   bid: boolean;
   opt_sft_max_one_per_payment?: boolean;
+  isSFTPack?: boolean;
   opt_start_time?: number;
   collection: string;
   nonce: number;

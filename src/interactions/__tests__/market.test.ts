@@ -5,7 +5,7 @@ describe('SCInteraction', () => {
   let sc: SCInteraction;
   beforeAll(async () => {
     XOXNOClient.init();
-    sc = await SCInteraction.create();
+    sc = await SCInteraction.init();
   });
 
   beforeEach(async () => {

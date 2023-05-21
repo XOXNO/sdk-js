@@ -20,9 +20,18 @@ export default class NFTModule {
   }
 
   /**
-   * Get the NFT data for the specified identifier.
-   * @param identifier The NFT identifier. Must be a valid NFT identifier.
-   * @returns {Promise<NftData>} The NFT data.
+   * @public
+   * @async
+   * @function getNFTByIdentifier
+   * @param {string} identifier - The identifier of the NFT to fetch data for.
+   * @returns {Promise<NftData>} A promise that resolves to the fetched NFT data.
+   *
+   * This function fetches data for a given NFT by its identifier. It takes the following parameter:
+   * - identifier (string): The identifier of the NFT to fetch data for.
+   *
+   * The function first validates the input identifier and checks if it is a valid NFT identifier.
+   * If it is valid, the function fetches the NFT data using the API.
+   * Finally, it returns a promise that resolves to the fetched NFT data.
    */
   public getNFTByIdentifier = async (identifier: string): Promise<NftData> => {
     if (!isValidNftIdentifier(identifier)) {
