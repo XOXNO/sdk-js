@@ -95,14 +95,17 @@ describe('SCInteraction', () => {
   });
 
   it('should create the transaction to withdraw auctions', async () => {
-    const interaction = await sc.withdrawAuctions([1]);
+    const interaction = await sc.withdrawAuctions([1], {
+      address: 'erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8',
+      nonce: 1,
+    });
     expect(interaction).toBeDefined();
     expect(interaction.buildTransaction().toSendable()).toEqual({
-      nonce: 0,
+      nonce: 1,
       value: '0',
       receiver:
         'erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8',
-      sender: '',
+      sender: 'erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8',
       gasPrice: 1000000000,
       gasLimit: 20000000,
       data: 'd2l0aGRyYXdAMDE=',
