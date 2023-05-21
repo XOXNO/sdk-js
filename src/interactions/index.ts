@@ -21,6 +21,7 @@ import {
   Payment,
   SendCustomOffer,
   SendGlobalOffer,
+  WithSenderAndNonce,
 } from '../types/interactions';
 import { TokenTransfer } from '@multiversx/sdk-core/out/tokenTransfer';
 import BigNumber from 'bignumber.js';
@@ -40,6 +41,7 @@ import {
   BooleanType,
   BooleanValue,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem/boolean';
+import { Address } from '@multiversx/sdk-core/out';
 export default class SCInteraction {
   private xo: SmartContract;
   private call: ContractQueryRunner;
@@ -296,11 +298,18 @@ export default class SCInteraction {
    * @returns {Interaction} The interaction object of the smart contract
    */
 
-  public withdrawAuctions(auctionIDs: number[]): Interaction {
+  public withdrawAuctions(
+    auctionIDs: number[],
+    senderNonce: WithSenderAndNonce
+  ): Interaction {
     const interaction = this.xo.methods.withdraw(auctionIDs);
 
+    if (senderNonce.nonce) {
+      interaction.withNonce(senderNonce.nonce);
+    }
     return interaction
       .withChainID(this.api.chain)
+      .withSender(new Address(senderNonce.address))
       .withGasLimit(
         Math.min(600_000_000, 15_000_000 + auctionIDs.length * 5_000_000)
       );
@@ -313,10 +322,19 @@ export default class SCInteraction {
    * @returns {Interaction} The interaction object of the smart contract
    */
 
-  public withdrawGlobalOffer(offerID: number): Interaction {
+  public withdrawGlobalOffer(
+    offerID: number,
+    senderNonce: WithSenderAndNonce
+  ): Interaction {
     const interaction = this.xo.methods.withdrawGlobalOffer([offerID]);
 
-    return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
+    if (senderNonce.nonce) {
+      interaction.withNonce(senderNonce.nonce);
+    }
+    return interaction
+      .withChainID(this.api.chain)
+      .withSender(new Address(senderNonce.address))
+      .withGasLimit(15_000_000);
   }
 
   /**
@@ -331,14 +349,20 @@ export default class SCInteraction {
     offer_id,
     auction_id_opt,
     nft,
-  }: AcceptGlobalOffer): Interaction {
+    address,
+    nonce,
+  }: AcceptGlobalOffer & WithSenderAndNonce): Interaction {
     const interaction = signature
       ? this.xo.methods.acceptGlobalOffer([offer_id, auction_id_opt, signature])
       : this.xo.methods.acceptGlobalOffer([offer_id, auction_id_opt]);
+    interaction.withSender(new Address(address));
     if (nft) {
       interaction.withSingleESDTNFTTransfer(
         TokenTransfer.semiFungible(nft.collection, nft.nonce, nft.amount ?? 1)
       );
+    }
+    if (nonce) {
+      interaction.withNonce(nonce);
     }
     return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
   }
@@ -360,7 +384,9 @@ export default class SCInteraction {
     collection,
     attributes,
     depositAmount,
-  }: SendGlobalOffer): Interaction {
+    address,
+    nonce,
+  }: SendGlobalOffer & WithSenderAndNonce): Interaction {
     const interaction = attributes
       ? this.xo.methods.sendGlobalOffer([
           payment_token,
@@ -376,6 +402,10 @@ export default class SCInteraction {
           collection,
         ]);
 
+    if (nonce) {
+      interaction.withNonce(nonce);
+    }
+    interaction.withSender(new Address(address));
     if (depositAmount) {
       interaction.withValue(TokenTransfer.egldFromAmount(depositAmount));
     }
@@ -399,7 +429,9 @@ export default class SCInteraction {
     deadline,
     nft,
     depositAmount,
-  }: SendCustomOffer): Interaction {
+    address,
+    nonce,
+  }: SendCustomOffer & WithSenderAndNonce): Interaction {
     const interaction = this.xo.methods.sendOffer([
       payment_token,
       payment_nonce,
@@ -409,7 +441,10 @@ export default class SCInteraction {
       nft.amount ?? 1,
       deadline,
     ]);
-
+    if (nonce) {
+      interaction.withNonce(nonce);
+    }
+    interaction.withSender(new Address(address));
     if (depositAmount) {
       interaction.withValue(TokenTransfer.egldFromAmount(depositAmount));
     }
@@ -423,9 +458,15 @@ export default class SCInteraction {
    * @returns {Interaction} The interaction object of the smart contract
    */
 
-  public withdrawCustomOffer(offerID: number): Interaction {
+  public withdrawCustomOffer(
+    offerID: number,
+    senderNonce: WithSenderAndNonce
+  ): Interaction {
     const interaction = this.xo.methods.withdrawOffer([offerID]);
-
+    if (senderNonce.nonce) {
+      interaction.withNonce(senderNonce.nonce);
+    }
+    interaction.withSender(new Address(senderNonce.address));
     return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
   }
 
@@ -436,8 +477,16 @@ export default class SCInteraction {
    * @returns {Interaction} The interaction object of the smart contract
    */
 
-  public declineCustomOffer(offerID: number, nft?: NFTBody): Interaction {
+  public declineCustomOffer(
+    offerID: number,
+    sender: WithSenderAndNonce,
+    nft?: NFTBody
+  ): Interaction {
     const interaction = this.xo.methods.declineOffer([offerID]);
+    if (sender.nonce) {
+      interaction.withNonce(sender.nonce);
+    }
+    interaction.withSender(new Address(sender.address));
     if (nft) {
       interaction.withSingleESDTNFTTransfer(
         TokenTransfer.semiFungible(nft.collection, nft.nonce, nft.amount ?? 1)
@@ -453,8 +502,17 @@ export default class SCInteraction {
    * @returns {Interaction} The interaction object of the smart contract
    */
 
-  public acceptCustomOffer(offerID: number, nft?: NFTBody): Interaction {
+  public acceptCustomOffer(
+    offerID: number,
+    sender: WithSenderAndNonce,
+    nft?: NFTBody
+  ): Interaction {
     const interaction = this.xo.methods.acceptOffer([offerID]);
+
+    if (sender.nonce) {
+      interaction.withNonce(sender.nonce);
+    }
+    interaction.withSender(new Address(sender.address));
     if (nft) {
       interaction.withSingleESDTNFTTransfer(
         TokenTransfer.semiFungible(nft.collection, nft.nonce, nft.amount ?? 1)
@@ -476,9 +534,16 @@ export default class SCInteraction {
    * Finally, it returns the resulting interaction with the specified chainID and gas limit.
    */
 
-  public endAuction(auctionID: number): Interaction {
+  public endAuction(
+    auctionID: number,
+    sender: WithSenderAndNonce
+  ): Interaction {
     const interaction = this.xo.methods.endAuction([auctionID]);
 
+    if (sender.nonce) {
+      interaction.withNonce(sender.nonce);
+    }
+    interaction.withSender(new Address(sender.address));
     return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
   }
 
@@ -496,12 +561,18 @@ export default class SCInteraction {
     auctionID: number,
     collection: string,
     nonce: number,
-    payment: Payment
+    payment: Payment,
+    sender: WithSenderAndNonce
   ): Interaction {
     const interaction = this.xo.methods.bid([auctionID, collection, nonce]);
     if (!payment.amount) {
       throw new Error('Payment amount is required');
     }
+
+    if (sender.nonce) {
+      interaction.withNonce(sender.nonce);
+    }
+    interaction.withSender(new Address(sender.address));
     if (payment.collection == 'EGLD' && payment.amount) {
       interaction.withValue(TokenTransfer.egldFromAmount(payment.amount));
     } else {
@@ -524,8 +595,17 @@ export default class SCInteraction {
    * @returns {Interaction} The interaction object of the smart contract
    */
 
-  public bulkBuy(auctionIDs: number[], payment: Payment): Interaction {
+  public bulkBuy(
+    auctionIDs: number[],
+    payment: Payment,
+    sender: WithSenderAndNonce
+  ): Interaction {
     const interaction = this.xo.methods.bid(auctionIDs);
+
+    if (sender.nonce) {
+      interaction.withNonce(sender.nonce);
+    }
+    interaction.withSender(new Address(sender.address));
     if (!payment.amount) {
       throw new Error('Payment amount is required');
     }
@@ -585,6 +665,8 @@ export default class SCInteraction {
     token = 'EGLD',
     withCheck = true,
     isBigUintPayment = false,
+    address,
+    nonce: senderNonce,
   }: {
     auctionID: number;
     collection?: string;
@@ -594,7 +676,7 @@ export default class SCInteraction {
     paymentAmount?: number;
     withCheck?: boolean;
     isBigUintPayment?: boolean;
-  }): Promise<Interaction> {
+  } & WithSenderAndNonce): Promise<Interaction> {
     if (!auctionID) {
       throw new Error('AuctionID not provided');
     }
@@ -625,6 +707,10 @@ export default class SCInteraction {
       quantity ?? 1,
     ]);
 
+    if (senderNonce) {
+      interaction.withNonce(senderNonce);
+    }
+    interaction.withSender(new Address(address));
     if (token === 'EGLD') {
       interaction.withValue(
         bigNumber
@@ -669,7 +755,10 @@ export default class SCInteraction {
    * The function then calls the `changeListing` method on the smart contract and returns the resulting interaction
    * with the specified chainID and gas limit.
    */
-  public async changeListing(listings: ChangeListing[]) {
+  public async changeListing(
+    listings: ChangeListing[],
+    sender: WithSenderAndNonce
+  ) {
     const fooType = new StructType('BulkUpdateListing', [
       new FieldDefinition('payment_token_type', '', new TokenIdentifierType()),
       new FieldDefinition('new_price', '', new BigUIntType()),
@@ -691,6 +780,11 @@ export default class SCInteraction {
       );
     });
     const interaction = this.xo.methods.changeListing(structs);
+    if (sender.nonce) {
+      interaction.withNonce(sender.nonce);
+    }
+    interaction.withSender(new Address(sender.address));
+
     return interaction
       .withChainID(this.api.chain)
       .withGasLimit(
@@ -698,7 +792,10 @@ export default class SCInteraction {
       );
   }
 
-  public async listNFTs(listings: NewListingArgs[]) {
+  public async listNFTs(
+    listings: NewListingArgs[],
+    sender: WithSenderAndNonce
+  ) {
     const fooType = new StructType('BulkListing', [
       new FieldDefinition('min_bid', '', new BigUIntType()),
       new FieldDefinition('max_bid', '', new BigUIntType()),
@@ -764,6 +861,10 @@ export default class SCInteraction {
     });
 
     const interaction = this.xo.methods.listings(structs);
+    if (sender.nonce) {
+      interaction.withNonce(sender.nonce);
+    }
+    interaction.withSender(new Address(sender.address));
     interaction.withMultiESDTNFTTransfer(tokens);
     return interaction
       .withChainID(this.api.chain)

@@ -44,6 +44,11 @@ export interface NFTBody {
   amount?: number;
 }
 
+export interface WithSenderAndNonce {
+  address: string;
+  nonce?: number;
+}
+
 export interface Payment extends NFTBody {
   decimals?: number;
 }
