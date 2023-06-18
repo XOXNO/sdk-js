@@ -300,19 +300,24 @@ export default class SCInteraction {
 
   public withdrawAuctions(
     auctionIDs: number[],
-    senderNonce: WithSenderAndNonce
+    senderNonce: WithSenderAndNonce,
+    market: 'XO'
   ): Interaction {
-    const interaction = this.xo.methods.withdraw(auctionIDs);
+    if (market === 'XO') {
+      const interaction = this.xo.methods.withdraw(auctionIDs);
 
-    if (senderNonce.nonce) {
-      interaction.withNonce(senderNonce.nonce);
+      if (senderNonce.nonce) {
+        interaction.withNonce(senderNonce.nonce);
+      }
+      return interaction
+        .withChainID(this.api.chain)
+        .withSender(new Address(senderNonce.address))
+        .withGasLimit(
+          Math.min(600_000_000, 15_000_000 + auctionIDs.length * 5_000_000)
+        );
+    } else {
+      throw new Error('Market not supported');
     }
-    return interaction
-      .withChainID(this.api.chain)
-      .withSender(new Address(senderNonce.address))
-      .withGasLimit(
-        Math.min(600_000_000, 15_000_000 + auctionIDs.length * 5_000_000)
-      );
   }
 
   /**
@@ -536,15 +541,20 @@ export default class SCInteraction {
 
   public endAuction(
     auctionID: number,
-    sender: WithSenderAndNonce
+    sender: WithSenderAndNonce,
+    market = 'XO'
   ): Interaction {
-    const interaction = this.xo.methods.endAuction([auctionID]);
+    if (market == 'XO') {
+      const interaction = this.xo.methods.endAuction([auctionID]);
 
-    if (sender.nonce) {
-      interaction.withNonce(sender.nonce);
+      if (sender.nonce) {
+        interaction.withNonce(sender.nonce);
+      }
+      interaction.withSender(new Address(sender.address));
+      return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
+    } else {
+      throw new Error('Market not supported');
     }
-    interaction.withSender(new Address(sender.address));
-    return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
   }
 
   /**
@@ -667,6 +677,9 @@ export default class SCInteraction {
     isBigUintPayment = false,
     address,
     nonce: senderNonce,
+    isBid = false,
+    decimals = 18,
+    market = 'XO',
   }: {
     auctionID: number;
     collection?: string;
@@ -676,7 +689,13 @@ export default class SCInteraction {
     paymentAmount?: number;
     withCheck?: boolean;
     isBigUintPayment?: boolean;
+    isBid?: boolean;
+    market?: string;
+    decimals?: number;
   } & WithSenderAndNonce): Promise<Interaction> {
+    if (market !== 'XO') {
+      throw new Error('Market not supported');
+    }
     if (!auctionID) {
       throw new Error('AuctionID not provided');
     }
@@ -695,7 +714,9 @@ export default class SCInteraction {
     }
     const paymentToken = auction?.payment_token_type ?? token;
     const bigNumber = auction ? true : isBigUintPayment;
-    let amount = auction?.min_bid ?? paymentAmount;
+    let amount = isBid
+      ? auction?.max_bid ?? paymentAmount
+      : auction?.min_bid ?? paymentAmount;
     if (!amount) {
       throw new Error('Payment amount not provided');
     }
@@ -727,14 +748,14 @@ export default class SCInteraction {
         if (auction === null) {
           throw new Error('Auction not found');
         }
-        amount = auction.min_bid;
+        amount = isBid ? auction.max_bid : auction.min_bid;
       }
       interaction.withSingleESDTTransfer(
-        TokenTransfer.fungibleFromBigInteger(paymentToken, amount)
+        TokenTransfer.fungibleFromBigInteger(paymentToken, amount, decimals)
       );
     }
 
-    return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
+    return interaction.withChainID(this.api.chain).withGasLimit(20_000_000);
   }
 
   /**

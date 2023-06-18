@@ -86,6 +86,7 @@ export interface NftData {
   wasProcessed: boolean;
   onSale: boolean;
   hasOffers?: boolean;
+  collectionName: string;
   metadata: NFTMetadata;
   originalMedia: OriginalMedia;
   saleInfoNft: SaleInfoNft;

@@ -66,7 +66,7 @@ export interface GroupedByCollection {
 }
 
 export interface UserOffers {
-  nftsWorth: number;
+  countOffers: number;
   groupedByCollection: OffersGroupedByCollection[];
 }
 
@@ -78,6 +78,8 @@ export interface OffersGroupedByCollection {
   isVerified: boolean;
   isVisible: boolean;
   offers: Offer[];
+  offersReceived: number;
+  offersSent: number;
   globalOffers: GlobalOffer[];
 }
 
