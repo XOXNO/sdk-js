@@ -41,7 +41,12 @@ export const getActivity = async (
 
   const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
   const response = await api.fetchWithTimeout<TradingActivityResponse>(
-    `/getTradingActivity/${buffer}`
+    `/getTradingActivity/${buffer}`,
+    {
+      next: {
+        tags: ['getActivity'],
+      },
+    }
   );
 
   return {

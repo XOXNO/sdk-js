@@ -2,6 +2,7 @@ import { StakingPool } from '../types/staking';
 import { Nfts } from '../types/user';
 import XOXNOClient from '../utils/api';
 import { isAddressValid } from '../utils/helpers';
+import { isValidCollectionTicker } from '../utils/regex';
 
 export default class StakingModule {
   private api: XOXNOClient;
@@ -17,6 +18,23 @@ export default class StakingModule {
   public getAllStakingPools = async (): Promise<StakingPool[]> => {
     const response = await this.api.fetchWithTimeout<StakingPool[]>(
       '/getStakingPools'
+    );
+    return response;
+  };
+
+  /**
+   * Returns all staking pools by collection
+   *
+   * @returns {StakingPool[]}
+   */
+  public getPoolsByTicker = async (
+    collection: string
+  ): Promise<StakingPool[]> => {
+    if (!isValidCollectionTicker(collection)) {
+      throw new Error('Invalid collection ticker: ' + collection);
+    }
+    const response = await this.api.fetchWithTimeout<StakingPool[]>(
+      `/getPoolsByTicker/${collection}`
     );
     return response;
   };

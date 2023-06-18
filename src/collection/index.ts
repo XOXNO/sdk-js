@@ -53,7 +53,12 @@ export default class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<ICollectionProfile>(
-      `/getCollectionProfile/${collection}`
+      `/getCollectionProfile/${collection}`,
+      {
+        next: {
+          tags: ['getCollectionProfile'],
+        },
+      }
     );
     return response;
   };
@@ -73,7 +78,12 @@ export default class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<number>(
-      `/getFloorPrice/${collection}/${token}`
+      `/getFloorPrice/${collection}/${token}`,
+      {
+        next: {
+          tags: ['getCollectionFloorPrice'],
+        },
+      }
     );
     return response;
   };
@@ -99,7 +109,12 @@ export default class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<ICollectionAttributes>(
-      `/getCollectionAttributes/${collection}`
+      `/getCollectionAttributes/${collection}`,
+      {
+        next: {
+          tags: ['getCollectionAttributes'],
+        },
+      }
     );
     return response;
   };
@@ -153,7 +168,12 @@ export default class CollectionModule {
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
-      `/searchNFTs/${buffer}`
+      `/searchNFTs/${buffer}`,
+      {
+        next: {
+          tags: ['getCollectionNFTs'],
+        },
+      }
     );
     return {
       ...response,
@@ -212,7 +232,12 @@ export default class CollectionModule {
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
-      `/exploreNFTs/${buffer}`
+      `/exploreNFTs/${buffer}`,
+      {
+        next: {
+          tags: ['getGlobalNFTs'],
+        },
+      }
     );
     return {
       ...response,
@@ -265,7 +290,14 @@ export default class CollectionModule {
     };
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
-    return await this.api.fetchWithTimeout<SuggestResults>(`/search/${buffer}`);
+    return await this.api.fetchWithTimeout<SuggestResults>(
+      `/search/${buffer}`,
+      {
+        next: {
+          tags: ['suggestResults'],
+        },
+      }
+    );
   };
 
   /**
@@ -311,7 +343,12 @@ export default class CollectionModule {
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<ICollectionProfile[]>(
-      `/collections/${buffer}`
+      `/collections/${buffer}`,
+      {
+        next: {
+          tags: ['getCollections'],
+        },
+      }
     );
     return {
       results: response,
@@ -355,7 +392,12 @@ export default class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<CollectionVolume[]>(
-      `/getCollectionVolume/${collection}?after=${after}&before=${before}&bin=${bin}`
+      `/getCollectionVolume/${collection}?after=${after}&before=${before}&bin=${bin}`,
+      {
+        next: {
+          tags: ['getCollectionVolume'],
+        },
+      }
     );
     return response;
   };
@@ -390,7 +432,12 @@ export default class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<FloorPriceHistory[]>(
-      `/getCollectionFloor/${collection}?after=${after}&before=${before}&bin=${bin}`
+      `/getCollectionFloor/${collection}?after=${after}&before=${before}&bin=${bin}`,
+      {
+        next: {
+          tags: ['getCollectionFloor'],
+        },
+      }
     );
     return response;
   };
@@ -416,7 +463,13 @@ export default class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<CollectionHoldersInfo>(
-      `/getCollectionOwners/${collection}`
+      `/getCollectionOwners/${collection}`,
+
+      {
+        next: {
+          tags: ['getCollectionOwners'],
+        },
+      }
     );
     return response;
   };
