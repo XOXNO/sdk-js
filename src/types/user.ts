@@ -1,5 +1,5 @@
 import { MetadataAttribute } from './collection';
-import { NftData } from './nft';
+import { NftData, Owner } from './nft';
 
 export interface IUserProfile {
   dataType: 'userProfile';
@@ -45,8 +45,16 @@ export interface ISocials {
 }
 
 export interface UserInventory {
-  nftsWorth: number;
-  groupedByCollection: GroupedByCollection[];
+  collection: string;
+  inventoryCount: number;
+  listedCount: number;
+  stakedCount: number;
+  floorPrice: number;
+  name: string;
+  isVerified: boolean;
+  profile: string;
+  banner: string;
+  value: number;
 }
 
 export interface GroupedByCollection {
@@ -66,21 +74,15 @@ export interface GroupedByCollection {
 }
 
 export interface UserOffers {
-  countOffers: number;
-  groupedByCollection: OffersGroupedByCollection[];
+  hasMoreResults: boolean;
+  resources: OfferBody[];
 }
 
-export interface OffersGroupedByCollection {
-  name: string;
-  type: string;
-  image: string;
-  ticker: string;
-  isVerified: boolean;
-  isVisible: boolean;
-  offers: Offer[];
-  offersReceived: number;
-  offersSent: number;
-  globalOffers: GlobalOffer[];
+export interface ArgsUserOffers {
+  address: string;
+  type: OfferType;
+  skip: number;
+  top: number;
 }
 
 export interface GlobalOffer {
@@ -102,36 +104,31 @@ export interface GlobalOffer {
   isActive: boolean;
 }
 export enum OfferType {
-  Received = 'Received',
-  Sent = 'Sent',
+  Received = 'received',
+  Sent = 'sent',
 }
 
-export interface Offer {
-  offerType: OfferType;
+export interface OfferBody {
+  dataType: string;
   identifier: string;
-  webpUrl: string;
-  avifUrl: string;
-  onSale: boolean;
-  url: string;
   collection: string;
-  onDR: boolean;
-  onFM: boolean;
-  onKG: boolean;
-  name: string;
-  nonce: number;
-  offer_id: number;
-  payment_token: string;
-  payment_nonce: number;
+  offerId: number;
+  paymentToken: string;
+  paymentTokenNonce: number;
   price: string;
-  price_short: number;
+  priceShort: number;
   deadline: number;
   timestamp: number;
-  owner: string;
+  owner: Owner;
   quantity: number;
-  EgldValue: number;
-  UsdValue: number;
+  marketplace: string;
+  id: string;
+  _ts: number;
+  nftInfo: NftData;
   isActive: boolean;
-  ownerUsername: string;
+  priceUsd: number;
+  floorPriceMargin: number;
+  floorPrice: number;
 }
 
 export type UserStakingInfo = {

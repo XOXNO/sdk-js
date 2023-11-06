@@ -113,10 +113,9 @@ export default class XOXNOClient {
           method: (options.method as any) ?? 'GET',
         }
       );
-
-      if (!res.ok) throw new Error(res.statusText);
+      if (!res.ok) throw new Error((await res.json()).message.toString());
       return res.json() as T;
-    } catch (error) {
+    } catch (error: Error | any) {
       throw new Error(
         'Something went wrong inside fetchWithTimeout' +
           ' ' +
@@ -124,7 +123,7 @@ export default class XOXNOClient {
           ' ' +
           JSON.stringify(options) +
           ' ' +
-          error
+          error?.message?.toString() ?? error.toString()
       );
     }
   };

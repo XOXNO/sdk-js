@@ -88,10 +88,10 @@ export interface ICollectionAttributes {
 }
 
 export enum Marketplace {
-  XO = 'XO',
-  FM = 'FM',
-  DR = 'DR',
-  KG = 'KG',
+  XO = 'xoxno',
+  FM = 'frameit',
+  DR = 'deadrare',
+  KG = 'krogan',
 }
 
 export interface GlobalOffer {
@@ -112,18 +112,18 @@ export interface GlobalOffer {
 }
 
 export enum FieldsToSelect {
-  Rank = 'metadata/rarity/rank',
-  Attributes = 'metadata/attributes',
-  Description = 'metadata/description',
+  Rank = 'metadata.rarity.rank',
+  Attributes = 'metadata.attributes',
+  Description = 'metadata.description',
   Name = 'name',
   OnSale = 'onSale',
-  SaleInfo = 'saleInfoNft',
+  SaleInfo = 'saleInfo',
   Royalties = 'royalties',
   Identifier = 'identifier',
   Collection = 'collection',
   OriginalURL = 'url',
   Nonce = 'nonce',
-  ContentType = 'originalMedia/contentType',
+  ContentType = 'originalMedia.contentType',
   WasProcessed = 'wasProcessed',
   AvifURL = 'avifUrl',
   WebpURL = 'webpUrl',
@@ -131,14 +131,14 @@ export enum FieldsToSelect {
 }
 
 export enum SearchOrderBy {
-  PriceHighToLow = 'saleInfoNft/min_bid_short desc',
-  PriceLowToHigh = 'saleInfoNft/min_bid_short asc',
-  RarityHighToLow = 'metadata/rarity/rank desc',
-  RarityLowToHigh = 'metadata/rarity/rank asc',
+  PriceHighToLow = 'saleInfo.minBidShort desc',
+  PriceLowToHigh = 'saleInfo.minBidShort asc',
+  RarityHighToLow = 'metadata.rarity.rank desc',
+  RarityLowToHigh = 'metadata.rarity.rank asc',
   NonceHighToLow = 'nonce desc',
   NonceLowToHigh = 'nonce asc',
-  RecentListed = 'saleInfoNft/timestamp desc',
-  OldestListed = 'saleInfoNft/timestamp asc',
+  RecentListed = 'saleInfo.timestamp desc',
+  OldestListed = 'saleInfo.timestamp asc',
 }
 
 export enum SuggestOrderBy {
@@ -187,12 +187,18 @@ export enum CollectionsFieldsToSelect {
 }
 
 export interface Filter {
-  marketplace?: Marketplace[];
+  dataType?: string[];
   onSale?: boolean;
-  auctionTypes?: string[];
-  tokens?: string[];
-  attributes?: MetadataAttribute[];
-  range?: {
+  seller?: string[];
+  collection?: string[];
+  identifier?: string[];
+  type?: string[];
+  owner?: string[];
+  paymentToken?: string[];
+  marketplace?: string[];
+  auctionType?: string[];
+  activeAuction?: boolean;
+  priceRange?: {
     min: number;
     max: number;
     type: string;
@@ -201,28 +207,37 @@ export interface Filter {
     min?: number;
     max?: number;
   };
-  levelRange?: {
+  gameLevelRange?: {
     min?: number;
     max?: number;
   };
+  customFilter?: string;
+  attributes?: NftMetadataAttributes[];
+  wasProcessed?: boolean;
+  verifiedOnly?: boolean;
+  isStaked?: boolean;
+}
+
+export interface NftMetadataAttributes {
+  trait_type: string;
+  value: string;
 }
 
 export interface SearchNFTs {
   filters: Filter;
-  name?: string;
-  collections?: string[];
-  curated?: boolean;
-  search?: string[];
-  orderBy?: SearchOrderBy[];
-  collection?: string;
-  top: number;
-  skip: number;
-  select?: FieldsToSelect[];
+  select?: string[];
+  strictSelect?: boolean;
+  orderBy?: string[];
+  top?: number;
+  skip?: number;
+  includeCount?: boolean;
 }
 
-export interface GetCollectionNFTsArgs {
-  /**  The collection to search in */
-  collection?: string;
+export interface GetNFTsArgs {
+  /** Listed by different users */
+  listedBy?: string[];
+  /** Owned by different users */
+  ownedBy?: string[];
   /** If set, will return only NFTs from the specified collections */
   collections?: string[];
   /** If set, will return only NFTs from verified collections */
@@ -248,6 +263,8 @@ export interface GetCollectionNFTsArgs {
     min: number;
     max: number;
   };
+  /** If set, will return the total count of the NFTs, recommended to be set true only for the first call, then false for the next pages */
+  includeCount?: boolean;
   /** If set, will apply the extra manual filters on top of the main payload */
   extraSearch?: string[];
   /** If set, will return only NFTs with a name that contains the specified string */
@@ -256,6 +273,8 @@ export interface GetCollectionNFTsArgs {
   top?: number;
   /** The order by to use */
   skip?: number;
+  /** Document type */
+  dataType?: string[];
   /** The order of the results based on a field */
   orderBy?: SearchOrderBy[];
   /** If set, will return only the specified fields */
@@ -279,15 +298,11 @@ export interface SuggestNFTsArgs {
 
 export interface SearchNFTsResponse {
   /** The total count of the results for the specific query */
-  count: number;
-  /** The results count for the current page */
-  resultsCount: number;
+  count?: number;
   /** The results for the current page */
-  results: NftData[];
-  /** If the results are empty */
-  empty: boolean;
+  resources: NftData[];
   /** The payload to use to get the next page */
-  getNextPagePayload: GetCollectionNFTsArgs;
+  getNextPagePayload: GetNFTsArgs;
   /** If there are more results to fetch */
   hasMoreResults: boolean;
 }

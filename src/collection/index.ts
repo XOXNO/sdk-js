@@ -4,7 +4,7 @@ import {
   ICollectionAttributes,
   ICollectionProfile,
   SearchNFTs,
-  GetCollectionNFTsArgs,
+  GetNFTsArgs,
   SearchNFTsResponse,
   SuggestNFTsArgs,
   SuggestOrderBy,
@@ -120,17 +120,17 @@ export default class CollectionModule {
   };
 
   /**
-   * Searches for NFTs in a collection based on the provided arguments.
+   * Searches for NFTs based on the provided arguments.
    * @param {SearchNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
    * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
    * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 35.
    */
-  public getCollectionNFTs = async (
-    args: GetCollectionNFTsArgs
-  ): Promise<SearchNFTsResponse> => {
-    if (args.collection && !isValidCollectionTicker(args.collection)) {
-      throw new Error('Invalid collection ticker: ' + args.collection);
-    }
+  public getNFTs = async (args: GetNFTsArgs): Promise<SearchNFTsResponse> => {
+    args?.collections?.forEach((element) => {
+      if (!isValidCollectionTicker(element)) {
+        throw new Error('Invalid collection ticker: ' + element);
+      }
+    });
 
     if (args.top && args.top > 35) {
       throw new Error('Top cannot be greater than 35');
@@ -138,37 +138,43 @@ export default class CollectionModule {
 
     const payloadBody: SearchNFTs = {
       filters: {
+        dataType: args.dataType ?? ['nft'],
+        activeAuction: args.onlyAuctions || false,
+        collection: args.collections ?? [],
         onSale: args.onlyOnSale || false,
+        seller: args.listedBy || [],
+        owner: args.ownedBy || [],
         marketplace: args.listedOnlyOn || undefined,
-        auctionTypes: args.onlyOnSale
+        auctionType: args.onlyOnSale
           ? args.onlyAuctions
             ? ['NftBid', 'SftAll']
             : ['Nft', 'SftOnePerPayment']
           : undefined,
-        tokens: args.listedInToken || undefined,
+        verifiedOnly: args.onlyVerified || false,
+        paymentToken: args.listedInToken || [],
         attributes: args.attributes || undefined,
-        range: args.priceRange
+        priceRange: args.priceRange
           ? {
               ...args.priceRange,
               type: args.onlyAuctions
-                ? 'saleInfoNft/current_bid_short'
-                : 'saleInfoNft/min_bid_short',
+                ? 'saleInfo.currentBidShort'
+                : 'saleInfo.minBidShort',
             }
           : undefined,
         rankRange: args.rankRange || undefined,
-        levelRange: args.cantinaLevelRange || undefined,
+        gameLevelRange: args.cantinaLevelRange || undefined,
       },
-      name: args.searchName || '',
-      orderBy: args.orderBy || undefined,
-      collection: args.collection,
-      select: args.onlySelectFields || undefined,
+      orderBy: args.orderBy || [],
+      select: args.onlySelectFields || [],
+      includeCount: args.includeCount || false,
       top: args.top || 35,
       skip: args.skip || 0,
     };
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
+    console.log(buffer);
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
-      `/searchNFTs/${buffer}`,
+      `/getNfts/${buffer}`,
       {
         next: {
           tags: ['getCollectionNFTs'],
@@ -181,72 +187,6 @@ export default class CollectionModule {
         ...args,
         skip: (args.skip ?? 0) + (args.top ?? 35),
       },
-      hasMoreResults:
-        response.resultsCount > (args.skip ?? 0) + (args.top ?? 35),
-    };
-  };
-
-  /**
-   * Searches for Global NFTs or in specific collections based on the provided arguments.
-   * @param {ExploreNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
-   * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
-   * @throws An error if the 'top' value is greater than 35.
-   */
-  public getGlobalNFTs = async (
-    args: GetCollectionNFTsArgs
-  ): Promise<SearchNFTsResponse> => {
-    if (args.top && args.top > 35) {
-      throw new Error('Top cannot be greater than 35');
-    }
-
-    const payloadBody: SearchNFTs = {
-      curated: args.onlyVerified || true,
-      filters: {
-        onSale: args.onlyOnSale || false,
-        marketplace: args.listedOnlyOn || undefined,
-        auctionTypes: args.onlyOnSale
-          ? args.onlyAuctions
-            ? ['NftBid', 'SftAll']
-            : ['Nft', 'SftOnePerPayment']
-          : undefined,
-        tokens: args.listedInToken || undefined,
-        attributes: args.attributes || undefined,
-        range: args.priceRange
-          ? {
-              ...args.priceRange,
-              type: args.onlyAuctions
-                ? 'saleInfoNft/current_bid_short'
-                : 'saleInfoNft/min_bid_short',
-            }
-          : undefined,
-        rankRange: args.rankRange || undefined,
-      },
-      search: args.extraSearch || [],
-      name: args.searchName || '',
-      orderBy: args.orderBy || undefined,
-      collections: args.collections || [],
-      select: args.onlySelectFields || undefined,
-      top: args.top || 35,
-      skip: args.skip || 0,
-    };
-
-    const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
-    const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
-      `/exploreNFTs/${buffer}`,
-      {
-        next: {
-          tags: ['getGlobalNFTs'],
-        },
-      }
-    );
-    return {
-      ...response,
-      getNextPagePayload: {
-        ...args,
-        skip: (args.skip ?? 0) + (args.top ?? 35),
-      },
-      hasMoreResults:
-        response.resultsCount > (args.skip ?? 0) + (args.top ?? 35),
     };
   };
 

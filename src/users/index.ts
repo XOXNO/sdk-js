@@ -1,9 +1,12 @@
+import CollectionModule from '../collection';
 import {
-  NftData,
+  GetNFTsArgs,
+  SearchNFTsResponse,
   TradincActivityArgs,
   TradingActivityResponse,
 } from '../types';
 import {
+  ArgsUserOffers,
   IUserProfile,
   UserInventory,
   UserOffers,
@@ -12,13 +15,15 @@ import {
 import XOXNOClient from '../utils/api';
 import { getActivity } from '../utils/getActivity';
 import { isAddressValid } from '../utils/helpers';
-import { isValidCollectionTicker } from '../utils/regex';
 
 export default class UserModule {
   private api: XOXNOClient;
+  private collection: CollectionModule;
   constructor() {
     this.api = XOXNOClient.init();
+    this.collection = new CollectionModule();
   }
+
   /**
    * Returns the user profile
    *
@@ -40,10 +45,12 @@ export default class UserModule {
    * @returns {UserInventory} User's inventory
    */
 
-  public getUserInventory = async (address: string): Promise<UserInventory> => {
+  public getUserSummaryInventory = async (
+    address: string
+  ): Promise<UserInventory[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
-    const response = await this.api.fetchWithTimeout<UserInventory>(
-      `/accounts/${address}/inventory`
+    const response = await this.api.fetchWithTimeout<UserInventory[]>(
+      `/user/${address}/inventory`
     );
     return response;
   };
@@ -53,14 +60,10 @@ export default class UserModule {
    * @param address - The user's address
    * @returns {UserInventory} - A list of token ids and the price
    */
-  public getUserListedInventory = async (
-    address: string
-  ): Promise<UserInventory> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
-    const response = await this.api.fetchWithTimeout<UserInventory>(
-      `/accounts/${address}/listings`
-    );
-    return response;
+  public getUserNFTs = async (
+    args: GetNFTsArgs
+  ): Promise<SearchNFTsResponse> => {
+    return await this.collection.getNFTs(args);
   };
 
   /**
@@ -69,34 +72,11 @@ export default class UserModule {
    * @param {String} address - The user's wallet address
    * @returns {UserOffers} - The user's listings
    */
-  public getUserOffers = async (address: string): Promise<UserOffers> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+  public getUserOffers = async (args: ArgsUserOffers): Promise<UserOffers> => {
+    if (!isAddressValid(args.address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<UserOffers>(
-      `/accounts/${address}/listings`
+      `/user/${args.address}/offers?type=${args.type}&skip=${args.skip}&top=${args.top}`
     );
-    return response;
-  };
-
-  /**
-   * Gets all NFTs from a collection by a specific user address
-   *
-   * @param {String} address - Address of the user
-   * @param {String} collection - Collection ticker
-   * @returns {NftData[]} A list of NFTs
-   */
-
-  public getUserNFTsByCollection = async (
-    address: string,
-    collection: string
-  ): Promise<NftData[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
-    if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
-    }
-    const response = await this.api.fetchWithTimeout<NftData[]>(
-      `/getAccountInventory/${address}/${collection}`
-    );
-
     return response;
   };
 

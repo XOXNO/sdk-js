@@ -16,31 +16,39 @@ export interface NFTMetadata {
   };
 }
 
-export interface OriginalMedia {
-  contentType: string;
-  contentLength: number;
+export interface Media {
+  originalMedia?: OriginalMedia;
+  avifUrl?: string;
+  webpUrl?: string;
+  retries?: number;
 }
 
-export interface SaleInfoNft {
-  auction_id: number;
+export interface OriginalMedia {
+  contentType?: string;
+  contentLength?: number;
+}
+
+export interface SaleInfo {
+  auctionId: number;
   seller: string;
-  current_winner: string;
-  min_bid: string;
-  max_bid: string;
-  current_bid: string;
-  start_time: number;
+  currentWinner?: string;
+  minBid: string;
+  maxBid?: string;
+  currentBid?: string;
+  startTime: number;
   deadline: number;
-  accepted_payment_token: string;
-  accepted_payment_token_nonce: number;
-  auction_type: string;
+  paymentToken: string;
+  paymentTokenNonce: number;
+  auctionType: string;
   timestamp: number;
-  min_bid_short: number;
-  max_bid_short: number;
-  current_bid_short: number;
-  quantity: null | number;
+  minBidShort: number;
+  maxBidShort: number;
+  currentBidShort?: number;
+  currentBidUsd?: number;
+  quantity: number;
   marketplace: string;
-  usd: string;
-  usd_max_bid: string;
+  minBidUsd: string;
+  maxBidUsd?: string;
 }
 
 export interface NftValue {
@@ -72,36 +80,39 @@ export interface OffersInfo {
 }
 
 export interface NftData {
-  identifier: string;
-  collection: string;
-  attributes?: string;
-  nonce: number;
-  type: string;
+  id: string;
   name: string;
-  creator?: string;
-  royalties: number;
+  identifier: string;
+  nonce: number;
+  collection: string;
+  type: string;
+  supply?: number;
   url: string;
-  avifUrl: string;
-  webpUrl: string;
   wasProcessed: boolean;
+  royalties: number;
   onSale: boolean;
+  metadata: NFTMetadata;
+  media: Media;
+  attributes?: string;
+  creator?: string;
   hasOffers?: boolean;
   collectionName: string;
-  metadata: NFTMetadata;
-  originalMedia: OriginalMedia;
-  saleInfoNft: SaleInfoNft;
-  offersInfo: OffersInfo[];
-  gameData: GameData[]; // Only for Cantina Rolaye
-  owner?: string; // Only for inventory and single NFT
-  ownerCount?: number; // Only for SFTs with over 1 owner
-  ownerUsername?: string;
-  isVerified: boolean;
-  isVisible: boolean;
-  nftValue?: NftValue;
-  pool_id?: number; // Only for Staked NFTs
-  isStaked?: boolean; // Only for Staked NFTs
-  currentEpoch?: number; // Only for Staked NFTs
-  hasUboundPeriod?: boolean; // Only for Staked NFTs
-  unboundEpoch?: number; // Only for Staked NFTs
+  saleInfo?: SaleInfo;
+  gameData?: GameData[]; // Only for Cantina Rolaye
+  owner?: Owner;
+  originalOwner?: Owner;
   balance?: number; // Only for non listed NFTs
+  collectionInfo?: CollectionInfo;
+}
+
+export interface CollectionInfo {
+  name: string;
+  isVerified: boolean;
+  profile: string;
+}
+
+export interface Owner {
+  username: string;
+  address: string;
+  profile: string;
 }

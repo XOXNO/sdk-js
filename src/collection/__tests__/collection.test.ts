@@ -73,8 +73,8 @@ describe('CollectionModule', () => {
   });
 
   it('should get fetch and filter NFTs from a collection', async () => {
-    const nfts: SearchNFTsResponse = await collectionModule.getCollectionNFTs({
-      collection: inputCollection,
+    const nfts: SearchNFTsResponse = await collectionModule.getNFTs({
+      collections: [inputCollection],
       onlyOnSale: true,
       top: 1,
       onlySelectFields: [
@@ -91,20 +91,16 @@ describe('CollectionModule', () => {
       getNextPagePayload: {
         top: 1,
         skip: 1,
-        collection: inputCollection,
-        onlyOnSale: true,
       },
     });
 
-    const nftsSecondPage = await collectionModule.getCollectionNFTs(
+    const nftsSecondPage = await collectionModule.getNFTs(
       nfts.getNextPagePayload
     );
     expect(nftsSecondPage).toMatchObject({
       getNextPagePayload: {
         top: 1,
         skip: 2,
-        collection: inputCollection,
-        onlyOnSale: true,
       },
     });
   });

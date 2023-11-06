@@ -38,7 +38,7 @@ export default class NFTModule {
       throw new Error('Invalid identifier: ' + identifier);
     }
     const response = await this.api.fetchWithTimeout<NftData>(
-      `/nfts/${identifier}`
+      `/getSingleNft/${identifier}`
     );
     return response;
   };
@@ -59,7 +59,7 @@ export default class NFTModule {
     }
 
     const response = await this.api.fetchWithTimeout<NftData>(
-      `/nfts/${getIdentifierFromColAndNonce(collection, nonce)}`
+      `/getSingleNft/${getIdentifierFromColAndNonce(collection, nonce)}`
     );
     return response;
   };
@@ -86,7 +86,7 @@ export default class NFTModule {
     }
     // fetch the NFT data
     const response = await this.api.fetchWithTimeout<NftData>(
-      `/nfts/${[collection, nonceHex].join('-')}`
+      `/getSingleNft/${[collection, nonceHex].join('-')}`
     );
     return response;
   };

@@ -1,3 +1,4 @@
+import { OfferType } from '../../types/user';
 import XOXNOClient from '../../utils/api';
 import UserModule from '../index';
 
@@ -18,15 +19,22 @@ describe('UserModule', () => {
   });
 
   it('should return the wallet NFTs not listed', async () => {
-    const inventory = await userModule.getUserInventory(inputAddress);
+    const inventory = await userModule.getUserNFTs({
+      ownedBy: [inputAddress],
+      onlyOnSale: false,
+      top: 25,
+    });
     expect(inventory).toBeDefined();
-    expect(inventory.groupedByCollection.length).toBeGreaterThanOrEqual(1);
   });
 
   it('should return the wallet NFTs listed', async () => {
-    const inventory = await userModule.getUserListedInventory(inputAddress);
+    const inventory = await userModule.getUserNFTs({
+      listedBy: [inputAddress], // or only ownedBy: [inputAddress]
+      onlyOnSale: true,
+      top: 25,
+    });
     expect(inventory).toBeDefined();
-    expect(inventory.groupedByCollection.length).toBeGreaterThanOrEqual(1);
+    expect(inventory.resources.length).toBeGreaterThanOrEqual(1);
   });
 
   it('should return the wallet NFTs trading activity', async () => {
@@ -38,12 +46,13 @@ describe('UserModule', () => {
   });
 
   it('should return the wallet NFTs listed or unlisted from the specific collection', async () => {
-    const inventory = await userModule.getUserNFTsByCollection(
-      inputAddress,
-      'BANANA-e955fd'
-    );
+    const inventory = await userModule.getUserNFTs({
+      ownedBy: [inputAddress],
+      collections: ['BANANA-e955fd'],
+      top: 1,
+    });
     expect(inventory).toBeDefined();
-    expect(inventory.length).toBeGreaterThanOrEqual(1);
+    expect(inventory.resources.length).toBeGreaterThanOrEqual(1);
   });
 
   it('should return all the Staking Pools where the wallet is a delegator', async () => {
@@ -55,7 +64,12 @@ describe('UserModule', () => {
   });
 
   it('should return all the offers of a user Global or Custom / send or received', async () => {
-    const offers = await userModule.getUserOffers(inputAddress);
+    const offers = await userModule.getUserOffers({
+      address: inputAddress,
+      type: OfferType.Sent,
+      skip: 0,
+      top: 10,
+    });
     expect(offers).toBeDefined();
   });
 });
