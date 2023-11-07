@@ -1,5 +1,6 @@
 import { NftData } from '../types/nft';
 import { TradingActivityResponse, TradincActivityArgs } from '../types/trading';
+import { UserOffers } from '../types/user';
 import XOXNOClient from '../utils/api';
 import { getActivity } from '../utils/getActivity';
 import { getIdentifierFromColAndNonce } from '../utils/helpers';
@@ -39,6 +40,30 @@ export default class NFTModule {
     }
     const response = await this.api.fetchWithTimeout<NftData>(
       `/getSingleNft/${identifier}`
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getNFTByIdentifier
+   * @param {string} identifier - The identifier of the NFT to fetch data for.
+   * @returns {Promise<NftData>} A promise that resolves to the fetched NFT data.
+   *
+   * This function fetches data for a given NFT by its identifier. It takes the following parameter:
+   * - identifier (string): The identifier of the NFT to fetch data for.
+   *
+   * The function first validates the input identifier and checks if it is a valid NFT identifier.
+   * If it is valid, the function fetches the NFT data using the API.
+   * Finally, it returns a promise that resolves to the fetched NFT data.
+   */
+  public getNFTsOffers = async (identifier: string): Promise<UserOffers> => {
+    if (!isValidNftIdentifier(identifier)) {
+      throw new Error('Invalid identifier: ' + identifier);
+    }
+    const response = await this.api.fetchWithTimeout<UserOffers>(
+      `/getSingleNft/${identifier}/offers`
     );
     return response;
   };
