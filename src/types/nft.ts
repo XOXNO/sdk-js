@@ -107,6 +107,7 @@ export interface NftData {
   hasUboundPeriod?: boolean;
   unboundEpoch?: number;
   currentEpoch?: number;
+  poolId?: number;
 }
 
 export interface CollectionInfo {
