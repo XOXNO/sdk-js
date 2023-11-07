@@ -103,6 +103,10 @@ export interface NftData {
   originalOwner?: Owner;
   balance?: number; // Only for non listed NFTs
   collectionInfo?: CollectionInfo;
+  isStaked?: boolean;
+  hasUboundPeriod?: boolean;
+  unboundEpoch?: number;
+  currentEpoch?: number;
 }
 
 export interface CollectionInfo {
