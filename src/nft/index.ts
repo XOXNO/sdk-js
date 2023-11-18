@@ -58,12 +58,16 @@ export default class NFTModule {
    * If it is valid, the function fetches the NFT data using the API.
    * Finally, it returns a promise that resolves to the fetched NFT data.
    */
-  public getNFTsOffers = async (identifier: string): Promise<UserOffers> => {
+  public getNFTsOffers = async (
+    identifier: string,
+    skip: number = 0,
+    top: number = 25
+  ): Promise<UserOffers> => {
     if (!isValidNftIdentifier(identifier)) {
       throw new Error('Invalid identifier: ' + identifier);
     }
     const response = await this.api.fetchWithTimeout<UserOffers>(
-      `/getSingleNft/${identifier}/offers`
+      `/getSingleNft/${identifier}/offers?skip=${skip}&top=${top}`
     );
     return response;
   };

@@ -133,12 +133,18 @@ export enum FieldsToSelect {
 export enum SearchOrderBy {
   PriceHighToLow = 'saleInfo.minBidShort desc',
   PriceLowToHigh = 'saleInfo.minBidShort asc',
+  MaxPriceHighToLow = 'saleInfo.maxBidShort desc',
+  MaxPriceLowToHigh = 'saleInfo.maxBidShort asc',
+  BidPriceHighToLow = 'saleInfo.currentBidShort desc',
+  BidPriceLowToHigh = 'saleInfo.currentBidShort asc',
   RarityHighToLow = 'metadata.rarity.rank desc',
   RarityLowToHigh = 'metadata.rarity.rank asc',
   NonceHighToLow = 'nonce desc',
   NonceLowToHigh = 'nonce asc',
   RecentListed = 'saleInfo.timestamp desc',
   OldestListed = 'saleInfo.timestamp asc',
+  EndingLate = 'saleInfo.deadline desc',
+  EndingSoon = 'saleInfo.deadline asc',
 }
 
 export enum SuggestOrderBy {
@@ -395,14 +401,51 @@ export interface MintStatistics {
 
 export interface CollectionVolume {
   Day: string;
+  DR_Trades: number;
+  DR_Volume: number;
+  DR_VolumeUSD: number;
+  DR_Buyers: number;
+  DR_Sellers: number;
+  DR_FeesPaid: number;
+  DR_FeesPaidUSD: number;
+  DR_RoyaltiesPaid: number;
+  DR_RoyaltiesPaidUSD: number;
   FM_Trades: number;
   FM_Volume: number;
+  FM_VolumeUSD: number;
+  FM_Buyers: number;
+  FM_Sellers: number;
+  FM_FeesPaid: number;
+  FM_FeesPaidUSD: number;
+  FM_RoyaltiesPaid: number;
+  FM_RoyaltiesPaidUSD: number;
   KG_Trades: number;
   KG_Volume: number;
+  KG_VolumeUSD: number;
+  KG_Buyers: number;
+  KG_Sellers: number;
+  KG_FeesPaid: number;
+  KG_FeesPaidUSD: number;
+  KG_RoyaltiesPaid: number;
+  KG_RoyaltiesPaidUSD: number;
   Total_Trades: number;
   Total_Volume: number;
+  Total_VolumeUSD: number;
+  Total_Buyers: number;
+  Total_Sellers: number;
+  Total_FeesPaid: number;
+  Total_FeesPaidUSD: number;
+  Total_RoyaltiesPaid: number;
+  Total_RoyaltiesPaidUSD: number;
   XO_Trades: number;
   XO_Volume: number;
+  XO_VolumeUSD: number;
+  XO_Buyers: number;
+  XO_Sellers: number;
+  XO_FeesPaid: number;
+  XO_FeesPaidUSD: number;
+  XO_RoyaltiesPaid: number;
+  XO_RoyaltiesPaidUSD: number;
 }
 
 export interface FloorPriceHistory {
@@ -411,64 +454,104 @@ export interface FloorPriceHistory {
   AveragePrice: number;
 }
 
-export interface CollectionHoldersInfo {
-  totalSupply: number;
-  onMarketInfo: OnMarketInfo;
-  stakingInfo: StakingInfo;
-  otherHolders: OtherHolders;
-  hodlersInfo: HodlersInfo;
+export type FungibleAssets = {
+  id?: string;
+  identifier?: string;
+  collection?: string;
+  dataType?: string;
+  decimals?: number;
+  name: string;
+  type?: string;
+  category?: string[];
+  svgUrl: string;
+  pngUrl: string;
+  ticker: string;
+  _ts?: number;
+};
+
+export type FungibleAssetsMap = {
+  [key: string]: FungibleAssets;
+};
+
+export enum AssetCategory {
+  ALL = 'all',
+  Trade = 'trade',
+  P2P = 'p2p',
+  Staking = 'staking',
+  Minting = 'minting',
 }
 
-export interface HodlersInfo {
-  hodlCount: number;
-  hodlWeight: number;
-  uniqueHodlWeight: number;
-  uniqueHodlers: number;
-  avgPerHodler: number;
-  hodlersSummary: HodlersSummary;
-  hodlers: OtherSc[];
-}
-
-export interface OtherSc {
+export type ISingleHolder = {
   address: string;
   count: number;
   weight: number;
+};
+
+export type IOwners = {
+  totalSupply: number;
+  onMarket: HoldedDetails;
+  staked: HoldedDetails;
+  otherSCs: HoldedDetails;
+  burnWallet: HoldedDetails;
+  uniqueHolders: HoldedDetails;
+  holded: AvgHolder;
+  walletDetails: ISingleHolder[];
+};
+
+export type HoldedDetails = {
+  count: number;
+  weight: number;
+};
+
+export interface AvgHolder extends HoldedDetails {
+  avgPerHodler: number;
 }
 
-export interface HodlersSummary {
-  one: number;
-  twoToFive: number;
-  six20ToFour: number;
-  twenty5ToFifthy: number;
-  fifthy1ToHoundred: number;
-  overHoundred: number;
-}
+export type CollectionsSummary = {
+  data: CollectionsSummaryItem[];
+  count: number;
+};
 
-export interface OnMarketInfo {
-  tradingCount: number;
-  tradingWeight: number;
-  holders: OnMarketInfoHolders;
-}
+export type CollectionsSummaryItem = {
+  Collection: string;
+  TotalVolume: number;
+  TotalTrades: number;
+  DailyVolume: number | null;
+  Last2DaysVolume: number | null;
+  DailyTrades: number | null;
+  Last2DaysTrades: number | null;
+  WeekTrades: number;
+  LastWeekTrades: number | null;
+  WeekVolume: number;
+  LastWeekVolume: number | null;
+  WeeklyTradesMargin: number | null;
+  DailyTradesMargin: number | null;
+  WeeklyVolumeMargin: number | null;
+  DailyVolumeEgldMargin: number | null;
+  CollectionAthTrade: number;
+  CollectionAthTxHash: string;
+  Name: string;
+  AthHash: string;
+  Profile: string;
+  Banner: string;
+  isVerified: boolean;
+  FloorPrice: number;
+};
 
-export interface OnMarketInfoHolders {
-  listedOnXO: OtherSc;
-  listedOnFM: OtherSc;
-  listedOnKG: OtherSc;
-  listedOnIG: OtherSc;
-  listedOnET: OtherSc;
-  lotteryFM: OtherSc;
-}
-
-export interface OtherHolders {
-  otherSC: OtherSc;
-}
-
-export interface StakingInfo {
-  stakingCount: number;
-  stakingWeight: number;
-  holders: StakingInfoHolders;
-}
-
-export interface StakingInfoHolders {
-  stakingOnXO: OtherSc;
+export enum CollectionsSummaryFilter {
+  TotalVolume = 'TotalVolume',
+  TotalTrades = 'TotalTrades',
+  DailyVolume = 'DailyVolume',
+  Last2DaysVolume = 'Last2DaysVolume',
+  DailyTrades = 'DailyTrades',
+  Last2DaysTrades = 'Last2DaysTrades',
+  WeekTrades = 'WeekTrades',
+  LastWeekTrades = 'LastWeekTrades',
+  WeekVolume = 'WeekVolume',
+  LastWeekVolume = 'LastWeekVolume',
+  WeeklyTradesMargin = 'WeeklyTradesMargin',
+  DailyTradesMargin = 'DailyTradesMargin',
+  WeeklyVolumeMargin = 'WeeklyVolumeMargin',
+  DailyVolumeEgldMargin = 'DailyVolumeEgldMargin',
+  CollectionAthTrade = 'CollectionAthTrade',
 }

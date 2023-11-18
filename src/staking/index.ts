@@ -16,9 +16,8 @@ export default class StakingModule {
    * @returns {StakingPool[]}
    */
   public getAllStakingPools = async (): Promise<StakingPool[]> => {
-    const response = await this.api.fetchWithTimeout<StakingPool[]>(
-      '/getStakingPools'
-    );
+    const response =
+      await this.api.fetchWithTimeout<StakingPool[]>('/getStakingPools');
     return response;
   };
 

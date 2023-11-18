@@ -8,6 +8,7 @@ import {
 import {
   ArgsUserOffers,
   IUserProfile,
+  UserAccountInfo,
   UserInventory,
   UserOffers,
   UserStakingInfo,
@@ -34,6 +35,20 @@ export default class UserModule {
     if (!isAddressValid(address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<IUserProfile>(
       `/getUserProfile/${address}`
+    );
+    return response;
+  };
+
+  /**
+   * Returns the user account info that inclues nonce, guardian data, esdtTokens
+   *
+   * @param {String} address - Address of the user
+   * @returns {UserAccountInfo}
+   */
+  public getUserAccount = async (address: string): Promise<UserAccountInfo> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+    const response = await this.api.fetchWithTimeout<UserAccountInfo>(
+      `/accounts/${address}`
     );
     return response;
   };

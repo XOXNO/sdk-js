@@ -1,6 +1,6 @@
 import CollectionModule from './../index';
 import XOXNOClient from '../../utils/api';
-import { FieldsToSelect, SearchNFTsResponse } from '../../types';
+import { AssetCategory, FieldsToSelect, SearchNFTsResponse } from '../../types';
 
 describe('CollectionModule', () => {
   let collectionModule: CollectionModule;
@@ -28,16 +28,14 @@ describe('CollectionModule', () => {
   });
 
   it('should get the floor price of a collection', async () => {
-    const floorPrice = await collectionModule.getCollectionFloorPrice(
-      inputCollection
-    );
+    const floorPrice =
+      await collectionModule.getCollectionFloorPrice(inputCollection);
     expect(floorPrice).toBeLessThan(1);
   });
 
   it('should get the collection attributes', async () => {
-    const attributesInfo = await collectionModule.getCollectionAttributes(
-      inputCollection
-    );
+    const attributesInfo =
+      await collectionModule.getCollectionAttributes(inputCollection);
     expect(attributesInfo).toMatchObject({
       Accessorie: {
         Dollars: {
@@ -103,5 +101,25 @@ describe('CollectionModule', () => {
         skip: 2,
       },
     });
+  });
+
+  it('should get all tokens', async () => {
+    const tokens = await collectionModule.getFungibleTokens();
+
+    expect(tokens['EUR']).toBeDefined();
+  });
+
+  it('should get all tokens only for minting and staking', async () => {
+    const tokens = await collectionModule.getFungibleTokens([
+      AssetCategory.Minting,
+      AssetCategory.Staking,
+    ]);
+    expect(tokens).toBeDefined();
+  });
+
+  it('should get only RIDE asset info', async () => {
+    const token = await collectionModule.getFungibleToken('RIDE-7d18e9');
+
+    expect(token).toBeDefined();
   });
 });

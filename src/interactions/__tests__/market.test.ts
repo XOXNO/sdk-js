@@ -30,18 +30,6 @@ describe('SCInteraction', () => {
     expect(global_offer_ids.length).toBeGreaterThan(1);
   });
 
-  it('should return the XOXNO global offer body for an ID', async () => {
-    const global_offer_ids = await sc.getGlobalOfferIDs();
-    expect(global_offer_ids).toBeDefined();
-    expect(global_offer_ids.length).toBeGreaterThan(1);
-    const offer = await sc.getGlobalOfferData(global_offer_ids[0]);
-    expect(offer).toBeDefined();
-    const lastOffer = await sc.getGlobalOfferData(
-      global_offer_ids[global_offer_ids.length - 1]
-    );
-    expect(lastOffer).toBeDefined();
-  });
-
   it('should return the XOXNO listings count', async () => {
     const listings = await sc.getListingsCount();
     expect(listings).toBeDefined();

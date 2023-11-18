@@ -1,3 +1,4 @@
+import { NftData } from '../types';
 import {
   CollectionsNFTsResponse,
   GetCollectionsArgs,
@@ -11,7 +12,13 @@ import {
   SuggestResults,
   CollectionVolume,
   FloorPriceHistory,
-  CollectionHoldersInfo,
+  FungibleAssets,
+  FungibleAssetsMap,
+  AssetCategory,
+  IOwners,
+  ISingleHolder,
+  CollectionsSummary,
+  CollectionsSummaryFilter,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
 import XOXNOClient from '../utils/api';
@@ -57,6 +64,69 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getCollectionProfile'],
+        },
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getFungibleTokens
+   * @param category - The ticker of the collection.
+   * @returns {Promise<FungibleAssetsMap>} A promise that resolves a map of ESDT tokens and their info
+   * This function fetches all branded fungible assets and their info
+   */
+  public getFungibleTokens = async (
+    categories: AssetCategory[] = [AssetCategory.ALL]
+  ): Promise<FungibleAssetsMap> => {
+    const category = categories.join(',');
+    const response = await this.api.fetchWithTimeout<FungibleAssetsMap>(
+      `/getFungibleTokens?category=${category}`,
+      {
+        next: {
+          tags: ['getFungibleTokens'],
+        },
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getFungibleToken
+   * @returns {Promise<FungibleAssets>} A promise that resolves the ESDT token info
+   * This function fetches the branded fungible asset info
+   */
+  public getFungibleToken = async (
+    identifier: string
+  ): Promise<FungibleAssets> => {
+    const response = await this.api.fetchWithTimeout<FungibleAssets>(
+      `/getFungibleTokens/${identifier}`,
+      {
+        next: {
+          tags: ['getFungibleToken'],
+        },
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getDailyTrending
+   * @returns {Promise<NftData[]>} A promise that resolves to the array of trending NFTs.
+   * This function fetches the top NFTs that are trending today based on their floor and volumes
+   */
+  public getDailyTrending = async (): Promise<NftData[]> => {
+    const response = await this.api.fetchWithTimeout<NftData[]>(
+      '/nfts/getDailyTrending',
+      {
+        next: {
+          tags: ['getDailyTrending'],
         },
       }
     );
@@ -172,7 +242,6 @@ export default class CollectionModule {
     };
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
-    console.log(buffer);
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
       `/getNfts/${buffer}`,
       {
@@ -345,6 +414,41 @@ export default class CollectionModule {
   /**
    * @public
    * @async
+   * @function getMarketplaceVolume
+   * @param {string} after - The start date (inclusive) of the date range for the volume data (e.g., '2023-04-17').
+   * @param {string} before - The end date (inclusive) of the date range for the volume data (e.g., '2023-04-25').
+   * @param {string} bin - The binning period for the volume data (e.g., '1d' for 1 day).
+   * @returns {Promise<CollectionVolume[]>} A promise that resolves to an array of collection volume data.
+   *
+   * This function fetches volume data for a given collection within a specified date range and binning period. It takes the following parameters:
+   * - collection (string): The ticker of the collection to fetch the volume for (e.g., 'EAPES-8f3c1f').
+   * - after (string): The start date (inclusive) of the date range for the volume data (e.g., '2023-04-17').
+   * - before (string): The end date (inclusive) of the date range for the volume data (e.g., '2023-04-25').
+   * - bin (string): The binning period for the volume data (e.g., '1d' for 1 day).
+   *
+   * The function first validates the input collection ticker and checks if it is a valid collection ticker.
+   * If it is valid, the function fetches the collection volume data using the API with the specified query parameters.
+   * Finally, it returns a promise that resolves to an array of collection volume data.
+   */
+  public getMarketplaceVolume = async (
+    after: string,
+    before: string,
+    bin: string
+  ): Promise<CollectionVolume[]> => {
+    const response = await this.api.fetchWithTimeout<CollectionVolume[]>(
+      `/getMarketplaceVolume?after=${after}&before=${before}&bin=${bin}`,
+      {
+        next: {
+          tags: ['getMarketplaceVolume'],
+        },
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
    * @function getCollectionFloor
    * @param {string} collection - The ticker of the collection to fetch the volume for (e.g., 'EAPES-8f3c1f').
    * @param {string} after - The start date (inclusive) of the date range for the volume data (e.g., '2023-04-17').
@@ -387,27 +491,83 @@ export default class CollectionModule {
    * @async
    * @function getCollectionOwners
    * @param {string} collection - The ticker of the collection to fetch the owner information for (e.g., 'EAPES-8f3c1f').
-   * @returns {Promise<CollectionHoldersInfo[]>} A promise that resolves to an array of collection owner information.
+   * @returns {Promise<IOwners>} A promise that resolves a struct of collection information about holders
    *
    * This function fetches owner information for a given collection. It takes the following parameter:
    * - collection (string): The ticker of the collection to fetch the owner information for (e.g., 'EAPES-8f3c1f').
    *
    * The function first validates the input collection ticker and checks if it is a valid collection ticker.
    * If it is valid, the function fetches the collection owner information using the API.
-   * Finally, it returns a promise that resolves to an array of collection owner information.
+   * Finally, it returns a promise that resolves a struct of collection information about holders
    */
-  public getCollectionOwners = async (
-    collection: string
-  ): Promise<CollectionHoldersInfo> => {
+  public getCollectionOwners = async (collection: string): Promise<IOwners> => {
     if (!isValidCollectionTicker(collection)) {
       throw new Error('Invalid collection ticker: ' + collection);
     }
-    const response = await this.api.fetchWithTimeout<CollectionHoldersInfo>(
+    const response = await this.api.fetchWithTimeout<IOwners>(
       `/getCollectionOwners/${collection}`,
 
       {
         next: {
           tags: ['getCollectionOwners'],
+        },
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getExportOwners
+   * @param {string} collection - The ticker of the collection to fetch the owner information for (e.g., 'EAPES-8f3c1f').
+   * @returns {Promise<ISingleHolder[]>} A promise that resolves an array of holders part of the collection.
+   *
+   * This function fetches owners information for a given collection. It takes the following parameter:
+   * - collection (string): The ticker of the collection to fetch the owner information for (e.g., 'EAPES-8f3c1f').
+   *
+   * The function first validates the input collection ticker and checks if it is a valid collection ticker.
+   * If it is valid, the function fetches the collection owner information using the API.
+   * Finally, it returns a promise that resolves to an array of collection owner information.
+   */
+  public getExportOwners = async (
+    collection: string
+  ): Promise<ISingleHolder[]> => {
+    if (!isValidCollectionTicker(collection)) {
+      throw new Error('Invalid collection ticker: ' + collection);
+    }
+    const response = await this.api.fetchWithTimeout<ISingleHolder[]>(
+      `/getCollectionOwners/${collection}?exportHolders=true`,
+
+      {
+        next: {
+          tags: ['getExportOwners'],
+        },
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getCollectionsSummary
+   * @param {string} type - The start date (inclusive) of the date range for the volume data (e.g., '2023-04-17').
+   * @param {string} skip - The offset from where to start reading
+   * @param {string} take - How many results per call
+   * @returns {Promise<CollectionsSummary>} A promise that resolves to a struct with information
+   * Finally, it returns a promise that resolves a struct with information
+   */
+  public getCollectionsSummary = async (
+    type: CollectionsSummaryFilter,
+    skip: number,
+    take: number
+  ): Promise<CollectionsSummary> => {
+    const response = await this.api.fetchWithTimeout<CollectionsSummary>(
+      `/getCollectionsSummary/${type}/${skip}/${take}`,
+      {
+        next: {
+          tags: ['getCollectionsSummary'],
         },
       }
     );

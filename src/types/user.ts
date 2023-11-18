@@ -148,6 +148,7 @@ export type Nfts = {
   results: NftData[];
   empty: boolean;
 };
+
 export enum Type {
   NonFungibleESDT = 'NonFungibleESDT',
 }
@@ -155,8 +156,61 @@ export type TickerElement = {
   ticker: string;
   name: string;
 };
+
 export type UnClaimedReward = {
   reward_token: string;
   reward_token_nonce: string;
   amount: number;
+};
+
+export type UserAccountInfo = {
+  address: string;
+  nonce: number;
+  totalEsdtUsd: number;
+  totalStables: number;
+  totalEgldStables: number;
+  totalEgldEsdt: number;
+  totalUsdBalance: number;
+  totalEGLDBalance: number;
+  balance: string;
+  balanceShort: number;
+  balanceUsd: number;
+  balanceWalletWeight: number;
+  stablesWalletWeight: number;
+  esdtWalletWeight: number;
+  username?: string;
+  ownerAddress?: string;
+  esdtTokens: EsdtToken[];
+  shard: number;
+  guarded: boolean;
+  activeGuardian: ActiveGuardian;
+  isUpgradeable: boolean;
+  isReadable: boolean;
+  isPayable: boolean;
+  isPayableBySmartContract: boolean;
+};
+
+export type ActiveGuardian = {
+  activationEpoch: number;
+  address: string;
+  serviceUID: string;
+};
+
+export type EsdtToken = {
+  nonce: number;
+  identifier: string;
+  decimals: number;
+  balance: string;
+  ticker: string;
+  name: string;
+  shortBalance: number;
+  assets: Assets;
+  isAshSupported?: boolean;
+  usdValue: number;
+  walletWeight: number;
+};
+
+export type Assets = {
+  pngUrl: string;
+  svgUrl: string;
 };
