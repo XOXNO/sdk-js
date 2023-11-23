@@ -57,22 +57,6 @@ export interface UserInventory {
   value: number;
 }
 
-export interface GroupedByCollection {
-  name: string;
-  type: string;
-  image: string;
-  ticker: string;
-  isVerified: boolean;
-  isVisible: boolean;
-  nftsCount: number;
-  nfts: NftData[];
-  bids: NftData[];
-  floorWorth: number;
-  maxWorth: number;
-  floorPrice: number;
-  totalWorth: number;
-}
-
 export interface UserOffers {
   hasMoreResults: boolean;
   resources: OfferBody[];

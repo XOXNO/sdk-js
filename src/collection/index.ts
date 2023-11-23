@@ -64,6 +64,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getCollectionProfile'],
+          revalidate: 30,
         },
       }
     );
