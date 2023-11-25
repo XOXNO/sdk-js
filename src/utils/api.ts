@@ -78,11 +78,8 @@ export default class XOXNOClient {
     options: Record<string, unknown> = {},
     timeout = 40000
   ): Promise<T> => {
-    const timestamp = Math.round(new Date().getTime() / 1000);
-
     const headers = {
       'Accept-Encoding': 'gzip,deflate,br',
-      'xo-time': `Sent-At:${timestamp}`,
       Referer: 'https://xoxno.sdk',
       'User-Agent': 'XOXNO/1.0/SDK',
       ...(options.method === 'POST'

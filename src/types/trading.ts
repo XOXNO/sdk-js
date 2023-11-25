@@ -68,8 +68,10 @@ export interface TradincActivityArgs {
 }
 
 export enum OrderByTradingActivity {
-  PriceHighToLow = 'short_price desc',
-  PriceLowToHigh = 'short_price asc',
+  PriceHighToLow = 'egldValue desc',
+  PriceLowToHigh = 'egldValue asc',
+  RankHighToLow = 'rank asc',
+  RankLowToHigh = 'rank desc',
   RecentPlaced = 'timestamp desc',
   OldestPlaced = 'timestamp asc',
 }
