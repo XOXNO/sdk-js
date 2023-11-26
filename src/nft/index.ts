@@ -67,7 +67,13 @@ export default class NFTModule {
       throw new Error('Invalid identifier: ' + identifier);
     }
     const response = await this.api.fetchWithTimeout<UserOffers>(
-      `/getSingleNft/${identifier}/offers?skip=${skip}&top=${top}`
+      `/getSingleNft/${identifier}/offers?skip=${skip}&top=${top}`,
+      {
+        next: {
+          tags: ['getNFTsOffers'],
+          revalidate: 12,
+        },
+      }
     );
     return response;
   };

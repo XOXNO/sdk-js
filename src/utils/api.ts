@@ -75,7 +75,7 @@ export default class XOXNOClient {
 
   public fetchWithTimeout = async <T>(
     path: string,
-    options: Record<string, unknown> = {},
+    options: Record<string, unknown> & RequestInit = {},
     timeout = 40000
   ): Promise<T> => {
     const headers = {

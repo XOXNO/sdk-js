@@ -255,8 +255,9 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getCollectionNFTs'],
-          revalidate: 5,
+          // revalidate: 5,
         },
+        cache: 'no-store',
       }
     );
     return {
@@ -536,6 +537,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getCollectionFloor'],
+          revalidate: 180,
         },
       }
     );

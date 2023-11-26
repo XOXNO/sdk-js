@@ -12,7 +12,13 @@ export class SmartContractAbis {
   public static async getMarket(): Promise<AbiRegistry> {
     if (!SmartContractAbis.market) {
       const data = await XOXNOClient.init().fetchWithTimeout<any>(
-        'https://media.xoxno.com/smartcontractabi/esdt-nft-marketplace.abi.json'
+        'https://media.xoxno.com/smartcontractabi/esdt-nft-marketplace.abi.json',
+        {
+          next: {
+            tags: ['getMarket'],
+            revalidate: 500,
+          },
+        }
       );
       const abiRegistry = AbiRegistry.create(data);
       SmartContractAbis.market = abiRegistry;
@@ -24,7 +30,13 @@ export class SmartContractAbis {
   public static async getManager(): Promise<AbiRegistry> {
     if (!SmartContractAbis.manager) {
       const data = await XOXNOClient.init().fetchWithTimeout<any>(
-        'https://media.xoxno.com/smartcontractabi/manage.json'
+        'https://media.xoxno.com/smartcontractabi/manage.json',
+        {
+          next: {
+            tags: ['getManager'],
+            revalidate: 500,
+          },
+        }
       );
       const abiRegistry = AbiRegistry.create(data);
       SmartContractAbis.manager = abiRegistry;
@@ -36,7 +48,13 @@ export class SmartContractAbis {
   public static async getMinter(): Promise<AbiRegistry> {
     if (!SmartContractAbis.minter) {
       const data = await XOXNOClient.init().fetchWithTimeout<any>(
-        'https://media.xoxno.com/smartcontractabi/minter.json'
+        'https://media.xoxno.com/smartcontractabi/minter.json',
+        {
+          next: {
+            tags: ['getMinter'],
+            revalidate: 500,
+          },
+        }
       );
       const abiRegistry = AbiRegistry.create(data);
       SmartContractAbis.minter = abiRegistry;
@@ -48,7 +66,13 @@ export class SmartContractAbis {
   public static async getStaking(): Promise<AbiRegistry> {
     if (!SmartContractAbis.staking) {
       const data = await XOXNOClient.init().fetchWithTimeout<any>(
-        'https://media.xoxno.com/smartcontractabi/staking-nfts.abi.json'
+        'https://media.xoxno.com/smartcontractabi/staking-nfts.abi.json',
+        {
+          next: {
+            tags: ['getStaking'],
+            revalidate: 500,
+          },
+        }
       );
       const abiRegistry = AbiRegistry.create(data);
       SmartContractAbis.staking = abiRegistry;
@@ -60,7 +84,13 @@ export class SmartContractAbis {
   public static async getExchange(): Promise<AbiRegistry> {
     if (!SmartContractAbis.exchange) {
       const data = await XOXNOClient.init().fetchWithTimeout<any>(
-        'https://media.xoxno.com/smartcontractabi/rs-exchange.abi.json'
+        'https://media.xoxno.com/smartcontractabi/rs-exchange.abi.json',
+        {
+          next: {
+            tags: ['getExchange'],
+            revalidate: 500,
+          },
+        }
       );
       const abiRegistry = AbiRegistry.create(data);
       SmartContractAbis.exchange = abiRegistry;
@@ -72,7 +102,13 @@ export class SmartContractAbis {
   public static async getP2P(): Promise<AbiRegistry> {
     if (!SmartContractAbis.p2p) {
       const data = await XOXNOClient.init().fetchWithTimeout<any>(
-        'https://media.xoxno.com/smartcontractabi/p2p.abi.json'
+        'https://media.xoxno.com/smartcontractabi/p2p.abi.json',
+        {
+          next: {
+            tags: ['getP2P'],
+            revalidate: 500,
+          },
+        }
       );
       const abiRegistry = AbiRegistry.create(data);
       SmartContractAbis.p2p = abiRegistry;
