@@ -267,6 +267,8 @@ export interface GetNFTsArgs {
   onlyVerified?: boolean;
   /** If true, will return only NFTs that are on sale */
   onlyOnSale?: boolean;
+  /** If true, will return only NFTs that are active, deadline not expired */
+  activeAuctions?: boolean;
   /** If true, will return only NFTs that are on auction */
   onlyAuctions?: boolean;
   /** If set, will return only NFTs with a price in the specified range */

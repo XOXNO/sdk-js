@@ -218,7 +218,7 @@ export default class CollectionModule {
     const payloadBody: SearchNFTs = {
       filters: {
         dataType: args.dataType ?? ['nft'],
-        activeAuction: args.onlyAuctions || false,
+        activeAuction: args.onlyAuctions || args.activeAuctions || false,
         collection: args.collections ?? [],
         onSale: args.onlyOnSale || false,
         seller: args.listedBy || [],
