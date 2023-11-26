@@ -1,4 +1,4 @@
-import { NftData } from './nft';
+import { NftData, Owner } from './nft';
 import { IUserProfile } from './user';
 
 export interface ISocials {
@@ -174,6 +174,15 @@ export enum CollectionsOrderBy {
   FollowersLowToHigh = 'statistics.other.followCount asc',
 }
 
+export enum GlobalOfferOrderBy {
+  PriceHighToLow = 'priceShort desc',
+  PriceLowToHigh = 'priceShort asc',
+  OfferIdHighToLow = 'offerIddesc',
+  OfferIdLowToHigh = 'offerId asc',
+  RecentListed = 'timestamp desc',
+  OldestListed = 'timestamp asc',
+}
+
 export enum CollectionsFieldsToSelect {
   Profile = 'profile',
   Description = 'description',
@@ -190,6 +199,14 @@ export enum CollectionsFieldsToSelect {
   IsMintable = 'isMintable',
   Statistics = 'statistics',
   Collection = 'collection',
+}
+export enum GlobalOfferFieldsToSelect {
+  Attributes = 'attributes',
+  Collection = 'collection',
+  Marketplace = 'marketplace',
+  PaymentToken = 'paymentToken',
+  LongPrice = 'price',
+  ShortPrice = 'priceShort',
 }
 
 export interface Filter {
@@ -351,6 +368,21 @@ export interface GetCollectionsArgs {
   orderBy?: CollectionsOrderBy;
   /** If set, will return only the specified fields */
   onlySelectFields?: CollectionsFieldsToSelect[];
+}
+
+export interface GetGlobalOffersArgs {
+  /**  The collections to fetch the profile */
+  collections?: string[];
+  /** The number of results to return */
+  top?: number;
+  /** The order by to use */
+  skip?: number;
+  /** The order of the results based on a field */
+  orderBy?: GlobalOfferOrderBy[];
+  /** If set, will return only the offers with required attributes */
+  withAttributes?: boolean;
+  /** If set, will return only the specified fields */
+  onlySelectFields?: GlobalOfferFieldsToSelect[];
 }
 
 export interface CollectionsNFTsResponse {
@@ -555,3 +587,31 @@ export enum CollectionsSummaryFilter {
   DailyVolumeEgldMargin = 'DailyVolumeEgldMargin',
   CollectionAthTrade = 'CollectionAthTrade',
 }
+
+export type GlobalOffersResult = {
+  resources: GlobalOffers[];
+  hasMoreResults: boolean;
+  lastSkip: number;
+  getNextPagePayload?: GetGlobalOffersArgs;
+};
+
+export type GlobalOffers = {
+  offerId: number;
+  collection: string;
+  quantity: number;
+  paymentToken: string;
+  price: string;
+  priceShort: number;
+  owner: Owner;
+  usd: string;
+  marketplace: string;
+  timestamp: number;
+  attributes: MetadataAttribute[];
+  isActive: boolean;
+};
+
+export type GlobalOfferOwner = {
+  address: string;
+  userName: string;
+  profile: string;
+};

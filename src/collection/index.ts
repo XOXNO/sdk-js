@@ -19,6 +19,9 @@ import {
   ISingleHolder,
   CollectionsSummary,
   CollectionsSummaryFilter,
+  GetGlobalOffersArgs,
+  GlobalOffersResult,
+  GlobalOfferOrderBy,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
 import XOXNOClient from '../utils/api';
@@ -88,6 +91,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getFungibleTokens'],
+          revalidate: 500,
         },
       }
     );
@@ -109,6 +113,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getFungibleToken'],
+          revalidate: 500,
         },
       }
     );
@@ -128,6 +133,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getDailyTrending'],
+          revalidate: 180,
         },
       }
     );
@@ -184,6 +190,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getCollectionAttributes'],
+          revalidate: 180,
         },
       }
     );
@@ -248,6 +255,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getCollectionNFTs'],
+          revalidate: 5,
         },
       }
     );
@@ -305,6 +313,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['suggestResults'],
+          revalidate: 180,
         },
       }
     );
@@ -357,6 +366,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getCollections'],
+          revalidate: 180,
         },
       }
     );
@@ -369,6 +379,49 @@ export default class CollectionModule {
         skip: (args?.skip || 0) + (args?.top || 25),
       },
       hasMoreResults: response.length >= (args?.top || 25),
+    };
+  };
+
+  /**
+   * Fetch global offers based on the provided arguments.
+   * @param {GetGlobalOffersArgs} args - The GetCollectionsArgs object containing the search parameters.
+   * @returns {Promise<GlobalOffersResult>} A Promise that resolves to the GlobalOffersResult object.
+   * @throws An error if the 'top' value is greater than 35.
+   */
+  public getGlobalOffers = async (
+    args?: GetGlobalOffersArgs
+  ): Promise<GlobalOffersResult> => {
+    if (args?.top && args.top > 25) {
+      throw new Error('Top cannot be greater than 25');
+    }
+
+    const payloadBody = {
+      skip: args?.skip || 0,
+      top: args?.top || 25,
+      select: args?.onlySelectFields || [],
+      filters: {
+        collection: args?.collections || [],
+        withAttributes: args?.withAttributes,
+      },
+      orderBy: [args?.orderBy || GlobalOfferOrderBy.PriceHighToLow],
+    };
+
+    const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
+    const response = await this.api.fetchWithTimeout<GlobalOffersResult>(
+      `/getGlobalOffers/${buffer}`,
+      {
+        next: {
+          tags: ['getGlobalOffers'],
+          revalidate: 12,
+        },
+      }
+    );
+    return {
+      ...response,
+      getNextPagePayload: {
+        ...args,
+        skip: (args?.top || 25) + response.lastSkip,
+      },
     };
   };
 
@@ -406,6 +459,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getCollectionVolume'],
+          revalidate: 180,
         },
       }
     );
@@ -441,6 +495,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getMarketplaceVolume'],
+          revalidate: 180,
         },
       }
     );
@@ -511,6 +566,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getCollectionOwners'],
+          revalidate: 500,
         },
       }
     );
@@ -569,6 +625,7 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getCollectionsSummary'],
+          revalidate: 180,
         },
       }
     );
