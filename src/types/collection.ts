@@ -403,6 +403,16 @@ export interface SuggestResults {
   results: ResultsBody;
 }
 
+export interface ListingDistribution {
+  identifier: string;
+  name: string;
+  url: string;
+  wasProcessed: boolean;
+  rank: number;
+  price: number;
+  marketplace: string;
+}
+
 export interface ResultsBody {
   collections: ICollectionProfile[];
   users: IUserProfile[];

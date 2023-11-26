@@ -22,6 +22,7 @@ import {
   GetGlobalOffersArgs,
   GlobalOffersResult,
   GlobalOfferOrderBy,
+  ListingDistribution,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
 import XOXNOClient from '../utils/api';
@@ -255,7 +256,6 @@ export default class CollectionModule {
       {
         next: {
           tags: ['getCollectionNFTs'],
-          // revalidate: 5,
         },
         cache: 'no-store',
       }
@@ -314,6 +314,27 @@ export default class CollectionModule {
       {
         next: {
           tags: ['suggestResults'],
+          revalidate: 180,
+        },
+      }
+    );
+  };
+
+  /**
+   * @public
+   * @async
+   * @function suggestResults
+   * @param {string} ticker - The unique collection identifier called ticker
+   * @returns {Promise<ListingDistribution[]>} A promise that resolves to the distribution of listings
+   */
+  public collectionListings = async (
+    ticker: string
+  ): Promise<ListingDistribution[]> => {
+    return await this.api.fetchWithTimeout<ListingDistribution[]>(
+      `/listingDistribution/${ticker}`,
+      {
+        next: {
+          tags: ['collectionListings'],
           revalidate: 180,
         },
       }
