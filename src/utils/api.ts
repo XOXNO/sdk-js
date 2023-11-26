@@ -90,8 +90,12 @@ export default class XOXNOClient {
     try {
       const controller = new AbortController();
       setTimeout(() => controller.abort(), timeout);
+
+      const shouldInsertOrigin =
+        typeof path === 'string' && path.startsWith('/');
+
       const res = await fetch(
-        `${this.apiUrl}${path}${
+        `${shouldInsertOrigin ? `${this.apiUrl}${path}` : path}${
           options.params
             ? '?' +
               Object.keys(options.params as any)
