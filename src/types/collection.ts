@@ -42,23 +42,6 @@ export interface ICollectionProfile {
   owner: string;
   creator: string;
   isMintable: boolean;
-  mintInfo: IMintInfo;
-  mintStages: {
-    name: string;
-    collectionTag: string;
-    mintEnabled: boolean;
-    isWhitelist: boolean;
-    startTime: number;
-    endTime: number;
-    mintLimit: number;
-    mintCount: number;
-    prices: {
-      tokenIdentifier: string;
-      tokenNonce: string;
-      amount: string;
-    }[];
-    walletLimit: number;
-  }[];
   hasStaking: boolean;
   id: string;
   socials: ISocials;
@@ -191,8 +174,6 @@ export enum CollectionsFieldsToSelect {
   Socials = 'socials',
   Type = 'type',
   HasStaking = 'hasStaking',
-  MintInfo = 'mintInfo',
-  MintStages = 'mintStages',
   Name = 'name',
   Banner = 'banner',
   IsVerified = 'isVerified',
@@ -626,4 +607,35 @@ export type GlobalOfferOwner = {
   address: string;
   userName: string;
   profile: string;
+};
+
+export type GetCollectionMintInfo = {
+  collection: string;
+  contractAddress: string;
+  collectionTag: string;
+  nftTransferLimited: boolean;
+  kycRequired: boolean;
+  totalNftMinted: number;
+  collectionSize: number;
+  mintStages: MintStage[];
+};
+
+export type MintStage = {
+  name: string;
+  startTime: number;
+  endTime: number;
+  mintCount: number;
+  mintLimit: number;
+  mintEnabled: boolean;
+  isWhitelist: boolean;
+  walletLimit: number;
+  prices: StagePrice[];
+  isSoldOut: boolean;
+};
+
+export type StagePrice = {
+  tokenIdentifier: string;
+  tokenNonce: string;
+  amount: string;
+  shortAmount: number;
 };

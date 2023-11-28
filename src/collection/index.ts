@@ -23,6 +23,7 @@ import {
   GlobalOffersResult,
   GlobalOfferOrderBy,
   ListingDistribution,
+  GetCollectionMintInfo,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
 import XOXNOClient from '../utils/api';
@@ -638,11 +639,17 @@ export default class CollectionModule {
    * @returns {Promise<CollectionsSummary>} A promise that resolves to a struct with information
    * Finally, it returns a promise that resolves a struct with information
    */
-  public getCollectionsSummary = async (
-    type: CollectionsSummaryFilter,
-    skip: number,
-    take: number
-  ): Promise<CollectionsSummary> => {
+  public getCollectionsSummary = async ({
+    type,
+    skip,
+    take,
+    extra,
+  }: {
+    type: CollectionsSummaryFilter;
+    skip: number;
+    take: number;
+    extra?: RequestInit;
+  }): Promise<CollectionsSummary> => {
     const response = await this.api.fetchWithTimeout<CollectionsSummary>(
       `/getCollectionsSummary/${type}/${skip}/${take}`,
       {
@@ -650,6 +657,35 @@ export default class CollectionModule {
           tags: ['getCollectionsSummary'],
           revalidate: 180,
         },
+        ...extra,
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getCollectionMintInfo
+   * @param {string} ticker - The ticker of the collection to fetch the owner information for (e.g., 'EAPES-8f3c1f').
+   * @returns {Promise<GetCollectionMintInfo>} A promise that resolves to a struct with information
+   * Finally, it returns a promise that resolves a struct with information
+   */
+  public getCollectionMintInfo = async ({
+    ticker,
+    extra,
+  }: {
+    ticker: string;
+    extra?: RequestInit;
+  }): Promise<GetCollectionMintInfo> => {
+    const response = await this.api.fetchWithTimeout<GetCollectionMintInfo>(
+      `/getCollectionMintInfo/${ticker}`,
+      {
+        next: {
+          tags: ['getCollectionMintInfo'],
+          revalidate: 12,
+        },
+        ...extra,
       }
     );
     return response;

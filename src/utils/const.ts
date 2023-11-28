@@ -1,4 +1,4 @@
-export const API_URL = 'https://api.xoxno.com';
+export const API_URL = 'https://proxy-api.xoxno.com';
 export const API_URL_DEV = 'https://api-dev.xoxno.com';
 
 export const XOXNO_SC =
