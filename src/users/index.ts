@@ -5,6 +5,7 @@ import {
   TradincActivityArgs,
   TradingActivityResponse,
 } from '../types';
+import { GroupStakingInfo } from '../types/staking';
 import {
   ArgsUserOffers,
   IUserProfile,
@@ -16,6 +17,7 @@ import {
 import XOXNOClient from '../utils/api';
 import { getActivity } from '../utils/getActivity';
 import { isAddressValid } from '../utils/helpers';
+import { isValidCollectionTicker } from '../utils/regex';
 
 export default class UserModule {
   private api: XOXNOClient;
@@ -121,6 +123,42 @@ export default class UserModule {
 
     const response = await this.api.fetchWithTimeout<UserStakingInfo[]>(
       `/getUserStakingInfo/${address}`
+    );
+    return response;
+  };
+
+  /** Gets user's staking info
+   * @param {String} address - User's address
+   * @returns {GroupStakingInfo[]} User's staking info
+   * @throws {Error} Throws an error if the address is invalid
+   * @example const userStakingInfo = await new UserModule().getUserStakingInfo('erd11...');
+   *  */
+  public getUserStakingInfoGrouped = async (
+    address: string
+  ): Promise<GroupStakingInfo[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+
+    const response = await this.api.fetchWithTimeout<GroupStakingInfo[]>(
+      `/getUserStakingInfo/${address}?groupByTicker=true`
+    );
+    return response;
+  };
+
+  /** Gets user's staking info by ticker
+   * @param {String} address - User's address
+   * @param {String} ticker - Collection's ticker
+   * @returns {GroupStakingInfo[]} User's staking info
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getUserStakingTickerInfoGrouped = async (
+    address: string,
+    ticker: string
+  ): Promise<GroupStakingInfo[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isValidCollectionTicker(ticker)) throw new Error('Invalid ticker');
+
+    const response = await this.api.fetchWithTimeout<GroupStakingInfo[]>(
+      `/getUserStakingInfo/${address}?groupByTicker=true&ticker=${ticker}`
     );
     return response;
   };
