@@ -1,4 +1,4 @@
-import { StakingPool } from '../types/staking';
+import { GetGroupedStakingPools, StakingPool } from '../types/staking';
 import { Nfts } from '../types/user';
 import XOXNOClient from '../utils/api';
 import { isAddressValid } from '../utils/helpers';
@@ -47,6 +47,20 @@ export default class StakingModule {
     if (typeof poolId !== 'number') throw new Error('Invalid pool id');
     const response = await this.api.fetchWithTimeout<StakingPool>(
       `/getPoolDetails/${poolId}`
+    );
+    return response;
+  };
+
+  /**
+   * Returns the staking pools grouped by collection
+   *
+   * @returns {GetGroupedStakingPools[]}
+   */
+  public getGroupedStakingPools = async (): Promise<
+    GetGroupedStakingPools[]
+  > => {
+    const response = await this.api.fetchWithTimeout<GetGroupedStakingPools[]>(
+      `/getGroupedStakingPools`
     );
     return response;
   };

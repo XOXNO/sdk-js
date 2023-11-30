@@ -107,3 +107,11 @@ export type UnClaimedReward = {
   amount: number;
   pool_id?: number;
 };
+
+export type GetGroupedStakingPools = {
+  ticker: string;
+  pools: number;
+  name: string;
+  profile: string;
+  isVerified: boolean;
+};
