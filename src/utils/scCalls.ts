@@ -4,7 +4,7 @@ import {
 } from '@multiversx/sdk-network-providers';
 import { INetworkProvider } from '@multiversx/sdk-network-providers/out/interface';
 
-import XOXNOClient from './api';
+import { XOXNOClient } from '../index';
 import { ResultsParser } from '@multiversx/sdk-core/out/smartcontracts/resultsParser';
 import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract';
 import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';

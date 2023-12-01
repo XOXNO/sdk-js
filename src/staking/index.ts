@@ -1,10 +1,10 @@
 import { GetGroupedStakingPools, StakingPool } from '../types/staking';
 import { Nfts } from '../types/user';
-import XOXNOClient from '../utils/api';
+import { XOXNOClient } from '../utils/api';
 import { isAddressValid } from '../utils/helpers';
 import { isValidCollectionTicker } from '../utils/regex';
 
-export default class StakingModule {
+export class StakingModule {
   private api: XOXNOClient;
   constructor() {
     this.api = XOXNOClient.init();

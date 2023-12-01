@@ -1,6 +1,6 @@
+import { UserModule } from '..';
+import { XOXNOClient } from '../..';
 import { OfferType } from '../../types/user';
-import XOXNOClient from '../../utils/api';
-import UserModule from '../index';
 
 describe('UserModule', () => {
   let userModule: UserModule;

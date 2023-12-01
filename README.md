@@ -21,7 +21,7 @@ npm i @xoxno/sdk-js
 The SDK follows a scheleton model where the API configuration has to be initiated only once anywhere in your application
 
 ```javascript
-import XOXNOClient from '@xoxno/sdk-js';
+import { XOXNOClient } from '@xoxno/sdk-js';
 XOXNOClient.init();
 // By default calling init() without arguments will set the entire SDK to the mainnet ENV using the public API https://api.xoxno.com
 ```
@@ -29,7 +29,7 @@ XOXNOClient.init();
 After the client has been created you can now import different modules anywhere in the application:
 
 ```javascript
-import CollectionModule from '@xoxno/sdk-js';
+import { CollectionModule } from '@xoxno/sdk-js';
 const collection = new CollectionModule(); // In case the above .init() call was not set before creating any module instance will auto trigger .init() using the default parameters described above
 const profile = await collection.getCollectionProfile('MONKEY-ac9bdf');
 // or similar with 

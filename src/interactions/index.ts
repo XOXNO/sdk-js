@@ -1,6 +1,6 @@
 import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { GlobalOffer } from '../types/collection';
-import XOXNOClient from '../utils/api';
+import { XOXNOClient } from '../';
 import { ContractQueryRunner } from '../utils/scCalls';
 import { SmartContractAbis } from '../utils/SmartContractAbis';
 import { getSmartContract } from '../utils/SmartContractService';
@@ -42,7 +42,7 @@ import {
   BooleanValue,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem/boolean';
 import { Address } from '@multiversx/sdk-core/out';
-export default class SCInteraction {
+export class SCInteraction {
   private xo: SmartContract;
   private call: ContractQueryRunner;
   private api: XOXNOClient;

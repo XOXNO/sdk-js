@@ -1,12 +1,11 @@
-import CollectionModule from './../index';
-import XOXNOClient from '../../utils/api';
+import { CollectionModule, XOXNOClient } from '../../index';
 import { AssetCategory, FieldsToSelect, SearchNFTsResponse } from '../../types';
 
 describe('CollectionModule', () => {
   let collectionModule: CollectionModule;
   const inputCollection = 'BANANA-e955fd';
   beforeAll(() => {
-    XOXNOClient.init('https://proxy-api.xoxno.com', '');
+    XOXNOClient.init();
     collectionModule = new CollectionModule();
   });
 

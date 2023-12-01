@@ -1,5 +1,6 @@
 import {
   API_URL,
+  API_URL_DEV,
   DR_SC,
   FM_SC,
   KG_SC,
@@ -17,7 +18,7 @@ export enum Chain {
   MAINNET = '1',
   DEVNET = 'D',
 }
-export default class XOXNOClient {
+export class XOXNOClient {
   private static instance: XOXNOClient;
   public apiUrl: string;
   private apiKey: string;
@@ -62,12 +63,19 @@ export default class XOXNOClient {
           };
   }
 
-  public static init(
-    apiUrl: string = API_URL,
+  public static init({
+    apiUrl = API_URL,
     apiKey = '',
-    chain: Chain = Chain.MAINNET
-  ): XOXNOClient {
+    chain = Chain.MAINNET,
+  }: Partial<{
+    apiUrl?: string;
+    apiKey?: string;
+    chain?: Chain;
+  }> = {}): XOXNOClient {
     if (!XOXNOClient.instance) {
+      if (chain == Chain.DEVNET) {
+        XOXNOClient.instance = new XOXNOClient(API_URL_DEV, apiKey, chain);
+      }
       XOXNOClient.instance = new XOXNOClient(apiUrl, apiKey, chain);
     }
     return XOXNOClient.instance;

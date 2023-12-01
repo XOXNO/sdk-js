@@ -1,5 +1,5 @@
-import LaunchpadModule from '../index';
-import XOXNOClient from '../../utils/api';
+import { LaunchpadModule } from '..';
+import { XOXNOClient } from '../../utils/api';
 
 describe('SCInteraction', () => {
   let sc: LaunchpadModule;

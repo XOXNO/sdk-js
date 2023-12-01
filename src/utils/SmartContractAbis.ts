@@ -1,5 +1,5 @@
 import { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry';
-import XOXNOClient from './api';
+import { XOXNOClient } from './api';
 
 export class SmartContractAbis {
   private static manager: AbiRegistry;

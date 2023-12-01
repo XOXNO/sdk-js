@@ -1,9 +1,9 @@
+import { XOXNOClient } from '..';
 import {
   TradincActivityArgs,
   TradingActivityResponse,
   TradingActivityQueryFilter,
 } from '../types/trading';
-import XOXNOClient from '../utils/api';
 
 /**
  * Fetches the trading activity of the given collections

@@ -8,7 +8,7 @@ import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smar
  * LaunchpadModule provides methods to interact with the minter smart contract.
  * @class
  */
-export default class LaunchpadModule {
+export class LaunchpadModule {
   private minter: SmartContract;
   private call: ContractQueryRunner;
   /**

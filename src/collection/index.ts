@@ -26,7 +26,7 @@ import {
   GetCollectionMintInfo,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
-import XOXNOClient from '../utils/api';
+import { XOXNOClient } from '../index';
 import { getActivity } from '../utils/getActivity';
 import { isValidCollectionTicker } from '../utils/regex';
 
@@ -38,7 +38,7 @@ import { isValidCollectionTicker } from '../utils/regex';
  * @example
  * const collectionModule = new CollectionModule();
  */
-export default class CollectionModule {
+export class CollectionModule {
   private api: XOXNOClient;
   constructor() {
     this.api = XOXNOClient.init();

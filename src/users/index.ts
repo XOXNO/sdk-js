@@ -1,4 +1,4 @@
-import CollectionModule from '../collection';
+import { CollectionModule, XOXNOClient } from '../index';
 import {
   GetNFTsArgs,
   SearchNFTsResponse,
@@ -14,12 +14,11 @@ import {
   UserOffers,
   UserStakingInfo,
 } from '../types/user';
-import XOXNOClient from '../utils/api';
 import { getActivity } from '../utils/getActivity';
 import { isAddressValid } from '../utils/helpers';
 import { isValidCollectionTicker } from '../utils/regex';
 
-export default class UserModule {
+export class UserModule {
   private api: XOXNOClient;
   private collection: CollectionModule;
   constructor() {

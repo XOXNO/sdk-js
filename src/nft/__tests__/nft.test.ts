@@ -1,6 +1,6 @@
-import NFTModule from '../index';
-import XOXNOClient from '../../utils/api';
+import { NFTModule } from '..';
 import { OrderByTradingActivity } from '../../types';
+import { XOXNOClient } from '../../utils/api';
 
 describe('NFTModule', () => {
   let nftModule: NFTModule;

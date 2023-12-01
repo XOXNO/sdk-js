@@ -1,7 +1,7 @@
+import { XOXNOClient } from '..';
 import { NftData } from '../types/nft';
 import { TradingActivityResponse, TradincActivityArgs } from '../types/trading';
 import { UserOffers } from '../types/user';
-import XOXNOClient from '../utils/api';
 import { getActivity } from '../utils/getActivity';
 import { getIdentifierFromColAndNonce } from '../utils/helpers';
 import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex';
@@ -14,7 +14,7 @@ import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex';
  * const nftModule = new NFTModule();
  */
 
-export default class NFTModule {
+export class NFTModule {
   private api: XOXNOClient;
   constructor() {
     this.api = XOXNOClient.init();
