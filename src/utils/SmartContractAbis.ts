@@ -16,7 +16,6 @@ export class SmartContractAbis {
         {
           next: {
             tags: ['getMarket'],
-            revalidate: 500,
           },
         }
       );
@@ -34,7 +33,6 @@ export class SmartContractAbis {
         {
           next: {
             tags: ['getManager'],
-            revalidate: 500,
           },
         }
       );
@@ -52,7 +50,6 @@ export class SmartContractAbis {
         {
           next: {
             tags: ['getMinter'],
-            revalidate: 500,
           },
         }
       );
@@ -70,7 +67,6 @@ export class SmartContractAbis {
         {
           next: {
             tags: ['getStaking'],
-            revalidate: 500,
           },
         }
       );
@@ -88,7 +84,6 @@ export class SmartContractAbis {
         {
           next: {
             tags: ['getExchange'],
-            revalidate: 500,
           },
         }
       );
