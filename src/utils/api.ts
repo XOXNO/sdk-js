@@ -95,40 +95,37 @@ export class XOXNOClient {
         : {}),
       ...((options.headers as object) ?? {}),
     };
+    const shouldInsertOrigin = typeof path === 'string' && path.startsWith('/');
+    const url = `${shouldInsertOrigin ? `${this.apiUrl}${path}` : path}${
+      options.params
+        ? '?' +
+          Object.keys(options.params as any)
+            .map((key) => {
+              return `${key}=${encodeURIComponent(
+                (options.params as any)[key]
+              )}`;
+            })
+            .join('&')
+        : ''
+    }`;
     try {
       const controller = new AbortController();
       setTimeout(() => controller.abort(), timeout);
 
-      const shouldInsertOrigin =
-        typeof path === 'string' && path.startsWith('/');
-
-      const res = await fetch(
-        `${shouldInsertOrigin ? `${this.apiUrl}${path}` : path}${
-          options.params
-            ? '?' +
-              Object.keys(options.params as any)
-                .map((key) => {
-                  return `${key}=${encodeURIComponent(
-                    (options.params as any)[key]
-                  )}`;
-                })
-                .join('&')
-            : ''
-        }`,
-        {
-          ...options,
-          signal: controller.signal,
-          ...(Object.keys(headers).length ? { headers } : {}),
-          method: (options.method as any) ?? 'GET',
-        }
-      );
+      console.debug(url);
+      const res = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+        ...(Object.keys(headers).length ? { headers } : {}),
+        method: (options.method as any) ?? 'GET',
+      });
       if (!res.ok) throw new Error((await res.json()).message.toString());
       return res.json() as T;
     } catch (error: Error | any) {
       throw new Error(
         'Something went wrong inside fetchWithTimeout' +
           ' ' +
-          path +
+          url +
           ' ' +
           JSON.stringify(options) +
           ' ' +

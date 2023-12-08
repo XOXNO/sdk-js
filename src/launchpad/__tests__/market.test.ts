@@ -23,7 +23,5 @@ describe('SCInteraction', () => {
   it('should return all the unique stages of a collection from the launchpad SC', async () => {
     const tags = await sc.getStages('Elonverse');
     expect(tags).toBeDefined();
-    // expect(tags).toContain('Elonverse');
-    // console.log(tags);
   });
 });
