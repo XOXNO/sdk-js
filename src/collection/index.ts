@@ -221,7 +221,7 @@ export class CollectionModule {
         dataType: args.dataType ?? ['nft'],
         activeAuction: args.onlyAuctions || args.activeAuctions || false,
         collection: args.collections ?? [],
-        onSale: args.onlyOnSale || false,
+        onSale: args.onlyOnSale,
         seller: args.listedBy || [],
         owner: args.ownedBy || [],
         marketplace: args.listedOnlyOn || undefined,
