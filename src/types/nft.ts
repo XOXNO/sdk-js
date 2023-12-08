@@ -94,7 +94,7 @@ export interface NftData {
   metadata: NFTMetadata;
   media: Media;
   attributes?: string;
-  creator?: string;
+  creator?: Owner;
   hasOffers?: boolean;
   collectionName: string;
   saleInfo?: SaleInfo;
