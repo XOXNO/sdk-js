@@ -114,6 +114,7 @@ export interface CollectionInfo {
   name: string;
   isVerified: boolean;
   profile: string;
+  collectionSize: number;
 }
 
 export interface Owner {
