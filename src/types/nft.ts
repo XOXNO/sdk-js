@@ -31,7 +31,7 @@ export interface OriginalMedia {
 export interface SaleInfo {
   auctionId: number;
   seller: string;
-  currentWinner?: string;
+  currentWinner?: Owner;
   minBid: string;
   maxBid?: string;
   currentBid?: string;
