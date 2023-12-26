@@ -83,7 +83,7 @@ export class XOXNOClient {
 
   public fetchWithTimeout = async <T>(
     path: string,
-    options: Record<string, unknown> & RequestInit = {},
+    options: Record<string, any> = {},
     timeout = 40000
   ): Promise<T> => {
     const headers = {
@@ -108,29 +108,19 @@ export class XOXNOClient {
             .join('&')
         : ''
     }`;
-    try {
-      const controller = new AbortController();
-      setTimeout(() => controller.abort(), timeout);
 
-      console.debug(url);
-      const res = await fetch(url, {
-        ...options,
-        signal: controller.signal,
-        ...(Object.keys(headers).length ? { headers } : {}),
-        method: (options.method as any) ?? 'GET',
-      });
-      if (!res.ok) throw new Error((await res.json()).message.toString());
-      return res.json() as T;
-    } catch (error: Error | any) {
-      throw new Error(
-        'Something went wrong inside fetchWithTimeout' +
-          ' ' +
-          url +
-          ' ' +
-          JSON.stringify(options) +
-          ' ' +
-          error?.message?.toString() ?? error.toString()
-      );
-    }
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), timeout);
+    const res = await fetch(url, {
+      ...options,
+      ...(options?.next && options.next.revalidate
+        ? {}
+        : { cache: 'no-store' }),
+      signal: controller.signal,
+      ...(Object.keys(headers).length ? { headers } : {}),
+      method: (options.method as any) ?? 'GET',
+    });
+    if (!res.ok) throw new Error((await res.json()).message.toString());
+    return res.json() as T;
   };
 }
