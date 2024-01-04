@@ -229,6 +229,7 @@ export interface NftMetadataAttributes {
 
 export interface SearchNFTs {
   filters: Filter;
+  applyNftExtraDetails?: boolean;
   select?: string[];
   strictSelect?: boolean;
   orderBy?: string[];
@@ -252,6 +253,8 @@ export interface GetNFTsArgs {
   activeAuctions?: boolean;
   /** If true, will return only NFTs that are on auction */
   onlyAuctions?: boolean;
+  /** If true the extra details of an NFT will be appended to each NFT, such as collection size and owners name */
+  applyNftExtraDetails?: boolean;
   /** If set, will return only NFTs with a price in the specified range */
   priceRange?: {
     min: number;

@@ -244,6 +244,7 @@ export class CollectionModule {
         rankRange: args.rankRange || undefined,
         gameLevelRange: args.cantinaLevelRange || undefined,
       },
+      applyNftExtraDetails: args.applyNftExtraDetails || true,
       orderBy: args.orderBy || [],
       select: args.onlySelectFields || [],
       includeCount: args.includeCount || false,
