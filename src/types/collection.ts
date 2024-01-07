@@ -316,30 +316,19 @@ export interface SearchNFTsResponse {
   hasMoreResults: boolean;
 }
 
-export interface TradingActivity {
-  action: string;
-  attributes: MetadataAttribute[];
-  avifUrl: string;
-  buyer: string;
-  buyerUsername: string;
-  collection: string;
-  egldValue: number;
-  id: string;
-  identifier: string;
-  marketplace: Marketplace;
-  name: string;
-  paymentToken: string;
-  price: number;
-  rank: number;
-  seller: string;
-  sellerUsername: string;
-  timestamp: number;
+export type TradingActivity = {
   txHash: string;
-  url: string;
+  timestamp: number;
+  action: string;
+  price: number;
+  paymentToken: string;
+  buyer: Owner;
+  seller: Owner;
   usdPrice: number;
-  webpUrl: string;
-  _ts: number;
-}
+  egldValue: number;
+  marketplace: string;
+  nftInfo: NftData;
+};
 
 export interface GetCollectionsArgs {
   /**  The collections to fetch the profile */

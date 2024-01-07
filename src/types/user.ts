@@ -1,6 +1,14 @@
 import { MetadataAttribute } from './collection';
 import { NftData, Owner } from './nft';
 
+export interface BulkAccount {
+  address: string;
+  nonce: number;
+  username?: string;
+  balance: string;
+  balanceShort: number;
+}
+
 export interface IUserProfile {
   dataType: 'userProfile';
   hasKYC?: boolean;

@@ -8,6 +8,7 @@ import {
 import { GroupStakingInfo } from '../types/staking';
 import {
   ArgsUserOffers,
+  BulkAccount,
   IUserProfile,
   UserAccountInfo,
   UserInventory,
@@ -36,6 +37,25 @@ export class UserModule {
     if (!isAddressValid(address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<IUserProfile>(
       `/getUserProfile/${address}`
+    );
+    return response;
+  };
+
+  /**
+   * Returns the wallet accounts
+   *
+   * @param {String[]} addresses - Addresses of the user
+   * @returns {BulkAccount[]}
+   */
+  public getBulkAccounts = async (
+    addresses: string[]
+  ): Promise<BulkAccount[]> => {
+    const response = await this.api.fetchWithTimeout<BulkAccount[]>(
+      `/address/bulk`,
+      {
+        method: 'POST',
+        body: JSON.stringify(addresses),
+      }
     );
     return response;
   };
