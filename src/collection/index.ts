@@ -17,13 +17,13 @@ import {
   AssetCategory,
   IOwners,
   ISingleHolder,
-  CollectionsSummary,
-  CollectionsSummaryFilter,
   GetGlobalOffersArgs,
   GlobalOffersResult,
   GlobalOfferOrderBy,
   ListingDistribution,
   GetCollectionMintInfo,
+  GetCollectionStatsArgs,
+  CollectionStatsResults,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
 import { XOXNOClient } from '../index';
@@ -633,35 +633,35 @@ export class CollectionModule {
   /**
    * @public
    * @async
-   * @function getCollectionsSummary
-   * @param {string} type - The start date (inclusive) of the date range for the volume data (e.g., '2023-04-17').
-   * @param {string} skip - The offset from where to start reading
-   * @param {string} take - How many results per call
-   * @returns {Promise<CollectionsSummary>} A promise that resolves to a struct with information
+   * @function getCollectionsStatistics
+   * @param {GetCollectionStatsArgs} args - The filter payload for the collection statsitics
+   * @returns {Promise<CollectionStatsResults>} A promise that resolves to a struct with information
    * Finally, it returns a promise that resolves a struct with information
    */
-  public getCollectionsSummary = async ({
-    type,
-    skip,
-    take,
-    extra,
-  }: {
-    type: CollectionsSummaryFilter;
-    skip: number;
-    take: number;
-    extra?: RequestInit;
-  }): Promise<CollectionsSummary> => {
-    const response = await this.api.fetchWithTimeout<CollectionsSummary>(
-      `/getCollectionsSummary/${type}/${skip}/${take}`,
+  public getCollectionsStatistics = async (
+    args: GetCollectionStatsArgs
+  ): Promise<CollectionStatsResults> => {
+    if (args?.top && args.top > 25) {
+      throw new Error('Top cannot be greater than 25');
+    }
+
+    const buffer = Buffer.from(JSON.stringify(args)).toString('base64');
+    const response = await this.api.fetchWithTimeout<CollectionStatsResults>(
+      `/collectionStatistics/${buffer}`,
       {
         next: {
-          tags: ['getCollectionsSummary'],
-          revalidate: 180,
+          tags: ['collectionStatistics'],
+          revalidate: 12,
         },
-        ...extra,
       }
     );
-    return response;
+    return {
+      ...response,
+      getNextPagePayload: {
+        ...args,
+        skip: args.skip + args.top,
+      },
+    };
   };
 
   /**

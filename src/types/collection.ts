@@ -631,3 +631,126 @@ export type StagePrice = {
   amount: string;
   shortAmount: number;
 };
+
+export type CollectionStatsResults = {
+  resources: CollectionStatsDoc[];
+  hasMoreResults: boolean;
+  getNextPagePayload?: GetCollectionStatsArgs;
+};
+
+export type GetCollectionStatsArgs = {
+  filters?: {
+    collection?: string[];
+    isVerified?: boolean;
+    range: [
+      {
+        min: number;
+        max: number;
+        field: string;
+      },
+    ];
+  };
+  orderBy: CollectionStatsOrderBy[];
+  select: CollectionStatsSelectFields[];
+  top: number;
+  skip: number;
+};
+
+export enum CollectionStatsSelectFields {
+  TradingStats = 'tradingStats',
+}
+
+export enum CollectionStatsOrderBy {
+  ListedCountDesc = 'tradingStats.listedCount DESC',
+  ListedCountAsc = 'tradingStats.listedCount ASC',
+  FloorPriceDesc = 'tradingStats.floorPrice DESC',
+  FloorPriceAsc = 'tradingStats.floorPrice ASC',
+
+  TotalVolumeDesc = 'tradingStats.totalVolume DESC',
+  TotalVolumeAsc = 'tradingStats.totalVolume ASC',
+
+  TotalTradesDesc = 'tradingStats.totalTrades DESC',
+  TotalTradesAsc = 'tradingStats.totalTrades ASC',
+
+  AllTimeHighDesc = 'tradingStats.allTimeHigh.price DESC',
+  AllTimeHighAsc = 'tradingStats.allTimeHigh.price ASC',
+
+  DayVolumeDesc = 'tradingStats.day.volume DESC',
+  DayVolumeAsc = 'tradingStats.day.volume ASC',
+  DayVolumeMarginDesc = 'tradingStats.day.volumeMargin DESC',
+  DayVolumeMarginAsc = 'tradingStats.day.volumeMargin ASC',
+  DayTradesDesc = 'tradingStats.day.trades DESC',
+  DayTradesAsc = 'tradingStats.day.trades ASC',
+  DayTradesMarginDesc = 'tradingStats.day.tradesMargin DESC',
+  DayTradesMarginAsc = 'tradingStats.day.tradesMargin ASC',
+
+  WeekVolumeDesc = 'tradingStats.week.volume DESC',
+  WeekVolumeAsc = 'tradingStats.week.volume ASC',
+  WeekVolumeMarginDesc = 'tradingStats.week.volumeMargin DESC',
+  WeekVolumeMarginAsc = 'tradingStats.week.volumeMargin ASC',
+  WeekTradesDesc = 'tradingStats.week.trades DESC',
+  WeekTradesAsc = 'tradingStats.week.trades ASC',
+  WeekTradesMarginDesc = 'tradingStats.week.tradesMargin DESC',
+  WeekTradesMarginAsc = 'tradingStats.week.tradesMargin ASC',
+
+  MonthVolumeDesc = 'tradingStats.month.volume DESC',
+  MonthVolumeAsc = 'tradingStats.month.volume ASC',
+  MonthVolumeMarginDesc = 'tradingStats.month.volumeMargin DESC',
+  MonthVolumeMarginAsc = 'tradingStats.month.volumeMargin ASC',
+  MonthTradesDesc = 'tradingStats.month.trades DESC',
+  MonthTradesAsc = 'tradingStats.month.trades ASC',
+  MonthTradesMarginDesc = 'tradingStats.month.tradesMargin DESC',
+  MonthTradesMarginAsc = 'tradingStats.month.tradesMargin ASC',
+
+  YearVolumeDesc = 'tradingStats.year.volume DESC',
+  YearVolumeAsc = 'tradingStats.year.volume ASC',
+  YearVolumeMarginDesc = 'tradingStats.year.volumeMargin DESC',
+  YearVolumeMarginAsc = 'tradingStats.year.volumeMargin ASC',
+  YearTradesDesc = 'tradingStats.year.trades DESC',
+  YearTradesAsc = 'tradingStats.year.trades ASC',
+  YearTradesMarginDesc = 'tradingStats.year.tradesMargin DESC',
+  YearTradesMarginAsc = 'tradingStats.year.tradesMargin ASC',
+}
+
+export type CollectionStatsDoc = {
+  collection: string;
+  isVerified: boolean;
+  tradingStats: {
+    listedCount?: number;
+    floorPrice?: number;
+    totalVolume: number;
+    totalTrades: number;
+    allTimeHigh: {
+      price: number;
+      timestamp: number;
+      txHash: string;
+      identifier: string;
+    };
+    day: TradingDataSummary;
+    week: TradingDataSummary;
+    month: TradingDataSummary;
+    quarter: TradingDataSummary;
+    halfYear: TradingDataSummary;
+    year: TradingDataSummary;
+  };
+  // applied after db call
+  collectionInfo?: {
+    name?: string;
+    description?: string;
+    profile?: string;
+    holdersCount?: number;
+    collectionSize?: number;
+    followCount?: number;
+  };
+  id: string;
+};
+
+export type TradingDataSummary = {
+  volume: number;
+  volumeMargin: number;
+  trades: number;
+  tradesMargin: number;
+  minPrice?: number;
+  maxPrice?: number;
+  averagePrice?: number;
+};
