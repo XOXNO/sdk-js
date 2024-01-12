@@ -642,7 +642,7 @@ export type GetCollectionStatsArgs = {
   filters?: {
     collection?: string[];
     isVerified?: boolean;
-    range: [
+    range?: [
       {
         min: number;
         max: number;
@@ -650,8 +650,8 @@ export type GetCollectionStatsArgs = {
       },
     ];
   };
-  orderBy: CollectionStatsOrderBy[];
-  select: CollectionStatsSelectFields[];
+  orderBy?: CollectionStatsOrderBy[];
+  select?: CollectionStatsSelectFields[];
   top: number;
   skip: number;
 };
