@@ -100,7 +100,7 @@ export interface NftData {
   saleInfo?: SaleInfo;
   gameData?: GameData[]; // Only for Cantina Rolaye
   owner?: Owner;
-  originalOwner?: Owner;
+  currentOwner?: Owner;
   balance?: number; // Only for non listed NFTs
   collectionInfo?: CollectionInfo;
   isStaked?: boolean;
