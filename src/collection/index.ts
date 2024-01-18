@@ -65,7 +65,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<ICollectionProfile>(
-      `/getCollectionProfile/${collection}`,
+      `/collection/${collection}/profile`,
       {
         next: {
           tags: ['getCollectionProfile'],
@@ -586,7 +586,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<IOwners>(
-      `/getCollectionOwners/${collection}`,
+      `/collection/${collection}/holders`,
 
       {
         next: {
@@ -619,7 +619,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<ISingleHolder[]>(
-      `/getCollectionOwners/${collection}?exportHolders=true`,
+      `/collection/${collection}/holders?exportHolders=true`,
 
       {
         next: {
