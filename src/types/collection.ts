@@ -483,6 +483,7 @@ export type FungibleAssets = {
   svgUrl: string;
   pngUrl: string;
   ticker: string;
+  usd?: number;
   _ts?: number;
 };
 
