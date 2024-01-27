@@ -206,3 +206,64 @@ export type Assets = {
   pngUrl: string;
   svgUrl: string;
 };
+
+export type CreatorProfile = {
+  name: string;
+  contractAddress: string;
+  address: string;
+  _ts: number;
+};
+
+export interface UserStakingSummary {
+  collection: string;
+  stakedCount: number;
+  name: string;
+  isVerified: boolean;
+  profile: string;
+  banner: string;
+  reward: RewardStakinSummary[];
+}
+
+export interface UserCollectionStaking {
+  poolId: number;
+  name: string;
+  profile: string;
+  stakedCount: number;
+  reward: RewardStakinSummary[];
+  isActive: boolean;
+  daysLeft: number;
+}
+
+export interface RewardStakinSummary {
+  tokenIdentifier: string;
+  tokenNonce: number;
+  amount: string;
+  amountShort: number;
+  usdValue: number;
+}
+
+export interface PoolDetails {
+  poolId: number;
+  name: string;
+  profile: string;
+  collection: string[];
+  rewardDuration: number;
+  reward: RewardAvaiblePools[];
+  poolType: string;
+  issuingType: string;
+  isActive: boolean;
+  daysLeft: number;
+  percentFilled: number;
+}
+
+export interface RewardAvaiblePools {
+  tokenIdentifier: string;
+  tokenNonce: number;
+  rewardPerEpochShort: number;
+  rewardPerDayPerNft: number;
+}
+
+export interface UserPoolStakingInfo {
+  nftDocs: NftData[];
+  poolDoc: PoolDetails;
+}

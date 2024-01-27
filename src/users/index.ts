@@ -1,6 +1,9 @@
 import { CollectionModule, XOXNOClient } from '../index';
 import {
+  CreatorInfo,
   GetNFTsArgs,
+  IMintInfo,
+  NftData,
   SearchNFTsResponse,
   TradincActivityArgs,
   TradingActivityResponse,
@@ -9,11 +12,15 @@ import { GroupStakingInfo } from '../types/staking';
 import {
   ArgsUserOffers,
   BulkAccount,
+  CreatorProfile,
   IUserProfile,
+  PoolDetails,
   UserAccountInfo,
+  UserCollectionStaking,
   UserInventory,
   UserOffers,
-  UserStakingInfo,
+  UserPoolStakingInfo,
+  UserStakingSummary,
 } from '../types/user';
 import { getActivity } from '../utils/getActivity';
 import { isAddressValid } from '../utils/helpers';
@@ -129,40 +136,6 @@ export class UserModule {
     return await getActivity(args, this.api);
   };
 
-  /** Gets user's staking info
-   * @param {String} address - User's address
-   * @returns {UserStakingInfo} User's staking info
-   * @throws {Error} Throws an error if the address is invalid
-   * @example const userStakingInfo = await new UserModule().getUserStakingInfo('erd11...');
-   *  */
-  public getUserStakingInfo = async (
-    address: string
-  ): Promise<UserStakingInfo[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
-
-    const response = await this.api.fetchWithTimeout<UserStakingInfo[]>(
-      `/getUserStakingInfo/${address}`
-    );
-    return response;
-  };
-
-  /** Gets user's staking info
-   * @param {String} address - User's address
-   * @returns {GroupStakingInfo[]} User's staking info
-   * @throws {Error} Throws an error if the address is invalid
-   * @example const userStakingInfo = await new UserModule().getUserStakingInfo('erd11...');
-   *  */
-  public getUserStakingInfoGrouped = async (
-    address: string
-  ): Promise<GroupStakingInfo[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
-
-    const response = await this.api.fetchWithTimeout<GroupStakingInfo[]>(
-      `/getUserStakingInfo/${address}?groupByTicker=true`
-    );
-    return response;
-  };
-
   /** Gets user's staking info by ticker
    * @param {String} address - User's address
    * @param {String} ticker - Collection's ticker
@@ -178,6 +151,128 @@ export class UserModule {
 
     const response = await this.api.fetchWithTimeout<GroupStakingInfo[]>(
       `/getUserStakingInfo/${address}?groupByTicker=true&ticker=${ticker}`
+    );
+    return response;
+  };
+
+  /** Gets user's creator profile
+   * @param {String} address - User's address
+   * @returns {CreatorProfile} User's creator profile struct
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getUserCreatorProfile = async (
+    address: string
+  ): Promise<CreatorProfile> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+
+    const response = await this.api.fetchWithTimeout<CreatorProfile>(
+      `/user/${address}/creator-profile`
+    );
+    return response;
+  };
+
+  /** Gets user's creator profile
+   * @param {String} address - User's address
+   * @returns {IMintInfo[]} User's creator profile struct
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getCreatorListings = async (address: string): Promise<IMintInfo[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+
+    const response = await this.api.fetchWithTimeout<IMintInfo[]>(
+      `/user/${address}/creator-listing`
+    );
+    return response;
+  };
+
+  /** Gets user's staking info
+   * @param {String} address - User's address
+   * @returns {UserStakingSummary[]} User's staking info
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getUserStakingSummary = async (
+    address: string
+  ): Promise<UserStakingSummary[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+
+    const response = await this.api.fetchWithTimeout<UserStakingSummary[]>(
+      `/user/${address}/staking-summary`
+    );
+    return response;
+  };
+
+  /** Gets user's staking info
+   * @param {String} address - User's address
+   * @returns {UserStakingAvaiblePools[]} User's staking info
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getUserStakingaAailable = async (
+    address: string
+  ): Promise<PoolDetails[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+
+    const response = await this.api.fetchWithTimeout<PoolDetails[]>(
+      `/user/${address}/available-pools`
+    );
+    return response;
+  };
+
+  /** Gets user's creator info
+   * @param {String} address - User's address
+   * @returns {CreatorInfo} User's creator info
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getUserCreatorInfo = async (address: string): Promise<CreatorInfo> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+
+    const response = await this.api.fetchWithTimeout<CreatorInfo>(
+      `/user/${address}/creator-info`
+    );
+    return response;
+  };
+
+  /** Gets pool details
+   * @param {String} address - User's address
+   * @param {String} collection - Collection ticker
+   * @returns {UserCollectionStaking} User's creator info
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getUserCollectionStaking = async (
+    address: string,
+    collection: string
+  ): Promise<UserCollectionStaking[]> => {
+    const response = await this.api.fetchWithTimeout<UserCollectionStaking[]>(
+      `/user/${address}/collection-staking/${collection}`
+    );
+    return response;
+  };
+
+  /** Gets pool details
+   * @param {number} poolId - User's address
+   * @returns {CreatoPoolDetailsrInfo} User's creator info
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getUserPoolStaking = async (
+    address: string,
+    poolId: number
+  ): Promise<UserPoolStakingInfo> => {
+    const response = await this.api.fetchWithTimeout<UserPoolStakingInfo>(
+      `/user/${address}/pool-staking/${poolId}`
+    );
+    return response;
+  };
+
+  /** Gets pool details
+   * @param {number} poolId - User's address
+   * @returns {CreatoPoolDetailsrInfo} User's creator info
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getAvailableNFTsForStakingPool = async (
+    address: string,
+    poolId: number
+  ): Promise<NftData[]> => {
+    const response = await this.api.fetchWithTimeout<NftData[]>(
+      `/user/${address}/pool/${poolId}/available-nfts`
     );
     return response;
   };

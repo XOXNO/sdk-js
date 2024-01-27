@@ -12,19 +12,45 @@ export interface ISocials {
 }
 
 export interface IMintInfo {
+  dataType: string;
+  collection: string;
   contractAddress: string;
-  totalNftMinted: number;
   collectionTag: string;
   cid: string;
   mediaType: string;
+  baseNftName: string;
+  hasAttributes: boolean;
+  ownerTransferred: boolean;
   collectionSize: number;
-  nftTransferLimited: string;
-  allowsPublicBurn: string;
-  kycRequired: string;
-  allowsRefund: string;
-  hasReveal: string;
+  totalNftMinted: number;
+  globalWalletLimit: number;
+  royalties: number;
+  oldVersion: boolean;
+  nameShuffle: boolean;
+  nftTransferLimited: boolean;
+  allowsPublicBurn: boolean;
+  kycRequired: boolean;
+  allowsRefund: boolean;
+  hasBotProtection: boolean;
+  hasReveal: boolean;
+  tags: string[];
+  id: string;
+  _ts: number;
 }
 
+export interface IMintInfoExtended extends IMintInfo {
+  name: string;
+  isVerified: boolean;
+  profile: string;
+  banner: string;
+  volume: number;
+}
+
+export interface CreatorInfo {
+  name: string;
+  contractAddress: string;
+  listing: IMintInfoExtended[];
+}
 export interface ICollectionProfile {
   dataType: 'collectionProfile';
   collection: string;
