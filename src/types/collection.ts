@@ -39,11 +39,13 @@ export interface IMintInfo {
 }
 
 export interface IMintInfoExtended extends IMintInfo {
-  name: string;
-  isVerified: boolean;
-  profile: string;
-  banner: string;
-  volume: number;
+  collectionInfo: {
+    name: string;
+    isVerified: boolean;
+    profile: string;
+    banner: string;
+    volume: number;
+  };
 }
 
 export interface CreatorInfo {
@@ -51,6 +53,7 @@ export interface CreatorInfo {
   contractAddress: string;
   listing: IMintInfoExtended[];
 }
+
 export interface ICollectionProfile {
   dataType: 'collectionProfile';
   collection: string;
@@ -637,6 +640,11 @@ export type GetCollectionMintInfo = {
   totalNftMinted: number;
   collectionSize: number;
   mintStages: MintStage[];
+  collectionInfo: {
+    name: string;
+    isVerified: boolean;
+    profile: string;
+  };
 };
 
 export type MintStage = {
