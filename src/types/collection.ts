@@ -645,6 +645,7 @@ export type GetCollectionMintInfo = {
     isVerified: boolean;
     profile: string;
     banner: string;
+    owner: string;
     isVisible: boolean;
   };
 };
