@@ -221,34 +221,27 @@ export enum GlobalOfferFieldsToSelect {
 
 export interface Filter {
   dataType?: string[];
-  onSale?: boolean;
-  seller?: string[];
-  collection?: string[];
   identifier?: string[];
+  collection?: string[];
   type?: string[];
+  onSale?: boolean;
   owner?: string[];
-  paymentToken?: string[];
-  marketplace?: string[];
-  auctionType?: string[];
-  activeAuction?: boolean;
-  priceRange?: {
-    min: number;
-    max: number;
-    type: string;
+  currentOwner?: string[];
+  saleInfo?: {
+    seller?: string[];
+    paymentToken?: string[];
+    marketplace?: string[];
+    auctionType?: string[];
   };
-  rankRange?: {
-    min?: number;
-    max?: number;
+  range?: RangeFilter[];
+  metadata?: {
+    attributes?: NftMetadataAttributes[];
   };
-  gameLevelRange?: {
-    min?: number;
-    max?: number;
-  };
-  customFilter?: string;
-  attributes?: NftMetadataAttributes[];
   wasProcessed?: boolean;
+  cp_staked?: boolean;
+  activeAuction?: boolean;
+  customFilter?: string;
   verifiedOnly?: boolean;
-  isStaked?: boolean;
 }
 
 export interface NftMetadataAttributes {
@@ -313,6 +306,8 @@ export interface GetNFTsArgs {
   skip?: number;
   /** Document type */
   dataType?: string[];
+  /** If set, will return only NFTs that are staked */
+  isStaked?: boolean;
   /** The order of the results based on a field */
   orderBy?: SearchOrderBy[];
   /** If set, will return only the specified fields */
@@ -387,6 +382,13 @@ export interface GetGlobalOffersArgs {
   withAttributes?: boolean;
   /** If set, will return only the specified fields */
   onlySelectFields?: GlobalOfferFieldsToSelect[];
+  //** If set, will return only the offers that have deposit balance*/
+  onlyActive?: boolean;
+  offerIds?: number[];
+  ownedBy?: string[];
+  listedOnlyOn?: Marketplace[];
+  priceRange?: RangeFilter;
+  attributes?: MetadataAttribute[];
 }
 
 export interface CollectionsNFTsResponse {
@@ -680,13 +682,7 @@ export type GetCollectionStatsArgs = {
   filters?: {
     collection?: string[];
     isVerified?: boolean;
-    range?: [
-      {
-        min: number;
-        max: number;
-        field: string;
-      },
-    ];
+    range?: RangeFilter[];
   };
   orderBy?: CollectionStatsOrderBy[];
   select?: CollectionStatsSelectFields[];
@@ -696,6 +692,12 @@ export type GetCollectionStatsArgs = {
 
 export enum CollectionStatsSelectFields {
   TradingStats = 'tradingStats',
+}
+
+export interface RangeFilter {
+  min?: number;
+  max?: number;
+  field?: string;
 }
 
 export enum CollectionStatsOrderBy {

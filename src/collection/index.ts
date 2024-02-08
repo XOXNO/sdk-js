@@ -65,7 +65,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<ICollectionProfile>(
-      `/collection/${collection}/profile`,
+      `https://api.xoxno.com/collection/${collection}/profile`,
       {
         next: {
           tags: ['getCollectionProfile'],
@@ -156,15 +156,17 @@ export class CollectionModule {
     if (!isValidCollectionTicker(collection)) {
       throw new Error('Invalid collection ticker: ' + collection);
     }
-    const response = await this.api.fetchWithTimeout<number>(
-      `/getFloorPrice/${collection}/${token}`,
-      {
-        next: {
-          tags: ['getCollectionFloorPrice'],
-        },
-      }
-    );
-    return response;
+    const response = await this.api.fetchWithTimeout<{
+      price: number;
+    }>(`https://api.xoxno.com/collection/${collection}/floor-price`, {
+      next: {
+        tags: ['getCollectionFloorPrice'],
+      },
+      params: {
+        token,
+      },
+    });
+    return response?.price ? response.price : 0;
   };
 
   /**
@@ -215,34 +217,44 @@ export class CollectionModule {
     if (args.top && args.top > 35) {
       throw new Error('Top cannot be greater than 35');
     }
-
+    const ranges = [];
+    if (args.priceRange) {
+      ranges.push({
+        ...args.priceRange,
+        type: args.onlyAuctions
+          ? 'saleInfo.currentBidShort'
+          : 'saleInfo.minBidShort',
+      });
+    }
+    if (args.rankRange) {
+      ranges.push({
+        ...args.rankRange,
+        type: 'rank',
+      });
+    }
     const payloadBody: SearchNFTs = {
       filters: {
         dataType: args.dataType ?? ['nft'],
         activeAuction: args.onlyAuctions || args.activeAuctions || false,
         collection: args.collections ?? [],
         onSale: args.onlyOnSale,
-        seller: args.listedBy || [],
+        saleInfo: {
+          seller: args.listedBy || [],
+          marketplace: args.listedOnlyOn || undefined,
+          paymentToken: args.listedInToken || [],
+          auctionType: args.onlyOnSale
+            ? args.onlyAuctions
+              ? ['NftBid', 'SftAll']
+              : ['Nft', 'SftOnePerPayment']
+            : undefined,
+        },
         owner: args.ownedBy || [],
-        marketplace: args.listedOnlyOn || undefined,
-        auctionType: args.onlyOnSale
-          ? args.onlyAuctions
-            ? ['NftBid', 'SftAll']
-            : ['Nft', 'SftOnePerPayment']
-          : undefined,
         verifiedOnly: args.onlyVerified || false,
-        paymentToken: args.listedInToken || [],
-        attributes: args.attributes || undefined,
-        priceRange: args.priceRange
-          ? {
-              ...args.priceRange,
-              type: args.onlyAuctions
-                ? 'saleInfo.currentBidShort'
-                : 'saleInfo.minBidShort',
-            }
-          : undefined,
-        rankRange: args.rankRange || undefined,
-        gameLevelRange: args.cantinaLevelRange || undefined,
+        metadata: {
+          attributes: args.attributes || undefined,
+        },
+        range: ranges,
+        cp_staked: args.isStaked || undefined,
       },
       applyNftExtraDetails: args.applyNftExtraDetails || true,
       orderBy: args.orderBy || [],
@@ -254,7 +266,7 @@ export class CollectionModule {
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
-      `/getNfts/${buffer}`,
+      `https://api.xoxno.com/nft/${buffer}/query`,
       {
         next: {
           tags: ['getCollectionNFTs'],
@@ -425,14 +437,22 @@ export class CollectionModule {
       select: args?.onlySelectFields || [],
       filters: {
         collection: args?.collections || [],
-        withAttributes: args?.withAttributes,
+        withAttributes: args?.withAttributes ?? false,
+        isActive: args?.onlyActive ?? true,
+        offerId: args?.offerIds,
+        owner: args?.ownedBy,
+        marketplace: args?.listedOnlyOn,
+        range: args?.priceRange
+          ? { ...args.priceRange, type: 'priceShort' }
+          : undefined,
+        attributes: args?.attributes,
       },
       orderBy: [args?.orderBy || GlobalOfferOrderBy.PriceHighToLow],
     };
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<GlobalOffersResult>(
-      `/getGlobalOffers/${buffer}`,
+      `https://api.xoxno.com/collection/${buffer}/global-offer/query`,
       {
         next: {
           tags: ['getGlobalOffers'],
@@ -586,7 +606,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<IOwners>(
-      `/collection/${collection}/holders`,
+      `https://api.xoxno.com/collection/${collection}/holders`,
 
       {
         next: {
@@ -619,7 +639,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<ISingleHolder[]>(
-      `/collection/${collection}/holders?exportHolders=true`,
+      `https://api.xoxno.com/collection/${collection}/holders?exportHolders=true`,
 
       {
         next: {
@@ -647,7 +667,7 @@ export class CollectionModule {
 
     const buffer = Buffer.from(JSON.stringify(args)).toString('base64');
     const response = await this.api.fetchWithTimeout<CollectionStatsResults>(
-      `/collectionStatistics/${buffer}`,
+      `https://api.xoxno.com/collection/${buffer}/stats/query`,
       {
         next: {
           tags: ['collectionStatistics'],
@@ -680,7 +700,7 @@ export class CollectionModule {
     extra?: RequestInit;
   }): Promise<GetCollectionMintInfo> => {
     const response = await this.api.fetchWithTimeout<GetCollectionMintInfo>(
-      `/getCollectionMintInfo/${ticker}`,
+      `https://api.xoxno.com/collection/${ticker}/drop-info`,
       {
         next: {
           tags: ['getCollectionMintInfo'],

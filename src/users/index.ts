@@ -93,7 +93,7 @@ export class UserModule {
   ): Promise<UserInventory[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<UserInventory[]>(
-      `/user/${address}/inventory`
+      `https://api.xoxno.com/user/${address}/inventory-summary`
     );
     return response;
   };
@@ -166,7 +166,7 @@ export class UserModule {
     if (!isAddressValid(address)) throw new Error('Invalid address');
 
     const response = await this.api.fetchWithTimeout<CreatorProfile>(
-      `/user/${address}/creator-profile`
+      `https://api.xoxno.com/user/${address}/creator/profile`
     );
     return response;
   };
@@ -180,7 +180,7 @@ export class UserModule {
     if (!isAddressValid(address)) throw new Error('Invalid address');
 
     const response = await this.api.fetchWithTimeout<IMintInfo[]>(
-      `/user/${address}/creator-listing`
+      `https://api.xoxno.com/user/${address}/creator/listing`
     );
     return response;
   };
@@ -226,7 +226,7 @@ export class UserModule {
     if (!isAddressValid(address)) throw new Error('Invalid address');
 
     const response = await this.api.fetchWithTimeout<CreatorInfo>(
-      `/user/${address}/creator-info`
+      `https://api.xoxno.com/user/${address}/creator/details`
     );
     return response;
   };

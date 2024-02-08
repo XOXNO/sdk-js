@@ -39,7 +39,7 @@ export class NFTModule {
       throw new Error('Invalid identifier: ' + identifier);
     }
     const response = await this.api.fetchWithTimeout<NftData>(
-      `/getSingleNft/${identifier}`
+      `https://api.xoxno.com/nft/${identifier}`
     );
     return response;
   };
@@ -94,7 +94,7 @@ export class NFTModule {
     }
 
     const response = await this.api.fetchWithTimeout<NftData>(
-      `/getSingleNft/${getIdentifierFromColAndNonce(collection, nonce)}`
+      `https://api.xoxno.com/${getIdentifierFromColAndNonce(collection, nonce)}`
     );
     return response;
   };
@@ -121,7 +121,7 @@ export class NFTModule {
     }
     // fetch the NFT data
     const response = await this.api.fetchWithTimeout<NftData>(
-      `/getSingleNft/${[collection, nonceHex].join('-')}`
+      `https://api.xoxno.com/${[collection, nonceHex].join('-')}`
     );
     return response;
   };
