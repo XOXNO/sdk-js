@@ -1,6 +1,6 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.1.39-alpha",
+  "version": "0.1.41-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -63,7 +63,7 @@
     "semantic-release": "^23.0.2",
     "ts-jest": "^29.1.2",
     "ts-loader": "^9.5.1",
-    "typedoc": "^0.25.7",
+    "typedoc": "^0.25.8",
     "typescript": "^5.3.3"
   },
   "dependencies": {

@@ -638,6 +638,7 @@ export type GetCollectionMintInfo = {
   contractAddress: string;
   collectionTag: string;
   nftTransferLimited: boolean;
+  hasBotProtection: boolean;
   kycRequired: boolean;
   totalNftMinted: number;
   collectionSize: number;
@@ -661,6 +662,8 @@ export type MintStage = {
   mintEnabled: boolean;
   isWhitelist: boolean;
   walletLimit: number;
+  maxBuyable?: number;
+  walletLimitReached?: boolean;
   prices: StagePrice[];
   isSoldOut: boolean;
 };
@@ -669,7 +672,9 @@ export type StagePrice = {
   tokenIdentifier: string;
   tokenNonce: string;
   amount: string;
-  shortAmount: number;
+  amountShort: number;
+  usdValue: number;
+  decimals: number;
 };
 
 export type CollectionStatsResults = {
