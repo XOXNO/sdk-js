@@ -190,7 +190,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<ICollectionAttributes>(
-      `/getCollectionAttributes/${collection}`,
+      `https://api.xoxno.com/collection/${collection}/attributes`,
       {
         next: {
           tags: ['getCollectionAttributes'],

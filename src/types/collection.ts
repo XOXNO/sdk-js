@@ -82,8 +82,9 @@ export interface ICollectionProfile {
 
 export interface AttributeData {
   attributeOccurrence: number;
-  FloorPrice: number;
-  OnSale: number;
+  floorPrice: number;
+  onSaleCount: number;
+  usdValue: number;
 }
 
 export interface MetadataAttribute {

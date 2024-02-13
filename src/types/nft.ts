@@ -2,10 +2,10 @@ import { MetadataAttribute } from './collection';
 
 export interface NFTAttribute extends MetadataAttribute {
   occurance: number;
-  rarity: number;
   frequency: number;
-  OnSale?: number;
-  FloorPrice?: number;
+  onSaleCount?: number;
+  floorPrice?: number;
+  usdValue?: number;
 }
 
 export interface NFTMetadata {
@@ -98,6 +98,7 @@ export interface NftData {
   hasOffers?: boolean;
   collectionName: string;
   saleInfo?: SaleInfo;
+  tags?: string[];
   gameData?: GameData[]; // Only for Cantina Rolaye
   owner?: Owner;
   currentOwner?: Owner;
