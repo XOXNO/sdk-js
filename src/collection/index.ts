@@ -12,9 +12,6 @@ import {
   SuggestResults,
   CollectionVolume,
   FloorPriceHistory,
-  FungibleAssets,
-  FungibleAssetsMap,
-  AssetCategory,
   IOwners,
   ISingleHolder,
   GetGlobalOffersArgs,
@@ -70,52 +67,6 @@ export class CollectionModule {
         next: {
           tags: ['getCollectionProfile'],
           revalidate: 30,
-        },
-      }
-    );
-    return response;
-  };
-
-  /**
-   * @public
-   * @async
-   * @function getFungibleTokens
-   * @param category - The ticker of the collection.
-   * @returns {Promise<FungibleAssetsMap>} A promise that resolves a map of ESDT tokens and their info
-   * This function fetches all branded fungible assets and their info
-   */
-  public getFungibleTokens = async (
-    categories: AssetCategory[] = [AssetCategory.ALL]
-  ): Promise<FungibleAssetsMap> => {
-    const category = categories.join(',');
-    const response = await this.api.fetchWithTimeout<FungibleAssetsMap>(
-      `/getFungibleTokens?category=${category}`,
-      {
-        next: {
-          tags: ['getFungibleTokens'],
-          revalidate: 500,
-        },
-      }
-    );
-    return response;
-  };
-
-  /**
-   * @public
-   * @async
-   * @function getFungibleToken
-   * @returns {Promise<FungibleAssets>} A promise that resolves the ESDT token info
-   * This function fetches the branded fungible asset info
-   */
-  public getFungibleToken = async (
-    identifier: string
-  ): Promise<FungibleAssets> => {
-    const response = await this.api.fetchWithTimeout<FungibleAssets>(
-      `/getFungibleTokens/${identifier}`,
-      {
-        next: {
-          tags: ['getFungibleToken'],
-          revalidate: 500,
         },
       }
     );

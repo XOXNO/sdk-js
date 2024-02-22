@@ -1,5 +1,5 @@
 import { CollectionModule, XOXNOClient } from '../../index';
-import { AssetCategory, FieldsToSelect, SearchNFTsResponse } from '../../types';
+import { FieldsToSelect, SearchNFTsResponse } from '../../types';
 
 describe('CollectionModule', () => {
   let collectionModule: CollectionModule;
@@ -100,25 +100,5 @@ describe('CollectionModule', () => {
         skip: 2,
       },
     });
-  });
-
-  it('should get all tokens', async () => {
-    const tokens = await collectionModule.getFungibleTokens();
-
-    expect(tokens['EUR']).toBeDefined();
-  });
-
-  it('should get all tokens only for minting and staking', async () => {
-    const tokens = await collectionModule.getFungibleTokens([
-      AssetCategory.Minting,
-      AssetCategory.Staking,
-    ]);
-    expect(tokens).toBeDefined();
-  });
-
-  it('should get only RIDE asset info', async () => {
-    const token = await collectionModule.getFungibleToken('RIDE-7d18e9');
-
-    expect(token).toBeDefined();
   });
 });
