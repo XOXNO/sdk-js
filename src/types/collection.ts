@@ -647,6 +647,8 @@ export type GetCollectionMintInfo = {
   collectionInfo: {
     name: string;
     isVerified: boolean;
+    description?: string;
+    socials?: ISocials;
     profile: string;
     banner: string;
     owner: string;
