@@ -43,7 +43,7 @@ export class UserModule {
   public getUserProfile = async (address: string): Promise<IUserProfile> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<IUserProfile>(
-      `/getUserProfile/${address}`
+      `https://api.xoxno.com/user/${address}/profile`
     );
     return response;
   };
@@ -196,7 +196,7 @@ export class UserModule {
     if (!isAddressValid(address)) throw new Error('Invalid address');
 
     const response = await this.api.fetchWithTimeout<UserStakingSummary[]>(
-      `/user/${address}/staking-summary`
+      `https://api.xoxno.com/user/${address}/staking/summary`
     );
     return response;
   };
@@ -212,7 +212,7 @@ export class UserModule {
     if (!isAddressValid(address)) throw new Error('Invalid address');
 
     const response = await this.api.fetchWithTimeout<PoolDetails[]>(
-      `/user/${address}/available-pools`
+      `https://api.xoxno.com/user/${address}/staking/available-pools`
     );
     return response;
   };
@@ -242,7 +242,7 @@ export class UserModule {
     collection: string
   ): Promise<UserCollectionStaking[]> => {
     const response = await this.api.fetchWithTimeout<UserCollectionStaking[]>(
-      `/user/${address}/collection-staking/${collection}`
+      `https://api.xoxno.com/user/${address}/staking/collection/${collection}`
     );
     return response;
   };
@@ -257,7 +257,7 @@ export class UserModule {
     poolId: number
   ): Promise<UserPoolStakingInfo> => {
     const response = await this.api.fetchWithTimeout<UserPoolStakingInfo>(
-      `/user/${address}/pool-staking/${poolId}`
+      `https://api.xoxno.com/user/${address}/staking/pool/${poolId}`
     );
     return response;
   };

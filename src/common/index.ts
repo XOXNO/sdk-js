@@ -55,12 +55,16 @@ export class CommonModule {
    * This function fetches all branded fungible assets and their info
    */
   public getFungibleTokens = async (
-    categories: AssetCategory[] = [AssetCategory.ALL]
+    categories: AssetCategory[] = [AssetCategory.ALL],
+    identifiers?: string[]
   ): Promise<FungibleAssetsMap> => {
-    const category = categories.join(',');
     const response = await this.api.fetchWithTimeout<FungibleAssetsMap>(
-      `/getFungibleTokens?category=${category}`,
+      `https://api.xoxno.com/tokens`,
       {
+        params: {
+          identifiers: identifiers ? identifiers.join(',') : undefined,
+          category: categories ? categories.join(',') : undefined,
+        },
         next: {
           tags: ['getFungibleTokens'],
           revalidate: 500,

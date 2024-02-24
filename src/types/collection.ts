@@ -54,6 +54,12 @@ export interface CreatorInfo {
   listing: IMintInfoExtended[];
 }
 
+export interface CollectionStatisticsProfile {
+  tradeData: TradeData;
+  mintData: MintStatistics;
+  other: OtherStatistics;
+}
+
 export interface ICollectionProfile {
   dataType: 'collectionProfile';
   collection: string;
@@ -63,11 +69,7 @@ export interface ICollectionProfile {
   isVerified: boolean;
   profile: string;
   banner: string;
-  statistics: {
-    tradeData: TradeData;
-    mintData: MintStatistics;
-    other: OtherStatistics;
-  };
+  statistics: CollectionStatisticsProfile;
   owner: string;
   creator: string;
   isMintable: boolean;

@@ -349,7 +349,7 @@ export class CollectionModule {
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<ICollectionProfile[]>(
-      `/collections/${buffer}`,
+      `https://api.xoxno.com/collection/${buffer}/query`,
       {
         next: {
           tags: ['getCollections'],

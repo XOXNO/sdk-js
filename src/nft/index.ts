@@ -67,7 +67,7 @@ export class NFTModule {
       throw new Error('Invalid identifier: ' + identifier);
     }
     const response = await this.api.fetchWithTimeout<UserOffers>(
-      `/getSingleNft/${identifier}/offers?skip=${skip}&top=${top}`,
+      `https://api.xoxno.com/nft/${identifier}/offers?skip=${skip}&top=${top}`,
       {
         next: {
           tags: ['getNFTsOffers'],

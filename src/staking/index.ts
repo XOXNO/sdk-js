@@ -13,7 +13,7 @@ export class StakingModule {
    *  */
   public getPoolDetails = async (poolId: number): Promise<PoolDetails> => {
     const response = await this.api.fetchWithTimeout<PoolDetails>(
-      `/pool/${poolId}/details`
+      `https://api.xoxno.com/pool/${poolId}/profile`
     );
     return response;
   };
