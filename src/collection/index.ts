@@ -62,7 +62,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<ICollectionProfile>(
-      `https://api.xoxno.com/collection/${collection}/profile`,
+      `/collection/${collection}/profile`,
       {
         next: {
           tags: ['getCollectionProfile'],
@@ -109,7 +109,7 @@ export class CollectionModule {
     }
     const response = await this.api.fetchWithTimeout<{
       price: number;
-    }>(`https://api.xoxno.com/collection/${collection}/floor-price`, {
+    }>(`/collection/${collection}/floor-price`, {
       next: {
         tags: ['getCollectionFloorPrice'],
       },
@@ -141,7 +141,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<ICollectionAttributes>(
-      `https://api.xoxno.com/collection/${collection}/attributes`,
+      `/collection/${collection}/attributes`,
       {
         next: {
           tags: ['getCollectionAttributes'],
@@ -217,7 +217,7 @@ export class CollectionModule {
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
-      `https://api.xoxno.com/nft/${buffer}/query`,
+      `/nft/${buffer}/query`,
       {
         next: {
           tags: ['getCollectionNFTs'],
@@ -275,7 +275,7 @@ export class CollectionModule {
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     return await this.api.fetchWithTimeout<SuggestResults>(
-      `/search/${buffer}`,
+      `https://proxy-api.xoxno.com/search/${buffer}`,
       {
         next: {
           tags: ['suggestResults'],
@@ -296,7 +296,7 @@ export class CollectionModule {
     ticker: string
   ): Promise<ListingDistribution[]> => {
     return await this.api.fetchWithTimeout<ListingDistribution[]>(
-      `/listingDistribution/${ticker}`,
+      `https://proxy-api.xoxno.com/listingDistribution/${ticker}`,
       {
         next: {
           tags: ['collectionListings'],
@@ -349,7 +349,7 @@ export class CollectionModule {
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<ICollectionProfile[]>(
-      `https://api.xoxno.com/collection/${buffer}/query`,
+      `/collection/${buffer}/query`,
       {
         next: {
           tags: ['getCollections'],
@@ -403,7 +403,7 @@ export class CollectionModule {
 
     const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<GlobalOffersResult>(
-      `https://api.xoxno.com/collection/${buffer}/global-offer/query`,
+      `/collection/${buffer}/global-offer/query`,
       {
         next: {
           tags: ['getGlobalOffers'],
@@ -450,7 +450,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<CollectionVolume[]>(
-      `/getCollectionVolume/${collection}?after=${after}&before=${before}&bin=${bin}`,
+      `https://proxy-api.xoxno.com/getCollectionVolume/${collection}?after=${after}&before=${before}&bin=${bin}`,
       {
         next: {
           tags: ['getCollectionVolume'],
@@ -486,7 +486,7 @@ export class CollectionModule {
     bin: string
   ): Promise<CollectionVolume[]> => {
     const response = await this.api.fetchWithTimeout<CollectionVolume[]>(
-      `/getMarketplaceVolume?after=${after}&before=${before}&bin=${bin}`,
+      `https://proxy-api.xoxno.com/getMarketplaceVolume?after=${after}&before=${before}&bin=${bin}`,
       {
         next: {
           tags: ['getMarketplaceVolume'],
@@ -527,7 +527,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<FloorPriceHistory[]>(
-      `/getCollectionFloor/${collection}?after=${after}&before=${before}&bin=${bin}`,
+      `https://proxy-api.xoxno.com/getCollectionFloor/${collection}?after=${after}&before=${before}&bin=${bin}`,
       {
         next: {
           tags: ['getCollectionFloor'],
@@ -557,7 +557,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<IOwners>(
-      `https://api.xoxno.com/collection/${collection}/holders`,
+      `/collection/${collection}/holders`,
 
       {
         next: {
@@ -590,7 +590,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<ISingleHolder[]>(
-      `https://api.xoxno.com/collection/${collection}/holders?exportHolders=true`,
+      `/collection/${collection}/holders?exportHolders=true`,
 
       {
         next: {
@@ -618,7 +618,7 @@ export class CollectionModule {
 
     const buffer = Buffer.from(JSON.stringify(args)).toString('base64');
     const response = await this.api.fetchWithTimeout<CollectionStatsResults>(
-      `https://api.xoxno.com/collection/${buffer}/stats/query`,
+      `/collection/${buffer}/stats/query`,
       {
         next: {
           tags: ['collectionStatistics'],
@@ -651,7 +651,7 @@ export class CollectionModule {
     extra?: RequestInit;
   }): Promise<GetCollectionMintInfo> => {
     const response = await this.api.fetchWithTimeout<GetCollectionMintInfo>(
-      `https://api.xoxno.com/collection/${ticker}/drop-info`,
+      `/collection/${ticker}/drop-info`,
       {
         next: {
           tags: ['getCollectionMintInfo'],

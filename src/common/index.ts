@@ -16,7 +16,7 @@ export class CommonModule {
    *  */
   public getTokensUsdPrice = async (): Promise<TokenUSDPrices> => {
     const response = await this.api.fetchWithTimeout<TokenUSDPrices>(
-      `https://api.xoxno.com/tokens/usd-price`
+      `/tokens/usd-price`
     );
     return response;
   };
@@ -34,7 +34,7 @@ export class CommonModule {
     paymentToken: string;
   }): Promise<AshSwapPaymentData> => {
     const response = await this.api.fetchWithTimeout<AshSwapPaymentData>(
-      `https://api.xoxno.com/ash/min-token-quantity`,
+      `/ash/min-token-quantity`,
       {
         params: {
           originalToken: originalToken,
@@ -59,7 +59,7 @@ export class CommonModule {
     identifiers?: string[]
   ): Promise<FungibleAssetsMap> => {
     const response = await this.api.fetchWithTimeout<FungibleAssetsMap>(
-      `https://api.xoxno.com/tokens`,
+      `/tokens`,
       {
         params: {
           identifiers: identifiers ? identifiers.join(',') : undefined,
@@ -85,7 +85,7 @@ export class CommonModule {
     identifier: string
   ): Promise<FungibleAssets> => {
     const response = await this.api.fetchWithTimeout<FungibleAssets>(
-      `/getFungibleTokens/${identifier}`,
+      `https://proxy-api.xoxno.com/getFungibleTokens/${identifier}`,
       {
         next: {
           tags: ['getFungibleToken'],

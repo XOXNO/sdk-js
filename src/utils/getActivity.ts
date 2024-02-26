@@ -41,7 +41,7 @@ export const getActivity = async (
 
   const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
   const response = await api.fetchWithTimeout<TradingActivityResponse>(
-    `/getTradingActivityNew/${buffer}`,
+    `https://proxy-api.xoxno.com/getTradingActivityNew/${buffer}`,
     {
       next: {
         tags: ['getActivity'],
