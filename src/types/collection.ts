@@ -507,13 +507,13 @@ export interface FloorPriceHistory {
 
 export type FungibleAssets = {
   id?: string;
-  identifier?: string;
+  identifier: string;
   collection?: string;
   dataType?: string;
-  decimals?: number;
+  decimals: number;
   name: string;
-  type?: string;
-  category?: string[];
+  type: string;
+  category: string[];
   svgUrl: string;
   pngUrl: string;
   ticker: string;
