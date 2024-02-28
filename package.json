@@ -1,6 +1,6 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.1.50-alpha",
+  "version": "0.1.51-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -44,14 +44,14 @@
   },
   "homepage": "https://github.com/XOXNO/sdk-js#readme",
   "devDependencies": {
-    "@commitlint/cli": "^18.6.1",
-    "@commitlint/config-conventional": "^18.6.2",
+    "@commitlint/cli": "^19.0.3",
+    "@commitlint/config-conventional": "^19.0.3",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.20",
-    "@typescript-eslint/eslint-plugin": "^7.0.2",
-    "@typescript-eslint/parser": "^7.0.2",
+    "@types/node": "^20.11.22",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
     "commitizen": "^4.3.0",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8.57.0",
@@ -63,11 +63,11 @@
     "semantic-release": "^23.0.2",
     "ts-jest": "^29.1.2",
     "ts-loader": "^9.5.1",
-    "typedoc": "^0.25.8",
+    "typedoc": "^0.25.9",
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@multiversx/sdk-core": "^12.18.1",
+    "@multiversx/sdk-core": "^12.19.0",
     "@multiversx/sdk-network-providers": "^2.3.0"
   }
 }

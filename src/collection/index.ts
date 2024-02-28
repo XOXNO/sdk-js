@@ -172,7 +172,7 @@ export class CollectionModule {
     if (args.priceRange) {
       ranges.push({
         ...args.priceRange,
-        type: args.onlyAuctions
+        field: args.onlyAuctions
           ? 'saleInfo.currentBidShort'
           : 'saleInfo.minBidShort',
       });
@@ -180,13 +180,13 @@ export class CollectionModule {
     if (args.rankRange) {
       ranges.push({
         ...args.rankRange,
-        type: 'rank',
+        field: 'metadata.rarity.rank',
       });
     }
     const payloadBody: SearchNFTs = {
       filters: {
         dataType: args.dataType ?? ['nft'],
-        activeAuction: args.onlyAuctions || args.activeAuctions || false,
+        activeAuction: args.onlyAuctions || args.activeAuctions,
         collection: args.collections ?? [],
         onSale: args.onlyOnSale,
         saleInfo: {

@@ -247,11 +247,14 @@ export interface PoolDetails {
   name: string;
   profile: string;
   collection: string[];
+  poolStakedCount: number;
+  delegatorCount: number;
   rewardDuration: number;
   reward: RewardAvaiblePools[];
   poolType: string;
   issuingType: string;
   isActive: boolean;
+  owner: string;
   daysLeft: number;
   percentFilled: number;
 }
@@ -261,6 +264,7 @@ export interface RewardAvaiblePools {
   tokenNonce: number;
   rewardPerEpochShort: number;
   rewardPerDayPerNft: number;
+  usdValue: number;
 }
 
 export interface UserPoolStakingInfo {

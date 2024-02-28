@@ -15,9 +15,8 @@ export class CommonModule {
    * @returns {TokenUSDPrices} User's creator info
    *  */
   public getTokensUsdPrice = async (): Promise<TokenUSDPrices> => {
-    const response = await this.api.fetchWithTimeout<TokenUSDPrices>(
-      `/tokens/usd-price`
-    );
+    const response =
+      await this.api.fetchWithTimeout<TokenUSDPrices>(`/tokens/usd-price`);
     return response;
   };
 

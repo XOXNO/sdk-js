@@ -206,7 +206,7 @@ export class UserModule {
    * @returns {UserStakingAvaiblePools[]} User's staking info
    * @throws {Error} Throws an error if the address is invalid
    *  */
-  public getUserStakingaAailable = async (
+  public getUserStakingAailable = async (
     address: string
   ): Promise<PoolDetails[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
@@ -241,6 +241,10 @@ export class UserModule {
     address: string,
     collection: string
   ): Promise<UserCollectionStaking[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isValidCollectionTicker(collection)) {
+      throw new Error('Invalid collection ticker: ' + collection);
+    }
     const response = await this.api.fetchWithTimeout<UserCollectionStaking[]>(
       `/user/${address}/staking/collection/${collection}`
     );
@@ -256,6 +260,7 @@ export class UserModule {
     address: string,
     poolId: number
   ): Promise<UserPoolStakingInfo> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<UserPoolStakingInfo>(
       `/user/${address}/staking/pool/${poolId}`
     );
@@ -271,8 +276,24 @@ export class UserModule {
     address: string,
     poolId: number
   ): Promise<NftData[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<NftData[]>(
-      `https://proxy-api.xoxno.com/user/${address}/pool/${poolId}/available-nfts`
+      `/user/${address}/staking/pool/${poolId}/nfts`
+    );
+    return response;
+  };
+
+  /** Gets owned pools by address
+   * @param {string} address - User's address
+   * @returns {PoolDetails[]} User pools
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getOwnedPoolsByAddress = async (
+    address: string
+  ): Promise<PoolDetails[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+    const response = await this.api.fetchWithTimeout<PoolDetails[]>(
+      `/user/${address}/staking/owned-pools`
     );
     return response;
   };
