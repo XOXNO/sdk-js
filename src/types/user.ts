@@ -254,6 +254,14 @@ export interface PoolDetails {
   poolType: string;
   issuingType: string;
   isActive: boolean;
+  currentEpoch: number;
+  unBoundPeriod: boolean;
+  hasUnboundPeriod: boolean;
+  maxPoolLimit: number;
+  maxWalletLimit: number;
+  hasMaxWalletLimit: boolean;
+  endDate: number;
+  startDate: number;
   owner: string;
   daysLeft: number;
   percentFilled: number;
