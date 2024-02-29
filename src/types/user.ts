@@ -271,6 +271,7 @@ export interface RewardAvaiblePools {
   tokenIdentifier: string;
   tokenNonce: number;
   rewardPerEpochShort: number;
+  rewardBalance: number;
   rewardPerDayPerNft: number;
   usdValue: number;
 }
