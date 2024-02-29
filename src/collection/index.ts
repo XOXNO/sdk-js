@@ -662,4 +662,35 @@ export class CollectionModule {
     );
     return response;
   };
+
+  /**
+   * @public
+   * @async
+   * @function getDropInfo
+   * @param {string} collectionTag - The unique ID of the collection part of the launchpad smart contract
+   * @param {string} creatorTag - The unique ID of the creator part of the launchpad smart contract
+   * @returns {Promise<GetCollectionMintInfo>} A promise that resolves to a struct with information
+   * Finally, it returns a promise that resolves a struct with information
+   */
+  public getDropInfo = async ({
+    collectionTag,
+    creatorTag,
+    extra,
+  }: {
+    collectionTag: string;
+    creatorTag: string;
+    extra?: RequestInit;
+  }): Promise<GetCollectionMintInfo> => {
+    const response = await this.api.fetchWithTimeout<GetCollectionMintInfo>(
+      `/collection/${creatorTag}/${collectionTag}/drop-info`,
+      {
+        next: {
+          tags: ['getDropInfo'],
+          revalidate: 12,
+        },
+        ...extra,
+      }
+    );
+    return response;
+  };
 }
