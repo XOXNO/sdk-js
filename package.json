@@ -1,13 +1,13 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.1.57-alpha",
+  "version": "0.1.58-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "main": "./dist/index.bundle.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
     "test": "jest",
-    "build": "webpack --config webpack.config.js",
+    "build": "tsc -p tsconfig.json",
     "lint": "eslint 'src/**/*.ts' --fix",
     "format": "prettier --write 'src/**/*.ts'",
     "commit": "git-cz",
