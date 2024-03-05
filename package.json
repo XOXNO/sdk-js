@@ -1,8 +1,8 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.1.58-alpha",
+  "version": "0.1.59-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
-  "main": "./dist/index.bundle.js",
+  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {

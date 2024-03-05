@@ -343,18 +343,39 @@ export interface SearchNFTsResponse {
   hasMoreResults: boolean;
 }
 
-export type TradingActivity = {
-  txHash: string;
-  timestamp: number;
-  action: string;
+export type ActivityData = {
+  collection: string;
+  identifier: string;
   price: number;
   paymentToken: string;
-  buyer: Owner;
-  seller: Owner;
-  usdPrice: number;
+  scId: number;
+  usdValue: number;
   egldValue: number;
-  marketplace: string;
-  nftInfo: NftData;
+  nftInfo: Pick<
+    NftData,
+    | 'identifier'
+    | 'collection'
+    | 'name'
+    | 'metadata'
+    | 'url'
+    | 'wasProcessed'
+    | 'media'
+  >;
+  collectionInfo: Pick<
+    ICollectionProfile,
+    'name' | 'isVerified' | 'isVisible' | 'profile' | 'description'
+  > & { collectionSize: number; holderCount: number; followCount: number };
+};
+
+export type TradingActivity = {
+  txHash: string;
+  eventIdentifier: string;
+  timestamp: number;
+  activityTytpe: string;
+  source: string;
+  from: Owner;
+  to: Owner;
+  activityData: ActivityData;
 };
 
 export interface GetCollectionsArgs {
