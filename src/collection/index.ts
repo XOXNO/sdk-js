@@ -636,6 +636,14 @@ export class CollectionModule {
     };
   };
 
+  public getAwaitEmpty = async (delay: number): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(true);
+      }, delay);
+    });
+  };
+
   /**
    * @public
    * @async

@@ -5,15 +5,8 @@ const TerserPlugin = require('terser-webpack-plugin');
 module.exports = {
   mode: 'production',
   entry: {
-    index: {
-      import: './src/index.ts',
-    },
-    launchpad: {
-      import: './src/launchpad/index.ts',
-    },
-    interactions: {
-      import: './src/interactions/index.ts',
-    },
+    index: './src/index.ts',
+    second: './src/index.large.ts',
   },
   module: {
     rules: [
@@ -35,7 +28,7 @@ module.exports = {
     globalObject: 'this',
   },
   optimization: {
-    minimize: true, 
+    minimize: true,
     splitChunks: {
       chunks: 'all',
     }, 
