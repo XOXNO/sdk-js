@@ -1,4 +1,5 @@
 import { NftData, Owner } from './nft';
+import { NftActivityType } from './trading';
 import { IUserProfile } from './user';
 
 export interface ISocials {
@@ -371,7 +372,7 @@ export type TradingActivity = {
   txHash: string;
   eventIdentifier: string;
   timestamp: number;
-  activityTytpe: string;
+  activityType: NftActivityType;
   source: string;
   from: Owner;
   to: Owner;
