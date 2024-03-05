@@ -13,7 +13,7 @@ import {
   XOXNO_SC,
   XOXNO_SC_DEV,
 } from './const';
-import { IChainID } from '@multiversx/sdk-core/out/interface';
+import type { IChainID } from '@multiversx/sdk-core/out/interface';
 export enum Chain {
   MAINNET = '1',
   DEVNET = 'D',

@@ -636,6 +636,12 @@ export type GlobalOfferOwner = {
   profile: string;
 };
 
+export type CollectionRanksExport = Partial<
+  Pick<NftData, 'identifier' | 'name'>
+> & {
+  rank: number;
+};
+
 export type GetCollectionMintInfo = {
   collection: string;
   contractAddress: string;

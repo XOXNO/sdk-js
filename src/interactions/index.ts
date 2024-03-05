@@ -41,7 +41,7 @@ import {
   BooleanType,
   BooleanValue,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem/boolean';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core/out/address';
 export class SCInteraction {
   private xo: SmartContract;
   private call: ContractQueryRunner;

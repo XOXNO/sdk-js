@@ -56,7 +56,7 @@ describe('UserModule', () => {
   });
 
   it('should return all the Staking Pools where the wallet is a delegator', async () => {
-    const stakingInfo = await userModule.getUserStakingInfo(
+    const stakingInfo = await userModule.getUserStakingSummary(
       'erd16ldp9t8g9xaeteyupgqmuwqus00rkdzkf7sn0td25krk3j4luq2s5mn6cd'
     );
     expect(stakingInfo).toBeDefined();

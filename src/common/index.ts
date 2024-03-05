@@ -1,8 +1,4 @@
-import {
-  AssetCategory,
-  FungibleAssets,
-  FungibleAssetsMap,
-} from '../types/collection';
+import { AssetCategory, FungibleAssetsMap } from '../types/collection';
 import { AshSwapPaymentData, TokenUSDPrices } from '../types/common';
 import { XOXNOClient } from '../utils/api';
 
@@ -66,28 +62,6 @@ export class CommonModule {
         },
         next: {
           tags: ['getFungibleTokens'],
-          revalidate: 500,
-        },
-      }
-    );
-    return response;
-  };
-
-  /**
-   * @public
-   * @async
-   * @function getFungibleToken
-   * @returns {Promise<FungibleAssets>} A promise that resolves the ESDT token info
-   * This function fetches the branded fungible asset info
-   */
-  public getFungibleToken = async (
-    identifier: string
-  ): Promise<FungibleAssets> => {
-    const response = await this.api.fetchWithTimeout<FungibleAssets>(
-      `https://proxy-api.xoxno.com/getFungibleTokens/${identifier}`,
-      {
-        next: {
-          tags: ['getFungibleToken'],
           revalidate: 500,
         },
       }

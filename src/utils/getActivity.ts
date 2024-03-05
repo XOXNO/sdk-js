@@ -22,17 +22,25 @@ export const getActivity = async (
 
   const payloadBody: TradingActivityQueryFilter = {
     filters: {
-      collection: args.collections,
-      identifier: args.identifiers || undefined,
-      address: args.wallets || undefined,
-      tokens: args.placedInToken || undefined,
-      marketplace: args.marketplaces || undefined,
-      action: args.actions || undefined,
-      range: args.priceRange,
-      rankRange: args.rankRange,
-      timestampRange: args.timestampRange,
-      attributes: args.attributes,
+      activityData:
+        args.from == null && args.to == null
+          ? {
+              collection: args.collections,
+              identifier: args.identifiers || undefined,
+            }
+          : undefined,
+      from: args.from,
+      to: args.to,
+      activityAddress: args.wallets || undefined,
+      // tokens: args.placedInToken || undefined,
+      source: args.source || undefined,
+      activityType: args.activityType || undefined,
+      // range: args.priceRange,
+      // rankRange: args.rankRange,
+      // timestampRange: args.timestampRange,
+      // attributes: args.attributes,
     },
+    strictSelect: args.strictSelect,
     orderBy: args.orderBy,
     select: args.select,
     top: args.top || 35,
@@ -41,7 +49,7 @@ export const getActivity = async (
 
   const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
   const response = await api.fetchWithTimeout<TradingActivityResponse>(
-    `https://proxy-api.xoxno.com/getTradingActivityNew/${buffer}`,
+    `/activity/${buffer}/query`,
     {
       next: {
         tags: ['getActivity'],

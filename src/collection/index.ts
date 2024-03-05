@@ -21,6 +21,7 @@ import {
   GetCollectionMintInfo,
   GetCollectionStatsArgs,
   CollectionStatsResults,
+  CollectionRanksExport,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
 import { XOXNOClient } from '../index';
@@ -656,6 +657,34 @@ export class CollectionModule {
         next: {
           tags: ['getCollectionMintInfo'],
           revalidate: 12,
+        },
+        ...extra,
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getCollectionRanks
+   * @param {string} ticker - The ticker of the collection to fetch the owner information for (e.g., 'EAPES-8f3c1f').
+   * @returns {Promise<CollectionRanksExport[]>} A promise that resolves to a struct with information
+   * Finally, it returns a promise that resolves a struct with information
+   */
+  public getCollectionRanks = async ({
+    ticker,
+    extra,
+  }: {
+    ticker: string;
+    extra?: RequestInit;
+  }): Promise<CollectionRanksExport[]> => {
+    const response = await this.api.fetchWithTimeout<CollectionRanksExport[]>(
+      `/collection/${ticker}/ranks`,
+      {
+        next: {
+          tags: ['getCollectionRanks'],
+          revalidate: 60,
         },
         ...extra,
       }

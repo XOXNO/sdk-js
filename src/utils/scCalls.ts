@@ -1,7 +1,3 @@
-import {
-  ContractQueryResponse,
-  ProxyNetworkProvider,
-} from '@multiversx/sdk-network-providers';
 import { INetworkProvider } from '@multiversx/sdk-network-providers/out/interface';
 
 import { XOXNOClient } from '../index';
@@ -9,6 +5,8 @@ import { ResultsParser } from '@multiversx/sdk-core/out/smartcontracts/resultsPa
 import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract';
 import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import type { TypedOutcomeBundle } from '@multiversx/sdk-core/out/smartcontracts/interface';
+import { ContractQueryResponse } from '@multiversx/sdk-network-providers/out/contractQueryResponse';
+import { ProxyNetworkProvider } from '@multiversx/sdk-network-providers/out/proxyNetworkProvider';
 
 export class ContractQueryRunner {
   private readonly proxy: INetworkProvider;

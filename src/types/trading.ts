@@ -1,27 +1,60 @@
 import { Marketplace, MetadataAttribute, TradingActivity } from './collection';
 
+export enum NftActivityType {
+  // MVX Built-in
+  NFT_CREATE = 'nftCreate',
+  NFT_BURN = 'nftBurn',
+  NFT_UPDATE = 'nftUpdate',
+  NFT_TRANSFER = 'nftTransfer',
+  // Marketplace
+  LISTING_CREATE = 'listingCreate',
+  LISTING_WITHDRAW = 'listingWithdraw',
+  LISTING_UPDATE = 'listingUpdate',
+  AUCTION_BID = 'auctionBid',
+  AUCTION_OUT_BID = 'auctionOutBid',
+  OFFER_CREATE = 'offerCreate',
+  OFFER_WITHDRAW = 'offerWithdraw',
+  OFFER_REJECT = 'offerReject',
+  GLOBAL_OFFER_CREATE = 'globalOfferCreate',
+  GLOBAL_OFFER_WITHDRAW = 'globalOfferWithdraw',
+  TRADE = 'trade',
+  BULK_TRADE = 'bulkTrade',
+  AUCTION_TRADE = 'auctionTrade',
+  OTHER_TRADE = 'otherTrade', // fiat or binance buy
+  OFFER_TRADE = 'offerTrade',
+  GLOBAL_OFFER_TRADE = 'globalOfferTrade',
+  // Staking
+  STAKE = 'stake',
+  UN_STAKE = 'unStake',
+}
+
 export interface TradingActivityQueryFilter {
   filters: {
-    collection?: string[];
-    identifier?: string[];
-    address?: string[];
-    tokens?: string[];
-    marketplace?: Marketplace[];
-    action?: string[];
-    range?: {
-      min: number;
-      max: number;
+    txHash?: string[];
+    activityAddress?: string[];
+    source?: Marketplace[];
+    activityType?: NftActivityType[];
+    from?: string[];
+    to?: string[];
+    activityData?: {
+      collection?: string[];
+      identifier?: string[];
     };
-    rankRange?: {
-      min: number;
-      max: number;
-    };
-    timestampRange?: {
-      min: number;
-      max: number;
-    };
-    attributes?: MetadataAttribute[];
+    // range?: {
+    //   min: number;
+    //   max: number;
+    // };
+    // rankRange?: {
+    //   min: number;
+    //   max: number;
+    // };
+    // timestampRange?: {
+    //   min: number;
+    //   max: number;
+    // };
+    // attributes?: MetadataAttribute[];
   };
+  strictSelect?: boolean;
   top: number;
   skip: number;
   select?: SelectFieldsTradingActivity[];
@@ -34,8 +67,11 @@ export interface TradincActivityArgs {
   identifiers?: string[];
   /** The wallets for which to fetch the trading activity */
   wallets?: string[];
+  from?: string[];
+  to?: string[];
   /** The marketplaces to fetch the trading activity from */
-  marketplaces?: Marketplace[];
+  source?: Marketplace[];
+  activityType?: NftActivityType[];
   /** The tokens to fetch the trading activity from */
   placedInToken?: string[];
   /** The price range to fetch the trading activity from */
@@ -61,6 +97,7 @@ export interface TradincActivityArgs {
   actions?: string[];
   /** The fields to select from the trading activity */
   select?: SelectFieldsTradingActivity[];
+  strictSelect?: boolean;
   /** The fields to order the trading activity by */
   orderBy?: OrderByTradingActivity[];
   /** The attributes to fetch the trading activity from */
