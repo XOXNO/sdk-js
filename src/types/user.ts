@@ -1,5 +1,6 @@
-import { MetadataAttribute } from './collection';
+import { ISocials } from './collection';
 import { NftData, Owner } from './nft';
+import { UnClaimedReward } from './staking';
 
 export interface BulkAccount {
   address: string;
@@ -42,16 +43,6 @@ export interface UserDeposit {
   paymentTokenNonce: number;
 }
 
-export interface ISocials {
-  twitter?: string;
-  instagram?: string;
-  website?: string;
-  telegram?: string;
-  discord?: string;
-  facebook?: string;
-  youtube?: string;
-}
-
 export interface UserInventory {
   collection: string;
   inventoryCount: number;
@@ -77,24 +68,6 @@ export interface ArgsUserOffers {
   top: number;
 }
 
-export interface GlobalOffer {
-  dataType: string;
-  offer_id: number;
-  collection: string;
-  quantity: number;
-  payment_token: string;
-  payment_nonce: number;
-  price: string;
-  short_price: number;
-  owner: string;
-  marketplace: string;
-  timestamp: number;
-  attributes: MetadataAttribute[];
-  id: string;
-  uniqueKey: string;
-  _ts: number;
-  isActive: boolean;
-}
 export enum OfferType {
   Received = 'received',
   Sent = 'sent',
@@ -147,12 +120,6 @@ export enum Type {
 export type TickerElement = {
   ticker: string;
   name: string;
-};
-
-export type UnClaimedReward = {
-  reward_token: string;
-  reward_token_nonce: string;
-  amount: number;
 };
 
 export type UserAccountInfo = {
