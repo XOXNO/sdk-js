@@ -48,17 +48,6 @@ export enum PoolType {
   Perk = 'Perk',
 }
 
-export type GroupStakingInfo = {
-  ticker: string;
-  name: string;
-  isVerified: boolean;
-  profile: string;
-  banner: string;
-  totalStakedNfts: number;
-  pools: Pool[];
-  rewards: UnClaimedReward[];
-};
-
 export type Pool = {
   pool_id: number;
   total_staked: number;

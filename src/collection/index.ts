@@ -216,10 +216,12 @@ export class CollectionModule {
       skip: args.skip || 0,
     };
 
-    const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
-      `/nft/${buffer}/query`,
+      `/nft/query`,
       {
+        params: {
+          filter: JSON.stringify(payloadBody),
+        },
         next: {
           tags: ['getCollectionNFTs'],
         },
@@ -348,10 +350,12 @@ export class CollectionModule {
       orderBy: [args?.orderBy || 'statistics.tradeData.weekEgldVolume desc'],
     };
 
-    const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<ICollectionProfile[]>(
-      `/collection/${buffer}/query`,
+      `/collection/query`,
       {
+        params: {
+          filter: JSON.stringify(payloadBody),
+        },
         next: {
           tags: ['getCollections'],
           revalidate: 180,
@@ -402,10 +406,12 @@ export class CollectionModule {
       orderBy: [args?.orderBy || GlobalOfferOrderBy.PriceHighToLow],
     };
 
-    const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     const response = await this.api.fetchWithTimeout<GlobalOffersResult>(
-      `/collection/${buffer}/global-offer/query`,
+      `/collection/global-offer/query`,
       {
+        params: {
+          filter: JSON.stringify(payloadBody),
+        },
         next: {
           tags: ['getGlobalOffers'],
           revalidate: 12,
@@ -451,7 +457,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection);
     }
     const response = await this.api.fetchWithTimeout<CollectionVolume[]>(
-      `https://proxy-api.xoxno.com/getCollectionVolume/${collection}?after=${after}&before=${before}&bin=${bin}`,
+      `/collection/${collection}/analytics/volume?startTime=${after}&endTime=${before}&bin=${bin}`,
       {
         next: {
           tags: ['getCollectionVolume'],
@@ -487,7 +493,7 @@ export class CollectionModule {
     bin: string
   ): Promise<CollectionVolume[]> => {
     const response = await this.api.fetchWithTimeout<CollectionVolume[]>(
-      `https://proxy-api.xoxno.com/getMarketplaceVolume?after=${after}&before=${before}&bin=${bin}`,
+      `/analytics/volume?startTime=${after}&endTime=${before}&bin=${bin}`,
       {
         next: {
           tags: ['getMarketplaceVolume'],
@@ -617,10 +623,12 @@ export class CollectionModule {
       throw new Error('Top cannot be greater than 25');
     }
 
-    const buffer = Buffer.from(JSON.stringify(args)).toString('base64');
     const response = await this.api.fetchWithTimeout<CollectionStatsResults>(
-      `/collection/${buffer}/stats/query`,
+      `/collection/stats/query`,
       {
+        params: {
+          filter: JSON.stringify(args),
+        },
         next: {
           tags: ['collectionStatistics'],
           revalidate: 12,

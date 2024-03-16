@@ -47,10 +47,12 @@ export const getActivity = async (
     skip: args.skip || 0,
   };
 
-  const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
   const response = await api.fetchWithTimeout<TradingActivityResponse>(
-    `/activity/${buffer}/query`,
+    `/activity/query`,
     {
+      params: {
+        filter: JSON.stringify(payloadBody),
+      },
       next: {
         tags: ['getActivity'],
         revalidate: 180,

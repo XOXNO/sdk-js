@@ -8,19 +8,19 @@ import {
   TradincActivityArgs,
   TradingActivityResponse,
 } from '../types';
-import { GroupStakingInfo } from '../types/staking';
 import {
   ArgsUserOffers,
   BulkAccount,
   CreatorProfile,
   IUserProfile,
   PoolDetails,
-  UserAccountInfo,
   UserCollectionStaking,
   UserInventory,
+  UserNetworkAccount,
   UserOffers,
   UserPoolStakingInfo,
   UserStakingSummary,
+  UserTokenInventory,
 } from '../types/user';
 import { getActivity } from '../utils/getActivity';
 import { isAddressValid } from '../utils/helpers';
@@ -58,7 +58,7 @@ export class UserModule {
     addresses: string[]
   ): Promise<BulkAccount[]> => {
     const response = await this.api.fetchWithTimeout<BulkAccount[]>(
-      `https://proxy-api.xoxno.com/address/bulk`,
+      `/user/network-account`,
       {
         method: 'POST',
         body: JSON.stringify(addresses),
@@ -73,10 +73,28 @@ export class UserModule {
    * @param {String} address - Address of the user
    * @returns {UserAccountInfo}
    */
-  public getUserAccount = async (address: string): Promise<UserAccountInfo> => {
+  public getUserAccount = async (
+    address: string
+  ): Promise<UserNetworkAccount> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
-    const response = await this.api.fetchWithTimeout<UserAccountInfo>(
-      `https://proxy-api.xoxno.com/accounts/${address}`
+    const response = await this.api.fetchWithTimeout<UserNetworkAccount>(
+      `/user/${address}/network-account`
+    );
+    return response;
+  };
+
+  /**
+   * Returns the user account info that inclues nonce, guardian data, esdtTokens
+   *
+   * @param {String} address - Address of the user
+   * @returns {UserAccountInfo}
+   */
+  public getUserTokenInventory = async (
+    address: string
+  ): Promise<UserTokenInventory> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+    const response = await this.api.fetchWithTimeout<UserTokenInventory>(
+      `/user/${address}/token-inventory`
     );
     return response;
   };
@@ -134,25 +152,6 @@ export class UserModule {
     args: TradincActivityArgs
   ): Promise<TradingActivityResponse> => {
     return await getActivity(args, this.api);
-  };
-
-  /** Gets user's staking info by ticker
-   * @param {String} address - User's address
-   * @param {String} ticker - Collection's ticker
-   * @returns {GroupStakingInfo[]} User's staking info
-   * @throws {Error} Throws an error if the address is invalid
-   *  */
-  public getUserStakingTickerInfoGrouped = async (
-    address: string,
-    ticker: string
-  ): Promise<GroupStakingInfo[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
-    if (!isValidCollectionTicker(ticker)) throw new Error('Invalid ticker');
-
-    const response = await this.api.fetchWithTimeout<GroupStakingInfo[]>(
-      `https://proxy-api.xoxno.com/getUserStakingInfo/${address}?groupByTicker=true&ticker=${ticker}`
-    );
-    return response;
   };
 
   /** Gets user's creator profile

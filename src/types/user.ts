@@ -122,31 +122,28 @@ export type TickerElement = {
   name: string;
 };
 
-export type UserAccountInfo = {
+export type UserTokenInventory = {
+  tokens: EsdtToken[];
+  esdts: TokenWorth;
+  stables: TokenWorth;
+  wallet: TokenWorth;
+};
+
+export type TokenWorth = {
+  usdValue: number;
+  egldValue: number;
+  weight: number;
+};
+
+export type UserNetworkAccount = {
   address: string;
   nonce: number;
-  totalEsdtUsd: number;
-  totalStables: number;
-  totalEgldStables: number;
-  totalEgldEsdt: number;
-  totalUsdBalance: number;
-  totalEGLDBalance: number;
   balance: string;
   balanceShort: number;
-  balanceUsd: number;
-  balanceWalletWeight: number;
-  stablesWalletWeight: number;
-  esdtWalletWeight: number;
   username?: string;
-  ownerAddress?: string;
-  esdtTokens: EsdtToken[];
   shard: number;
   guarded: boolean;
   activeGuardian: ActiveGuardian;
-  isUpgradeable: boolean;
-  isReadable: boolean;
-  isPayable: boolean;
-  isPayableBySmartContract: boolean;
 };
 
 export type ActiveGuardian = {
@@ -163,10 +160,12 @@ export type EsdtToken = {
   ticker: string;
   name: string;
   shortBalance: number;
+  usdPrice: number;
+  usdValue: number;
+  egldValue: number;
   assets: Assets;
   isAshSupported?: boolean;
-  usdValue: number;
-  walletWeight: number;
+  weight: number;
 };
 
 export type Assets = {
