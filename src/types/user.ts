@@ -140,6 +140,7 @@ export type UserNetworkAccount = {
   nonce: number;
   balance: string;
   balanceShort: number;
+  usdValue: number;
   username?: string;
   shard: number;
   guarded: boolean;
