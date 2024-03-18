@@ -91,7 +91,7 @@ export interface OfferBody {
   _ts: number;
   nftInfo: NftData;
   isActive: boolean;
-  priceUsd: number;
+  usdValue: number;
   floorPriceMargin: number;
   floorPrice: number;
 }
@@ -246,4 +246,28 @@ export interface RewardAvaiblePools {
 export interface UserPoolStakingInfo {
   nftDocs: NftData[];
   poolDoc: PoolDetails;
+}
+
+export interface UserAnalyticSummary {
+  Purchase: Purchase;
+  Sale: Purchase;
+}
+
+export interface Purchase {
+  count: number;
+  volume: number;
+  min: Max;
+  max: Max;
+  avg: Avg;
+}
+
+export interface Avg {
+  price: number;
+}
+
+export interface Max {
+  price: number;
+  txHash: string;
+  timestamp: number;
+  identifier: string;
 }

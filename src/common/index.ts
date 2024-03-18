@@ -1,5 +1,9 @@
 import { AssetCategory, FungibleAssetsMap } from '../types/collection';
-import { AshSwapPaymentData, TokenUSDPrices } from '../types/common';
+import {
+  AnalyticsGraphs,
+  AshSwapPaymentData,
+  TokenUSDPrices,
+} from '../types/common';
 import { XOXNOClient } from '../utils/api';
 
 export class CommonModule {
@@ -63,6 +67,36 @@ export class CommonModule {
         next: {
           tags: ['getFungibleTokens'],
           revalidate: 500,
+        },
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getGlobalGraphData
+   * @param category - The ticker of the collection.
+   * @returns {Promise<AnalyticsGraphs>} A promise the required analytics data
+   * This function gets the global graph data
+   */
+  public getGlobalGraphData = async (
+    startTime: string,
+    endTime: string,
+    bin: string
+  ): Promise<AnalyticsGraphs> => {
+    const response = await this.api.fetchWithTimeout<AnalyticsGraphs>(
+      `/analytics/volume`,
+      {
+        params: {
+          startTime: startTime,
+          endTime: endTime,
+          bin: bin,
+        },
+        next: {
+          tags: ['/analytics/volume'],
+          revalidate: 60,
         },
       }
     );

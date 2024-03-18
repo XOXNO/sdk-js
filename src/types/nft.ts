@@ -47,8 +47,8 @@ export interface SaleInfo {
   currentBidUsd?: number;
   quantity: number;
   marketplace: string;
-  minBidUsd: string;
-  maxBidUsd?: string;
+  minBidUsdValue: string;
+  maxBidUsdValue?: string;
 }
 
 export interface NftValue {

@@ -10,3 +10,15 @@ export type AshSwapPaymentData = {
   bigUintAmount: string;
   extraGasLimit: number;
 };
+
+export interface AnalyticsGraphs {
+  marketplace: string;
+  timestamp: Date[];
+  totalEgldVolume: number[];
+  totalUsdVolume: number[];
+  totalTrades: number[];
+}
+
+export interface StatusResponse {
+  status: boolean;
+}

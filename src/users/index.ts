@@ -5,6 +5,7 @@ import {
   IMintInfo,
   NftData,
   SearchNFTsResponse,
+  StatusResponse,
   TradincActivityArgs,
   TradingActivityResponse,
 } from '../types';
@@ -14,6 +15,7 @@ import {
   CreatorProfile,
   IUserProfile,
   PoolDetails,
+  UserAnalyticSummary,
   UserCollectionStaking,
   UserInventory,
   UserNetworkAccount,
@@ -293,6 +295,78 @@ export class UserModule {
     if (!isAddressValid(address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<PoolDetails[]>(
       `/user/${address}/staking/owned-pools`
+    );
+    return response;
+  };
+
+  /**
+   * Gets user's analytics summary
+   *
+   * @param {String} address - User's address
+   * @returns {UserAnalyticSummary} User's analytics summary
+   */
+
+  public getUserAnalyticsSummary = async (
+    address: string
+  ): Promise<UserAnalyticSummary> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+    const response = await this.api.fetchWithTimeout<UserAnalyticSummary>(
+      `/user/${address}/analytics/volume`
+    );
+    return response;
+  };
+
+  /** Gets user's favorite NFTs
+   * @param {String} address - User's address
+   * @param {number} top - Top
+   * @param {number} skip - Skip
+   * @returns {NftData[]} Array of NFTs
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getUserFavoriteNFTs = async (
+    address: string,
+    top: number,
+    skip: number
+  ): Promise<NftData[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+
+    const response = await this.api.fetchWithTimeout<NftData[]>(
+      `/user/${address}/favorite/nfts`,
+      {
+        params: {
+          top,
+          skip,
+        },
+      }
+    );
+    return response;
+  };
+
+  /** Gets user's favorite collection tickers
+   * @param {String} address - User's address
+   * @returns {String[]} Array of tickers
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getUserFavoriteCollectionTickers = async (
+    address: string
+  ): Promise<string[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+
+    const response = await this.api.fetchWithTimeout<string[]>(
+      `/user/${address}/favorite/collections`
+    );
+    return response;
+  };
+
+  /** Get if the creator tag is registered already
+   * @param {String} creatorTag - The creator tag that needs to be checked
+   * @returns {StatusResponse} True or false
+   *  */
+  public getIsCreatorRegistered = async (
+    creatorTag: string
+  ): Promise<StatusResponse> => {
+    const response = await this.api.fetchWithTimeout<StatusResponse>(
+      `/user/${creatorTag}/creator/is-registered`
     );
     return response;
   };

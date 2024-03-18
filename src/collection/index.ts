@@ -1,4 +1,4 @@
-import { NftData } from '../types';
+import { AnalyticsGraphs, NftData } from '../types';
 import {
   CollectionsNFTsResponse,
   GetCollectionsArgs,
@@ -22,6 +22,7 @@ import {
   GetCollectionStatsArgs,
   CollectionStatsResults,
   CollectionRanksExport,
+  CollectionStatsDoc,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
 import { XOXNOClient } from '../index';
@@ -644,6 +645,32 @@ export class CollectionModule {
     };
   };
 
+  /**
+   * @public
+   * @async
+   * @function getCollectionStats
+   * @param {GetCollectionStatsArgs} args - The filter payload for the collection statsitics
+   * @returns {Promise<CollectionStatsDoc>} A promise that resolves to a struct with information
+   * Finally, it returns a promise that resolves a struct with information
+   */
+  public getCollectionStats = async (
+    ticker: string
+  ): Promise<CollectionStatsDoc> => {
+    if (!isValidCollectionTicker(ticker)) {
+      throw new Error('Invalid collection ticker: ' + ticker);
+    }
+
+    return await this.api.fetchWithTimeout<CollectionStatsDoc>(
+      `/collection/${ticker}/stats`,
+      {
+        next: {
+          tags: ['collectionStatistics'],
+          revalidate: 12,
+        },
+      }
+    );
+  };
+
   public getAwaitEmpty = async (delay: number): Promise<boolean> => {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -667,11 +694,14 @@ export class CollectionModule {
     ticker: string;
     extra?: RequestInit;
   }): Promise<GetCollectionMintInfo> => {
+    if (!isValidCollectionTicker(ticker)) {
+      throw new Error('Invalid collection ticker: ' + ticker);
+    }
     const response = await this.api.fetchWithTimeout<GetCollectionMintInfo>(
       `/collection/${ticker}/drop-info`,
       {
         next: {
-          tags: ['getCollectionMintInfo'],
+          tags: [`/collection/${ticker}/drop-info`],
           revalidate: 12,
         },
         ...extra,
@@ -695,11 +725,14 @@ export class CollectionModule {
     ticker: string;
     extra?: RequestInit;
   }): Promise<CollectionRanksExport[]> => {
+    if (!isValidCollectionTicker(ticker)) {
+      throw new Error('Invalid collection ticker: ' + ticker);
+    }
     const response = await this.api.fetchWithTimeout<CollectionRanksExport[]>(
       `/collection/${ticker}/ranks`,
       {
         next: {
-          tags: ['getCollectionRanks'],
+          tags: [`/collection/${ticker}/ranks`],
           revalidate: 60,
         },
         ...extra,
@@ -730,10 +763,44 @@ export class CollectionModule {
       `/collection/${creatorTag}/${collectionTag}/drop-info`,
       {
         next: {
-          tags: ['getDropInfo'],
+          tags: [`/collection/${creatorTag}/${collectionTag}/drop-info`],
           revalidate: 12,
         },
         ...extra,
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getCollectionGraphData
+   * @param category - The ticker of the collection.
+   * @returns {Promise<AnalyticsGraphs>} A promise the required analytics data
+   * This function gets the global graph data
+   */
+  public getCollectionGraphData = async (
+    collection: string,
+    startTime: string,
+    endTime: string,
+    bin: string
+  ): Promise<AnalyticsGraphs> => {
+    if (!isValidCollectionTicker(collection)) {
+      throw new Error('Invalid collection ticker: ' + collection);
+    }
+    const response = await this.api.fetchWithTimeout<AnalyticsGraphs>(
+      `/collection/${collection}/analytics/volume`,
+      {
+        params: {
+          startTime: startTime,
+          endTime: endTime,
+          bin: bin,
+        },
+        next: {
+          tags: [`/collection/${collection}/analytics/volume`],
+          revalidate: 60,
+        },
       }
     );
     return response;

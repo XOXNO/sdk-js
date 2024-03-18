@@ -645,7 +645,7 @@ export type GlobalOffers = {
   price: string;
   priceShort: number;
   owner: Owner;
-  usd: string;
+  usdValue: string;
   marketplace: string;
   timestamp: number;
   attributes: MetadataAttribute[];
