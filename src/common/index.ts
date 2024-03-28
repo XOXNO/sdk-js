@@ -63,13 +63,24 @@ export class CommonModule {
     categories: AssetCategory[] = [AssetCategory.ALL],
     identifiers?: string[]
   ): Promise<FungibleAssetsMap> => {
+    let params = {};
+
+    if (identifiers) {
+      params = {
+        identifier: identifiers.join(','),
+      };
+    }
+
+    if (categories) {
+      params = {
+        ...params,
+        category: categories.join(','),
+      };
+    }
     const response = await this.api.fetchWithTimeout<FungibleAssetsMap>(
       `/tokens`,
       {
-        params: {
-          identifier: identifiers ? identifiers.join(',') : undefined,
-          category: categories ? categories.join(',') : undefined,
-        },
+        params,
       }
     );
     return response;
