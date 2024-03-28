@@ -674,6 +674,8 @@ export type GetCollectionMintInfo = {
   kycRequired: boolean;
   totalNftMinted: number;
   collectionSize: number;
+  cid: string;
+  mediaType: string;
   mintStages: MintStage[];
   collectionInfo: {
     name: string;
