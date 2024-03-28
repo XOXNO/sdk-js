@@ -67,12 +67,8 @@ export class CommonModule {
       `/tokens`,
       {
         params: {
-          identifiers: identifiers ? identifiers.join(',') : undefined,
+          identifier: identifiers ? identifiers.join(',') : undefined,
           category: categories ? categories.join(',') : undefined,
-        },
-        next: {
-          tags: ['getFungibleTokens'],
-          revalidate: 500,
         },
       }
     );
