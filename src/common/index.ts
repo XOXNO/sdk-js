@@ -1,7 +1,13 @@
-import { AssetCategory, FungibleAssetsMap } from '../types/collection';
+import {
+  AssetCategory,
+  FungibleAssetsMap,
+  SuggestNFTsArgs,
+  SuggestResults,
+} from '../types/collection';
 import {
   AnalyticsGraphs,
   AshSwapPaymentData,
+  StatisticsSummary,
   TokenUSDPrices,
 } from '../types/common';
 import { XOXNOClient } from '../utils/api';
@@ -101,5 +107,69 @@ export class CommonModule {
       }
     );
     return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getAnalyticsOverview
+   * @returns {Promise<StatisticsSummary>} A promise the required analytics data
+   * This function gets the global graph data
+   */
+  public getAnalyticsOverview = async (): Promise<StatisticsSummary> => {
+    const response = await this.api.fetchWithTimeout<StatisticsSummary>(
+      `/analytics/overview`,
+      {
+        next: {
+          tags: ['/analytics/overview'],
+          revalidate: 60,
+        },
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function suggestResults
+   * @param {SuggestNFTsArgs} args - An object containing the necessary parameters to fetch suggested NFT results.
+   * @returns {Promise<SuggestResults>} A promise that resolves to the fetched NFT results.
+   *
+   * This function fetches suggested NFT results based on the provided arguments. It takes an object with the following properties:
+   * - name (string): The name to search for (required).
+   * - orderBy (SuggestOrderBy[], optional): An array of ordering preferences for the results.
+   * - top (number, optional): The maximum number of results to return (default is 35, cannot be greater than 35).
+   * - skip (number, optional): The number of results to skip (default is 0).
+   *
+   * The function first validates the input arguments and constructs a payload body with the provided parameters.
+   * Then, it converts the payload body into a base64 string and fetches the suggested results using the API.
+   * Finally, it returns a promise that resolves to the fetched NFT results.
+   */
+  public suggestResults = async (
+    args: SuggestNFTsArgs
+  ): Promise<SuggestResults> => {
+    if (args.top && args.top > 35) {
+      throw new Error('Top cannot be greater than 35');
+    }
+    if (!args.name) {
+      throw new Error('Name is required');
+    }
+
+    const payloadBody: SuggestNFTsArgs = {
+      name: args.name,
+      top: args.top || 35,
+      skip: args.skip || 0,
+    };
+
+    return await this.api.fetchWithTimeout<SuggestResults>(`/search`, {
+      params: {
+        filter: JSON.stringify(payloadBody),
+      },
+      next: {
+        tags: ['/search/global'],
+        revalidate: 180,
+      },
+    });
   };
 }

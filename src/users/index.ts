@@ -6,6 +6,8 @@ import {
   NftData,
   SearchNFTsResponse,
   StatusResponse,
+  SuggestNFTsArgs,
+  SuggestResults,
   TradincActivityArgs,
   TradingActivityResponse,
 } from '../types';
@@ -130,17 +132,67 @@ export class UserModule {
   };
 
   /**
-   * @name getUserOffers
+   * @name getUserPlacedOffers
    * @description Fetches all offers sent or received associated with a user address
    * @param {String} address - The user's wallet address
    * @returns {UserOffers} - The user's listings
    */
-  public getUserOffers = async (args: ArgsUserOffers): Promise<UserOffers> => {
+  public getUserPlacedOffers = async (
+    args: ArgsUserOffers
+  ): Promise<UserOffers> => {
     if (!isAddressValid(args.address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<UserOffers>(
-      `https://proxy-api.xoxno.com/user/${args.address}/offers?type=${args.type}&skip=${args.skip}&top=${args.top}`
+      `/user/${args.address}/offers/placed`,
+      {
+        params: {
+          type: args.type,
+          skip: args.skip,
+          top: args.top,
+        },
+      }
     );
     return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function suggestUsers
+   * @param {SuggestNFTsArgs} args - An object containing the necessary parameters to fetch suggested users results.
+   * @returns {Promise<SuggestResults>} A promise that resolves to the fetched users results.
+   *
+   * This function fetches suggested users results based on the provided arguments. It takes an object with the following properties:
+   * - name (string): The name to search for (required).
+   * - top (number, optional): The maximum number of results to return (default is 35, cannot be greater than 35).
+   * - skip (number, optional): The number of results to skip (default is 0).
+   *
+   * Finally, it returns a promise that resolves to the fetched users results.
+   */
+  public suggestUsers = async (
+    args: SuggestNFTsArgs
+  ): Promise<SuggestResults> => {
+    if (args.top && args.top > 35) {
+      throw new Error('Top cannot be greater than 35');
+    }
+    if (!args.name) {
+      throw new Error('Name is required');
+    }
+
+    const payloadBody: SuggestNFTsArgs = {
+      name: args.name,
+      top: args.top || 35,
+      skip: args.skip || 0,
+    };
+
+    return await this.api.fetchWithTimeout<SuggestResults>(`/user/search`, {
+      params: {
+        filter: JSON.stringify(payloadBody),
+      },
+      next: {
+        tags: ['/search/global'],
+        revalidate: 180,
+      },
+    });
   };
 
   /**

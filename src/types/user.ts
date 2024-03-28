@@ -10,6 +10,14 @@ export interface BulkAccount {
   balanceShort: number;
 }
 
+export interface IUserProfileSearch {
+  address: string;
+  isVerified: boolean;
+  profile: string;
+  herotag: string;
+  addressTrimmed: string;
+}
+
 export interface IUserProfile {
   dataType: 'userProfile';
   hasKYC?: boolean;
@@ -58,6 +66,7 @@ export interface UserInventory {
 
 export interface UserOffers {
   hasMoreResults: boolean;
+  count: number;
   resources: OfferBody[];
 }
 

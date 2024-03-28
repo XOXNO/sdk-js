@@ -8,7 +8,6 @@ import {
   GetNFTsArgs,
   SearchNFTsResponse,
   SuggestNFTsArgs,
-  SuggestOrderBy,
   SuggestResults,
   CollectionVolume,
   FloorPriceHistory,
@@ -241,21 +240,18 @@ export class CollectionModule {
   /**
    * @public
    * @async
-   * @function suggestResults
-   * @param {SuggestNFTsArgs} args - An object containing the necessary parameters to fetch suggested NFT results.
-   * @returns {Promise<SuggestResults>} A promise that resolves to the fetched NFT results.
+   * @function suggetCollections
+   * @param {SuggestNFTsArgs} args - An object containing the necessary parameters to fetch suggested collections results.
+   * @returns {Promise<SuggestResults>} A promise that resolves to the fetched collections results.
    *
-   * This function fetches suggested NFT results based on the provided arguments. It takes an object with the following properties:
+   * This function fetches suggested collections results based on the provided arguments. It takes an object with the following properties:
    * - name (string): The name to search for (required).
-   * - orderBy (SuggestOrderBy[], optional): An array of ordering preferences for the results.
    * - top (number, optional): The maximum number of results to return (default is 35, cannot be greater than 35).
    * - skip (number, optional): The number of results to skip (default is 0).
    *
-   * The function first validates the input arguments and constructs a payload body with the provided parameters.
-   * Then, it converts the payload body into a base64 string and fetches the suggested results using the API.
-   * Finally, it returns a promise that resolves to the fetched NFT results.
+   * Finally, it returns a promise that resolves to the fetched collections results.
    */
-  public suggestResults = async (
+  public suggetCollections = async (
     args: SuggestNFTsArgs
   ): Promise<SuggestResults> => {
     if (args.top && args.top > 35) {
@@ -267,22 +263,18 @@ export class CollectionModule {
 
     const payloadBody: SuggestNFTsArgs = {
       name: args.name,
-      orderBy: args.orderBy || [
-        SuggestOrderBy.TotalVolumeHighToLow,
-        SuggestOrderBy.FollowersHighToLow,
-        SuggestOrderBy.IsVerifiedTrueToFalse,
-        SuggestOrderBy.HasImageTrueToFalse,
-      ],
       top: args.top || 35,
       skip: args.skip || 0,
     };
 
-    const buffer = Buffer.from(JSON.stringify(payloadBody)).toString('base64');
     return await this.api.fetchWithTimeout<SuggestResults>(
-      `https://proxy-api.xoxno.com/search/${buffer}`,
+      `/collection/search`,
       {
+        params: {
+          filter: JSON.stringify(payloadBody),
+        },
         next: {
-          tags: ['suggestResults'],
+          tags: ['/collection/search'],
           revalidate: 180,
         },
       }
@@ -292,19 +284,19 @@ export class CollectionModule {
   /**
    * @public
    * @async
-   * @function suggestResults
+   * @function collectionListings
    * @param {string} ticker - The unique collection identifier called ticker
    * @returns {Promise<ListingDistribution[]>} A promise that resolves to the distribution of listings
    */
-  public collectionListings = async (
+  public collectionListingsAnalytics = async (
     ticker: string
   ): Promise<ListingDistribution[]> => {
     return await this.api.fetchWithTimeout<ListingDistribution[]>(
-      `https://proxy-api.xoxno.com/listingDistribution/${ticker}`,
+      `collection/${ticker}/listing`,
       {
         next: {
-          tags: ['collectionListings'],
-          revalidate: 180,
+          tags: ['collection/${ticker}/listing'],
+          revalidate: 500,
         },
       }
     );

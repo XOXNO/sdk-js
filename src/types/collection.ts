@@ -1,6 +1,6 @@
 import { NftData, Owner } from './nft';
 import { NftActivityType } from './trading';
-import { IUserProfile } from './user';
+import { IUserProfileSearch } from './user';
 
 export interface ISocials {
   twitter: string;
@@ -431,7 +431,8 @@ export interface CollectionsNFTsResponse {
 
 export interface SuggestResults {
   count: number;
-  results: ResultsBody;
+  hasMoreResults: boolean;
+  resources: ResultsBody;
 }
 
 export interface ListingDistribution {
@@ -446,7 +447,7 @@ export interface ListingDistribution {
 
 export interface ResultsBody {
   collections: ICollectionProfile[];
-  users: IUserProfile[];
+  users: IUserProfileSearch[];
   nft: NftData[];
 }
 
