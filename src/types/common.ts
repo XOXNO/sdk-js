@@ -17,6 +17,9 @@ export interface AnalyticsGraphs {
   totalEgldVolume: number[];
   totalUsdVolume: number[];
   totalTrades: number[];
+  floorPrice: number[];
+  athPrice: number[];
+  avgPrice: number[];
 }
 
 export interface StatusResponse {

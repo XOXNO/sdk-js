@@ -240,7 +240,7 @@ export class CollectionModule {
   /**
    * @public
    * @async
-   * @function suggetCollections
+   * @function suggestCollections
    * @param {SuggestNFTsArgs} args - An object containing the necessary parameters to fetch suggested collections results.
    * @returns {Promise<SuggestResults>} A promise that resolves to the fetched collections results.
    *
@@ -251,7 +251,7 @@ export class CollectionModule {
    *
    * Finally, it returns a promise that resolves to the fetched collections results.
    */
-  public suggetCollections = async (
+  public suggestCollections = async (
     args: SuggestNFTsArgs
   ): Promise<SuggestResults> => {
     if (args.top && args.top > 35) {
@@ -490,47 +490,6 @@ export class CollectionModule {
       {
         next: {
           tags: ['getMarketplaceVolume'],
-          revalidate: 180,
-        },
-      }
-    );
-    return response;
-  };
-
-  /**
-   * @public
-   * @async
-   * @function getCollectionFloor
-   * @param {string} collection - The ticker of the collection to fetch the volume for (e.g., 'EAPES-8f3c1f').
-   * @param {string} after - The start date (inclusive) of the date range for the volume data (e.g., '2023-04-17').
-   * @param {string} before - The end date (inclusive) of the date range for the volume data (e.g., '2023-04-25').
-   * @param {string} bin - The binning period for the volume data (e.g., '1d' for 1 day).
-   * @returns {Promise<FloorPriceHistory[]>} A promise that resolves to an array of floor price history data.
-   *
-   * This function fetches floor data for a given collection within a specified date range and binning period. It takes the following parameters:
-   * - collection (string): The ticker of the collection to fetch the volume for (e.g., 'EAPES-8f3c1f').
-   * - after (string): The start date (inclusive) of the date range for the volume data (e.g., '2023-04-17').
-   * - before (string): The end date (inclusive) of the date range for the volume data (e.g., '2023-04-25').
-   * - bin (string): The binning period for the volume data (e.g., '1d' for 1 day).
-   *
-   * The function first validates the input collection ticker and checks if it is a valid collection ticker.
-   * If it is valid, the function fetches the collection volume data using the API with the specified query parameters.
-   * Finally, it returns a promise that resolves to an array of floor price history data.
-   */
-  public getCollectionFloor = async (
-    collection: string,
-    after: string,
-    before: string,
-    bin: string
-  ): Promise<FloorPriceHistory[]> => {
-    if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
-    }
-    const response = await this.api.fetchWithTimeout<FloorPriceHistory[]>(
-      `https://proxy-api.xoxno.com/getCollectionFloor/${collection}?after=${after}&before=${before}&bin=${bin}`,
-      {
-        next: {
-          tags: ['getCollectionFloor'],
           revalidate: 180,
         },
       }
