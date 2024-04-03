@@ -21,6 +21,7 @@ import {
   CollectionStatsResults,
   CollectionRanksExport,
   CollectionStatsDoc,
+  AuctionTypes,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
 import { XOXNOClient } from '../index';
@@ -172,9 +173,10 @@ export class CollectionModule {
     if (args.priceRange) {
       ranges.push({
         ...args.priceRange,
-        field: args.onlyAuctions
-          ? 'saleInfo.currentBidShort'
-          : 'saleInfo.minBidShort',
+        field:
+          args.auctionType == AuctionTypes.Auctions
+            ? 'saleInfo.currentBidShort'
+            : 'saleInfo.minBidShort',
       });
     }
     if (args.rankRange) {
@@ -186,18 +188,20 @@ export class CollectionModule {
     const payloadBody: SearchNFTs = {
       filters: {
         dataType: args.dataType ?? ['nft'],
-        activeAuction: args.onlyAuctions || args.activeAuctions,
+        // @borispoehland Has to be false only if we want to show the expired auctions, undefined to show all, and true only actives
+        activeAuction: args.activeAuctions,
         collection: args.collections ?? [],
         onSale: args.onlyOnSale,
         saleInfo: {
           seller: args.listedBy || [],
           marketplace: args.listedOnlyOn || undefined,
           paymentToken: args.listedInToken || [],
-          auctionType: args.onlyOnSale
-            ? args.onlyAuctions
+          auctionType:
+            args.auctionType == AuctionTypes.Auctions
               ? ['NftBid', 'SftAll']
-              : ['Nft', 'SftOnePerPayment']
-            : undefined,
+              : args.auctionType == AuctionTypes.FixedPrice
+                ? ['Nft', 'SftOnePerPayment']
+                : ['NftBid', 'SftAll', 'Nft', 'SftOnePerPayment'],
         },
         owner: args.ownedBy || [],
         verifiedOnly: args.onlyVerified || false,
@@ -207,7 +211,7 @@ export class CollectionModule {
         range: ranges,
         cp_staked: args.isStaked || undefined,
       },
-      applyNftExtraDetails: args.applyNftExtraDetails || true,
+      applyNftExtraDetails: args.applyNftExtraDetails,
       orderBy: args.orderBy || [],
       select: args.onlySelectFields || [],
       includeCount: args.includeCount || false,

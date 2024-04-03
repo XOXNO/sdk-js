@@ -1,5 +1,5 @@
 import { UserModule } from '..';
-import { XOXNOClient } from '../..';
+import { AuctionTypes, XOXNOClient } from '../..';
 import { OfferType } from '../../types/user';
 
 describe('UserModule', () => {
@@ -21,6 +21,7 @@ describe('UserModule', () => {
   it('should return the wallet NFTs not listed', async () => {
     const inventory = await userModule.getUserNFTs({
       ownedBy: [inputAddress],
+      auctionType: AuctionTypes.FixedPrice,
       onlyOnSale: false,
       top: 25,
     });
@@ -29,6 +30,7 @@ describe('UserModule', () => {
 
   it('should return the wallet NFTs listed', async () => {
     const inventory = await userModule.getUserNFTs({
+      auctionType: AuctionTypes.FixedPrice,
       listedBy: [inputAddress], // or only ownedBy: [inputAddress]
       onlyOnSale: true,
       top: 25,
@@ -47,6 +49,7 @@ describe('UserModule', () => {
 
   it('should return the wallet NFTs listed or unlisted from the specific collection', async () => {
     const inventory = await userModule.getUserNFTs({
+      auctionType: AuctionTypes.FixedPrice,
       ownedBy: [inputAddress],
       collections: ['BANANA-e955fd'],
       top: 1,

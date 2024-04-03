@@ -1,5 +1,5 @@
 import { CollectionModule, XOXNOClient } from '../../index';
-import { FieldsToSelect, SearchNFTsResponse } from '../../types';
+import { AuctionTypes, FieldsToSelect, SearchNFTsResponse } from '../../types';
 
 describe('CollectionModule', () => {
   let collectionModule: CollectionModule;
@@ -73,6 +73,7 @@ describe('CollectionModule', () => {
     const nfts: SearchNFTsResponse = await collectionModule.getNFTs({
       collections: [inputCollection],
       onlyOnSale: true,
+      auctionType: AuctionTypes.FixedPrice,
       top: 1,
       onlySelectFields: [
         FieldsToSelect.Attributes,

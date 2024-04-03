@@ -264,11 +264,19 @@ export interface SearchNFTs {
   includeCount?: boolean;
 }
 
+export enum AuctionTypes {
+  FixedPrice = 'FixedPrice',
+  Auctions = 'Auctions',
+  All = 'All',
+}
+
 export interface GetNFTsArgs {
   /** Listed by different users */
   listedBy?: string[];
   /** Owned by different users */
   ownedBy?: string[];
+
+  auctionType: AuctionTypes;
   /** If set, will return only NFTs from the specified collections */
   collections?: string[];
   /** If set, will return only NFTs from verified collections */
@@ -277,8 +285,6 @@ export interface GetNFTsArgs {
   onlyOnSale?: boolean;
   /** If true, will return only NFTs that are active, deadline not expired */
   activeAuctions?: boolean;
-  /** If true, will return only NFTs that are on auction */
-  onlyAuctions?: boolean;
   /** If true the extra details of an NFT will be appended to each NFT, such as collection size and owners name */
   applyNftExtraDetails?: boolean;
   /** If set, will return only NFTs with a price in the specified range */
