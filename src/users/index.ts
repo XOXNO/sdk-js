@@ -132,17 +132,15 @@ export class UserModule {
   };
 
   /**
-   * @name getUserPlacedOffers
+   * @name getUserOffers
    * @description Fetches all offers sent or received associated with a user address
    * @param {String} address - The user's wallet address
    * @returns {UserOffers} - The user's listings
    */
-  public getUserPlacedOffers = async (
-    args: ArgsUserOffers
-  ): Promise<UserOffers> => {
+  public getUserOffers = async (args: ArgsUserOffers): Promise<UserOffers> => {
     if (!isAddressValid(args.address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<UserOffers>(
-      `/user/${args.address}/offers/placed`,
+      `/user/${args.address}/offers`,
       {
         params: {
           type: args.type,
@@ -421,5 +419,35 @@ export class UserModule {
       `/user/${creatorTag}/creator/is-registered`
     );
     return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getUsersStats
+   * @param {SuggestNFTsArgs} args - An object containing the necessary parameters to fetch suggested users results.
+   * @returns {Promise<SuggestResults>} A promise that resolves to the fetched users results.
+   */
+  public getUsersStats = async (
+    args: SuggestNFTsArgs
+  ): Promise<SuggestResults> => {
+    if (args.top && args.top > 35) {
+      throw new Error('Top cannot be greater than 35');
+    }
+    if (!args.name) {
+      throw new Error('Name is required');
+    }
+
+    return await this.api.fetchWithTimeout<SuggestResults>(`/user/stats`, {
+      params: {
+        top: args.top,
+        skip: args.skip,
+        orderBy: args.orderBy,
+      },
+      next: {
+        tags: ['/search/global'],
+        revalidate: 180,
+      },
+    });
   };
 }

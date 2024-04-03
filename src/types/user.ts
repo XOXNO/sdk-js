@@ -79,7 +79,7 @@ export interface ArgsUserOffers {
 
 export enum OfferType {
   Received = 'received',
-  Sent = 'sent',
+  Placed = 'placed',
 }
 
 export interface OfferBody {
@@ -247,7 +247,8 @@ export interface RewardAvaiblePools {
   tokenIdentifier: string;
   tokenNonce: number;
   rewardPerEpochShort: number;
-  rewardBalance: number;
+  rewardBalanceShort: number;
+  rewardBalance: string;
   rewardPerDayPerNft: number;
   usdValue: number;
 }

@@ -10,7 +10,6 @@ import {
   SuggestNFTsArgs,
   SuggestResults,
   CollectionVolume,
-  FloorPriceHistory,
   IOwners,
   ISingleHolder,
   GetGlobalOffersArgs,

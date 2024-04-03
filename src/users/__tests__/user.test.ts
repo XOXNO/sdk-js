@@ -66,7 +66,7 @@ describe('UserModule', () => {
   it('should return all the offers of a user Global or Custom / send or received', async () => {
     const offers = await userModule.getUserOffers({
       address: inputAddress,
-      type: OfferType.Sent,
+      type: OfferType.Placed,
       skip: 0,
       top: 10,
     });
