@@ -268,6 +268,7 @@ export enum AuctionTypes {
   FixedPrice = 'FixedPrice',
   Auctions = 'Auctions',
   All = 'All',
+  AllListed = 'AllListed',
 }
 
 export interface GetNFTsArgs {

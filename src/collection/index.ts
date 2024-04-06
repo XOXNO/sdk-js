@@ -201,7 +201,9 @@ export class CollectionModule {
               ? ['NftBid', 'SftAll']
               : args.auctionType == AuctionTypes.FixedPrice
                 ? ['Nft', 'SftOnePerPayment']
-                : ['NftBid', 'SftAll', 'Nft', 'SftOnePerPayment'],
+                : args.auctionType == AuctionTypes.AllListed
+                  ? ['NftBid', 'SftAll', 'Nft', 'SftOnePerPayment']
+                  : undefined,
         },
         owner: args.ownedBy || [],
         verifiedOnly: args.onlyVerified || false,
