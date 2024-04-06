@@ -1,4 +1,9 @@
-import { Marketplace, MetadataAttribute, TradingActivity } from './collection';
+import {
+  Marketplace,
+  MetadataAttribute,
+  RangeFilter,
+  TradingActivity,
+} from './collection';
 
 export enum NftActivityType {
   // MVX Built-in
@@ -40,19 +45,7 @@ export interface TradingActivityQueryFilter {
       collection?: string[];
       identifier?: string[];
     };
-    // range?: {
-    //   min: number;
-    //   max: number;
-    // };
-    // rankRange?: {
-    //   min: number;
-    //   max: number;
-    // };
-    // timestampRange?: {
-    //   min: number;
-    //   max: number;
-    // };
-    // attributes?: MetadataAttribute[];
+    range?: RangeFilter[];
   };
   strictSelect?: boolean;
   top: number;
@@ -93,8 +86,6 @@ export interface TradincActivityArgs {
   top?: number;
   /** The number of results to skip */
   skip?: number;
-  /** The actions to fetch the trading activity from */
-  actions?: string[];
   /** The fields to select from the trading activity */
   select?: SelectFieldsTradingActivity[];
   strictSelect?: boolean;

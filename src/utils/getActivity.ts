@@ -20,6 +20,20 @@ export const getActivity = async (
     throw new Error('Top cannot be greater than 35');
   }
 
+  const ranges = [];
+  if (args.priceRange) {
+    ranges.push({
+      ...args.priceRange,
+      field: 'activityData.egldValue',
+    });
+  }
+  if (args.timestampRange) {
+    ranges.push({
+      ...args.timestampRange,
+      field: 'timestamp',
+    });
+  }
+
   const payloadBody: TradingActivityQueryFilter = {
     filters: {
       activityData:
@@ -32,13 +46,9 @@ export const getActivity = async (
       from: args.from,
       to: args.to,
       activityAddress: args.wallets || undefined,
-      // tokens: args.placedInToken || undefined,
       source: args.source || undefined,
       activityType: args.activityType || undefined,
-      // range: args.priceRange,
-      // rankRange: args.rankRange,
-      // timestampRange: args.timestampRange,
-      // attributes: args.attributes,
+      range: ranges,
     },
     strictSelect: args.strictSelect,
     orderBy: args.orderBy,
