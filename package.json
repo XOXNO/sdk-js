@@ -70,7 +70,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@multiversx/sdk-core": "^12.19.2",
+    "@multiversx/sdk-core": "^13.0.0",
     "@multiversx/sdk-network-providers": "^2.4.3"
   }
 }
