@@ -22,6 +22,8 @@ import {
   CollectionRanksExport,
   CollectionStatsDoc,
   AuctionTypes,
+  GETDropsArgs,
+  GetDropsResponse,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
 import { XOXNOClient } from '../index';
@@ -760,5 +762,104 @@ export class CollectionModule {
       }
     );
     return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getPinnedCollections
+   * @param category - The ticker of the collection.
+   * @returns {Promise<AnalyticsGraphs>} A promise the required analytics data
+   * This function gets the global graph data
+   */
+  public getPinnedCollections = async (): Promise<
+    Pick<
+      ICollectionProfile,
+      | 'name'
+      | 'profile'
+      | 'collection'
+      | 'banner'
+      | 'description'
+      | 'isMintable'
+      | 'creator'
+    >
+  > => {
+    const response = await this.api.fetchWithTimeout<
+      Pick<
+        ICollectionProfile,
+        | 'name'
+        | 'profile'
+        | 'collection'
+        | 'banner'
+        | 'description'
+        | 'isMintable'
+        | 'creator'
+      >
+    >(`/collection/pinned`, {
+      next: {
+        tags: [`/collection/pinned`],
+        revalidate: 60,
+      },
+    });
+    return response;
+  };
+
+  /**
+   * Get drops based on the provided arguments.
+   * @param {SearchNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
+   * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
+   * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 35.
+   */
+  public getDrops = async (args: GETDropsArgs): Promise<GetDropsResponse> => {
+    args?.collections?.forEach((element) => {
+      if (!isValidCollectionTicker(element)) {
+        throw new Error('Invalid collection ticker: ' + element);
+      }
+    });
+
+    if (args.top && args.top > 35) {
+      throw new Error('Top cannot be greater than 35');
+    }
+    const ranges = [];
+
+    if (args.timeRange) {
+      ranges.push({
+        ...args.timeRange,
+        field: 'startTime',
+      });
+    }
+    const payloadBody: SearchNFTs = {
+      filters: {
+        collection: args.collections ?? [],
+        verifiedOnly: args.onlyVerified || false,
+        mintToken: args.listedInToken || undefined,
+        range: ranges,
+      },
+      orderBy: args.orderBy || [],
+      select: args.onlySelectFields || [],
+      includeCount: args.includeCount || false,
+      top: args.top || 35,
+      skip: args.skip || 0,
+    };
+
+    const response = await this.api.fetchWithTimeout<GetDropsResponse>(
+      `/collection/drops/query`,
+      {
+        params: {
+          filter: JSON.stringify(payloadBody),
+        },
+        next: {
+          tags: ['/collection/drops/query'],
+        },
+        cache: 'no-store',
+      }
+    );
+    return {
+      ...response,
+      getNextPagePayload: {
+        ...args,
+        skip: (args.skip ?? 0) + (args.top ?? 35),
+      },
+    };
   };
 }

@@ -23,7 +23,6 @@ import {
   SendGlobalOffer,
   WithSenderAndNonce,
 } from '../types/interactions';
-import { TokenTransfer } from '@multiversx/sdk-core/out/tokenTransfer';
 import BigNumber from 'bignumber.js';
 import {
   Struct,
@@ -42,6 +41,7 @@ import {
   BooleanValue,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem/boolean';
 import { Address } from '@multiversx/sdk-core/out/address';
+import { TokenTransfer } from '@multiversx/sdk-core/out/tokens';
 export class SCInteraction {
   private xo: SmartContract;
   private call: ContractQueryRunner;

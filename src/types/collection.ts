@@ -1,4 +1,4 @@
-import { NftData, Owner } from './nft';
+import { CollectionInfo, NftData, Owner } from './nft';
 import { NftActivityType } from './trading';
 import { IUserProfileSearch } from './user';
 
@@ -52,6 +52,12 @@ export interface IMintInfoExtended extends IMintInfo {
 export interface CreatorInfo {
   name: string;
   contractAddress: string;
+  address: string;
+  profile: string;
+  banner: string;
+  description?: string;
+  socials?: any;
+  id: string;
   listing: IMintInfoExtended[];
 }
 
@@ -227,6 +233,7 @@ export interface Filter {
   dataType?: string[];
   identifier?: string[];
   collection?: string[];
+  mintToken?: string[];
   type?: string[];
   onSale?: boolean;
   owner?: string[];
@@ -328,7 +335,29 @@ export interface GetNFTsArgs {
   /** If set, will return only NFTs with the specified attributes */
   attributes?: MetadataAttribute[];
 }
-
+export interface GETDropsArgs {
+  /** If set, will return only NFTs from the specified collections */
+  collections?: string[];
+  /** If set, will return only NFTs from verified collections */
+  onlyVerified?: boolean;
+  /** If set, will return only NFTs listed in the specified tokens */
+  listedInToken?: string[];
+  /** If set, will return only NFTs with a cantina level in the specified range */
+  timeRange?: {
+    min: number;
+    max: number;
+  };
+  /** If set, will return the total count of the NFTs, recommended to be set true only for the first call, then false for the next pages */
+  includeCount?: boolean;
+  /** The number of results to return */
+  top?: number;
+  /** The order by to use */
+  skip?: number;
+  /** The order of the results based on a field */
+  orderBy?: SearchOrderBy[];
+  /** If set, will return only the specified fields */
+  onlySelectFields?: FieldsToSelect[];
+}
 export interface SuggestNFTsArgs {
   /** If set, will return only collections or users with a name that contains the specified string */
   name: string;
@@ -347,6 +376,17 @@ export interface SearchNFTsResponse {
   resources: NftData[];
   /** The payload to use to get the next page */
   getNextPagePayload: GetNFTsArgs;
+  /** If there are more results to fetch */
+  hasMoreResults: boolean;
+}
+
+export interface GetDropsResponse {
+  /** The total count of the results for the specific query */
+  count?: number;
+  /** The results for the current page */
+  resources: GetCollectionMintInfo[];
+  /** The payload to use to get the next page */
+  getNextPagePayload: GETDropsArgs;
   /** If there are more results to fetch */
   hasMoreResults: boolean;
 }
@@ -657,6 +697,7 @@ export type GlobalOffers = {
   marketplace: string;
   timestamp: number;
   attributes: MetadataAttribute[];
+  collectionInfo?: CollectionInfo;
   isActive: boolean;
 };
 
@@ -694,6 +735,7 @@ export type GetCollectionMintInfo = {
     owner: string;
     isVisible: boolean;
   };
+  creatorInfo: CreatorInfo;
 };
 
 export type MintStage = {
