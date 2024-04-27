@@ -828,7 +828,7 @@ export class CollectionModule {
         field: 'startTime',
       });
     }
-    const payloadBody: SearchNFTs = {
+    const payloadBody = {
       filters: {
         collection: args.collections ?? [],
         verifiedOnly: args.onlyVerified || false,

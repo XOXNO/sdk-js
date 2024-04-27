@@ -169,6 +169,11 @@ export enum SearchOrderBy {
   EndingSoon = 'saleInfo.deadline asc',
 }
 
+export enum DropsOderBy {
+  EndingLate = 'startTime desc',
+  EndingSoon = 'startTime asc',
+}
+
 export enum SuggestOrderBy {
   TotalVolumeHighToLow = 'statistics/tradeData/totalEgldVolume desc',
   FollowersHighToLow = 'statistics/other/followCount desc',
@@ -354,7 +359,7 @@ export interface GETDropsArgs {
   /** The order by to use */
   skip?: number;
   /** The order of the results based on a field */
-  orderBy?: SearchOrderBy[];
+  orderBy?: DropsOderBy[];
   /** If set, will return only the specified fields */
   onlySelectFields?: FieldsToSelect[];
 }
@@ -717,6 +722,8 @@ export type GetCollectionMintInfo = {
   collection: string;
   contractAddress: string;
   collectionTag: string;
+  startTime: number;
+  prices: StagePrice[];
   nftTransferLimited: boolean;
   hasBotProtection: boolean;
   kycRequired: boolean;
