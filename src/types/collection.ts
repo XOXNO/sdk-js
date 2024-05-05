@@ -1,4 +1,11 @@
-import { CollectionInfo, NftData, Owner, SaleInfo, Media } from './nft';
+import {
+  CollectionInfo,
+  NftData,
+  Owner,
+  SaleInfo,
+  Media,
+  NFTMetadata,
+} from './nft';
 import { NftActivityType } from './trading';
 import { IUserProfileSearch } from './user';
 
@@ -921,17 +928,9 @@ export interface Listing {
   identifier: string;
   name: string;
   collection: string;
-  metadata: Metadata;
+  metadata: Pick<NFTMetadata, 'rarity'>;
   url: string;
   media: Media;
   wasProcessed: boolean;
   saleInfo: Pick<SaleInfo, 'minBidShort'>;
-}
-
-export interface Metadata {
-  rarity: Rarity;
-}
-
-export interface Rarity {
-  rank: number;
 }

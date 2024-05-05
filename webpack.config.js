@@ -1,9 +1,10 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const BundleAnalyzerPlugin =
+  require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = [
-
   {
     mode: 'production',
     name: 'light',
@@ -29,7 +30,6 @@ module.exports = [
     resolve: {
       extensions: ['.ts', '.js'],
     },
-    mode: 'production',
     optimization: {
       minimize: true,
       usedExports: true,
@@ -38,9 +38,18 @@ module.exports = [
       },
       minimizer: [new TerserPlugin()],
     },
-    // plugins: [
-    //   new BundleAnalyzerPlugin()
-    // ],
+    plugins: [
+      new ForkTsCheckerWebpackPlugin({
+        typescript: {
+          configFile: 'tsconfig.json',
+          diagnosticOptions: {
+            semantic: true,
+            syntactic: true,
+          },
+          mode: 'write-references', // This mode is necessary for generating .d.ts files
+        },
+      }),
+    ],
   },
   {
     mode: 'production',
@@ -67,16 +76,25 @@ module.exports = [
     resolve: {
       extensions: ['.ts', '.js'],
     },
-    mode: 'production', optimization: {
-      minimize: true, usedExports: true
-      ,
+    optimization: {
+      minimize: true,
+      usedExports: true,
       splitChunks: {
         chunks: 'all',
       },
       minimizer: [new TerserPlugin()],
     },
-    // plugins: [
-    //   new BundleAnalyzerPlugin()
-    // ]
+    plugins: [
+      new ForkTsCheckerWebpackPlugin({
+        typescript: {
+          configFile: 'tsconfig.json',
+          diagnosticOptions: {
+            semantic: true,
+            syntactic: true,
+          },
+          mode: 'write-references', // This mode is necessary for generating .d.ts files
+        },
+      }),
+    ],
   },
 ];
