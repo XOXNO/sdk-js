@@ -1,4 +1,4 @@
-import { CollectionInfo, NftData, Owner } from './nft';
+import { CollectionInfo, NftData, Owner, SaleInfo, Media } from './nft';
 import { NftActivityType } from './trading';
 import { IUserProfileSearch } from './user';
 
@@ -925,12 +925,7 @@ export interface Listing {
   url: string;
   media: Media;
   wasProcessed: boolean;
-  saleInfo: SaleInfo;
-}
-
-export interface Media {
-  avifUrl: string;
-  webpUrl: string;
+  saleInfo: Pick<SaleInfo, 'minBidShort'>;
 }
 
 export interface Metadata {
@@ -939,8 +934,4 @@ export interface Metadata {
 
 export interface Rarity {
   rank: number;
-}
-
-export interface SaleInfo {
-  minBidShort: number;
 }

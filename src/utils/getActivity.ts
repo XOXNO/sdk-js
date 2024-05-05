@@ -1,4 +1,4 @@
-import { XOXNOClient } from '..';
+import { XOXNOClient } from '../index.light';
 import {
   TradincActivityArgs,
   TradingActivityResponse,

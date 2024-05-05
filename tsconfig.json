@@ -1,27 +1,22 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
-    "target": "es2015",
-    "outDir": "out/cjs",
-    "lib": ["es2015", "dom"],
-    "baseUrl": ".",
-    "paths": {
-      "@src/*": ["src/*"]
-    },
+    "module": "ESNext",
+    "target": "ESNext", // or a higher version if your environment supports it
+    "outDir": "dist",
+    "lib": ["ES2015", "DOM"],
     "sourceMap": true,
     "allowJs": true,
     "strict": true,
+    "moduleResolution": "node", // Changed from nodenext
     "strictPropertyInitialization": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
-    "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedParameters": true,
     "esModuleInterop": true,
-    "declaration": true,
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false
+    "declaration": true, // Set to false if not developing a library
+    "declarationMap": true,
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "out", "/**/__tests__/*"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "**/*.test.d.ts", "**/*.test.ts"]
 }

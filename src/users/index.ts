@@ -1,4 +1,4 @@
-import { CollectionModule, XOXNOClient } from '../index';
+import { CollectionModule, XOXNOClient } from '../index.light';
 import {
   CreatorInfo,
   GetNFTsArgs,

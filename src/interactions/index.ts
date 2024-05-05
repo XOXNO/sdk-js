@@ -1,6 +1,6 @@
 import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { GlobalOffer } from '../types/collection';
-import { XOXNOClient } from '../';
+import { XOXNOClient } from '../index.light';
 import { ContractQueryRunner } from '../utils/scCalls';
 import { SmartContractAbis } from '../utils/SmartContractAbis';
 import { getSmartContract } from '../utils/SmartContractService';

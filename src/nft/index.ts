@@ -1,4 +1,4 @@
-import { XOXNOClient } from '..';
+import { XOXNOClient } from '../index.light';
 import { NftData } from '../types/nft';
 import { TradingActivityResponse, TradincActivityArgs } from '../types/trading';
 import { UserOffers } from '../types/user';
