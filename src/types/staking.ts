@@ -1,4 +1,4 @@
-import { TickerElement } from './user';
+import { RewardAvaiblePools, TickerElement } from './user';
 
 export type StakingPool = {
   name: string;
@@ -104,3 +104,27 @@ export type GetGroupedStakingPools = {
   profile: string;
   isVerified: boolean;
 };
+
+export interface StakingSummaryPools {
+  poolId: number;
+  starEpoch: number;
+  endEpoch: number;
+  currentEpoch: number;
+  poolType: string;
+  issuingType: string;
+  name: string;
+  profile: string;
+  collection: string[];
+  stakedCount: number;
+  reward: RewardAvaiblePools[];
+  userReward?: RewardAvaiblePools[];
+  rewardDuration: number;
+  isActive: boolean;
+  daysLeft: number;
+  maxPoolLimit: number;
+  hasMaxWalletLimit: boolean;
+  maxWalletLimit: number;
+  percentageFilled: number;
+  hasUnboundPeriod: boolean;
+  unBoundPeriod: number;
+}

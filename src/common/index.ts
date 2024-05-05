@@ -7,6 +7,7 @@ import {
 import {
   AnalyticsGraphs,
   AshSwapPaymentData,
+  StakingExplore,
   StatisticsSummary,
   TokenUSDPrices,
 } from '../types/common';
@@ -178,5 +179,25 @@ export class CommonModule {
         revalidate: 180,
       },
     });
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getExploreStaking
+   * @returns {Promise<StakingExplore[]>} A promise that resolves to the fetched staking explore data.
+   * This function fetches the staking explore data.
+   */
+  public getExploreStaking = async (): Promise<StakingExplore[]> => {
+    const response = await this.api.fetchWithTimeout<StakingExplore[]>(
+      `/collection/staking/explore`,
+      {
+        next: {
+          tags: ['/collection/staking/explore'],
+          revalidate: 60,
+        },
+      }
+    );
+    return response;
   };
 }

@@ -17,6 +17,7 @@ import {
   CreatorProfile,
   IUserProfile,
   PoolDetails,
+  StakingCreatorInfo,
   UserAnalyticSummary,
   UserCollectionStaking,
   UserInventory,
@@ -24,7 +25,9 @@ import {
   UserOffers,
   UserPoolStakingInfo,
   UserStakingSummary,
+  UserStats,
   UserTokenInventory,
+  UserXOXNODrop,
 } from '../types/user';
 import { getActivity } from '../utils/getActivity';
 import { isAddressValid } from '../utils/helpers';
@@ -425,29 +428,114 @@ export class UserModule {
    * @public
    * @async
    * @function getUsersStats
-   * @param {SuggestNFTsArgs} args - An object containing the necessary parameters to fetch suggested users results.
-   * @returns {Promise<SuggestResults>} A promise that resolves to the fetched users results.
+   * @returns {Promise<UserStats[]>} A promise that resolves to the fetched users results.
    */
-  public getUsersStats = async (
-    args: SuggestNFTsArgs
-  ): Promise<SuggestResults> => {
-    if (args.top && args.top > 35) {
+  public getUsersStats = async ({
+    top,
+    skip,
+    orderBy,
+  }: {
+    top: number;
+    skip: number;
+    orderBy: string;
+  }): Promise<UserStats[]> => {
+    if (top && top > 35) {
       throw new Error('Top cannot be greater than 35');
     }
-    if (!args.name) {
-      throw new Error('Name is required');
-    }
 
-    return await this.api.fetchWithTimeout<SuggestResults>(`/user/stats`, {
+    return await this.api.fetchWithTimeout<UserStats[]>(`/user/stats`, {
       params: {
-        top: args.top,
-        skip: args.skip,
-        orderBy: args.orderBy,
+        top: top,
+        skip: skip,
+        orderBy: orderBy ?? 'totalVolume',
       },
       next: {
-        tags: ['/search/global'],
+        tags: ['/user/stats'],
         revalidate: 180,
       },
     });
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getAccountNFTsToStake
+   * @param {String} address - The user's address.
+   * @param {number} poolId - The pool id.
+   * @returns {Promise<NftData[]>} A promise that resolves to the fetched NFTs.
+   */
+  public getAccountNFTsToStake = async (
+    address: string,
+    poolId: number
+  ): Promise<NftData[]> => {
+    return await this.api.fetchWithTimeout<NftData[]>(
+      `/user/${address}/staking/pool/${poolId}/available-nfts`,
+      {
+        next: {
+          tags: [`/user/${address}/staking/pool/${poolId}/available-nfts`],
+          revalidate: 30,
+        },
+      }
+    );
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getStakingCreatorInfo
+   * @param {String} address - The user's address.
+   * @returns {Promise<StakingCreatorInfo>} A promise that resolves to the fetched staking creator info.
+   */
+  public getStakingCreatorInfo = async (
+    address: string
+  ): Promise<StakingCreatorInfo> => {
+    return await this.api.fetchWithTimeout<StakingCreatorInfo>(
+      `/user/${address}/staking/creator`,
+      {
+        next: {
+          tags: [`/user/${address}/staking/creator`],
+          revalidate: 30,
+        },
+      }
+    );
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getUsersDrop
+   * @returns {Promise<UserXOXNODrop[]>} A promise that resolves to the fetched users results.
+   */
+  public getUsersDrop = async ({
+    top,
+    skip,
+    address,
+  }: {
+    top: number;
+    skip: number;
+    address?: string;
+  }): Promise<UserXOXNODrop[]> => {
+    if (top && top > 35) {
+      throw new Error('Top cannot be greater than 35');
+    }
+
+    if (address) {
+      if (!isAddressValid(address)) throw new Error('Invalid address');
+    }
+
+    return await this.api.fetchWithTimeout<UserXOXNODrop[]>(
+      `/user/xoxno-drop`,
+      {
+        params: {
+          top: top,
+          skip: skip,
+          address: address ?? undefined,
+        },
+        next: {
+          tags: ['/user/xoxno-drop'],
+          revalidate: 30,
+        },
+      }
+    );
   };
 }

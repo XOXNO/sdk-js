@@ -281,3 +281,77 @@ export interface Max {
   timestamp: number;
   identifier: string;
 }
+
+export interface UserStats {
+  wallet: Wallet;
+  totalVolume: number;
+  totalTrades: number;
+  totalCollections: number;
+  totalNfts: number;
+  totalPartners: number;
+  buyerVolume: number;
+  buyerTrades: number;
+  buyerNfts: number;
+  buyerCollections: number;
+  buyerPartners: number;
+  buyerMaxPriceData: PriceData | null;
+  buyerMinPriceData: PriceData | null;
+  sellerVolume: number;
+  sellerTrades: number;
+  sellerNfts: number;
+  sellerCollections: number;
+  sellerPartners: number;
+  sellerMaxPriceData: PriceData;
+  sellerMinPriceData: PriceData;
+}
+
+export interface PriceData {
+  price: number;
+  timestamp: number;
+  identifier: string;
+  txHash: string;
+  usdValue: number;
+  nftInfo: Pick<
+    NftData,
+    | 'identifier'
+    | 'collection'
+    | 'name'
+    | 'metadata'
+    | 'url'
+    | 'wasProcessed'
+    | 'media'
+  >;
+}
+
+export interface Wallet {
+  address: string;
+  profile: string;
+  username: string;
+  isVerified: boolean;
+  isCreator: boolean;
+  owned: number;
+  listed: number;
+}
+
+export interface StakingCreatorInfo {
+  address: string;
+  ownedPools: number[];
+  ownedCollections: string[];
+  cutFee: number;
+  _ts: number;
+}
+
+export interface UserXOXNODrop {
+  wallet: Wallet;
+  rank: number;
+  tokenAllocation: number;
+  totalScore: number;
+}
+
+export interface Wallet {
+  address: string;
+  addressTrimmed: string;
+  profile: string;
+  username: string;
+  isVerified: boolean;
+}

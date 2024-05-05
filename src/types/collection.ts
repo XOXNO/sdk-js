@@ -414,11 +414,13 @@ export type ActivityData = {
     | 'wasProcessed'
     | 'media'
   >;
-  collectionInfo: Pick<
-    ICollectionProfile,
-    'name' | 'isVerified' | 'isVisible' | 'profile' | 'description'
-  > & { collectionSize: number; holderCount: number; followCount: number };
+  collectionInfo: ShortCollectionInfo;
 };
+
+export type ShortCollectionInfo = Pick<
+  ICollectionProfile,
+  'name' | 'isVerified' | 'isVisible' | 'profile' | 'description'
+> & { collectionSize: number; holderCount: number; followCount: number };
 
 export type TradingActivity = {
   txHash: string;
@@ -891,3 +893,54 @@ export type TradingDataSummary = {
   maxPrice?: number;
   averagePrice?: number;
 };
+
+export interface CollectionListings {
+  density: Density[];
+  listings: Pick<
+    NftData,
+    | 'name'
+    | 'collection'
+    | 'metadata'
+    | 'saleInfo'
+    | 'wasProcessed'
+    | 'media'
+    | 'url'
+    | 'identifier'
+    | 'id'
+  >[];
+}
+
+export interface Density {
+  key: string;
+  intervalName: string;
+  intervalCount: number;
+  totalCount: number;
+}
+
+export interface Listing {
+  identifier: string;
+  name: string;
+  collection: string;
+  metadata: Metadata;
+  url: string;
+  media: Media;
+  wasProcessed: boolean;
+  saleInfo: SaleInfo;
+}
+
+export interface Media {
+  avifUrl: string;
+  webpUrl: string;
+}
+
+export interface Metadata {
+  rarity: Rarity;
+}
+
+export interface Rarity {
+  rank: number;
+}
+
+export interface SaleInfo {
+  minBidShort: number;
+}

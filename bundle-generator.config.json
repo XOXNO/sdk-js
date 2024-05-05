@@ -1,0 +1,5 @@
+{
+  "compilationOptions": {
+    "preferredConfigPath": "./tsconfig.json"
+  }
+}

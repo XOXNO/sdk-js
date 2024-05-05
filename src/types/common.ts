@@ -1,3 +1,5 @@
+import { ShortCollectionInfo } from './collection';
+
 export interface TokenUSDPrices {
   [traitType: string]: number;
 }
@@ -67,4 +69,13 @@ export interface HalfYear {
   minPrice: number;
   maxPrice: number;
   averagePrice: number;
+}
+
+export interface StakingExplore {
+  collection: string;
+  activePools: number;
+  totalPoolStakedCount: number;
+  totalDelegatorCount: number;
+  rewardTickers: string[];
+  collectionInfo: ShortCollectionInfo;
 }

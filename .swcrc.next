@@ -1,0 +1,27 @@
+
+{
+  "jsc": {
+    "target": "es2022",
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["src/*"]
+    },
+    "parser": {
+      "syntax": "typescript",
+      "tsx": false,
+      "decorators": true,
+      "dynamicImport": true
+    },
+    "transform": {
+      "legacyDecorator": true,
+      "decoratorMetadata": true
+    },
+    "keepClassNames": true
+  },
+  "module": {
+    "type": "nodenext",
+    "noInterop": false
+  },
+  "sourceMaps": true,
+  "minify": true
+}

@@ -1,4 +1,4 @@
-import { AnalyticsGraphs, NftData } from '../types';
+import { AnalyticsGraphs, NftData, StakingSummaryPools } from '../types';
 import {
   CollectionsNFTsResponse,
   GetCollectionsArgs,
@@ -768,9 +768,7 @@ export class CollectionModule {
    * @public
    * @async
    * @function getPinnedCollections
-   * @param category - The ticker of the collection.
-   * @returns {Promise<AnalyticsGraphs>} A promise the required analytics data
-   * This function gets the global graph data
+   * @returns {Promise<ICollectionProfile[]>} A promise that resolves to the fetched pinned collections.
    */
   public getPinnedCollections = async (): Promise<
     Pick<
@@ -782,7 +780,7 @@ export class CollectionModule {
       | 'description'
       | 'isMintable'
       | 'creator'
-    >
+    >[]
   > => {
     const response = await this.api.fetchWithTimeout<
       Pick<
@@ -794,7 +792,7 @@ export class CollectionModule {
         | 'description'
         | 'isMintable'
         | 'creator'
-      >
+      >[]
     >(`/collection/pinned`, {
       next: {
         tags: [`/collection/pinned`],
@@ -861,5 +859,30 @@ export class CollectionModule {
         skip: (args.skip ?? 0) + (args.top ?? 35),
       },
     };
+  };
+
+  /** Gets collection staking info
+   * @param {String} collection - User's address
+   * @returns {StakingSummaryPools[]} Collection's staking info
+   * @throws {Error} Throws an error if the collection is invalid
+   *  */
+  public getCollectionStakingSummary = async ({
+    collection,
+    extra,
+  }: {
+    collection: string;
+    extra?: RequestInit;
+  }): Promise<StakingSummaryPools[]> => {
+    if (!isValidCollectionTicker(collection)) {
+      throw new Error('Invalid collection ticker: ' + collection);
+    }
+
+    const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
+      `/collection/${collection}/staking/summary`,
+      {
+        ...extra,
+      }
+    );
+    return response;
   };
 }
