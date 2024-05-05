@@ -299,7 +299,7 @@ export class CollectionModule {
     ticker: string
   ): Promise<CollectionListings> => {
     return await this.api.fetchWithTimeout<CollectionListings>(
-      `collection/${ticker}/listings`,
+      `/collection/${ticker}/listings`,
       {
         next: {
           tags: ['collection/${ticker}/listings'],
