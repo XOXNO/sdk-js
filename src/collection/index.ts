@@ -26,7 +26,7 @@ import {
   GetDropsResponse,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
-import { XOXNOClient } from '../index.light';
+import { XOXNOClient } from '..';
 import { getActivity } from '../utils/getActivity';
 import { isValidCollectionTicker } from '../utils/regex';
 

@@ -1,28 +1,24 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.1.82-alpha",
+  "version": "0.1.83-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
-  "type": "module",
+  "type": "commonjs",
   "exports": {
     ".": {
-      "import": "./dist/main.light.bundle.js",
-      "types": "./dist/index.light.d.ts"
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     },
-    "./heavy": {
-      "import": "./dist/main.heavy.bundle.js",
-      "types": "./dist/index.large.d.ts"
+    "./interactor": {
+      "import": "./dist/interactor.js",
+      "types": "./dist/interactor.d.ts"
     }
   },
-  "types": "./dist/index.light.d.ts",
-  "main": "./dist/main.light.bundle.js",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
   "files": [
     "dist/**/*"
   ],
   "sideEffects": false,
-  "directories": {
-    "lib": "src",
-    "test": "__tests__"
-  },
   "scripts": {
     "test": "jest",
     "build:types": "tsc --emitDeclarationOnly",
