@@ -887,7 +887,7 @@ export class CollectionModule {
       `/collection/floor-price`,
       {
         params: {
-          collections: collections.join(','),
+          collection: collections.join(','),
         },
       }
     );
