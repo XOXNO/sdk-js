@@ -232,7 +232,7 @@ export class UserModule {
    * @returns {IMintInfo[]} User's creator profile struct
    * @throws {Error} Throws an error if the address is invalid
    *  */
-  public = async (address: string): Promise<IMintInfo[]> => {
+  public getCreatorListings = async (address: string): Promise<IMintInfo[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
 
     const response = await this.api.fetchWithTimeout<IMintInfo[]>(
