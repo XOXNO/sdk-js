@@ -15,6 +15,8 @@ import {
   ArgsUserOffers,
   BulkAccount,
   CreatorProfile,
+  IApiShareholder,
+  IOwnerInfo,
   IUserProfile,
   PoolDetails,
   StakingCreatorInfo,
@@ -230,7 +232,7 @@ export class UserModule {
    * @returns {IMintInfo[]} User's creator profile struct
    * @throws {Error} Throws an error if the address is invalid
    *  */
-  public getCreatorListings = async (address: string): Promise<IMintInfo[]> => {
+  public = async (address: string): Promise<IMintInfo[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
 
     const response = await this.api.fetchWithTimeout<IMintInfo[]>(
@@ -537,5 +539,51 @@ export class UserModule {
         },
       }
     );
+  };
+
+  /** Gets user's creator info
+   * @param {String} address - User's address
+   * @returns {IOwnerInfo} User's creator info
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getUserOwnerCollections = async (
+    address: string
+  ): Promise<IOwnerInfo> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+    const response = await this.api.fetchWithTimeout<IOwnerInfo>(
+      `/user/${address}/staking/owned-collections`
+    );
+    return response;
+  };
+
+  /** Gets royalties shares creator info
+   * @param {String} address - User's address
+   * @returns {IApiShareholder[]} Royalties shares creator info
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getRoyaltiesSharesCreator = async (
+    address: string
+  ): Promise<IApiShareholder[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+    const response = await this.api.fetchWithTimeout<IApiShareholder[]>(
+      `/launchpad/${address}/shareholders/royalties`
+    );
+    return response;
+  };
+
+  /** Gets mint shares creator info
+   * @param {String} address - User's address
+   * @returns {IApiShareholder[]} Mint revenue shares creator info
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getMintSharesCreator = async (
+    address: string,
+    collectionTag: string
+  ): Promise<IApiShareholder[]> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address');
+    const response = await this.api.fetchWithTimeout<IApiShareholder[]>(
+      `/launchpad/${address}/shareholders/collection/${collectionTag}`
+    );
+    return response;
   };
 }

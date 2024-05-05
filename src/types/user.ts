@@ -355,3 +355,10 @@ export interface Wallet {
   username: string;
   isVerified: boolean;
 }
+
+export interface IOwnerInfo {
+  registered: string[];
+  availableForRegister: string[];
+}
+
+export type IApiShareholder = { address: string; share: number };

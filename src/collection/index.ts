@@ -770,35 +770,16 @@ export class CollectionModule {
    * @function getPinnedCollections
    * @returns {Promise<ICollectionProfile[]>} A promise that resolves to the fetched pinned collections.
    */
-  public getPinnedCollections = async (): Promise<
-    Pick<
-      ICollectionProfile,
-      | 'name'
-      | 'profile'
-      | 'collection'
-      | 'banner'
-      | 'description'
-      | 'isMintable'
-      | 'creator'
-    >[]
-  > => {
-    const response = await this.api.fetchWithTimeout<
-      Pick<
-        ICollectionProfile,
-        | 'name'
-        | 'profile'
-        | 'collection'
-        | 'banner'
-        | 'description'
-        | 'isMintable'
-        | 'creator'
-      >[]
-    >(`/collection/pinned`, {
-      next: {
-        tags: [`/collection/pinned`],
-        revalidate: 60,
-      },
-    });
+  public getPinnedCollections = async (): Promise<ICollectionProfile[]> => {
+    const response = await this.api.fetchWithTimeout<ICollectionProfile[]>(
+      `/collection/pinned`,
+      {
+        next: {
+          tags: [`/collection/pinned`],
+          revalidate: 60,
+        },
+      }
+    );
     return response;
   };
 
@@ -881,6 +862,33 @@ export class CollectionModule {
       `/collection/${collection}/staking/summary`,
       {
         ...extra,
+      }
+    );
+    return response;
+  };
+
+  /**
+   * @public
+   * @async
+   * @function getCollectionsFloor
+   * @param collections - The tickers of the collection.
+   * @returns {Promise<Record<string, number>>} Floor price of the collections
+   * This function gets the floor price of the collections
+   */
+  public getCollectionsFloor = async (
+    collections: string[]
+  ): Promise<Record<string, number>> => {
+    collections?.forEach((element) => {
+      if (!isValidCollectionTicker(element)) {
+        throw new Error('Invalid collection ticker: ' + element);
+      }
+    });
+    const response = await this.api.fetchWithTimeout<Record<string, number>>(
+      `/collection/floor-price`,
+      {
+        params: {
+          collections: collections.join(','),
+        },
       }
     );
     return response;
