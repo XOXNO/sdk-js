@@ -15,7 +15,7 @@
     "test": "__tests__"
   },
   "files": [
-    "dist/**/*",
+    "dist/**/*"
   ],
   "scripts": {
     "test": "jest",
