@@ -15,7 +15,6 @@ import {
   GetGlobalOffersArgs,
   GlobalOffersResult,
   GlobalOfferOrderBy,
-  ListingDistribution,
   GetCollectionMintInfo,
   GetCollectionStatsArgs,
   CollectionStatsResults,
@@ -24,6 +23,7 @@ import {
   AuctionTypes,
   GETDropsArgs,
   GetDropsResponse,
+  CollectionListings,
 } from '../types/collection';
 import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
 import { XOXNOClient } from '..';
@@ -291,14 +291,14 @@ export class CollectionModule {
   /**
    * @public
    * @async
-   * @function collectionListings
+   * @function collectionListingsAnalytics
    * @param {string} ticker - The unique collection identifier called ticker
-   * @returns {Promise<ListingDistribution>} A promise that resolves to the distribution of listings
+   * @returns {Promise<CollectionListings>} A promise that resolves to the distribution of listings
    */
   public collectionListingsAnalytics = async (
     ticker: string
-  ): Promise<ListingDistribution> => {
-    return await this.api.fetchWithTimeout<ListingDistribution>(
+  ): Promise<CollectionListings> => {
+    return await this.api.fetchWithTimeout<CollectionListings>(
       `collection/${ticker}/listings`,
       {
         next: {
