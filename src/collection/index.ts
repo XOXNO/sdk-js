@@ -293,16 +293,16 @@ export class CollectionModule {
    * @async
    * @function collectionListings
    * @param {string} ticker - The unique collection identifier called ticker
-   * @returns {Promise<ListingDistribution[]>} A promise that resolves to the distribution of listings
+   * @returns {Promise<ListingDistribution>} A promise that resolves to the distribution of listings
    */
   public collectionListingsAnalytics = async (
     ticker: string
-  ): Promise<ListingDistribution[]> => {
-    return await this.api.fetchWithTimeout<ListingDistribution[]>(
-      `collection/${ticker}/listing`,
+  ): Promise<ListingDistribution> => {
+    return await this.api.fetchWithTimeout<ListingDistribution>(
+      `collection/${ticker}/listings`,
       {
         next: {
-          tags: ['collection/${ticker}/listing'],
+          tags: ['collection/${ticker}/listings'],
           revalidate: 500,
         },
       }
