@@ -1,6 +1,6 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.1.77-alpha",
+  "version": "0.1.78-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "main": "dist/main.light.bundle.js",
   "module": "dist/main.light.bundle.js",
@@ -16,7 +16,6 @@
   },
   "files": [
     "dist/**/*",
-    "dist/types/**/*"
   ],
   "scripts": {
     "test": "jest",
