@@ -1,6 +1,6 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.1.81-alpha",
+  "version": "0.1.82-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "type": "module",
   "exports": {
@@ -10,7 +10,7 @@
     },
     "./heavy": {
       "import": "./dist/main.heavy.bundle.js",
-      "types": "./dist/index.heavy.d.ts"
+      "types": "./dist/index.large.d.ts"
     }
   },
   "types": "./dist/index.light.d.ts",
