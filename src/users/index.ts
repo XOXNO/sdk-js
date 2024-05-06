@@ -531,7 +531,7 @@ export class UserModule {
         params: {
           top: top,
           skip: skip,
-          address: address ?? undefined,
+          ...(address ? { address } : {}),
         },
         next: {
           tags: ['/user/xoxno-drop'],
