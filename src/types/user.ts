@@ -187,10 +187,10 @@ export type CreatorProfile = {
   name: string;
   profile: string;
   banner: string;
-  description: string;
-  isVerified: boolean;
-  socials: ISocials;
-  joinedDate: number;
+  description?: string;
+  isVerified?: boolean;
+  socials?: ISocials;
+  joinedDate?: number;
   contractAddress: string;
   address: string;
   _ts: number;
