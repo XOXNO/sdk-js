@@ -22,7 +22,7 @@
   "scripts": {
     "test": "jest",
     "build:types": "tsc --emitDeclarationOnly",
-    "build": "npm run build:types && webpack",
+    "build": "npm run build:types && webpack && webpack --config webpack-esm.config.js",
     "build:light": "webpack --config webpack.config.js --env name=light",
     "build:heavy": "webpack --config webpack.config.js --env name=heavy",
     "lint": "eslint 'src/**/*.ts' --fix",
