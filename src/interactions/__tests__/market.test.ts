@@ -1,4 +1,5 @@
-import { SCInteraction, XOXNOClient } from '../../index';
+import { SCInteraction } from '../../interactor';
+import { XOXNOClient } from '../../utils/api';
 
 describe('SCInteraction', () => {
   let sc: SCInteraction;

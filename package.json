@@ -1,6 +1,6 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.1.93-alpha",
+  "version": "0.1.94-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "type": "commonjs",
   "exports": {
@@ -23,8 +23,6 @@
     "test": "jest",
     "build:types": "tsc --emitDeclarationOnly",
     "build": "npm run build:types && webpack && webpack --config webpack-esm.config.js",
-    "build:light": "webpack --config webpack.config.js --env name=light",
-    "build:heavy": "webpack --config webpack.config.js --env name=heavy",
     "lint": "eslint 'src/**/*.ts' --fix",
     "format": "prettier --write 'src/**/*.ts'",
     "commit": "git-cz",
