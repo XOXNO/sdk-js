@@ -247,6 +247,7 @@ export interface Filter {
   collection?: string[];
   mintToken?: string[];
   type?: string[];
+  nonce?: number[];
   onSale?: boolean;
   owner?: string[];
   currentOwner?: string[];
@@ -336,6 +337,8 @@ export interface GetNFTsArgs {
   skip?: number;
   /** Document type */
   dataType?: string[];
+  /** The nonces of the NFTs */
+  nonces?: number[];
   /** If set, will return only NFTs that are staked */
   isStaked?: boolean;
   /** The order of the results based on a field */
@@ -346,6 +349,8 @@ export interface GetNFTsArgs {
   listedOnlyOn?: Marketplace[];
   /** If set, will return only NFTs with the specified attributes */
   attributes?: MetadataAttribute[];
+  /** If set, will return only the selected fields */
+  strictSelect?: boolean;
 }
 export interface GETDropsArgs {
   /** If set, will return only NFTs from the specified collections */
