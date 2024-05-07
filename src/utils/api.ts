@@ -74,7 +74,12 @@ export class XOXNOClient {
   }> = {}): XOXNOClient {
     if (!XOXNOClient.instance) {
       if (chain == Chain.DEVNET) {
-        XOXNOClient.instance = new XOXNOClient(API_URL_DEV, apiKey, chain);
+        XOXNOClient.instance = new XOXNOClient(
+          apiUrl ?? API_URL_DEV,
+          apiKey,
+          chain
+        );
+        return XOXNOClient.instance;
       }
       XOXNOClient.instance = new XOXNOClient(apiUrl, apiKey, chain);
     }

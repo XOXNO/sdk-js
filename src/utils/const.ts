@@ -1,5 +1,5 @@
 export const API_URL = 'https://api.xoxno.com';
-export const API_URL_DEV = 'https://api-dev.xoxno.com';
+export const API_URL_DEV = 'https://devnet-api.xoxno.com';
 
 export const XOXNO_SC =
   'erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8';
@@ -17,10 +17,10 @@ export const P2P_SC =
   'erd1qqqqqqqqqqqqqpgq47y8hnct68v6asjv6gxem6h9rumn9frzah0skhxxt6';
 
 export const XOXNO_SC_DEV =
-  'erd1qqqqqqqqqqqqqpgqn4fnwl43hhchz9emdy66eh5azzhl599zd8ssxjdyh3';
+  'erd1qqqqqqqqqqqqqpgql0dnz6n5hpuw8cptlt00khd0nn4ja8eadsfq2xrqw4';
 export const Staking_SC_DEV =
-  'erd1qqqqqqqqqqqqqpgqmkt2fvumf0zgum5qd0awl2l46x2pxdgmr5rswjr6r8';
+  'erd1qqqqqqqqqqqqqpgqsc5hnewwpep8qq0d7kjjzrquapuucrygah0s85zres';
 export const Manager_SC_DEV =
-  'erd1qqqqqqqqqqqqqpgq6sysl7mga393a850xemfpawaqanf4da5d8ssp3xamn';
+  'erd1qqqqqqqqqqqqqpgqluclyhfsa2uw7q9cjwd8knk989hg57u8ah0slq2nlr';
 export const P2P_SC_DEV =
-  'erd1qqqqqqqqqqqqqpgqhuvnvkwwmucdzy3g7pvgvjumjfcgfwf69w2svch5c2';
+  'erd1qqqqqqqqqqqqqpgqfja7ukpngrun78ueq583l0vd6aj4ekhrah0sa9wyrv';
