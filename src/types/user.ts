@@ -1,6 +1,6 @@
 import { ISocials } from './collection';
 import { NftData, Owner } from './nft';
-import { UnClaimedReward } from './staking';
+import { PoolDetails } from './staking';
 
 export interface BulkAccount {
   address: string;
@@ -104,17 +104,6 @@ export interface OfferBody {
   floorPriceMargin: number;
   floorPrice: number;
 }
-
-export type UserStakingInfo = {
-  pool_id: number;
-  pool_type: string;
-  unClaimedReward: UnClaimedReward[];
-  reward_token: string[];
-  name: string;
-  profile: string;
-  ticker: TickerElement[];
-  nfts: Nfts;
-};
 
 export type Nfts = {
   count: number;
@@ -222,31 +211,6 @@ export interface RewardStakinSummary {
   amount: string;
   amountShort: number;
   usdValue: number;
-}
-
-export interface PoolDetails {
-  poolId: number;
-  name: string;
-  profile: string;
-  collection: string[];
-  poolStakedCount: number;
-  delegatorCount: number;
-  rewardDuration: number;
-  reward: RewardAvaiblePools[];
-  poolType: string;
-  issuingType: string;
-  isActive: boolean;
-  currentEpoch: number;
-  unBoundPeriod: boolean;
-  hasUnboundPeriod: boolean;
-  maxPoolLimit: number;
-  maxWalletLimit: number;
-  hasMaxWalletLimit: boolean;
-  endDate: number;
-  startDate: number;
-  owner: string;
-  daysLeft: number;
-  percentFilled: number;
 }
 
 export interface RewardAvaiblePools {

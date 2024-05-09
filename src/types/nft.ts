@@ -63,22 +63,6 @@ export interface GameData {
   value: number;
 }
 
-export interface OffersInfo {
-  EgldValue: number;
-  UsdValue: number;
-  deadline: number;
-  isActive: boolean;
-  offer_id: number;
-  owner: string;
-  ownerUsername: string;
-  payment_nonce: number;
-  payment_token: string;
-  price: string;
-  price_short: number;
-  quantity: number;
-  timestamp: number;
-}
-
 export interface NftData {
   id: string;
   name: string;

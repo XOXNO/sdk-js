@@ -1,4 +1,4 @@
-import { PoolDetails } from '../types/user';
+import { PoolDetails } from '../types/staking';
 import { XOXNOClient } from '../utils/api';
 
 export class StakingModule {

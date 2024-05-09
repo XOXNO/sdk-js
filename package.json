@@ -1,6 +1,6 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.1.95-alpha",
+  "version": "0.1.96-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "type": "commonjs",
   "exports": {
@@ -64,9 +64,9 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@swc/cli": "^0.3.12",
-    "@swc/core": "^1.4.17",
+    "@swc/core": "^1.5.5",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.12.8",
+    "@types/node": "^20.12.11",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
     "commitizen": "^4.3.0",
