@@ -33,11 +33,7 @@ export class XOXNOClient {
     P2P_SC: string;
   };
 
-  private constructor(
-    apiUrl: string = API_URL,
-    apiKey = '',
-    chain: Chain = Chain.MAINNET
-  ) {
+  private constructor(apiUrl: string = API_URL, apiKey = '', chain: Chain) {
     this.apiUrl = apiUrl;
     this.apiKey = apiKey;
     this.chain = chain;
@@ -72,7 +68,7 @@ export class XOXNOClient {
     apiKey?: string;
     chain?: Chain;
   }> = {}): XOXNOClient {
-    if (!XOXNOClient.instance) {
+    if (XOXNOClient.instance == null || XOXNOClient.instance == undefined) {
       if (chain == Chain.DEVNET) {
         XOXNOClient.instance = new XOXNOClient(
           apiUrl ?? API_URL_DEV,
@@ -87,7 +83,7 @@ export class XOXNOClient {
   }
 
   public static getInstance(): XOXNOClient {
-    if (!XOXNOClient.instance) {
+    if (XOXNOClient.instance == null || XOXNOClient.instance == undefined) {
       throw new Error('XOXNOClient is not initialized');
     }
     return XOXNOClient.instance;
