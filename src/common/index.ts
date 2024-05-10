@@ -16,7 +16,7 @@ import { XOXNOClient } from '../utils/api';
 export class CommonModule {
   private api: XOXNOClient;
   constructor() {
-    this.api = XOXNOClient.init();
+    this.api = XOXNOClient.getInstance();
   }
   /** Gets all tokens usd price
    * @returns {TokenUSDPrices} User's creator info

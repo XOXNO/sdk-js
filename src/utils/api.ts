@@ -42,7 +42,7 @@ export class XOXNOClient {
     this.apiKey = apiKey;
     this.chain = chain;
     this.config =
-      chain === Chain.MAINNET
+      chain == Chain.MAINNET
         ? {
             XO_SC: XOXNO_SC,
             FM_SC: FM_SC,
@@ -82,6 +82,13 @@ export class XOXNOClient {
         return XOXNOClient.instance;
       }
       XOXNOClient.instance = new XOXNOClient(apiUrl, apiKey, chain);
+    }
+    return XOXNOClient.instance;
+  }
+
+  public static getInstance(): XOXNOClient {
+    if (!XOXNOClient.instance) {
+      throw new Error('XOXNOClient is not initialized');
     }
     return XOXNOClient.instance;
   }

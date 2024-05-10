@@ -13,7 +13,7 @@ export class ContractQueryRunner {
   private readonly parser: ResultsParser = new ResultsParser();
 
   constructor() {
-    const api = XOXNOClient.init().apiUrl;
+    const api = XOXNOClient.getInstance().apiUrl;
     this.proxy = new ProxyNetworkProvider(api, {
       timeout: 10000,
     });

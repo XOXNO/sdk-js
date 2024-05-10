@@ -49,11 +49,11 @@ export class SCInteraction {
   private constructor(marketAbiXOXNO: SmartContract) {
     this.xo = marketAbiXOXNO;
     this.call = new ContractQueryRunner();
-    this.api = XOXNOClient.init();
+    this.api = XOXNOClient.getInstance();
   }
 
   static async init() {
-    const config = XOXNOClient.init().config;
+    const config = XOXNOClient.getInstance().config;
     const marketAbiXOXNO = await SmartContractAbis.getMarket();
     const xo_abi = getSmartContract(marketAbiXOXNO, config.XO_SC);
 

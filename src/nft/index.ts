@@ -17,7 +17,7 @@ import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex';
 export class NFTModule {
   private api: XOXNOClient;
   constructor() {
-    this.api = XOXNOClient.init();
+    this.api = XOXNOClient.getInstance();
   }
 
   /**

@@ -13,7 +13,7 @@ XOXNO SDK is a JavaScript library that simplifies the interaction with the XOXNO
 To install the XOXNO SDK, simply run the following command in your project's root directory:
 
 ```bash
-npm i @xoxno/sdk-js
+npm install @xoxno/sdk-js
 ```
 
 ## Usage
@@ -30,7 +30,7 @@ After the client has been created you can now import different modules anywhere 
 
 ```javascript
 import { CollectionModule } from '@xoxno/sdk-js';
-const collection = new CollectionModule(); // In case the above .init() call was not set before creating any module instance will auto trigger .init() using the default parameters described above
+const collection = new CollectionModule(); // In case the above .init() call was not set before creating any module instance will throw an error
 const profile = await collection.getCollectionProfile('MONKEY-ac9bdf');
 // or similar with 
 const profile = await new CollectionModule().getCollectionProfile('MONKEY-ac9bdf');

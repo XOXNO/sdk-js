@@ -4,7 +4,7 @@ import { XOXNOClient } from '../utils/api';
 export class StakingModule {
   private api: XOXNOClient;
   constructor() {
-    this.api = XOXNOClient.init();
+    this.api = XOXNOClient.getInstance();
   }
   /** Gets pool details
    * @param {number} poolId - User's address

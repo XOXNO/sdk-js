@@ -41,7 +41,7 @@ import { isValidCollectionTicker } from '../utils/regex';
 export class CollectionModule {
   private api: XOXNOClient;
   constructor() {
-    this.api = XOXNOClient.init();
+    this.api = XOXNOClient.getInstance();
   }
 
   /**

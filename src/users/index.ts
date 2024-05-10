@@ -39,7 +39,7 @@ export class UserModule {
   private api: XOXNOClient;
   private collection: CollectionModule;
   constructor() {
-    this.api = XOXNOClient.init();
+    this.api = XOXNOClient.getInstance();
     this.collection = new CollectionModule();
   }
 
