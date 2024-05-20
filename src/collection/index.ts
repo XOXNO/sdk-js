@@ -214,7 +214,7 @@ export class CollectionModule {
         },
         range: ranges,
         nonce: args.nonces || undefined,
-        cp_staked: args.isStaked || undefined,
+        cp_staked: args.isStaked ?? undefined,
       },
       applyNftExtraDetails: args.applyNftExtraDetails,
       orderBy: args.orderBy || [],
