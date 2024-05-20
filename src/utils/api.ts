@@ -24,6 +24,7 @@ export class XOXNOClient {
   private apiKey: string;
   public chain: IChainID;
   public config: {
+    mediaUrl: string;
     XO_SC: string;
     FM_SC: string;
     DR_SC: string;
@@ -40,6 +41,7 @@ export class XOXNOClient {
     this.config =
       chain == Chain.MAINNET
         ? {
+            mediaUrl: 'https://media.xoxno.com',
             XO_SC: XOXNO_SC,
             FM_SC: FM_SC,
             DR_SC,
@@ -49,6 +51,7 @@ export class XOXNOClient {
             P2P_SC,
           }
         : {
+            mediaUrl: 'https://devnet-media.xoxno.com',
             XO_SC: XOXNO_SC_DEV,
             FM_SC,
             DR_SC,
