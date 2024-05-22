@@ -65,7 +65,9 @@ export interface PoolDetails {
   profile: string;
   collection: string[];
   poolStakedCount: number;
-  reward: RewardAvaiblePools[];
+  userStakedCount: number;
+  poolReward: RewardAvaiblePools[];
+  userReward: RewardAvaiblePools[];
   rewardDuration: number;
   isActive: boolean;
   daysLeft: number;
