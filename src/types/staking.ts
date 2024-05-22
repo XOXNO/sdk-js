@@ -40,8 +40,9 @@ export interface StakingSummaryPools {
   profile: string;
   collection: string[];
   poolStakedCount: number;
-  reward: RewardAvaiblePools[];
-  userReward?: RewardAvaiblePools[];
+  userStakedCount: number;
+  poolReward: RewardAvaiblePools[];
+  userReward: RewardAvaiblePools[];
   rewardDuration: number;
   isActive: boolean;
   daysLeft: number;
