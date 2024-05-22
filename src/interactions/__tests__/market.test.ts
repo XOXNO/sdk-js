@@ -90,7 +90,7 @@ describe('SCInteraction', () => {
           'erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8',
         nonce: 1,
       },
-      'XO'
+      'xoxno'
     );
     expect(interaction).toBeDefined();
     expect(interaction.buildTransaction().toSendable()).toEqual({

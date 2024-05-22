@@ -142,7 +142,7 @@ export class SCInteraction {
     const result = await this.getResult(interaction);
     const body = result.firstValue?.valueOf();
     body.offer_id = parseInt(body.offer_id.valueOf());
-    body.marketplace = 'XO';
+    body.marketplace = 'xoxno';
     body.short_price = parseFloat(
       new BigUIntValue(body.price).valueOf().shiftedBy(-18).toString()
     );
@@ -301,9 +301,9 @@ export class SCInteraction {
   public withdrawAuctions(
     auctionIDs: number[],
     senderNonce: WithSenderAndNonce,
-    market: 'XO'
+    market: 'xoxno'
   ): Interaction {
-    if (market === 'XO') {
+    if (market === 'xoxno') {
       const interaction = this.xo.methods.withdraw(auctionIDs);
 
       if (senderNonce.nonce) {
@@ -542,9 +542,9 @@ export class SCInteraction {
   public endAuction(
     auctionID: number,
     sender: WithSenderAndNonce,
-    market = 'XO'
+    market = 'xoxno'
   ): Interaction {
-    if (market == 'XO') {
+    if (market == 'xoxno') {
       const interaction = this.xo.methods.endAuction([auctionID]);
 
       if (sender.nonce) {
@@ -679,7 +679,7 @@ export class SCInteraction {
     nonce: senderNonce,
     isBid = false,
     decimals = 18,
-    market = 'XO',
+    market = 'xoxno',
   }: {
     auctionID: number;
     collection?: string;
@@ -693,7 +693,7 @@ export class SCInteraction {
     market?: string;
     decimals?: number;
   } & WithSenderAndNonce): Promise<Interaction> {
-    if (market !== 'XO') {
+    if (market !== 'xoxno') {
       throw new Error('Market not supported');
     }
     if (!auctionID) {
