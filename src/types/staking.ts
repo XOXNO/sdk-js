@@ -54,29 +54,8 @@ export interface StakingSummaryPools {
   unBoundPeriod: number;
 }
 
-export interface PoolDetails {
-  poolId: number;
-  starEpoch: number;
-  endEpoch: number;
-  currentEpoch: number;
-  poolType: string;
-  issuingType: string;
-  name: string;
-  profile: string;
-  collection: string[];
-  poolStakedCount: number;
-  userStakedCount: number;
-  poolReward: RewardAvaiblePools[];
-  userReward: RewardAvaiblePools[];
-  rewardDuration: number;
-  isActive: boolean;
-  daysLeft: number;
-  maxPoolLimit: number;
-  maxWalletLimit: number;
-  hasMaxWalletLimit: boolean;
-  percentageFilled: number;
-  unBoundPeriod: boolean;
-  hasUnboundPeriod: boolean;
-  owner: string;
-  delegatorCount: number;
+export enum StakingStatus {
+  Staked = 'staked',
+  Unbounding = 'unStaked',
+  Available = 'available',
 }

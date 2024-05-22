@@ -4,13 +4,14 @@ import {
   GetNFTsArgs,
   IMintInfo,
   NftData,
-  PoolDetails,
+  StakingSummaryPools,
   SearchNFTsResponse,
   StatusResponse,
   SuggestNFTsArgs,
   SuggestResults,
   TradincActivityArgs,
   TradingActivityResponse,
+  StakingStatus,
 } from '../types';
 import {
   ArgsUserOffers,
@@ -264,10 +265,10 @@ export class UserModule {
    *  */
   public getUserStakingAailable = async (
     address: string
-  ): Promise<PoolDetails[]> => {
+  ): Promise<StakingSummaryPools[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
 
-    const response = await this.api.fetchWithTimeout<PoolDetails[]>(
+    const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
       `/user/${address}/staking/available-pools`
     );
     return response;
@@ -314,41 +315,26 @@ export class UserModule {
    *  */
   public getUserPoolStaking = async (
     address: string,
-    poolId: number
+    poolId: number,
+    status: StakingStatus
   ): Promise<UserPoolStakingInfo> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<UserPoolStakingInfo>(
-      `/user/${address}/staking/pool/${poolId}`
-    );
-    return response;
-  };
-
-  /** Gets pool details
-   * @param {number} poolId - User's address
-   * @returns {CreatoPoolDetailsrInfo} User's creator info
-   * @throws {Error} Throws an error if the address is invalid
-   *  */
-  public getAvailableNFTsForStakingPool = async (
-    address: string,
-    poolId: number
-  ): Promise<NftData[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
-    const response = await this.api.fetchWithTimeout<NftData[]>(
-      `/user/${address}/staking/pool/${poolId}/nfts`
+      `/user/${address}/staking/pool/${poolId}/nfts?status=${status}`
     );
     return response;
   };
 
   /** Gets owned pools by address
    * @param {string} address - User's address
-   * @returns {PoolDetails[]} User pools
+   * @returns {StakingSummaryPools[]} User pools
    * @throws {Error} Throws an error if the address is invalid
    *  */
   public getOwnedPoolsByAddress = async (
     address: string
-  ): Promise<PoolDetails[]> => {
+  ): Promise<StakingSummaryPools[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
-    const response = await this.api.fetchWithTimeout<PoolDetails[]>(
+    const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
       `/user/${address}/staking/owned-pools`
     );
     return response;
@@ -456,29 +442,6 @@ export class UserModule {
         revalidate: 180,
       },
     });
-  };
-
-  /**
-   * @public
-   * @async
-   * @function getAccountNFTsToStake
-   * @param {String} address - The user's address.
-   * @param {number} poolId - The pool id.
-   * @returns {Promise<NftData[]>} A promise that resolves to the fetched NFTs.
-   */
-  public getAccountNFTsToStake = async (
-    address: string,
-    poolId: number
-  ): Promise<NftData[]> => {
-    return await this.api.fetchWithTimeout<NftData[]>(
-      `/user/${address}/staking/pool/${poolId}/available-nfts`,
-      {
-        next: {
-          tags: [`/user/${address}/staking/pool/${poolId}/available-nfts`],
-          revalidate: 30,
-        },
-      }
-    );
   };
 
   /**

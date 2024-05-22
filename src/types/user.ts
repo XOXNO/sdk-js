@@ -1,6 +1,6 @@
 import { ISocials } from './collection';
 import { NftData, Owner } from './nft';
-import { PoolDetails } from './staking';
+import { StakingSummaryPools } from './staking';
 
 export interface BulkAccount {
   address: string;
@@ -225,7 +225,7 @@ export interface RewardAvaiblePools {
 
 export interface UserPoolStakingInfo {
   nftDocs: NftData[];
-  poolDoc: PoolDetails;
+  poolDoc: StakingSummaryPools;
 }
 
 export interface UserAnalyticSummary {
