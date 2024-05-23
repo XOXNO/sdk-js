@@ -596,7 +596,7 @@ export type FungibleAssets = {
   svgUrl: string;
   pngUrl: string;
   ticker: string;
-  usd?: number;
+  usdPrice?: number;
   _ts?: number;
 };
 

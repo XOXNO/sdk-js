@@ -48,6 +48,7 @@ export interface TradingActivityQueryFilter {
     range?: RangeFilter[];
   };
   strictSelect?: boolean;
+  includeCount?: boolean;
   top: number;
   skip: number;
   select?: SelectFieldsTradingActivity[];
@@ -88,6 +89,7 @@ export interface TradincActivityArgs {
   skip?: number;
   /** The fields to select from the trading activity */
   select?: SelectFieldsTradingActivity[];
+  includeCount?: boolean;
   strictSelect?: boolean;
   /** The fields to order the trading activity by */
   orderBy?: OrderByTradingActivity[];
@@ -117,6 +119,8 @@ export enum SelectFieldsTradingActivity {
 
 export interface TradingActivityResponse {
   hasMoreResults: boolean;
+  /** The total count of the results for the specific query */
+  count?: number;
   resources: TradingActivity[];
   getNextPagePayload: TradincActivityArgs;
   empty: boolean;

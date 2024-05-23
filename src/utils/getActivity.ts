@@ -51,6 +51,7 @@ export const getActivity = async (
       range: ranges,
     },
     strictSelect: args.strictSelect,
+    includeCount: args.includeCount || false,
     orderBy: args.orderBy,
     select: args.select,
     top: args.top || 35,
