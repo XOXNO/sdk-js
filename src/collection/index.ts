@@ -266,9 +266,6 @@ export class CollectionModule {
     if (args.top && args.top > 35) {
       throw new Error('Top cannot be greater than 35');
     }
-    if (!args.name) {
-      throw new Error('Name is required');
-    }
 
     const payloadBody: SuggestNFTsArgs = {
       name: args.name,
