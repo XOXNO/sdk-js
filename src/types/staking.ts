@@ -38,6 +38,7 @@ export interface StakingSummaryPools {
   issuingType: string;
   name: string;
   profile: string;
+  cutFee: number;
   collection: string[];
   poolStakedCount: number;
   userStakedCount: number;
