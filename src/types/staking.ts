@@ -1,4 +1,4 @@
-import { RewardAvaiblePools } from './user';
+import { RewardAvaiblePools, RewardStakinSummary } from './user';
 
 export type Reward = {
   value: number;
@@ -43,7 +43,7 @@ export interface StakingSummaryPools {
   poolStakedCount: number;
   userStakedCount: number;
   poolReward: RewardAvaiblePools[];
-  userReward: RewardAvaiblePools[];
+  userReward: RewardStakinSummary[];
   rewardDuration: number;
   isActive: boolean;
   daysLeft: number;

@@ -22,12 +22,10 @@ import {
   IUserProfile,
   StakingCreatorInfo,
   UserAnalyticSummary,
-  UserCollectionStaking,
   UserInventory,
   UserNetworkAccount,
   UserOffers,
   UserPoolStakingInfo,
-  UserStakingSummary,
   UserStats,
   UserTokenInventory,
   UserXOXNODrop,
@@ -246,10 +244,10 @@ export class UserModule {
    *  */
   public getUserStakingSummary = async (
     address: string
-  ): Promise<UserStakingSummary[]> => {
+  ): Promise<StakingSummaryPools[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
 
-    const response = await this.api.fetchWithTimeout<UserStakingSummary[]>(
+    const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
       `/user/${address}/staking/summary`
     );
     return response;
@@ -294,12 +292,12 @@ export class UserModule {
   public getUserCollectionStaking = async (
     address: string,
     collection: string
-  ): Promise<UserCollectionStaking[]> => {
+  ): Promise<StakingSummaryPools[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
     if (!isValidCollectionTicker(collection)) {
       throw new Error('Invalid collection ticker: ' + collection);
     }
-    const response = await this.api.fetchWithTimeout<UserCollectionStaking[]>(
+    const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
       `/user/${address}/staking/collection/${collection}`
     );
     return response;

@@ -185,26 +185,6 @@ export type CreatorProfile = {
   _ts: number;
 };
 
-export interface UserStakingSummary {
-  collection: string;
-  stakedCount: number;
-  name: string;
-  isVerified: boolean;
-  profile: string;
-  banner: string;
-  reward: RewardStakinSummary[];
-}
-
-export interface UserCollectionStaking {
-  poolId: number;
-  name: string;
-  profile: string;
-  stakedCount: number;
-  reward: RewardStakinSummary[];
-  isActive: boolean;
-  daysLeft: number;
-}
-
 export interface RewardStakinSummary {
   tokenIdentifier: string;
   tokenNonce: number;
