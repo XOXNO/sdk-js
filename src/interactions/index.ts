@@ -46,6 +46,7 @@ import { TransactionsFactoryConfig } from '@multiversx/sdk-core/out/transactions
 import { SmartContractTransactionsFactory } from '@multiversx/sdk-core/out/transactionsFactories/smartContractTransactionsFactory';
 import { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry';
 import { IPlainTransactionObject } from '@multiversx/sdk-core/out/interface';
+import { VariadicValue } from '@multiversx/sdk-core/out';
 
 export class SCInteraction {
   private xo: SmartContract;
@@ -671,7 +672,7 @@ export class SCInteraction {
     return interaction
       .withChainID(this.api.chain)
       .withGasLimit(
-        Math.min(600_000_000, 20_000_000 + auctionIDs.length * 5_000_000)
+        Math.min(600_000_000, 20_000_000 + auctionIDs.length * 10_000_000)
       );
   }
 
@@ -838,7 +839,9 @@ export class SCInteraction {
         ])
       );
     });
-    const interaction = this.xo.methods.changeListing(structs);
+    const interaction = this.xo.methods.changeListing([
+      VariadicValue.fromItems(...structs),
+    ]);
     if (sender.nonce) {
       interaction.withNonce(sender.nonce);
     }
