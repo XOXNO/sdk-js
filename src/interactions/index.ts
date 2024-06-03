@@ -335,7 +335,7 @@ export class SCInteraction {
     market?: string;
   }): Interaction {
     if (market === 'xoxno') {
-      const interaction = this.xo.methods.withdraw([signature, auctionIDs]);
+      const interaction = this.xo.methods.withdraw([signature, ...auctionIDs]);
 
       if (sender.nonce) {
         interaction.withNonce(sender.nonce);
