@@ -25,6 +25,7 @@ export class XOXNOClient {
   public chain: IChainID;
   public config: {
     mediaUrl: string;
+    gatewayUrl: string;
     XO_SC: string;
     FM_SC: string;
     DR_SC: string;
@@ -42,6 +43,7 @@ export class XOXNOClient {
       chain == Chain.MAINNET
         ? {
             mediaUrl: 'https://media.xoxno.com',
+            gatewayUrl: 'https://gateway.xoxno.com',
             XO_SC: XOXNO_SC,
             FM_SC: FM_SC,
             DR_SC,
@@ -52,6 +54,7 @@ export class XOXNOClient {
           }
         : {
             mediaUrl: 'https://devnet-media.xoxno.com',
+            gatewayUrl: 'https://devnet-gateway.xoxno.com',
             XO_SC: XOXNO_SC_DEV,
             FM_SC,
             DR_SC,
