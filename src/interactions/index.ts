@@ -41,23 +41,47 @@ import {
   BooleanValue,
 } from '@multiversx/sdk-core/out/smartcontracts/typesystem/boolean';
 import { Address } from '@multiversx/sdk-core/out/address';
-import { TokenTransfer } from '@multiversx/sdk-core/out/tokens';
+import { Token, TokenTransfer } from '@multiversx/sdk-core/out/tokens';
+import { TransactionsFactoryConfig } from '@multiversx/sdk-core/out/transactionsFactories/transactionsFactoryConfig';
+import { SmartContractTransactionsFactory } from '@multiversx/sdk-core/out/transactionsFactories/smartContractTransactionsFactory';
+import { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry';
+import { IPlainTransactionObject } from '@multiversx/sdk-core/out/interface';
+
 export class SCInteraction {
   private xo: SmartContract;
   private call: ContractQueryRunner;
   private api: XOXNOClient;
-  private constructor(marketAbiXOXNO: SmartContract) {
-    this.xo = marketAbiXOXNO;
+  private config: {
+    mediaUrl: string;
+    XO_SC: string;
+    FM_SC: string;
+    DR_SC: string;
+    KG_SC: string;
+    Staking_SC: string;
+    Manager_SC: string;
+    P2P_SC: string;
+  };
+  private factory: SmartContractTransactionsFactory;
+  private constructor(abi: AbiRegistry) {
+    this.config = XOXNOClient.getInstance().config;
+    const xo_abi = getSmartContract(abi, this.config.XO_SC);
+    this.xo = xo_abi;
     this.call = new ContractQueryRunner();
     this.api = XOXNOClient.getInstance();
+    const factoryConfig = new TransactionsFactoryConfig({
+      chainID: this.api.chain.valueOf(),
+    });
+
+    this.factory = new SmartContractTransactionsFactory({
+      config: factoryConfig,
+      abi,
+    });
   }
 
   static async init() {
-    const config = XOXNOClient.getInstance().config;
     const marketAbiXOXNO = await SmartContractAbis.getMarket();
-    const xo_abi = getSmartContract(marketAbiXOXNO, config.XO_SC);
 
-    return new SCInteraction(xo_abi);
+    return new SCInteraction(marketAbiXOXNO);
   }
 
   private async getResult(interaction: Interaction) {
@@ -298,20 +322,26 @@ export class SCInteraction {
    * @returns {Interaction} The interaction object of the smart contract
    */
 
-  public withdrawAuctions(
-    auctionIDs: number[],
-    senderNonce: WithSenderAndNonce,
-    market: 'xoxno'
-  ): Interaction {
+  public withdrawAuctions({
+    auctionIDs,
+    sender,
+    market = 'xoxno',
+    signature,
+  }: {
+    auctionIDs: number[];
+    sender: WithSenderAndNonce;
+    signature?: string;
+    market?: string;
+  }): Interaction {
     if (market === 'xoxno') {
-      const interaction = this.xo.methods.withdraw(auctionIDs);
+      const interaction = this.xo.methods.withdraw([signature, auctionIDs]);
 
-      if (senderNonce.nonce) {
-        interaction.withNonce(senderNonce.nonce);
+      if (sender.nonce) {
+        interaction.withNonce(sender.nonce);
       }
       return interaction
         .withChainID(this.api.chain)
-        .withSender(new Address(senderNonce.address))
+        .withSender(new Address(sender.address))
         .withGasLimit(
           Math.min(600_000_000, 15_000_000 + auctionIDs.length * 5_000_000)
         );
@@ -573,28 +603,36 @@ export class SCInteraction {
     nonce: number,
     payment: Payment,
     sender: WithSenderAndNonce
-  ): Interaction {
-    const interaction = this.xo.methods.bid([auctionID, collection, nonce]);
+  ): IPlainTransactionObject {
     if (!payment.amount) {
       throw new Error('Payment amount is required');
     }
+    const isEgld = payment.collection == 'EGLD';
+    const tx = this.factory.createTransactionForExecute({
+      sender: new Address(sender.address),
+      contract: new Address(this.config.XO_SC),
+      function: 'bid',
+      gasLimit: 25_000_000n,
+      arguments: [auctionID, collection, nonce],
+      nativeTransferAmount: isEgld ? BigInt(payment.amount) : undefined,
+      tokenTransfers: isEgld
+        ? undefined
+        : [
+            new TokenTransfer({
+              token: new Token({
+                identifier: payment.collection,
+                nonce: BigInt(payment.nonce ?? 0),
+              }),
+              amount: BigInt(payment.amount),
+            }),
+          ],
+    });
 
     if (sender.nonce) {
-      interaction.withNonce(sender.nonce);
+      tx.nonce = BigInt(sender.nonce);
     }
-    interaction.withSender(new Address(sender.address));
-    if (payment.collection == 'EGLD' && payment.amount) {
-      interaction.withValue(TokenTransfer.egldFromAmount(payment.amount));
-    } else {
-      interaction.withSingleESDTTransfer(
-        TokenTransfer.fungibleFromAmount(
-          payment.collection,
-          payment.amount,
-          payment.decimals ?? 18
-        )
-      );
-    }
-    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
+
+    return tx.toPlainObject();
   }
 
   /**
@@ -610,7 +648,7 @@ export class SCInteraction {
     payment: Payment,
     sender: WithSenderAndNonce
   ): Interaction {
-    const interaction = this.xo.methods.bid(auctionIDs);
+    const interaction = this.xo.methods.bulkBuy(auctionIDs);
 
     if (sender.nonce) {
       interaction.withNonce(sender.nonce);
@@ -675,11 +713,10 @@ export class SCInteraction {
     token = 'EGLD',
     withCheck = true,
     isBigUintPayment = false,
-    address,
-    nonce: senderNonce,
     isBid = false,
     decimals = 18,
     market = 'xoxno',
+    sender,
   }: {
     auctionID: number;
     collection?: string;
@@ -692,7 +729,8 @@ export class SCInteraction {
     isBid?: boolean;
     market?: string;
     decimals?: number;
-  } & WithSenderAndNonce): Promise<Interaction> {
+    sender: WithSenderAndNonce;
+  }): Promise<Interaction> {
     if (market !== 'xoxno') {
       throw new Error('Market not supported');
     }
@@ -728,10 +766,10 @@ export class SCInteraction {
       quantity ?? 1,
     ]);
 
-    if (senderNonce) {
-      interaction.withNonce(senderNonce);
+    if (sender.nonce) {
+      interaction.withNonce(sender.nonce);
     }
-    interaction.withSender(new Address(address));
+    interaction.withSender(new Address(sender.address));
     if (token === 'EGLD') {
       interaction.withValue(
         bigNumber
@@ -755,7 +793,7 @@ export class SCInteraction {
       );
     }
 
-    return interaction.withChainID(this.api.chain).withGasLimit(20_000_000);
+    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
   }
 
   /**
