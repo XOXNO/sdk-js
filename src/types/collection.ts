@@ -761,6 +761,7 @@ export type MintStage = {
   walletLimit: number;
   maxBuyable?: number;
   walletLimitReached?: boolean;
+  userMintsPerStage?: number;
   prices: StagePrice[];
   isSoldOut: boolean;
 };
