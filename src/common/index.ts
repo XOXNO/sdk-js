@@ -147,7 +147,7 @@ export class CommonModule {
    * This function fetches suggested NFT results based on the provided arguments. It takes an object with the following properties:
    * - name (string): The name to search for (required).
    * - orderBy (SuggestOrderBy[], optional): An array of ordering preferences for the results.
-   * - top (number, optional): The maximum number of results to return (default is 35, cannot be greater than 35).
+   * - top (number, optional): The maximum number of results to return (default is 35, cannot be greater than 100).
    * - skip (number, optional): The number of results to skip (default is 0).
    *
    * The function first validates the input arguments and constructs a payload body with the provided parameters.
@@ -158,7 +158,7 @@ export class CommonModule {
     args: SuggestNFTsArgs
   ): Promise<SuggestResults> => {
     if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 35');
+      throw new Error('Top cannot be greater than 100');
     }
 
     const payloadBody: SuggestNFTsArgs = {

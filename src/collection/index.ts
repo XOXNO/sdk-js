@@ -159,7 +159,7 @@ export class CollectionModule {
    * Searches for NFTs based on the provided arguments.
    * @param {SearchNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
    * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
-   * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 35.
+   * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 100.
    */
   public getNFTs = async (args: GetNFTsArgs): Promise<SearchNFTsResponse> => {
     args?.collections?.forEach((element) => {
@@ -169,7 +169,7 @@ export class CollectionModule {
     });
 
     if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 35');
+      throw new Error('Top cannot be greater than 100');
     }
     const ranges = [];
     if (args.priceRange) {
@@ -255,7 +255,7 @@ export class CollectionModule {
    *
    * This function fetches suggested collections results based on the provided arguments. It takes an object with the following properties:
    * - name (string): The name to search for (required).
-   * - top (number, optional): The maximum number of results to return (default is 35, cannot be greater than 35).
+   * - top (number, optional): The maximum number of results to return (default is 35, cannot be greater than 100).
    * - skip (number, optional): The number of results to skip (default is 0).
    *
    * Finally, it returns a promise that resolves to the fetched collections results.
@@ -264,7 +264,7 @@ export class CollectionModule {
     args: SuggestNFTsArgs
   ): Promise<SuggestResults> => {
     if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 35');
+      throw new Error('Top cannot be greater than 100');
     }
 
     const payloadBody: SuggestNFTsArgs = {
@@ -313,7 +313,7 @@ export class CollectionModule {
    *
    * @param {TradincActivityArgs} args - The arguments for filtering the trading activity.
    * @returns {Promise<TradingActivityResponse>} A promise resolving to a TradingActivityResponse object containing the activity.
-   * @throws {Error} Throws an error if the 'top' argument is greater than 35.
+   * @throws {Error} Throws an error if the 'top' argument is greater than 100.
    */
   public getTradingActivity = async (
     args: TradincActivityArgs
@@ -325,13 +325,13 @@ export class CollectionModule {
    * Fetch collections profiles based on the provided arguments.
    * @param {GetCollectionsArgs} args - The GetCollectionsArgs object containing the search parameters.
    * @returns {Promise<CollectionsNFTsResponse>} A Promise that resolves to the CollectionsNFTsResponse object.
-   * @throws An error if the 'top' value is greater than 35.
+   * @throws An error if the 'top' value is greater than 100.
    */
   public getCollections = async (
     args?: GetCollectionsArgs
   ): Promise<CollectionsNFTsResponse> => {
-    if (args?.top && args.top > 25) {
-      throw new Error('Top cannot be greater than 25');
+    if (args?.top && args.top > 100) {
+      throw new Error('Top cannot be greater than 100');
     }
 
     const payloadBody = {
@@ -377,13 +377,13 @@ export class CollectionModule {
    * Fetch global offers based on the provided arguments.
    * @param {GetGlobalOffersArgs} args - The GetCollectionsArgs object containing the search parameters.
    * @returns {Promise<GlobalOffersResult>} A Promise that resolves to the GlobalOffersResult object.
-   * @throws An error if the 'top' value is greater than 35.
+   * @throws An error if the 'top' value is greater than 100.
    */
   public getGlobalOffers = async (
     args?: GetGlobalOffersArgs
   ): Promise<GlobalOffersResult> => {
-    if (args?.top && args.top > 25) {
-      throw new Error('Top cannot be greater than 25');
+    if (args?.top && args.top > 100) {
+      throw new Error('Top cannot be greater than 100');
     }
 
     const payloadBody = {
@@ -577,8 +577,8 @@ export class CollectionModule {
   public getCollectionsStatistics = async (
     args: GetCollectionStatsArgs
   ): Promise<CollectionStatsResults> => {
-    if (args?.top && args.top > 25) {
-      throw new Error('Top cannot be greater than 25');
+    if (args?.top && args.top > 100) {
+      throw new Error('Top cannot be greater than 100');
     }
 
     const response = await this.api.fetchWithTimeout<CollectionStatsResults>(
@@ -786,7 +786,7 @@ export class CollectionModule {
    * Get drops based on the provided arguments.
    * @param {SearchNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
    * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
-   * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 35.
+   * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 100.
    */
   public getDrops = async (args: GETDropsArgs): Promise<GetDropsResponse> => {
     args?.collections?.forEach((element) => {

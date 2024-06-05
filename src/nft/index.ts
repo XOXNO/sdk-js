@@ -131,7 +131,7 @@ export class NFTModule {
    *
    * @param {TradincActivityArgs} args - The arguments for filtering the trading activity.
    * @returns {Promise<TradingActivityResponse>} A promise resolving to a TradingActivityResponse object containing the activity.
-   * @throws {Error} Throws an error if the 'top' argument is greater than 35.
+   * @throws {Error} Throws an error if the 'top' argument is greater than 100.
    */
   public getTradingActivity = async (
     args: TradincActivityArgs

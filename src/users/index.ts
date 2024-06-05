@@ -165,7 +165,7 @@ export class UserModule {
    *
    * This function fetches suggested users results based on the provided arguments. It takes an object with the following properties:
    * - name (string): The name to search for (required).
-   * - top (number, optional): The maximum number of results to return (default is 35, cannot be greater than 35).
+   * - top (number, optional): The maximum number of results to return (default is 35, cannot be greater than 100).
    * - skip (number, optional): The number of results to skip (default is 0).
    *
    * Finally, it returns a promise that resolves to the fetched users results.
@@ -174,7 +174,7 @@ export class UserModule {
     args: SuggestNFTsArgs
   ): Promise<SuggestResults> => {
     if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 35');
+      throw new Error('Top cannot be greater than 100');
     }
 
     const payloadBody: SuggestNFTsArgs = {
@@ -199,7 +199,7 @@ export class UserModule {
    *
    * @param {TradincActivityArgs} args - The arguments for filtering the trading activity.
    * @returns {Promise<TradingActivityResponse>} A promise resolving to a TradingActivityResponse object containing the activity.
-   * @throws {Error} Throws an error if the 'top' argument is greater than 35.
+   * @throws {Error} Throws an error if the 'top' argument is greater than 100.
    */
   public getTradingActivity = async (
     args: TradincActivityArgs
@@ -423,7 +423,7 @@ export class UserModule {
     orderBy: string;
   }): Promise<UserStats[]> => {
     if (top && top > 35) {
-      throw new Error('Top cannot be greater than 35');
+      throw new Error('Top cannot be greater than 100');
     }
 
     return await this.api.fetchWithTimeout<UserStats[]>(`/user/stats`, {
@@ -476,7 +476,7 @@ export class UserModule {
     address?: string;
   }): Promise<UserXOXNODrop[]> => {
     if (top && top > 35) {
-      throw new Error('Top cannot be greater than 35');
+      throw new Error('Top cannot be greater than 100');
     }
 
     if (address) {

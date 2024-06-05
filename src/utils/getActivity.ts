@@ -10,14 +10,14 @@ import {
  * @param args - The trading activity arguments
  * @param api - The API client
  * @returns - The trading activity response
- * @throws - If the top is greater than 35
+ * @throws - If the top is greater than 100
  */
 export const getActivity = async (
   args: TradincActivityArgs,
   api: XOXNOClient
 ): Promise<TradingActivityResponse> => {
   if (args.top && args.top > 100) {
-    throw new Error('Top cannot be greater than 35');
+    throw new Error('Top cannot be greater than 100');
   }
 
   const ranges = [];
