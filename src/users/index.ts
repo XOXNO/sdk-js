@@ -173,7 +173,7 @@ export class UserModule {
   public suggestUsers = async (
     args: SuggestNFTsArgs
   ): Promise<SuggestResults> => {
-    if (args.top && args.top > 35) {
+    if (args.top && args.top > 100) {
       throw new Error('Top cannot be greater than 35');
     }
 

@@ -16,7 +16,7 @@ export const getActivity = async (
   args: TradincActivityArgs,
   api: XOXNOClient
 ): Promise<TradingActivityResponse> => {
-  if (args.top && args.top > 35) {
+  if (args.top && args.top > 100) {
     throw new Error('Top cannot be greater than 35');
   }
 

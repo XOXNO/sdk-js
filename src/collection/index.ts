@@ -168,7 +168,7 @@ export class CollectionModule {
       }
     });
 
-    if (args.top && args.top > 35) {
+    if (args.top && args.top > 100) {
       throw new Error('Top cannot be greater than 35');
     }
     const ranges = [];
@@ -263,7 +263,7 @@ export class CollectionModule {
   public suggestCollections = async (
     args: SuggestNFTsArgs
   ): Promise<SuggestResults> => {
-    if (args.top && args.top > 35) {
+    if (args.top && args.top > 100) {
       throw new Error('Top cannot be greater than 35');
     }
 
@@ -795,8 +795,8 @@ export class CollectionModule {
       }
     });
 
-    if (args.top && args.top > 35) {
-      throw new Error('Top cannot be greater than 35');
+    if (args.top && args.top > 100) {
+      throw new Error('Top cannot be greater than 100');
     }
     const ranges = [];
 
