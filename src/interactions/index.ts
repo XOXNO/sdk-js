@@ -817,8 +817,12 @@ export class SCInteraction {
    */
   public async changeListing(
     listings: ChangeListing[],
-    sender: WithSenderAndNonce
+    sender: WithSenderAndNonce,
+    marketplace: string
   ) {
+    if (!marketplace) {
+      return [];
+    }
     const fooType = new StructType('BulkUpdateListing', [
       new FieldDefinition('payment_token_type', '', new TokenIdentifierType()),
       new FieldDefinition('new_price', '', new BigUIntType()),
