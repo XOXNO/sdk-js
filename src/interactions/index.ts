@@ -821,7 +821,7 @@ export class SCInteraction {
     marketplace: string
   ) {
     if (!marketplace) {
-      return [];
+      throw Error('Market is required');
     }
     const fooType = new StructType('BulkUpdateListing', [
       new FieldDefinition('payment_token_type', '', new TokenIdentifierType()),
