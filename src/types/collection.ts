@@ -614,6 +614,7 @@ export enum AssetCategory {
 
 export type ISingleHolder = {
   address: string;
+  username?: string;
   count: number;
   weight: number;
 };

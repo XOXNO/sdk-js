@@ -1,6 +1,6 @@
 import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { GlobalOffer } from '../types/collection';
-import { XOXNOClient } from '..';
+import { NftData, XOXNOClient } from '..';
 import { ContractQueryRunner } from '../utils/scCalls';
 import { SmartContractAbis } from '../utils/SmartContractAbis';
 import { getSmartContract } from '../utils/SmartContractService';
@@ -16,7 +16,6 @@ import {
   Auction,
   AuctionType,
   ChangeListing,
-  NFTBody,
   NewListingArgs,
   Payment,
   SendCustomOffer,
@@ -516,16 +515,19 @@ export class SCInteraction {
   public declineCustomOffer(
     offerID: number,
     sender: WithSenderAndNonce,
-    nft?: NFTBody
+    nft: NftData
   ): Interaction {
-    const interaction = this.xo.methods.declineOffer([offerID]);
+    const onSale = nft.onSale;
+    const interaction = onSale
+      ? this.xo.methods.declineOffer([offerID, nft.saleInfo?.auctionId])
+      : this.xo.methods.declineOffer([offerID]);
     if (sender.nonce) {
       interaction.withNonce(sender.nonce);
     }
     interaction.withSender(new Address(sender.address));
     if (nft) {
       interaction.withSingleESDTNFTTransfer(
-        TokenTransfer.semiFungible(nft.collection, nft.nonce, nft.amount ?? 1)
+        TokenTransfer.semiFungible(nft.collection, nft.nonce, 1)
       );
     }
     return interaction.withChainID(this.api.chain).withGasLimit(20_000_000);
@@ -541,9 +543,11 @@ export class SCInteraction {
   public acceptCustomOffer(
     offerID: number,
     sender: WithSenderAndNonce,
-    nft?: NFTBody
+    nft: NftData
   ): Interaction {
-    const interaction = this.xo.methods.acceptOffer([offerID]);
+    const interaction = nft.onSale
+      ? this.xo.methods.acceptOffer([offerID, nft.saleInfo?.auctionId])
+      : this.xo.methods.acceptOffer([offerID]);
 
     if (sender.nonce) {
       interaction.withNonce(sender.nonce);
@@ -551,10 +555,10 @@ export class SCInteraction {
     interaction.withSender(new Address(sender.address));
     if (nft) {
       interaction.withSingleESDTNFTTransfer(
-        TokenTransfer.semiFungible(nft.collection, nft.nonce, nft.amount ?? 1)
+        TokenTransfer.semiFungible(nft.collection, nft.nonce, 1)
       );
     }
-    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
+    return interaction.withChainID(this.api.chain).withGasLimit(20_000_000);
   }
 
   /**
@@ -582,7 +586,7 @@ export class SCInteraction {
         interaction.withNonce(sender.nonce);
       }
       interaction.withSender(new Address(sender.address));
-      return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
+      return interaction.withChainID(this.api.chain).withGasLimit(20_000_000);
     } else {
       throw new Error('Market not supported');
     }
