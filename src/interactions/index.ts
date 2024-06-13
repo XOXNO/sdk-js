@@ -517,15 +517,14 @@ export class SCInteraction {
     sender: WithSenderAndNonce,
     nft: NftData
   ): Interaction {
-    const onSale = nft.onSale;
-    const interaction = onSale
+    const interaction = nft.onSale
       ? this.xo.methods.declineOffer([offerID, nft.saleInfo?.auctionId])
       : this.xo.methods.declineOffer([offerID]);
     if (sender.nonce) {
       interaction.withNonce(sender.nonce);
     }
     interaction.withSender(new Address(sender.address));
-    if (nft) {
+    if (!nft.onSale) {
       interaction.withSingleESDTNFTTransfer(
         TokenTransfer.semiFungible(nft.collection, nft.nonce, 1)
       );
@@ -553,11 +552,12 @@ export class SCInteraction {
       interaction.withNonce(sender.nonce);
     }
     interaction.withSender(new Address(sender.address));
-    if (nft) {
+    if (!nft.onSale) {
       interaction.withSingleESDTNFTTransfer(
         TokenTransfer.semiFungible(nft.collection, nft.nonce, 1)
       );
     }
+
     return interaction.withChainID(this.api.chain).withGasLimit(20_000_000);
   }
 
