@@ -1,4 +1,3 @@
-import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { GlobalOffer } from '../types/collection';
 import { NftData, XOXNOClient } from '..';
 import { ContractQueryRunner } from '../utils/scCalls';
@@ -45,7 +44,11 @@ import { TransactionsFactoryConfig } from '@multiversx/sdk-core/out/transactions
 import { SmartContractTransactionsFactory } from '@multiversx/sdk-core/out/transactionsFactories/smartContractTransactionsFactory';
 import { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry';
 import { IPlainTransactionObject } from '@multiversx/sdk-core/out/interface';
-import { BytesValue, VariadicValue } from '@multiversx/sdk-core/out';
+import {
+  BytesValue,
+  Interaction,
+  VariadicValue,
+} from '@multiversx/sdk-core/out';
 
 export class SCInteraction {
   private xo: SmartContract;
@@ -319,7 +322,7 @@ export class SCInteraction {
    * Withdraw auctions from the smart contract.
    *
    * @param auctionIDs The IDs of the auctions to withdraw from
-   * @returns {Interaction} The interaction object of the smart contract
+   * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
   public withdrawAuctions({
@@ -332,7 +335,7 @@ export class SCInteraction {
     sender: WithSenderAndNonce;
     signature?: string;
     market?: string;
-  }): Interaction {
+  }): IPlainTransactionObject {
     if (market === 'xoxno') {
       const interaction = this.xo.methodsExplicit.withdraw([
         BytesValue.fromHex(signature!),
@@ -346,8 +349,10 @@ export class SCInteraction {
         .withChainID(this.api.chain)
         .withSender(new Address(sender.address))
         .withGasLimit(
-          Math.min(600_000_000, 15_000_000 + auctionIDs.length * 5_000_000)
-        );
+          Math.min(600_000_000, 15_000_000 + auctionIDs.length * 7_500_000)
+        )
+        .buildTransaction()
+        .toPlainObject();
     } else {
       throw new Error('Market not supported');
     }
@@ -357,13 +362,13 @@ export class SCInteraction {
    * Withdraw global offer from the smart contract.
    *
    * @param auctionIDs The IDs of the global offer to withdraw
-   * @returns {Interaction} The interaction object of the smart contract
+   * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
   public withdrawGlobalOffer(
     offerID: number,
     senderNonce: WithSenderAndNonce
-  ): Interaction {
+  ): IPlainTransactionObject {
     const interaction = this.xo.methods.withdrawGlobalOffer([offerID]);
 
     if (senderNonce.nonce) {
@@ -372,14 +377,16 @@ export class SCInteraction {
     return interaction
       .withChainID(this.api.chain)
       .withSender(new Address(senderNonce.address))
-      .withGasLimit(15_000_000);
+      .withGasLimit(15_000_000)
+      .buildTransaction()
+      .toPlainObject();
   }
 
   /**
    * Accept a global offer
    *
    * @param offerID The offer ID
-   * @returns {Interaction} The interaction object of the smart contract
+   * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
   public acceptGlobalOffer({
@@ -389,7 +396,7 @@ export class SCInteraction {
     nft,
     address,
     nonce,
-  }: AcceptGlobalOffer & WithSenderAndNonce): Interaction {
+  }: AcceptGlobalOffer & WithSenderAndNonce): IPlainTransactionObject {
     const interaction = signature
       ? this.xo.methods.acceptGlobalOffer([offer_id, auction_id_opt, signature])
       : this.xo.methods.acceptGlobalOffer([offer_id, auction_id_opt]);
@@ -402,7 +409,11 @@ export class SCInteraction {
     if (nonce) {
       interaction.withNonce(nonce);
     }
-    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
+    return interaction
+      .withChainID(this.api.chain)
+      .withGasLimit(30_000_000)
+      .buildTransaction()
+      .toPlainObject();
   }
 
   /**
@@ -413,7 +424,7 @@ export class SCInteraction {
    * @param collection The collection of the NFT
    * @param attributes The attributes of the NFT
    * @param depositAmount The deposit amount
-   * @returns {Interaction} The interaction object of the smart contract
+   * @returns {IPlainTransactionObject} The interaction object of the smart contract
    * */
   public sendGlobalOffer({
     payment_token,
@@ -424,7 +435,7 @@ export class SCInteraction {
     depositAmount,
     address,
     nonce,
-  }: SendGlobalOffer & WithSenderAndNonce): Interaction {
+  }: SendGlobalOffer & WithSenderAndNonce): IPlainTransactionObject {
     const interaction = attributes
       ? this.xo.methods.sendGlobalOffer([
           payment_token,
@@ -447,7 +458,11 @@ export class SCInteraction {
     if (depositAmount) {
       interaction.withValue(TokenTransfer.egldFromAmount(depositAmount));
     }
-    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
+    return interaction
+      .withChainID(this.api.chain)
+      .withGasLimit(30_000_000)
+      .buildTransaction()
+      .toPlainObject();
   }
 
   /**
@@ -458,7 +473,7 @@ export class SCInteraction {
    * @param deadline The deadline of the offer
    * @param nft The NFT to be sold
    * @param depositAmount The deposit amount
-   * @returns {Interaction} The interaction object of the smart contract
+   * @returns {IPlainTransactionObject} The interaction object of the smart contract
    * */
   public sendCustomOffer({
     payment_token,
@@ -469,7 +484,7 @@ export class SCInteraction {
     depositAmount,
     address,
     nonce,
-  }: SendCustomOffer & WithSenderAndNonce): Interaction {
+  }: SendCustomOffer & WithSenderAndNonce): IPlainTransactionObject {
     const interaction = this.xo.methods.sendOffer([
       payment_token,
       payment_nonce,
@@ -486,40 +501,48 @@ export class SCInteraction {
     if (depositAmount) {
       interaction.withValue(TokenTransfer.egldFromAmount(depositAmount));
     }
-    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
+    return interaction
+      .withChainID(this.api.chain)
+      .withGasLimit(30_000_000)
+      .buildTransaction()
+      .toPlainObject();
   }
 
   /**
    * Withdraws a custom offer
    *
    * @param offerID The offer ID
-   * @returns {Interaction} The interaction object of the smart contract
+   * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
   public withdrawCustomOffer(
     offerID: number,
     senderNonce: WithSenderAndNonce
-  ): Interaction {
+  ): IPlainTransactionObject {
     const interaction = this.xo.methods.withdrawOffer([offerID]);
     if (senderNonce.nonce) {
       interaction.withNonce(senderNonce.nonce);
     }
     interaction.withSender(new Address(senderNonce.address));
-    return interaction.withChainID(this.api.chain).withGasLimit(15_000_000);
+    return interaction
+      .withChainID(this.api.chain)
+      .withGasLimit(15_000_000)
+      .buildTransaction()
+      .toPlainObject();
   }
 
   /**
    * Decline a custom offer
    *
    * @param offerID The offer ID
-   * @returns {Interaction} The interaction object of the smart contract
+   * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
   public declineCustomOffer(
     offerID: number,
     sender: WithSenderAndNonce,
     nft: NftData
-  ): Interaction {
+  ): IPlainTransactionObject {
     const interaction = nft.onSale
       ? this.xo.methods.declineOffer([offerID, nft.saleInfo?.auctionId])
       : this.xo.methods.declineOffer([offerID]);
@@ -532,21 +555,25 @@ export class SCInteraction {
         TokenTransfer.semiFungible(nft.collection, nft.nonce, 1)
       );
     }
-    return interaction.withChainID(this.api.chain).withGasLimit(20_000_000);
+    return interaction
+      .withChainID(this.api.chain)
+      .withGasLimit(20_000_000)
+      .buildTransaction()
+      .toPlainObject();
   }
 
   /**
    * Accept a custom offer
    *
    * @param offerID The offer ID
-   * @returns {Interaction} The interaction object of the smart contract
+   * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
   public acceptCustomOffer(
     offerID: number,
     sender: WithSenderAndNonce,
     nft: NftData
-  ): Interaction {
+  ): IPlainTransactionObject {
     const interaction = nft.onSale
       ? this.xo.methods.acceptOffer([offerID, nft.saleInfo?.auctionId])
       : this.xo.methods.acceptOffer([offerID]);
@@ -561,14 +588,18 @@ export class SCInteraction {
       );
     }
 
-    return interaction.withChainID(this.api.chain).withGasLimit(25_000_000);
+    return interaction
+      .withChainID(this.api.chain)
+      .withGasLimit(25_000_000)
+      .buildTransaction()
+      .toPlainObject();
   }
 
   /**
    * @public
    * @function endAuction
    * @param {number} auctionID - The unique identifier of the auction.
-   * @returns {Interaction} The resulting interaction with the specified chainID and gas limit.
+   * @returns {IPlainTransactionObject} The resulting interaction with the specified chainID and gas limit.
    *
    * This function allows ending an auction by its auctionID. It takes the following parameter:
    * - auctionID (number): The unique identifier of the auction.
@@ -581,7 +612,7 @@ export class SCInteraction {
     auctionID: number,
     sender: WithSenderAndNonce,
     market = 'xoxno'
-  ): Interaction {
+  ): IPlainTransactionObject {
     if (market == 'xoxno') {
       const interaction = this.xo.methods.endAuction([auctionID]);
 
@@ -589,7 +620,11 @@ export class SCInteraction {
         interaction.withNonce(sender.nonce);
       }
       interaction.withSender(new Address(sender.address));
-      return interaction.withChainID(this.api.chain).withGasLimit(20_000_000);
+      return interaction
+        .withChainID(this.api.chain)
+        .withGasLimit(20_000_000)
+        .buildTransaction()
+        .toPlainObject();
     } else {
       throw new Error('Market not supported');
     }
@@ -602,7 +637,7 @@ export class SCInteraction {
    * @param collection The NFT Collection
    * @param nonce The NFT nonce
    * @param payment The payment object
-   * @returns {Interaction} The interaction object of the smart contract
+   * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
   public bidOnAuctionId(
@@ -648,14 +683,14 @@ export class SCInteraction {
    *
    * @param auctionIDs The auction IDs
    * @param payment The payment object
-   * @returns {Interaction} The interaction object of the smart contract
+   * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
   public bulkBuy(
     auctionIDs: number[],
     payment: Payment,
     sender: WithSenderAndNonce
-  ): Interaction {
+  ): IPlainTransactionObject {
     const interaction = this.xo.methods.bulkBuy(auctionIDs);
 
     if (sender.nonce) {
@@ -680,7 +715,9 @@ export class SCInteraction {
       .withChainID(this.api.chain)
       .withGasLimit(
         Math.min(600_000_000, 20_000_000 + auctionIDs.length * 10_000_000)
-      );
+      )
+      .buildTransaction()
+      .toPlainObject();
   }
 
   /**
@@ -696,7 +733,7 @@ export class SCInteraction {
    * @param {number} [options.paymentAmount] - The payment amount for the auction (optional).
    * @param {boolean} [options.withCheck=true] - Whether to check the auction information (default is true).
    * @param {boolean} [options.isBigUintPayment=false] - Whether the payment amount is a big integer (default is false).
-   * @returns {Promise<Interaction>} The resulting interaction with the specified chainID and gas limit.
+   * @returns {Promise<IPlainTransactionObject>} The resulting interaction with the specified chainID and gas limit.
    *
    * This function allows a user to buy an auction by its auctionID. It takes an object with the following properties:
    * - auctionID (number): The unique identifier of the auction.
@@ -738,7 +775,7 @@ export class SCInteraction {
     market?: string;
     decimals?: number;
     sender: WithSenderAndNonce;
-  }): Promise<Interaction> {
+  }): Promise<IPlainTransactionObject> {
     if (market !== 'xoxno') {
       throw new Error('Market not supported');
     }
@@ -801,7 +838,11 @@ export class SCInteraction {
       );
     }
 
-    return interaction.withChainID(this.api.chain).withGasLimit(30_000_000);
+    return interaction
+      .withChainID(this.api.chain)
+      .withGasLimit(30_000_000)
+      .buildTransaction()
+      .toPlainObject();
   }
 
   /**
@@ -810,7 +851,7 @@ export class SCInteraction {
    * @async
    * @function changeListing
    * @param {ChangeListing[]} listings - An array of objects containing the information needed to change a listing.
-   * @returns {Interaction} The resulting interaction with the specified chainID and gas limit.
+   * @returns {IPlainTransactionObject} The resulting interaction with the specified chainID and gas limit.
    *
    * This function takes an array of `ChangeListing` objects and constructs `Struct` instances using the provided
    * information. Each `ChangeListing` object should have the following properties:
@@ -943,6 +984,8 @@ export class SCInteraction {
       .withChainID(this.api.chain)
       .withGasLimit(
         Math.min(600_000_000, 8_000_000 + listings.length * 2_000_000)
-      );
+      )
+      .buildTransaction()
+      .toPlainObject();
   }
 }
