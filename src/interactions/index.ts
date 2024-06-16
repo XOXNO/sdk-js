@@ -867,7 +867,7 @@ export class SCInteraction {
     listings: ChangeListing[],
     sender: WithSenderAndNonce,
     marketplace: string
-  ) {
+  ): Promise<IPlainTransactionObject> {
     if (!marketplace) {
       throw Error('Market is required');
     }
@@ -903,13 +903,15 @@ export class SCInteraction {
       .withChainID(this.api.chain)
       .withGasLimit(
         Math.min(600_000_000, 8_000_000 + listings.length * 2_000_000)
-      );
+      )
+      .buildTransaction()
+      .toPlainObject();
   }
 
   public async listNFTs(
     listings: NewListingArgs[],
     sender: WithSenderAndNonce
-  ) {
+  ): Promise<IPlainTransactionObject> {
     const fooType = new StructType('BulkListing', [
       new FieldDefinition('min_bid', '', new BigUIntType()),
       new FieldDefinition('max_bid', '', new BigUIntType()),
