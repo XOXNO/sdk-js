@@ -1,6 +1,6 @@
 const path = require('path');
 
-const defaultConfiguration = require('./webpack.config.js');
+const defaultConfiguration = require('./webpack.config.cjs');
 
 module.exports = {
   ...defaultConfiguration,

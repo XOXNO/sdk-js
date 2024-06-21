@@ -1,4 +1,4 @@
-import type { CSSProperties, ComponentProps } from 'react';
+import { createElement, type CSSProperties, type ComponentProps } from 'react';
 
 import {
   Body,
@@ -222,7 +222,7 @@ const Font = ({
   );
 };
 
-const generateXOXNOEmail = (props: IProps) => {
+const XOXNOEmail = (props: IProps) => {
   const t = createTranslator({
     locale: 'en',
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -404,13 +404,13 @@ const buttonStyle = {
 } satisfies CSSProperties;
 
 export const renderEmail = async (
-  props: ComponentProps<typeof generateXOXNOEmail>
+  props: ComponentProps<typeof XOXNOEmail>
 ): Promise<{
   html: string;
   plainText: string;
   subject: string | undefined;
 }> => {
-  const Email = generateXOXNOEmail(props);
+  const Email = createElement(XOXNOEmail, props, null);
 
   const html = await renderAsync(Email, {
     pretty: true,

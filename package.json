@@ -2,23 +2,23 @@
   "name": "@xoxno/sdk-js",
   "version": "0.1.130-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
-  "type": "commonjs",
+  "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/index.esm.js",
       "types": "./dist/index.d.ts"
     },
     "./interactor": {
-      "import": "./dist/interactor.js",
+      "import": "./dist/interactor.esm.js",
       "types": "./dist/interactor.d.ts"
     },
     "./email": {
-      "import": "./dist/email.js",
+      "import": "./dist/email.esm.js",
       "types": "./dist/email.d.ts"
     }
   },
   "types": "./dist/index.d.ts",
-  "main": "./dist/index.js",
+  "main": "./dist/index.esm.js",
   "files": [
     "dist/**/*"
   ],
@@ -26,7 +26,7 @@
   "scripts": {
     "test": "jest",
     "build:types": "tsc --emitDeclarationOnly",
-    "build": "npm run build:types && webpack && webpack --config webpack-esm.config.js",
+    "build": "npm run build:types && webpack && webpack --config webpack-esm.config.cjs",
     "lint": "eslint 'src/**/*.ts' --fix",
     "format": "prettier --write 'src/**/*.ts'",
     "commit": "git-cz",
