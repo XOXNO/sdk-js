@@ -6,7 +6,7 @@ module.exports = {
   entry: {
     index: './src/index.ts',
     interactor: './src/interactor.ts',
-    email: './src/email.ts',
+    email: './src/email.tsx',
   },
   module: {
     rules: [

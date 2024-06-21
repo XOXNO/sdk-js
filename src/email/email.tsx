@@ -17,10 +17,10 @@ import {
 } from '@react-email/components';
 import { createTranslator } from 'next-intl';
 
-export const locales = ['en', 'de'] as const;
+const locales = ['en', 'de'] as const;
 
-export type ILocale = (typeof locales)[number];
-export type Translations<T = object> = {
+type ILocale = (typeof locales)[number];
+type Translations<T = object> = {
   namespace: string;
   translations: {
     en: T;
@@ -222,7 +222,7 @@ const Font = ({
   );
 };
 
-export default function XOXNOEmail(props: IProps) {
+const generateXOXNOEmail = (props: IProps) => {
   const t = createTranslator({
     locale: 'en',
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -350,7 +350,7 @@ export default function XOXNOEmail(props: IProps) {
       </Html>
     </Tailwind>
   );
-}
+};
 
 const headingStyle = {
   color: 'var(--color-palettes-primary-text-fill, #FFF)',
@@ -403,14 +403,14 @@ const buttonStyle = {
   lineHeight: '16px',
 } satisfies CSSProperties;
 
-export async function renderEmail(
-  props: ComponentProps<typeof XOXNOEmail>
+export const renderEmail = async (
+  props: ComponentProps<typeof generateXOXNOEmail>
 ): Promise<{
   html: string;
   plainText: string;
   subject: string | undefined;
-}> {
-  const Email = <XOXNOEmail {...props} />;
+}> => {
+  const Email = generateXOXNOEmail(props);
 
   const html = await renderAsync(Email, {
     pretty: true,
@@ -423,4 +423,4 @@ export async function renderEmail(
   const subject = html.match(/<title[^>]*>([^<]+)<\/title>/)?.[1];
 
   return { html, plainText, subject };
-}
+};
