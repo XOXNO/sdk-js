@@ -31,8 +31,4 @@ module.exports = {
     minimize: true,
     minimizer: [new TerserPlugin()],
   },
-  externals: {
-    react: 'React',
-    'react-dom': 'ReactDOM',
-  },
 };
