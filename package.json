@@ -1,6 +1,6 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.1.127-alpha",
+  "version": "0.1.128-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "type": "commonjs",
   "exports": {
@@ -11,6 +11,10 @@
     "./interactor": {
       "import": "./dist/interactor.js",
       "types": "./dist/interactor.d.ts"
+    },
+    "./email": {
+      "import": "./dist/email.js",
+      "types": "./dist/email.d.ts"
     }
   },
   "types": "./dist/index.d.ts",
@@ -91,6 +95,9 @@
   "dependencies": {
     "@multiversx/sdk-core": "^13.2.1",
     "@multiversx/sdk-network-providers": "^2.4.3",
+    "@react-email/components": "0.0.19",
+    "@react-email/render": "^0.0.15",
+    "next-intl": "^3.15.2",
     "webpack-bundle-analyzer": "^4.10.2"
   }
 }

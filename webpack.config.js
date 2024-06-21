@@ -6,6 +6,7 @@ module.exports = {
   entry: {
     index: './src/index.ts',
     interactor: './src/interactor.ts',
+    email: './src/email.ts',
   },
   module: {
     rules: [
@@ -29,5 +30,9 @@ module.exports = {
   optimization: {
     minimize: true,
     minimizer: [new TerserPlugin()],
+  },
+  externals: {
+    react: 'React',
+    'react-dom': 'ReactDOM',
   },
 };
