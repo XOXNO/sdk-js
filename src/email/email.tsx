@@ -192,6 +192,7 @@ export type IProps = ITradeProps | IDepositProps | IOfferProps | IBidProps;
 const messages = translations.translations.en;
 
 const HOST = 'https://next.xoxno.com';
+const MEDIA = 'https://media.xoxno.com';
 
 const fallbackFont = 'Verdana';
 
@@ -270,7 +271,7 @@ const XOXNOEmail = (props: IProps) => {
             fontFamily="Heading"
             fallbackFontFamily="Verdana"
             webFont={{
-              url: `${HOST}/fonts/ClashDisplay-Semibold.woff2`,
+              url: `${MEDIA}/fonts/ClashDisplay-Semibold.woff2`,
               format: 'woff2',
             }}
           />
@@ -278,7 +279,7 @@ const XOXNOEmail = (props: IProps) => {
             fontFamily="Button"
             fallbackFontFamily="Verdana"
             webFont={{
-              url: `${HOST}/fonts/ClashDisplay-Medium.woff2`,
+              url: `${MEDIA}/fonts/ClashDisplay-Medium.woff2`,
               format: 'woff2',
             }}
           />
@@ -286,7 +287,7 @@ const XOXNOEmail = (props: IProps) => {
             fontFamily="Body"
             fallbackFontFamily="Verdana"
             webFont={{
-              url: `${HOST}/fonts/Satoshi-Light.woff2`,
+              url: `${MEDIA}/fonts/Satoshi-Light.woff2`,
               format: 'woff2',
             }}
           />
@@ -296,7 +297,7 @@ const XOXNOEmail = (props: IProps) => {
           <Container className="max-w-[500px]">
             <Section className="mb-4">
               <Img
-                src={`${HOST}/emails/${isUnsuccess ? 'unsuccess.png' : 'success.png'}`}
+                src={`${MEDIA}/utils/${isUnsuccess ? 'unsuccess.png' : 'success.png'}`}
                 width="100%"
                 height="140px"
                 className="object-cover"
