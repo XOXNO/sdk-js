@@ -53,6 +53,7 @@ export interface StakingSummaryPools {
   percentageFilled: number;
   hasUnboundPeriod: boolean;
   unBoundPeriod: number;
+  stakingEnabled: boolean;
 }
 
 export enum StakingStatus {
