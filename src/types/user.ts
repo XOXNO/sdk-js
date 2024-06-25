@@ -42,6 +42,7 @@ export interface IUserProfile {
   userDeposit: UserDeposit[];
   _ts: number;
   shard: number;
+  followCount: number;
 }
 
 export interface UserDeposit {
@@ -182,6 +183,7 @@ export type CreatorProfile = {
   joinedDate?: number;
   contractAddress: string;
   address: string;
+  followCount: number;
   _ts: number;
 };
 
@@ -281,6 +283,7 @@ export interface Wallet {
   isCreator: boolean;
   owned: number;
   listed: number;
+  followCount: number;
 }
 
 export interface StakingCreatorInfo {
