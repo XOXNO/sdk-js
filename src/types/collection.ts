@@ -93,6 +93,18 @@ export interface ICollectionProfile {
   type: string;
   lastVerifiedTimestamp: number;
   lastVerifiedBy: string;
+  customConfig?: {
+    collection: string;
+    reversedCutFees: boolean;
+    reversedRoyalties: boolean;
+    customRoyalties: boolean;
+    minRoyalties: number;
+    maxRoyalties: number;
+    extraFees: {
+      amount: number;
+      address: string;
+    };
+  };
   _ts: number;
 }
 
