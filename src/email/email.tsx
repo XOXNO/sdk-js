@@ -264,7 +264,7 @@ const XOXNOEmail = (props: IProps) => {
 
   return (
     <Tailwind>
-      <Html lang="en">
+      <Html lang="en" className="no-scrollbar">
         <Head>
           <title>{t('title')}</title>
           <Font
@@ -291,6 +291,17 @@ const XOXNOEmail = (props: IProps) => {
               format: 'woff2',
             }}
           />
+          <style>
+            {`
+            .no-scrollbar {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+              &::-webkit-scrollbar {
+                display: none;
+              }
+            }
+          `}
+          </style>
         </Head>
         <Preview>{t('title')}</Preview>
         <Body className="bg-[#121212]">
