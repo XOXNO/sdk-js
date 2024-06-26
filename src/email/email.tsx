@@ -296,9 +296,9 @@ const XOXNOEmail = (props: IProps) => {
             .no-scrollbar {
               -ms-overflow-style: none;
               scrollbar-width: none;
-              &::-webkit-scrollbar {
-                display: none;
-              }
+            }
+            .no-scrollbar::-webkit-scrollbar {
+              display: none;
             }
           `}
           </style>
