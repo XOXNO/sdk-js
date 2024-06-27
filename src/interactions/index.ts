@@ -392,18 +392,28 @@ export class SCInteraction {
   public acceptGlobalOffer({
     signature,
     offer_id,
-    auction_id_opt,
-    nft,
+    auction_ids_opt,
+    market,
+    nfts,
     address,
     nonce,
   }: AcceptGlobalOffer & WithSenderAndNonce): IPlainTransactionObject {
+    if (market != 'xoxno') {
+      throw Error('Marketplace not supported');
+    }
     const interaction = signature
-      ? this.xo.methods.acceptGlobalOffer([offer_id, auction_id_opt, signature])
-      : this.xo.methods.acceptGlobalOffer([offer_id, auction_id_opt]);
+      ? this.xo.methods.acceptGlobalOffer([
+          offer_id,
+          auction_ids_opt,
+          signature,
+        ])
+      : this.xo.methods.acceptGlobalOffer([offer_id, auction_ids_opt]);
     interaction.withSender(new Address(address));
-    if (nft) {
-      interaction.withSingleESDTNFTTransfer(
-        TokenTransfer.semiFungible(nft.collection, nft.nonce, nft.amount ?? 1)
+    if (nfts.length > 0) {
+      interaction.withMultiESDTNFTTransfer(
+        nfts.map((nft) =>
+          TokenTransfer.semiFungible(nft.collection, nft.nonce, nft.amount ?? 1)
+        )
       );
     }
     if (nonce) {
@@ -431,6 +441,7 @@ export class SCInteraction {
     payment_nonce,
     price,
     collection,
+    quantity,
     attributes,
     depositAmount,
     address,
@@ -442,12 +453,14 @@ export class SCInteraction {
           payment_nonce,
           TokenTransfer.egldFromAmount(price).toString(),
           collection,
+          quantity,
           attributes,
         ])
       : this.xo.methods.sendGlobalOffer([
           payment_token,
           payment_nonce,
           TokenTransfer.egldFromAmount(price).toString(),
+          quantity,
           collection,
         ]);
 

@@ -56,6 +56,7 @@ export interface Payment extends NFTBody {
 export interface SendGlobalOffer {
   payment_token: string;
   payment_nonce: number;
+  quantity: number;
   price: number;
   collection: string;
   attributes?: string;
@@ -72,9 +73,10 @@ export interface SendCustomOffer {
 }
 
 export interface AcceptGlobalOffer {
-  nft?: NFTBody; // Should be provided if the offer is for an NFT not listed on the marketplace
+  nfts: NFTBody[]; // Should be provided if the offer is for an NFT not listed on the marketplace
   offer_id: number;
-  auction_id_opt?: number; //  Only when the NFT you want to sell is listed, if signature is required, it will be 0 in case the NFT is not listed
+  market: string;
+  auction_ids_opt: number[]; //  Only when the NFT you want to sell is listed, if signature is required, it will be 0 in case the NFT is not listed
   signature?: string; // Only when the offer has required attribute
 }
 
