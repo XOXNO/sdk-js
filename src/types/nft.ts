@@ -1,4 +1,4 @@
-import { MetadataAttribute } from './collection';
+import { ICollectionProfile, MetadataAttribute } from './collection';
 
 export interface NFTAttribute extends MetadataAttribute {
   occurance: number;
@@ -103,6 +103,7 @@ export interface CollectionInfo {
   description?: string;
   followCount?: number;
   holdersCount?: number;
+  customConfig?: ICollectionProfile['customConfig'];
 }
 
 export interface Owner {
