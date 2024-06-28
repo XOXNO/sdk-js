@@ -1,6 +1,6 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "0.1.141-alpha",
+  "version": "0.1.142-alpha",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "type": "module",
   "exports": {
@@ -98,7 +98,7 @@
     "terser-webpack-plugin": "^5.3.10",
     "ts-jest": "^29.1.5",
     "ts-loader": "^9.5.1",
-    "typedoc": "^0.26.2",
+    "typedoc": "^0.26.3",
     "typescript": "^5.5.2",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",
@@ -109,7 +109,7 @@
     "@multiversx/sdk-network-providers": "^2.4.3",
     "@react-email/components": "0.0.19",
     "@react-email/render": "^0.0.15",
-    "next-intl": "^3.15.2",
+    "next-intl": "^3.15.3",
     "react": "^18.3.1",
     "webpack-bundle-analyzer": "^4.10.2"
   }
