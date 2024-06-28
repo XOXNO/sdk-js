@@ -460,8 +460,8 @@ export class SCInteraction {
           payment_token,
           payment_nonce,
           TokenTransfer.egldFromAmount(price).toString(),
-          quantity,
           collection,
+          quantity,
         ]);
 
     if (nonce) {
