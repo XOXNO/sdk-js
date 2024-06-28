@@ -721,6 +721,8 @@ export type GlobalOffers = {
   attributes: MetadataAttribute[];
   collectionInfo?: CollectionInfo;
   isActive: boolean;
+  floorPrice: number;
+  floorPriceMargin: number | null;
 };
 
 export type GlobalOfferOwner = {
