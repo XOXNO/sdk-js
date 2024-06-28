@@ -447,22 +447,14 @@ export class SCInteraction {
     address,
     nonce,
   }: SendGlobalOffer & WithSenderAndNonce): IPlainTransactionObject {
-    const interaction = attributes
-      ? this.xo.methods.sendGlobalOffer([
-          payment_token,
-          payment_nonce,
-          TokenTransfer.egldFromAmount(price).toString(),
-          collection,
-          quantity,
-          attributes,
-        ])
-      : this.xo.methods.sendGlobalOffer([
-          payment_token,
-          payment_nonce,
-          TokenTransfer.egldFromAmount(price).toString(),
-          collection,
-          quantity,
-        ]);
+    const interaction = this.xo.methods.sendGlobalOffer([
+      payment_token,
+      payment_nonce,
+      TokenTransfer.egldFromAmount(price).toString(),
+      collection,
+      quantity,
+      ...(attributes ? [attributes] : []),
+    ]);
 
     if (nonce) {
       interaction.withNonce(nonce);
