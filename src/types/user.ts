@@ -18,6 +18,27 @@ export interface IUserProfileSearch {
   addressTrimmed: string;
 }
 
+export interface IUserSettings {
+  dataType: 'userSettings';
+  emailNotifications: {
+    enabled: boolean;
+    emailAddress: string;
+    isEmailVerificationPending: boolean;
+    isEmailVerified: boolean;
+  };
+  notificationPreferences: {
+    sales: boolean;
+    bids: boolean;
+    offersReceived: boolean;
+    offersAccepted: boolean;
+    offersRejected: boolean;
+    deposits: boolean;
+  };
+  address: string;
+  id: string;
+  _ts: number;
+}
+
 export interface IUserProfile {
   dataType: 'userProfile';
   hasKYC?: boolean;
@@ -43,6 +64,7 @@ export interface IUserProfile {
   _ts: number;
   shard: number;
   followCount: number;
+  userSettings?: IUserSettings;
 }
 
 export interface UserDeposit {
