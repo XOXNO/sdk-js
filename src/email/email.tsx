@@ -112,16 +112,9 @@ const translations = {
           footer: '❤️ Thank you for using XOXNO!',
         },
         deposit: {
-          title: 'Deposit successful',
+          title: 'Deposit balance updated',
           description:
-            'Hi {name}, your deposit of <highlight>{amount} {token}</highlight> has been successful.',
-          action: 'Go to my profile',
-          footer: '❤️ Thank you for using XOXNO!',
-        },
-        withdrawDeposit: {
-          title: 'Withdraw successful',
-          description:
-            'Hi {name}, your withdrawal of <highlight>{amount} {token}</highlight> has been successful.',
+            'Hi {name}, your deposit balance {amount, select, 0 {decreased to <highlight>{amount} {token}</highlight>. Visit your profile to top it up again} other {was updated to <highlight>{amount} {token}</highlight>}}.',
           action: 'Go to my profile',
           footer: '❤️ Thank you for using XOXNO!',
         },
@@ -135,63 +128,38 @@ const translations = {
   >;
 }>;
 
-function isTrade(props: IProps): props is ITradeProps {
+function isTrade(props: IProps) {
   return tradeTypes.includes(props.activityType as ITradeTypes);
 }
 
-function isDeposit(props: IProps): props is IDepositProps {
+function isDeposit(props: IProps) {
   return depositTypes.includes(props.activityType as IDepositTypes);
 }
 
-function isOffer(props: IProps): props is IOfferProps {
+function isOffer(props: IProps) {
   return offerTypes.includes(props.activityType as IOfferTypes);
 }
 
-function isBid(props: IProps): props is IBidProps {
+function isBid(props: IProps) {
   return bidTypes.includes(props.activityType as IBidTypes);
 }
 
-export type ITradeProps = {
-  activityType: Extract<IEmailActivityType, ITradeTypes>;
+const defaultHost = 'https://next.xoxno.com';
+
+const hosts = [defaultHost, 'https://devnet.xoxno.com'] as const;
+
+export type IProps = {
+  activityType: IEmailActivityType;
   payload: {
     name: string;
     nft: Pick<IBaseNotification, 'asset' | 'owner' | 'activity'>;
     address: string;
   };
+  host?: (typeof hosts)[number];
 };
-
-export type IDepositProps = {
-  activityType: Extract<IEmailActivityType, IDepositTypes>;
-  payload: {
-    name: string;
-    nft: Pick<IBaseNotification, 'asset' | 'owner' | 'activity'>;
-    address: string;
-  };
-};
-
-export type IBidProps = {
-  activityType: Extract<IEmailActivityType, IBidTypes>;
-  payload: {
-    name: string;
-    nft: Pick<IBaseNotification, 'asset' | 'owner' | 'activity'>;
-    address: string;
-  };
-};
-
-export type IOfferProps = {
-  activityType: Extract<IEmailActivityType, IOfferTypes>;
-  payload: {
-    name: string;
-    nft: Pick<IBaseNotification, 'asset' | 'owner' | 'activity'>;
-    address: string;
-  };
-};
-
-export type IProps = ITradeProps | IDepositProps | IOfferProps | IBidProps;
 
 const messages = translations.translations.en;
 
-const HOST = 'https://next.xoxno.com';
 const MEDIA = 'https://media.xoxno.com';
 
 const fallbackFont = 'Verdana';
@@ -223,7 +191,7 @@ const Font = ({
   );
 };
 
-const XOXNOEmail = (props: IProps) => {
+const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
   const t = createTranslator({
     locale: 'en',
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -234,11 +202,12 @@ const XOXNOEmail = (props: IProps) => {
     namespace: `emails.${props.activityType}`,
   });
 
+  const HOST = hosts.includes(host) ? host : defaultHost;
+
   const isUnsuccess = (
     [
       NftActivityType.AUCTION_OUT_BID,
       NftActivityType.OFFER_REJECT,
-      'withdrawDeposit',
     ] as IEmailActivityType[]
   ).includes(props.activityType);
 

@@ -18,7 +18,7 @@ export const bidTypes = [
   NftActivityType.AUCTION_OUT_BID,
 ] as const;
 
-export const depositTypes = ['deposit', 'withdrawDeposit'] as const;
+export const depositTypes = ['deposit'] as const;
 
 export type ITradeTypes = (typeof tradeTypes)[number];
 
