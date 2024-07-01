@@ -18,7 +18,9 @@ export const bidTypes = [
   NftActivityType.AUCTION_OUT_BID,
 ] as const;
 
-export const depositTypes = ['deposit'] as const;
+export const depositTypes = ['deposit', 'withdrawDeposit'] as const;
+
+export const verifyEmailTypes = ['verifyEmail'] as const;
 
 export type ITradeTypes = (typeof tradeTypes)[number];
 
@@ -28,11 +30,14 @@ export type IBidTypes = (typeof bidTypes)[number];
 
 export type IOfferTypes = (typeof offerTypes)[number];
 
+export type IVerifyEmailTypes = (typeof verifyEmailTypes)[number];
+
 const emailActivityTypes = [
   ...tradeTypes,
   ...offerTypes,
   ...depositTypes,
   ...bidTypes,
+  ...verifyEmailTypes,
 ] as const;
 
 export type IEmailActivityType = (typeof emailActivityTypes)[number];

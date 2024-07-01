@@ -30,10 +30,12 @@ type Translations<T = object> = {
 import {
   IBaseNotification,
   IEmailActivityType,
+  IVerifyEmailTypes,
   bidTypes,
   depositTypes,
   offerTypes,
   tradeTypes,
+  verifyEmailTypes,
   type IBidTypes,
   type IDepositTypes,
   type IOfferTypes,
@@ -118,6 +120,20 @@ const translations = {
           action: 'Go to my profile',
           footer: '❤️ Thank you for using XOXNO!',
         },
+        withdrawDeposit: {
+          title: 'Deposit balance updated',
+          description:
+            'Hi {name}, your deposit balance {amount, select, 0 {decreased to <highlight>{amount} {token}</highlight>. Visit your profile to top it up again} other {was updated to <highlight>{amount} {token}</highlight>}}.',
+          action: 'Go to my profile',
+          footer: '❤️ Thank you for using XOXNO!',
+        },
+        verifyEmail: {
+          title: 'Verify your email address',
+          description:
+            'Hi {name}, click the link below to verify your email address',
+          action: 'Verify email',
+          footer: '❤️ Thank you for using XOXNO!',
+        },
       },
     },
   },
@@ -144,19 +160,43 @@ function isBid(props: IProps) {
   return bidTypes.includes(props.activityType as IBidTypes);
 }
 
+function isVerifyEmail(props: IProps) {
+  return verifyEmailTypes.includes(props.activityType as IVerifyEmailTypes);
+}
+
 const defaultHost = 'https://next.xoxno.com';
 
 const hosts = [defaultHost, 'https://devnet.xoxno.com'] as const;
 
-export type IProps = {
-  activityType: IEmailActivityType;
-  payload: {
-    name: string;
-    nft: Pick<IBaseNotification, 'asset' | 'owner' | 'activity'>;
-    address: string;
-  };
-  host?: (typeof hosts)[number];
+type IHost = (typeof hosts)[number];
+
+const apiMappers: Record<IHost, string> = {
+  'https://next.xoxno.com': 'https://api.xoxno.com',
+  'https://devnet.xoxno.com': 'https://devnet-api.xoxno.com',
 };
+
+export type IProps = {
+  host?: IHost;
+} & (
+  | {
+      activityType: Exclude<IEmailActivityType, 'verifyEmail'>;
+      payload: {
+        name: string;
+        address: string;
+        nft: Pick<IBaseNotification, 'asset' | 'owner' | 'activity'>;
+        code?: never;
+      };
+    }
+  | {
+      activityType: Extract<IEmailActivityType, 'verifyEmail'>;
+      payload: {
+        name: string;
+        address?: never;
+        nft?: never;
+        code: string;
+      };
+    }
+);
 
 const messages = translations.translations.en;
 
@@ -211,25 +251,31 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
     ] as IEmailActivityType[]
   ).includes(props.activityType);
 
-  const imgSrc = props.payload.nft.asset.url;
+  const imgSrc = props.payload.nft ? props.payload.nft.asset.url : '';
 
   const payload = {
     name: props.payload.name,
-    amount: props.payload.nft.activity.price,
-    token: props.payload.nft.activity.paymentToken,
-    nftName: props.payload.nft.asset.name,
-    address: props.payload.address,
-    owner: props.payload.nft.owner,
+    ...(props.payload.nft
+      ? {
+          amount: props.payload.nft.activity.price,
+          token: props.payload.nft.activity.paymentToken,
+          nftName: props.payload.nft.asset.name,
+          address: props.payload.address,
+          owner: props.payload.nft.owner,
+        }
+      : {}),
   };
 
   const href =
     isTrade(props) || isBid(props)
-      ? `${HOST}/nft/${props.payload.nft.asset.identifier}`
+      ? `${HOST}/nft/${props.payload.nft?.asset.identifier}`
       : isDeposit(props)
         ? `${HOST}/profile/${props.payload.address}/wallet`
         : isOffer(props)
           ? `${HOST}/profile/${props.payload.address}/offers${props.activityType === NftActivityType.OFFER_REJECT ? '/placed' : ''}`
-          : HOST;
+          : isVerifyEmail(props)
+            ? `${apiMappers[HOST]}/user/me/verify-email?code=${props.payload.code}`
+            : HOST;
 
   return (
     <Tailwind>
