@@ -529,18 +529,23 @@ export class SCInteraction {
 
   public withdrawCustomOffer(
     offerID: number,
-    senderNonce: WithSenderAndNonce
+    senderNonce: WithSenderAndNonce,
+    market: string
   ): IPlainTransactionObject {
-    const interaction = this.xo.methods.withdrawOffer([offerID]);
-    if (senderNonce.nonce) {
-      interaction.withNonce(senderNonce.nonce);
+    if (market === 'xoxno') {
+      const interaction = this.xo.methods.withdrawOffer([offerID]);
+      if (senderNonce.nonce) {
+        interaction.withNonce(senderNonce.nonce);
+      }
+      interaction.withSender(new Address(senderNonce.address));
+      return interaction
+        .withChainID(this.api.chain)
+        .withGasLimit(15_000_000)
+        .buildTransaction()
+        .toPlainObject();
+    } else {
+      throw Error('Market not supperted');
     }
-    interaction.withSender(new Address(senderNonce.address));
-    return interaction
-      .withChainID(this.api.chain)
-      .withGasLimit(15_000_000)
-      .buildTransaction()
-      .toPlainObject();
   }
 
   /**
@@ -553,25 +558,30 @@ export class SCInteraction {
   public declineCustomOffer(
     offerID: number,
     sender: WithSenderAndNonce,
-    nft: NftData
+    nft: NftData,
+    market: string
   ): IPlainTransactionObject {
-    const interaction = nft.onSale
-      ? this.xo.methods.declineOffer([offerID, nft.saleInfo?.auctionId])
-      : this.xo.methods.declineOffer([offerID]);
-    if (sender.nonce) {
-      interaction.withNonce(sender.nonce);
+    if (market == 'xoxno') {
+      const interaction = nft.onSale
+        ? this.xo.methods.declineOffer([offerID, nft.saleInfo?.auctionId])
+        : this.xo.methods.declineOffer([offerID]);
+      if (sender.nonce) {
+        interaction.withNonce(sender.nonce);
+      }
+      interaction.withSender(new Address(sender.address));
+      if (!nft.onSale) {
+        interaction.withSingleESDTNFTTransfer(
+          TokenTransfer.semiFungible(nft.collection, nft.nonce, 1)
+        );
+      }
+      return interaction
+        .withChainID(this.api.chain)
+        .withGasLimit(20_000_000)
+        .buildTransaction()
+        .toPlainObject();
+    } else {
+      throw Error('Market not supperted');
     }
-    interaction.withSender(new Address(sender.address));
-    if (!nft.onSale) {
-      interaction.withSingleESDTNFTTransfer(
-        TokenTransfer.semiFungible(nft.collection, nft.nonce, 1)
-      );
-    }
-    return interaction
-      .withChainID(this.api.chain)
-      .withGasLimit(20_000_000)
-      .buildTransaction()
-      .toPlainObject();
   }
 
   /**
@@ -584,27 +594,32 @@ export class SCInteraction {
   public acceptCustomOffer(
     offerID: number,
     sender: WithSenderAndNonce,
-    nft: NftData
+    nft: NftData,
+    market: string
   ): IPlainTransactionObject {
-    const interaction = nft.onSale
-      ? this.xo.methods.acceptOffer([offerID, nft.saleInfo?.auctionId])
-      : this.xo.methods.acceptOffer([offerID]);
+    if (market == 'xoxno') {
+      const interaction = nft.onSale
+        ? this.xo.methods.acceptOffer([offerID, nft.saleInfo?.auctionId])
+        : this.xo.methods.acceptOffer([offerID]);
 
-    if (sender.nonce) {
-      interaction.withNonce(sender.nonce);
-    }
-    interaction.withSender(new Address(sender.address));
-    if (!nft.onSale) {
-      interaction.withSingleESDTNFTTransfer(
-        TokenTransfer.semiFungible(nft.collection, nft.nonce, 1)
-      );
-    }
+      if (sender.nonce) {
+        interaction.withNonce(sender.nonce);
+      }
+      interaction.withSender(new Address(sender.address));
+      if (!nft.onSale) {
+        interaction.withSingleESDTNFTTransfer(
+          TokenTransfer.semiFungible(nft.collection, nft.nonce, 1)
+        );
+      }
 
-    return interaction
-      .withChainID(this.api.chain)
-      .withGasLimit(30_000_000)
-      .buildTransaction()
-      .toPlainObject();
+      return interaction
+        .withChainID(this.api.chain)
+        .withGasLimit(30_000_000)
+        .buildTransaction()
+        .toPlainObject();
+    } else {
+      throw Error('Market not supperted');
+    }
   }
 
   /**
