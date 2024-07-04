@@ -1,31 +1,17 @@
-import { createElement, type CSSProperties, type ComponentProps } from 'react';
+import { createElement, type ComponentProps } from 'react';
 
 import {
   Body,
   Button,
   Container,
-  Head,
   Heading,
-  Html,
   Img,
   Link,
-  Preview,
   Section,
-  Tailwind,
   Text,
   renderAsync,
 } from '@react-email/components';
 import { createTranslator } from 'next-intl';
-
-const locales = ['en', 'de'] as const;
-
-type ILocale = (typeof locales)[number];
-type Translations<T = object> = {
-  namespace: string;
-  translations: {
-    en: T;
-  } & Partial<{ [key in Exclude<ILocale, 'en'>]: Partial<T> }>;
-};
 
 import {
   IBaseNotification,
@@ -42,8 +28,22 @@ import {
   type ITradeTypes,
 } from './types';
 
-import { NftActivityType } from '../types';
 import React from 'react';
+import { NftActivityType } from '../types';
+import {
+  GeneralEmail,
+  IHost,
+  Translations,
+  apiMappers,
+  bodyStyle,
+  buttonStyle,
+  defaultHost,
+  getHost,
+  headingStyle,
+  highlightStyle,
+  linkStyle,
+  renderGenericEmail,
+} from './utils';
 
 const translations = {
   namespace: '',
@@ -164,17 +164,6 @@ function isVerifyEmail(props: IProps) {
   return verifyEmailTypes.includes(props.activityType as IVerifyEmailTypes);
 }
 
-const defaultHost = 'https://next.xoxno.com';
-
-const hosts = [defaultHost, 'https://devnet.xoxno.com'] as const;
-
-type IHost = (typeof hosts)[number];
-
-const apiMappers: Record<IHost, string> = {
-  'https://next.xoxno.com': 'https://api.xoxno.com',
-  'https://devnet.xoxno.com': 'https://devnet-api.xoxno.com',
-};
-
 export type IProps = {
   host?: IHost;
 } & (
@@ -202,47 +191,14 @@ const messages = translations.translations.en;
 
 const MEDIA = 'https://media.xoxno.com';
 
-const fallbackFont = 'Verdana';
-
-const Font = ({
-  webFont,
-  fontStyle = 'normal',
-  fontFamily,
-  fontWeight = 400,
-  fallbackFontFamily,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-}: any) => {
-  const src = webFont
-    ? `src: url(${webFont.url}) format(${webFont.format});`
-    : '';
-
-  return (
-    <style>
-      {`
-          @font-face {
-              font-style: ${fontStyle};
-              font-family: ${fontFamily};
-              font-weight: ${fontWeight};
-              mso-font-alt: ${Array.isArray(fallbackFontFamily) ? fallbackFontFamily[0] : fallbackFontFamily};
-              ${src}
-          }
-          `}
-    </style>
-  );
-};
-
 const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
   const t = createTranslator({
     locale: 'en',
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     messages,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     namespace: `emails.${props.activityType}`,
   });
 
-  const HOST = hosts.includes(host) ? host : defaultHost;
+  const HOST = getHost(host);
 
   const isUnsuccess = (
     [
@@ -278,176 +234,68 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
             : HOST;
 
   return (
-    <Tailwind>
-      <Html lang="en" className="no-scrollbar">
-        <Head>
-          <title>{t('title')}</title>
-          <Font
-            fontFamily="Heading"
-            fallbackFontFamily="Verdana"
-            webFont={{
-              url: `${MEDIA}/fonts/ClashDisplay-Semibold.woff2`,
-              format: 'woff2',
-            }}
-          />
-          <Font
-            fontFamily="Button"
-            fallbackFontFamily="Verdana"
-            webFont={{
-              url: `${MEDIA}/fonts/ClashDisplay-Medium.woff2`,
-              format: 'woff2',
-            }}
-          />
-          <Font
-            fontFamily="Body"
-            fallbackFontFamily="Verdana"
-            webFont={{
-              url: `${MEDIA}/fonts/Satoshi-Light.woff2`,
-              format: 'woff2',
-            }}
-          />
-          <style>
-            {`
-            .no-scrollbar {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-            }
-            .no-scrollbar::-webkit-scrollbar {
-              display: none;
-            }
-          `}
-          </style>
-        </Head>
-        <Preview>{t('title')}</Preview>
-        <Body className="bg-[#121212]">
-          <Container className="max-w-[500px]">
-            <Section className="mb-4">
+    <GeneralEmail title={t('title')}>
+      <Body className="bg-[#121212]">
+        <Container className="max-w-[500px]">
+          <Section className="mb-4">
+            <Img
+              src={`${MEDIA}/utils/${isUnsuccess ? 'unsuccess.png' : 'success.png'}`}
+              width="100%"
+              height="140px"
+              className="object-cover"
+            />
+          </Section>
+          <Section>
+            {imgSrc && (
               <Img
-                src={`${MEDIA}/utils/${isUnsuccess ? 'unsuccess.png' : 'success.png'}`}
-                width="100%"
-                height="140px"
-                className="object-cover"
+                src={imgSrc}
+                width="260px"
+                height="260px"
+                className="rounded-xl mx-auto"
               />
+            )}
+            <Section className="pt-8 pb-6 px-5 text-center">
+              <Heading style={headingStyle} className="m-0">
+                {t('title')}
+              </Heading>
+              <Text style={bodyStyle} className="m-0 mt-2.5">
+                {t.rich('description', {
+                  ...payload,
+                  link: (children) => (
+                    <Link href={href} style={linkStyle}>
+                      {children}
+                    </Link>
+                  ),
+                  highlight: (children) => (
+                    <span style={highlightStyle}>{children}</span>
+                  ),
+                })}
+              </Text>
+              <Button href={href} style={buttonStyle} className="mt-5">
+                {t('action')}
+              </Button>
             </Section>
-            <Section>
-              {imgSrc && (
-                <Img
-                  src={imgSrc}
-                  width="260px"
-                  height="260px"
-                  className="rounded-xl mx-auto"
-                />
-              )}
-              <Section className="pt-8 pb-6 px-5 text-center">
-                <Heading style={headingStyle} className="m-0">
-                  {t('title')}
-                </Heading>
-                <Text style={bodyStyle} className="m-0 mt-2.5">
-                  {t.rich('description', {
-                    ...payload,
-                    link: (children) => (
-                      <Link href={href} style={linkStyle}>
-                        {children}
-                      </Link>
-                    ),
-                    highlight: (children) => (
-                      <span style={highlightStyle}>{children}</span>
-                    ),
-                  })}
-                </Text>
-                <Button href={href} style={buttonStyle} className="mt-5">
-                  {t('action')}
-                </Button>
-              </Section>
-            </Section>
-            <Section className="py-6 px-5 text-center" style={bodyStyle}>
-              {t.rich('footer', {
-                link: (children) => (
-                  <Link href={href} style={linkStyle}>
-                    {children}
-                  </Link>
-                ),
-                highlight: (children) => (
-                  <span style={highlightStyle}>{children}</span>
-                ),
-              })}
-            </Section>
-          </Container>
-        </Body>
-      </Html>
-    </Tailwind>
+          </Section>
+          <Section className="py-6 px-5 text-center" style={bodyStyle}>
+            {t.rich('footer', {
+              link: (children) => (
+                <Link href={href} style={linkStyle}>
+                  {children}
+                </Link>
+              ),
+              highlight: (children) => (
+                <span style={highlightStyle}>{children}</span>
+              ),
+            })}
+          </Section>
+        </Container>
+      </Body>
+    </GeneralEmail>
   );
 };
 
-const headingStyle = {
-  color: 'var(--color-palettes-primary-text-fill, #FFF)',
-  fontFamily: `Heading, ${fallbackFont}`,
-  textAlign: 'center',
-  fontSize: '28px',
-  fontStyle: 'normal',
-  fontWeight: 600,
-  lineHeight: '36px',
-} satisfies CSSProperties;
-
-const linkStyle = {
-  color: 'var(--color-palettes-lime-fill, #AEFB4F)',
-  fontFamily: `Body, ${fallbackFont}`,
-  fontSize: '16px',
-  fontStyle: 'normal',
-  fontWeight: '500',
-  lineHeight: '24px',
-  whiteSpace: 'nowrap',
-} satisfies CSSProperties;
-
-const bodyStyle = {
-  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
-  textAlign: 'center',
-  fontFamily: `Body, ${fallbackFont}`,
-  fontSize: '16px',
-  fontStyle: 'normal',
-  fontWeight: '400',
-  lineHeight: '24px',
-} satisfies CSSProperties;
-
-const highlightStyle = {
-  color: 'var(--color-palettes-primary-text-fill, #FFF)',
-  fontFamily: `Body, ${fallbackFont}`,
-  fontSize: '16px',
-  fontStyle: 'normal',
-  fontWeight: '500',
-  lineHeight: '24px',
-} satisfies CSSProperties;
-
-const buttonStyle = {
-  fontFamily: `Button, ${fallbackFont}`,
-  padding: '12px 20px',
-  borderRadius: '8px',
-  background: 'var(--color-palettes-button-primary-fill, #AEFB4F)',
-  color: 'var(--color-palettes-button-primary-text, #000)',
-  fontSize: '14px',
-  fontStyle: 'normal',
-  fontWeight: '500',
-  lineHeight: '16px',
-} satisfies CSSProperties;
-
-export const renderEmail = async (
-  props: ComponentProps<typeof XOXNOEmail>
-): Promise<{
-  html: string;
-  plainText: string;
-  subject: string | undefined;
-}> => {
+export const renderEmail = async (props: ComponentProps<typeof XOXNOEmail>) => {
   const Email = createElement(XOXNOEmail, props, null);
 
-  const html = await renderAsync(Email, {
-    pretty: true,
-  });
-
-  const plainText = await renderAsync(Email, {
-    plainText: true,
-  });
-
-  const subject = html.match(/<title[^>]*>([^<]+)<\/title>/)?.[1];
-
-  return { html, plainText, subject };
+  return renderGenericEmail(Email);
 };

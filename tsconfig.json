@@ -16,8 +16,8 @@
     "noUnusedParameters": true,
     "esModuleInterop": true,
     "declaration": true, // Set to false if not developing a library
-    "declarationMap": true,
+    "declarationMap": true
   },
-  "include": ["src"],
+  "include": ["src", "sendEmail.ts"],
   "exclude": ["node_modules", "dist", "**/*.test.d.ts", "**/*.test.ts"]
 }

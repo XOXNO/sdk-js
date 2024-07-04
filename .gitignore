@@ -4,3 +4,4 @@ coverage
 docs
 ./coverage
 out
+sendEmail.ts
