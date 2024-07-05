@@ -402,7 +402,7 @@ export class CollectionModule {
           : undefined,
         attributes: args?.attributes,
       },
-      orderBy: [args?.orderBy || GlobalOfferOrderBy.PriceHighToLow],
+      orderBy: args?.orderBy || [GlobalOfferOrderBy.PriceHighToLow],
     };
 
     const response = await this.api.fetchWithTimeout<GlobalOffersResult>(
