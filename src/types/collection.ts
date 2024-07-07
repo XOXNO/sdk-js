@@ -742,7 +742,7 @@ export type GetCollectionMintInfo = {
   contractAddress: string;
   collectionTag: string;
   startTime: number;
-  prices: StagePrice[];
+  prices?: StagePrice[];
   nftTransferLimited: boolean;
   hasBotProtection: boolean;
   kycRequired: boolean;
@@ -777,7 +777,7 @@ export type MintStage = {
   maxBuyable?: number;
   walletLimitReached?: boolean;
   userMintsPerStage?: number;
-  prices: StagePrice[];
+  prices?: StagePrice[];
   isSoldOut: boolean;
 };
 
