@@ -14,9 +14,5 @@ export const getIdentifierFromColAndNonce = (
 };
 
 export const isAddressValid = (address: string | Buffer): boolean => {
-  try {
-    return true && address.includes('erd1');
-  } catch (error) {
-    return false;
-  }
+  return address.includes('erd1');
 };
