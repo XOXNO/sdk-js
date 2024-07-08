@@ -134,6 +134,16 @@ export const bodyStyle = {
   lineHeight: '24px',
 } satisfies CSSProperties;
 
+export const hintStyle = {
+  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
+  textAlign: 'center',
+  fontFamily: `Body, ${fallbackFont}`,
+  fontSize: '14px',
+  fontStyle: 'normal',
+  fontWeight: '300',
+  lineHeight: '16px',
+} satisfies CSSProperties;
+
 export const highlightStyle = {
   color: 'var(--color-palettes-primary-text-fill, #FFF)',
   fontFamily: `Body, ${fallbackFont}`,
