@@ -26,7 +26,7 @@ export interface IUserSettings {
     isEmailVerificationPending: boolean;
     isEmailVerified: boolean;
     isWeb2User: boolean;
-    timestamp: number;
+    timestamp?: number;
   };
   notificationPreferences: {
     sales: boolean;
