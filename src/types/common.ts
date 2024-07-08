@@ -8,7 +8,7 @@ export type AshSwapPaymentData = {
   paymentToken: string;
   swapAmount: number;
   argument: string;
-  limits: string[];
+  limits: string;
   bigUintAmount: string;
   extraGasLimit: number;
 };
