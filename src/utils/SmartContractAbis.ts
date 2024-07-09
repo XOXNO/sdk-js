@@ -1,5 +1,7 @@
 import { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry';
 import { XOXNOClient } from './api';
+import * as marketplace from '../abis/marketplace-xoxno.json';
+import * as minter from '../abis/minter.json';
 
 export class SmartContractAbis {
   private static manager: AbiRegistry;
@@ -11,15 +13,15 @@ export class SmartContractAbis {
 
   public static async getMarket(): Promise<AbiRegistry> {
     if (!SmartContractAbis.market) {
-      const data = await XOXNOClient.getInstance().fetchWithTimeout<any>(
-        `${XOXNOClient.getInstance().config.mediaUrl}/smartcontractabi/marketplace-xoxno.json`,
-        {
-          next: {
-            tags: ['getMarket'],
-          },
-        }
-      );
-      const abiRegistry = AbiRegistry.create(data);
+      // const data = await XOXNOClient.getInstance().fetchWithTimeout<any>(
+      //   `${XOXNOClient.getInstance().config.mediaUrl}/smartcontractabi/marketplace-xoxno.json`,
+      //   {
+      //     next: {
+      //       tags: ['getMarket'],
+      //     },
+      //   }
+      // );
+      const abiRegistry = AbiRegistry.create(marketplace);
       SmartContractAbis.market = abiRegistry;
     }
 
@@ -45,15 +47,15 @@ export class SmartContractAbis {
 
   public static async getMinter(): Promise<AbiRegistry> {
     if (!SmartContractAbis.minter) {
-      const data = await XOXNOClient.getInstance().fetchWithTimeout<any>(
-        `${XOXNOClient.getInstance().config.mediaUrl}/smartcontractabi/minter.json`,
-        {
-          next: {
-            tags: ['getMinter'],
-          },
-        }
-      );
-      const abiRegistry = AbiRegistry.create(data);
+      // const data = await XOXNOClient.getInstance().fetchWithTimeout<any>(
+      //   `${XOXNOClient.getInstance().config.mediaUrl}/smartcontractabi/minter.json`,
+      //   {
+      //     next: {
+      //       tags: ['getMinter'],
+      //     },
+      //   }
+      // );
+      const abiRegistry = AbiRegistry.create(minter);
       SmartContractAbis.minter = abiRegistry;
     }
 

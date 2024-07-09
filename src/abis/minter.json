@@ -1,0 +1,1587 @@
+{
+  "buildInfo": {
+    "rustc": {
+      "version": "1.69.0-nightly",
+      "commitHash": "c8e6a9e8b6251bbc8276cb78cabe1998deecbed7",
+      "commitDate": "2023-01-23",
+      "channel": "Nightly",
+      "short": "rustc 1.69.0-nightly (c8e6a9e8b 2023-01-23)"
+    },
+    "contractCrate": {
+      "name": "minter",
+      "version": "0.0.0"
+    },
+    "framework": {
+      "name": "multiversx-sc",
+      "version": "0.39.6"
+    }
+  },
+  "name": "Minter",
+  "constructor": {
+    "inputs": [
+      {
+        "name": "local_owner",
+        "type": "Address"
+      },
+      {
+        "name": "cut_percentage",
+        "type": "BigUint"
+      },
+      {
+        "name": "signer_wallet",
+        "type": "Address"
+      }
+    ],
+    "outputs": []
+  },
+  "endpoints": [
+    {
+      "name": "buy",
+      "mutability": "mutable",
+      "payableInTokens": ["*"],
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage_name",
+          "type": "bytes"
+        },
+        {
+          "name": "quantity",
+          "type": "u32"
+        },
+        {
+          "name": "signature",
+          "type": "optional<bytes>",
+          "multi_arg": true
+        },
+        {
+          "name": "data",
+          "type": "optional<bytes>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "buyFor",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "payableInTokens": ["EGLD"],
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage_name",
+          "type": "bytes"
+        },
+        {
+          "name": "quantity",
+          "type": "u32"
+        },
+        {
+          "name": "user",
+          "type": "Address"
+        },
+        {
+          "name": "twispay",
+          "type": "bytes"
+        },
+        {
+          "name": "signature",
+          "type": "optional<bytes>",
+          "multi_arg": true
+        },
+        {
+          "name": "data",
+          "type": "optional<bytes>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "giveaway",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage_name",
+          "type": "bytes"
+        },
+        {
+          "name": "to",
+          "type": "Address"
+        },
+        {
+          "name": "quantity",
+          "type": "u32"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "giveawayAdmin",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage_name",
+          "type": "bytes"
+        },
+        {
+          "name": "to",
+          "type": "Address"
+        },
+        {
+          "name": "quantity",
+          "type": "u32"
+        },
+        {
+          "name": "twispay",
+          "type": "bytes"
+        },
+        {
+          "name": "signature",
+          "type": "optional<bytes>",
+          "multi_arg": true
+        },
+        {
+          "name": "data",
+          "type": "optional<bytes>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "reveal",
+      "mutability": "mutable",
+      "payableInTokens": ["*"],
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "changeLocalOwner",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "tradingControl",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "collection",
+          "type": "bytes"
+        },
+        {
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "burn",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "collection",
+          "type": "bytes"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "transferOwner",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "collection",
+          "type": "bytes"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "claim_royalties",
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "claimESDT",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "EgldOrEsdtTokenIdentifier"
+        },
+        {
+          "name": "nonces",
+          "type": "variadic<u64>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "setCutPercentage",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "new_cut_percentage",
+          "type": "BigUint"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "claimTokens",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "EgldOrEsdtTokenIdentifier"
+        },
+        {
+          "name": "nonce",
+          "type": "u32"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "addRewards",
+      "mutability": "mutable",
+      "payableInTokens": ["*"],
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "reward",
+          "type": "BigUint"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "removeRewards",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "stopMintShareholder",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "stopRoyaltiesShareholder",
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "addMintShareholder",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "shareholders",
+          "type": "variadic<multi<Address,BigUint>>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "addRoyaltiesShareholder",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "shareholders",
+          "type": "variadic<multi<Address,BigUint>>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getMintShareholders",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "variadic<ShareHolders>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "getRoyaltiesShareholders",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<ShareHolders>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "isMintEditBlocked",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "rewardPerCollection",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "RewardStruct"
+        }
+      ]
+    },
+    {
+      "name": "isRoyaltiesEditBlocked",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "cutPercentage",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "localOwner",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "Address"
+        }
+      ]
+    },
+    {
+      "name": "buysPerWallet",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        },
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "buysStagePerWallet",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        },
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getNFTsIDs",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "variadic<bytes>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "nextNftNonce",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getAcceptedTokens",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "variadic<EgldOrEsdtTokenIdentifier>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "lastNFTIdAdded",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "listingByTag",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Listing"
+        }
+      ]
+    },
+    {
+      "name": "maxBuysPerTag",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "tokenByTag",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "TokenIdentifier"
+        }
+      ]
+    },
+    {
+      "name": "isActive",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "getPaymentTokenPrice",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "token",
+          "type": "EgldOrEsdtTokenIdentifier"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "revealID",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "collections",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<bytes>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "signer",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "listingByTagV2",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "NewListing"
+        }
+      ]
+    },
+    {
+      "name": "mintStage",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "variadic<multi<bytes,Stage>>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "getWhitelistedWallets",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "variadic<Address>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "isWhitelisted",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage",
+          "type": "bytes"
+        },
+        {
+          "name": "address",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "getListings",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "List<NewListing>"
+        }
+      ]
+    },
+    {
+      "name": "getListing",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "NewListing"
+        }
+      ]
+    },
+    {
+      "name": "getStages",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "List<Stage>"
+        }
+      ]
+    },
+    {
+      "name": "getStage",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Stage"
+        }
+      ]
+    },
+    {
+      "name": "whitelistSize",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "listing",
+      "mutability": "mutable",
+      "payableInTokens": ["EGLD"],
+      "inputs": [
+        {
+          "name": "cid",
+          "type": "bytes"
+        },
+        {
+          "name": "tags",
+          "type": "bytes"
+        },
+        {
+          "name": "base_nft_name",
+          "type": "bytes"
+        },
+        {
+          "name": "royalties",
+          "type": "BigUint"
+        },
+        {
+          "name": "token_name",
+          "type": "bytes"
+        },
+        {
+          "name": "token_ticker",
+          "type": "bytes"
+        },
+        {
+          "name": "collection_size",
+          "type": "u32"
+        },
+        {
+          "name": "global_max_per_wallet",
+          "type": "u32"
+        },
+        {
+          "name": "collectiontag",
+          "type": "bytes"
+        },
+        {
+          "name": "nft_ending",
+          "type": "bytes"
+        },
+        {
+          "name": "name_shuffle",
+          "type": "bool"
+        },
+        {
+          "name": "has_attributes",
+          "type": "bool"
+        },
+        {
+          "name": "has_kyc",
+          "type": "bool"
+        },
+        {
+          "name": "refund_policy",
+          "type": "bool"
+        },
+        {
+          "name": "public_burn",
+          "type": "bool"
+        },
+        {
+          "name": "bot_protection",
+          "type": "bool"
+        },
+        {
+          "name": "has_reveal",
+          "type": "bool"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "createStage",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "args",
+          "type": "StageArgs"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "removeStage",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage",
+          "type": "bytes"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "changeTime",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage_name",
+          "type": "bytes"
+        },
+        {
+          "name": "start_date",
+          "type": "u64"
+        },
+        {
+          "name": "end_time",
+          "type": "u64"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "removePaymentToken",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage_name",
+          "type": "bytes"
+        },
+        {
+          "name": "token",
+          "type": "TokenIdentifier"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "addPaymentToken",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage_name",
+          "type": "bytes"
+        },
+        {
+          "name": "token",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "price",
+          "type": "BigUint"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "addWhitelists",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage",
+          "type": "bytes"
+        },
+        {
+          "name": "wallets",
+          "type": "variadic<Address>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "removeWhitelists",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage",
+          "type": "bytes"
+        },
+        {
+          "name": "wallets",
+          "type": "variadic<Address>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "clearWhitelist",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage",
+          "type": "bytes"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "maxBuysPerWallet",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "max",
+          "type": "u32"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "maxStageBuysPerWallet",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage_name",
+          "type": "bytes"
+        },
+        {
+          "name": "max",
+          "type": "u32"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "changeStageMintLimit",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage_name",
+          "type": "bytes"
+        },
+        {
+          "name": "mint_limit",
+          "type": "u32"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "changeWLStatus",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage_name",
+          "type": "bytes"
+        },
+        {
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "botProtection",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "enableReveal",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "cid",
+          "type": "bytes"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "publicBurn",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "setActive",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "stage_name",
+          "type": "bytes"
+        },
+        {
+          "name": "is_active",
+          "type": "bool"
+        }
+      ],
+      "outputs": []
+    }
+  ],
+  "events": [
+    {
+      "identifier": "emit_minting_stage_status",
+      "inputs": [
+        {
+          "name": "stage",
+          "type": "Stage",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "identifier": "emit_minting_status",
+      "inputs": [
+        {
+          "name": "contract_info",
+          "type": "NewListing",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "identifier": "emit_listing_event",
+      "inputs": [
+        {
+          "name": "listing",
+          "type": "NewListing",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "identifier": "emit_stage_event",
+      "inputs": [
+        {
+          "name": "stage",
+          "type": "Stage",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "identifier": "emit_stage_mint_event",
+      "inputs": [
+        {
+          "name": "stage",
+          "type": "Stage",
+          "indexed": true
+        },
+        {
+          "name": "total_mint",
+          "type": "u32",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "identifier": "emit_buy_event",
+      "inputs": [
+        {
+          "name": "payments",
+          "type": "List<EsdtTokenPayment>",
+          "indexed": true
+        },
+        {
+          "name": "payment_token",
+          "type": "EgldOrEsdtTokenIdentifier",
+          "indexed": true
+        },
+        {
+          "name": "buyer",
+          "type": "Address",
+          "indexed": true
+        },
+        {
+          "name": "price",
+          "type": "BigUint",
+          "indexed": true
+        },
+        {
+          "name": "token_identifier",
+          "type": "TokenIdentifier",
+          "indexed": true
+        },
+        {
+          "name": "timestamp",
+          "type": "u64",
+          "indexed": true
+        },
+        {
+          "name": "epoch",
+          "type": "u64",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "identifier": "emit_buy_fiat_event",
+      "inputs": [
+        {
+          "name": "payments",
+          "type": "List<EsdtTokenPayment>",
+          "indexed": true
+        },
+        {
+          "name": "payment_token",
+          "type": "EgldOrEsdtTokenIdentifier",
+          "indexed": true
+        },
+        {
+          "name": "buyer",
+          "type": "Address",
+          "indexed": true
+        },
+        {
+          "name": "price",
+          "type": "BigUint",
+          "indexed": true
+        },
+        {
+          "name": "token_identifier",
+          "type": "TokenIdentifier",
+          "indexed": true
+        },
+        {
+          "name": "timestamp",
+          "type": "u64",
+          "indexed": true
+        },
+        {
+          "name": "epoch",
+          "type": "u64",
+          "indexed": true
+        },
+        {
+          "name": "twispay",
+          "type": "bytes",
+          "indexed": true
+        }
+      ]
+    }
+  ],
+  "hasCallback": true,
+  "types": {
+    "EsdtTokenPayment": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "token_identifier",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "token_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "BigUint"
+        }
+      ]
+    },
+    "Listing": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "cid",
+          "type": "bytes"
+        },
+        {
+          "name": "tags",
+          "type": "bytes"
+        },
+        {
+          "name": "collectiontag",
+          "type": "bytes"
+        },
+        {
+          "name": "base_nft_name",
+          "type": "bytes"
+        },
+        {
+          "name": "nft_ending",
+          "type": "bytes"
+        },
+        {
+          "name": "royalties",
+          "type": "BigUint"
+        },
+        {
+          "name": "mint_price",
+          "type": "BigUint"
+        },
+        {
+          "name": "collection_size",
+          "type": "u32"
+        },
+        {
+          "name": "start_date",
+          "type": "u64"
+        },
+        {
+          "name": "mint_roles",
+          "type": "bool"
+        },
+        {
+          "name": "owner_transfered",
+          "type": "bool"
+        }
+      ]
+    },
+    "NewListing": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "cid",
+          "type": "bytes"
+        },
+        {
+          "name": "tags",
+          "type": "bytes"
+        },
+        {
+          "name": "collection_tag",
+          "type": "bytes"
+        },
+        {
+          "name": "media_type",
+          "type": "bytes"
+        },
+        {
+          "name": "base_nft_name",
+          "type": "bytes"
+        },
+        {
+          "name": "has_attributes",
+          "type": "bool"
+        },
+        {
+          "name": "owner_transfered",
+          "type": "bool"
+        },
+        {
+          "name": "collection_size",
+          "type": "u32"
+        },
+        {
+          "name": "nft_minted",
+          "type": "u32"
+        },
+        {
+          "name": "global_max_per_wallet",
+          "type": "u32"
+        },
+        {
+          "name": "royalties",
+          "type": "BigUint"
+        },
+        {
+          "name": "token",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "old_version",
+          "type": "bool"
+        },
+        {
+          "name": "name_shuffle",
+          "type": "bool"
+        },
+        {
+          "name": "transfer_role",
+          "type": "bool"
+        },
+        {
+          "name": "public_burn",
+          "type": "bool"
+        },
+        {
+          "name": "has_kyc",
+          "type": "bool"
+        },
+        {
+          "name": "refund_policy",
+          "type": "bool"
+        },
+        {
+          "name": "bot_protection",
+          "type": "bool"
+        },
+        {
+          "name": "has_reveal",
+          "type": "bool"
+        }
+      ]
+    },
+    "RewardStruct": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "token",
+          "type": "EgldOrEsdtTokenIdentifier"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "BigUint"
+        },
+        {
+          "name": "reward",
+          "type": "BigUint"
+        }
+      ]
+    },
+    "ShareHolders": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "address",
+          "type": "Address"
+        },
+        {
+          "name": "share",
+          "type": "BigUint"
+        }
+      ]
+    },
+    "Stage": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "name",
+          "type": "bytes"
+        },
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "status",
+          "type": "bool"
+        },
+        {
+          "name": "is_whitelist",
+          "type": "bool"
+        },
+        {
+          "name": "start_time",
+          "type": "u64"
+        },
+        {
+          "name": "end_time",
+          "type": "u64"
+        },
+        {
+          "name": "mint_limit",
+          "type": "u32"
+        },
+        {
+          "name": "mint_count",
+          "type": "u32"
+        },
+        {
+          "name": "prices",
+          "type": "List<EsdtTokenPayment>"
+        },
+        {
+          "name": "max_per_wallet",
+          "type": "u32"
+        }
+      ]
+    },
+    "StageArgs": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "name",
+          "type": "bytes"
+        },
+        {
+          "name": "tag",
+          "type": "bytes"
+        },
+        {
+          "name": "is_whitelist",
+          "type": "bool"
+        },
+        {
+          "name": "start_time",
+          "type": "u64"
+        },
+        {
+          "name": "end_time",
+          "type": "u64"
+        },
+        {
+          "name": "mint_limit",
+          "type": "u32"
+        },
+        {
+          "name": "prices",
+          "type": "List<EsdtTokenPayment>"
+        },
+        {
+          "name": "max_per_wallet",
+          "type": "u32"
+        }
+      ]
+    }
+  }
+}
