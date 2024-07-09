@@ -514,7 +514,7 @@ export interface SuggestResults {
 }
 
 export interface ResultsBody {
-  collections: ICollectionProfile[];
+  collections: (ICollectionProfile & { floorPrice: number })[];
   users: IUserProfileSearch[];
   nft: NftData[];
 }

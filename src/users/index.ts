@@ -363,10 +363,10 @@ export class UserModule {
     address: string,
     top: number,
     skip: number
-  ): Promise<NftData[]> => {
+  ): Promise<SearchNFTsResponse> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
 
-    const response = await this.api.fetchWithTimeout<NftData[]>(
+    const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
       `/user/${address}/favorite/nfts`,
       {
         params: {

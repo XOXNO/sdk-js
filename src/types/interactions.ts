@@ -1,3 +1,5 @@
+import { BytesValue } from '@multiversx/sdk-core/out';
+
 export type Offer = {
   offer_id: number;
   collection: string;
@@ -77,7 +79,7 @@ export interface AcceptGlobalOffer {
   offer_id: number;
   market: string;
   auction_ids_opt: number[]; //  Only when the NFT you want to sell is listed, if signature is required, it will be 0 in case the NFT is not listed
-  signature?: string; // Only when the offer has required attribute
+  signature?: BytesValue; // Only when the offer has required attribute
 }
 
 export interface ChangeListing {
