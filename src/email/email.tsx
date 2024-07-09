@@ -33,6 +33,7 @@ import { NftActivityType } from '../types';
 import {
   GeneralEmail,
   IHost,
+  MEDIA,
   Translations,
   apiMappers,
   bodyStyle,
@@ -207,8 +208,6 @@ export type IProps = {
 );
 
 const messages = translations.translations.en;
-
-const MEDIA = 'https://media.xoxno.com';
 
 const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
   const t = createTranslator({

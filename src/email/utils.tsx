@@ -11,7 +11,7 @@ import {
 
 import React from 'react';
 
-const MEDIA = 'https://media.xoxno.com';
+export const MEDIA = 'https://media.xoxno.com';
 
 const fallbackFont = 'Verdana';
 
@@ -175,9 +175,13 @@ export type Translations<T = object> = {
   } & Partial<{ [key in Exclude<ILocale, 'en'>]: Partial<T> }>;
 };
 
-export const defaultHost = 'https://next.xoxno.com';
+export const defaultHost = 'https://xoxno.com';
 
-const hosts = [defaultHost, 'https://devnet.xoxno.com'] as const;
+const hosts = [
+  defaultHost,
+  'https://next.xoxno.com',
+  'https://devnet.xoxno.com',
+] as const;
 
 export function getHost(propHost: IHost) {
   return hosts.includes(propHost) ? propHost : defaultHost;
@@ -186,6 +190,7 @@ export function getHost(propHost: IHost) {
 export type IHost = (typeof hosts)[number];
 
 export const apiMappers: Record<IHost, string> = {
+  'https://xoxno.com': 'https://api.xoxno.com',
   'https://next.xoxno.com': 'https://api.xoxno.com',
   'https://devnet.xoxno.com': 'https://devnet-api.xoxno.com',
 };
