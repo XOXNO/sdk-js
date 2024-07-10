@@ -34,12 +34,18 @@ export class NFTModule {
    * If it is valid, the function fetches the NFT data using the API.
    * Finally, it returns a promise that resolves to the fetched NFT data.
    */
-  public getNFTByIdentifier = async (identifier: string): Promise<NftData> => {
+  public getNFTByIdentifier = async (
+    identifier: string,
+    extra?: RequestInit
+  ): Promise<NftData> => {
     if (!isValidNftIdentifier(identifier)) {
       throw new Error('Invalid identifier: ' + identifier);
     }
     const response = await this.api.fetchWithTimeout<NftData>(
-      `/nft/${identifier}`
+      `/nft/${identifier}`,
+      {
+        ...extra,
+      }
     );
     return response;
   };

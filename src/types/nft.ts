@@ -1,4 +1,8 @@
-import { ICollectionProfile, MetadataAttribute } from './collection';
+import {
+  GlobalOffers,
+  ICollectionProfile,
+  MetadataAttribute,
+} from './collection';
 
 export interface NFTAttribute extends MetadataAttribute {
   occurance: number;
@@ -93,6 +97,7 @@ export interface NftData {
   unboundEpoch?: number;
   currentEpoch?: number;
   poolId?: number;
+  globalOffer?: GlobalOffers;
 }
 
 export interface CollectionInfo {
