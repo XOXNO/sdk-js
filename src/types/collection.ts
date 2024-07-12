@@ -799,7 +799,7 @@ export type CollectionStatsResults = {
 export type GetCollectionStatsArgs = {
   filters?: {
     collection?: string[];
-    isVerified?: boolean;
+    verifiedOnly?: boolean;
     range?: RangeFilter[];
   };
   orderBy?: CollectionStatsOrderBy[];
@@ -872,10 +872,9 @@ export enum CollectionStatsOrderBy {
 
 export type CollectionStatsDoc = {
   collection: string;
-  isVerified: boolean;
+  listedCount: number;
+  floorPrice: number;
   tradingStats: {
-    listedCount?: number;
-    floorPrice?: number;
     totalVolume: number;
     totalTrades: number;
     allTimeHigh: {
@@ -895,6 +894,8 @@ export type CollectionStatsDoc = {
   collectionInfo?: {
     name?: string;
     description?: string;
+    isVerified: boolean;
+    isVisible: boolean;
     profile?: string;
     holdersCount?: number;
     collectionSize?: number;
