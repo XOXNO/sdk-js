@@ -115,11 +115,12 @@ export class UserModule {
    */
 
   public getUserSummaryInventory = async (
-    address: string
+    address: string,
+    activeAuctions = true
   ): Promise<UserInventory[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
     const response = await this.api.fetchWithTimeout<UserInventory[]>(
-      `/user/${address}/inventory-summary`
+      `/user/${address}/inventory-summary?activeAuction=${activeAuctions}`
     );
     return response;
   };
