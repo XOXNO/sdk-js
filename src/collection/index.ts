@@ -392,8 +392,8 @@ export class CollectionModule {
       select: args?.onlySelectFields || [],
       filters: {
         collection: args?.collections || [],
-        withAttributes: args?.withAttributes ?? false,
-        isActive: args?.onlyActive ?? true,
+        withAttributes: args?.withAttributes,
+        isActive: args?.onlyActive,
         offerId: args?.offerIds,
         owner: args?.ownedBy,
         marketplace: args?.listedOnlyOn,
