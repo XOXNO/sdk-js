@@ -3,7 +3,7 @@ export const isValidCollectionTicker = (ticker: string): boolean => {
 };
 
 export const isValidNftIdentifier = (identifier: string): boolean => {
-  return /^[A-Za-z0-9]{3,10}-[A-Za-z0-9]{6}-[A-Za-z0-9]{2,5}(?:-\d+(?:-[A-Za-z0-9]+)?)?$/.test(
+  return /^[A-Za-z0-9]{3,10}-[A-Za-z0-9]{6}-[A-Za-z0-9]{2,6}(?:-\d+(?:-[A-Za-z0-9]+)?)?$/.test(
     identifier
   );
 };
