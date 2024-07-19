@@ -53,7 +53,7 @@ const translations = {
     en: {
       emails: {
         [NftActivityType.AUCTION_BID]: {
-          title: 'You have a new bid on your item',
+          title: 'You have a new bid on {nftName}',
           description:
             'Hi {name}, there is a new bid of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on XOXNO.',
           action: 'View bids',
@@ -61,7 +61,7 @@ const translations = {
           footer: '❤️ Thank you for using XOXNO!',
         },
         [NftActivityType.AUCTION_OUT_BID]: {
-          title: 'You have been outbid',
+          title: 'You have been outbid on {nftName}',
           description:
             'Hi {name}, your previous bid has been outbid by a new bid of <highlight>{amount} {token}</highlight> for <link>{nftName}</link> on XOXNO.',
           action: 'View bids',
@@ -69,7 +69,7 @@ const translations = {
           footer: '❤️ Thank you for using XOXNO!',
         },
         [NftActivityType.OFFER_CREATE]: {
-          title: 'You have an offer for your item',
+          title: 'You have a new offer on {nftName}',
           description:
             'Hi {name}, you have received a new offer of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on XOXNO.',
           action: 'View offer',
@@ -77,7 +77,7 @@ const translations = {
           footer: 'Check your recent offers on <link>XOXNO</link>',
         },
         [NftActivityType.OFFER_REJECT]: {
-          title: 'Your offer was declined',
+          title: 'Your offer on {nftName} was declined',
           description:
             'Hi {name}, we regret to inform you that your offer of <highlight>{amount} {token}</highlight> was declined by <link>{owner}</link>.',
           action: 'View offer',
@@ -85,7 +85,7 @@ const translations = {
           footer: 'Check your recent offers on <link>XOXNO</link>',
         },
         [NftActivityType.TRADE]: {
-          title: 'Your item is sold',
+          title: 'Congrats, you sold {nftName}!',
           description:
             'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
@@ -93,7 +93,7 @@ const translations = {
           footer: '❤️ Thank you for using XOXNO!',
         },
         [NftActivityType.BULK_TRADE]: {
-          title: 'Your item is sold',
+          title: 'Congrats, you sold {nftName}!',
           description:
             'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
@@ -101,7 +101,7 @@ const translations = {
           footer: '❤️ Thank you for using XOXNO!',
         },
         [NftActivityType.OTHER_TRADE]: {
-          title: 'Your item is sold',
+          title: 'Congrats, you sold {nftName}!',
           description:
             'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
@@ -109,7 +109,7 @@ const translations = {
           footer: '❤️ Thank you for using XOXNO!',
         },
         [NftActivityType.OFFER_TRADE]: {
-          title: 'Your item is sold',
+          title: 'Congrats, you sold {nftName}!',
           description:
             'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
@@ -117,7 +117,7 @@ const translations = {
           footer: '❤️ Thank you for using XOXNO!',
         },
         [NftActivityType.GLOBAL_OFFER_TRADE]: {
-          title: 'Your item is sold',
+          title: 'Congrats, you sold {nftName}!',
           description:
             'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
@@ -272,7 +272,7 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
             )}
             <Section className="pt-8 pb-6 px-5 text-center">
               <Heading style={headingStyle} className="m-0">
-                {t('title')}
+                {t('title', payload)}
               </Heading>
               <Text style={bodyStyle} className="m-0 mt-2.5">
                 {t.rich('description', {
