@@ -110,7 +110,7 @@ export class CommonModule {
         },
         next: {
           tags: ['/analytics/volume'],
-          revalidate: 60,
+          /* revalidate: 60, */
         },
       }
     );
@@ -130,7 +130,7 @@ export class CommonModule {
       {
         next: {
           tags: ['/analytics/overview'],
-          revalidate: 60,
+          /* revalidate: 60, */
         },
       }
     );
@@ -173,7 +173,7 @@ export class CommonModule {
       },
       next: {
         tags: ['/search/global'],
-        revalidate: 180,
+        /* revalidate: 180, */
       },
     });
   };
@@ -191,7 +191,7 @@ export class CommonModule {
       {
         next: {
           tags: ['/collection/staking/explore'],
-          revalidate: 60,
+          /* revalidate: 60, */
         },
       }
     );

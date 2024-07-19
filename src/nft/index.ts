@@ -77,7 +77,7 @@ export class NFTModule {
       {
         next: {
           tags: ['getNFTsOffers'],
-          revalidate: 12,
+          /* revalidate: 12, */
         },
       }
     );

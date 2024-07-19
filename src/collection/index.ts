@@ -69,7 +69,7 @@ export class CollectionModule {
       {
         next: {
           tags: ['getCollectionProfile'],
-          revalidate: 30,
+          /* revalidate: 30, */
         },
       }
     );
@@ -89,7 +89,7 @@ export class CollectionModule {
       {
         next: {
           tags: ['getDailyTrending'],
-          revalidate: 180,
+          /* revalidate: 180, */
         },
       }
     );
@@ -148,7 +148,7 @@ export class CollectionModule {
       {
         next: {
           tags: ['getCollectionAttributes'],
-          revalidate: 180,
+          /* revalidate: 180, */
         },
       }
     );
@@ -281,7 +281,7 @@ export class CollectionModule {
         },
         next: {
           tags: ['/collection/search'],
-          revalidate: 180,
+          /* revalidate: 180, */
         },
       }
     );
@@ -302,7 +302,7 @@ export class CollectionModule {
       {
         next: {
           tags: ['collection/${ticker}/listings'],
-          revalidate: 500,
+          /* revalidate: 500, */
         },
       }
     );
@@ -357,7 +357,7 @@ export class CollectionModule {
         },
         next: {
           tags: ['getCollections'],
-          revalidate: 180,
+          /* revalidate: 180, */
         },
       }
     );
@@ -413,7 +413,7 @@ export class CollectionModule {
         },
         next: {
           tags: ['getGlobalOffers'],
-          revalidate: 12,
+          /* revalidate: 12, */
         },
       }
     );
@@ -460,7 +460,7 @@ export class CollectionModule {
       {
         next: {
           tags: ['getCollectionVolume'],
-          revalidate: 180,
+          /* revalidate: 180, */
         },
       }
     );
@@ -496,7 +496,7 @@ export class CollectionModule {
       {
         next: {
           tags: ['getMarketplaceVolume'],
-          revalidate: 180,
+          /* revalidate: 180, */
         },
       }
     );
@@ -527,7 +527,7 @@ export class CollectionModule {
       {
         next: {
           tags: ['getCollectionOwners'],
-          revalidate: 500,
+          /* revalidate: 500, */
         },
       }
     );
@@ -589,7 +589,7 @@ export class CollectionModule {
         },
         next: {
           tags: ['collectionStatistics'],
-          revalidate: 12,
+          /* revalidate: 12, */
         },
       }
     );
@@ -622,7 +622,7 @@ export class CollectionModule {
       {
         next: {
           tags: ['collectionStatistics'],
-          revalidate: 12,
+          /* revalidate: 12, */
         },
       }
     );
@@ -659,7 +659,7 @@ export class CollectionModule {
       {
         next: {
           tags: [`/collection/${ticker}/drop-info`],
-          revalidate: 12,
+          /* revalidate: 12, */
         },
         ...extra,
       }
@@ -690,7 +690,7 @@ export class CollectionModule {
       {
         next: {
           tags: [`/collection/${ticker}/ranks`],
-          revalidate: 60,
+          /* revalidate: 60, */
         },
         ...extra,
       }
@@ -721,7 +721,7 @@ export class CollectionModule {
       {
         next: {
           tags: [`/collection/${creatorTag}/${collectionTag}/drop-info`],
-          revalidate: 12,
+          /* revalidate: 12, */
         },
         ...extra,
       }
@@ -756,7 +756,7 @@ export class CollectionModule {
         },
         next: {
           tags: [`/collection/${collection}/analytics/volume`],
-          revalidate: 60,
+          /* revalidate: 60, */
         },
       }
     );
@@ -775,7 +775,7 @@ export class CollectionModule {
       {
         next: {
           tags: [`/collection/pinned`],
-          revalidate: 60,
+          /* revalidate: 60, */
         },
       }
     );

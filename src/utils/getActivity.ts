@@ -66,7 +66,7 @@ export const getActivity = async (
       },
       next: {
         tags: ['getActivity'],
-        revalidate: 180,
+        /* revalidate: 180, */
       },
     }
   );

@@ -190,7 +190,7 @@ export class UserModule {
       },
       next: {
         tags: ['/search/global'],
-        revalidate: 180,
+        /* revalidate: 180, */
       },
     });
   };
@@ -435,7 +435,7 @@ export class UserModule {
       },
       next: {
         tags: ['/user/stats'],
-        revalidate: 180,
+        /* revalidate: 180, */
       },
     });
   };
@@ -455,7 +455,7 @@ export class UserModule {
       {
         next: {
           tags: [`/user/${address}/staking/creator`],
-          revalidate: 30,
+          /* revalidate: 30, */
         },
       }
     );
@@ -494,7 +494,7 @@ export class UserModule {
         },
         next: {
           tags: ['/user/xoxno-drop'],
-          revalidate: 30,
+          /* revalidate: 30, */
         },
       }
     );

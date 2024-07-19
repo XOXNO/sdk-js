@@ -103,7 +103,7 @@ export class SmartContractAbis {
         {
           next: {
             tags: ['getP2P'],
-            revalidate: 500,
+            /* revalidate: 500, */
           },
         }
       );
