@@ -3,7 +3,6 @@ import {
   CreatorInfo,
   GetNFTsArgs,
   IMintInfo,
-  NftData,
   StakingSummaryPools,
   SearchNFTsResponse,
   StatusResponse,

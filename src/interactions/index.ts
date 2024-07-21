@@ -1012,7 +1012,7 @@ export class SCInteraction {
     return interaction
       .withChainID(this.api.chain)
       .withGasLimit(
-        Math.min(600_000_000, 8_000_000 + listings.length * 2_000_000)
+        Math.min(600_000_000, 15_000_000 + listings.length * 3_500_000)
       )
       .buildTransaction()
       .toPlainObject();
