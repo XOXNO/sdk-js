@@ -250,7 +250,7 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
           : HOST;
 
   return (
-    <GeneralEmail title={t('title')}>
+    <GeneralEmail title={t('title', payload)}>
       <Body className="bg-[#121212]">
         <Container className="max-w-[500px]">
           <Section className="mb-4">
