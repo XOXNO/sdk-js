@@ -36,7 +36,7 @@ export interface StakingSummaryPoolsSlim {
   isVerified: boolean;
   profile: string;
   banner: string;
-  reward: RewardAvaiblePools[];
+  userReward: RewardStakinSummary[];
   poolIds: number[];
 }
 

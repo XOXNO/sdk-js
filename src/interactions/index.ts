@@ -825,8 +825,8 @@ export class SCInteraction {
     const paymentToken = auction?.payment_token_type ?? token;
     const bigNumber = auction ? true : isBigUintPayment;
     let amount = isBid
-      ? auction?.max_bid ?? paymentAmount
-      : auction?.min_bid ?? paymentAmount;
+      ? (auction?.max_bid ?? paymentAmount)
+      : (auction?.min_bid ?? paymentAmount);
     if (!amount) {
       throw new Error('Payment amount not provided');
     }
