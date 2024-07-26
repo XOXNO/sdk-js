@@ -11,6 +11,7 @@ import {
   TradincActivityArgs,
   TradingActivityResponse,
   StakingStatus,
+  StakingSummaryPoolsSlim,
 } from '../types';
 import {
   ArgsUserOffers,
@@ -244,10 +245,10 @@ export class UserModule {
    *  */
   public getUserStakingSummary = async (
     address: string
-  ): Promise<StakingSummaryPools[]> => {
+  ): Promise<StakingSummaryPoolsSlim[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address');
 
-    const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
+    const response = await this.api.fetchWithTimeout<StakingSummaryPoolsSlim[]>(
       `/user/${address}/staking/summary`
     );
     return response;

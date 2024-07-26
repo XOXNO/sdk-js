@@ -29,6 +29,17 @@ export type GetGroupedStakingPools = {
   isVerified: boolean;
 };
 
+export interface StakingSummaryPoolsSlim {
+  collection: string;
+  stakedCount: number;
+  name: string;
+  isVerified: boolean;
+  profile: string;
+  banner: string;
+  reward: RewardAvaiblePools[];
+  poolIds: number[];
+}
+
 export interface StakingSummaryPools {
   poolId: number;
   starEpoch: number;
