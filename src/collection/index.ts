@@ -226,7 +226,7 @@ export class CollectionModule {
     };
 
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
-      `/nft/query`,
+      `/nft/search/query`,
       {
         params: {
           filter: JSON.stringify(payloadBody),
@@ -234,7 +234,6 @@ export class CollectionModule {
         next: {
           tags: ['getCollectionNFTs'],
         },
-        cache: 'no-store',
       }
     );
     return {
@@ -829,7 +828,6 @@ export class CollectionModule {
         next: {
           tags: ['/collection/drops/query'],
         },
-        cache: 'no-store',
       }
     );
     return {
