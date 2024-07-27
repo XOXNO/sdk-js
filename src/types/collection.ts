@@ -367,6 +367,7 @@ export interface GetNFTsArgs {
   name?: string;
 }
 export interface GETDropsArgs {
+  name?: string;
   /** If set, will return only NFTs from the specified collections */
   collections?: string[];
   /** If set, will return only NFTs from verified collections */

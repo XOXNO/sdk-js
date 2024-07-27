@@ -881,6 +881,67 @@ export class CollectionModule {
    * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
    * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 100.
    */
+  public getSearchDrops = async (
+    args: GETDropsArgs
+  ): Promise<GetDropsResponse> => {
+    args?.collections?.forEach((element) => {
+      if (!isValidCollectionTicker(element)) {
+        throw new Error('Invalid collection ticker: ' + element);
+      }
+    });
+
+    if (args.top && args.top > 100) {
+      throw new Error('Top cannot be greater than 100');
+    }
+    const ranges = [];
+
+    if (args.timeRange) {
+      ranges.push({
+        ...args.timeRange,
+        field: 'startTime',
+      });
+    }
+    const payloadBody = {
+      name: args.name,
+      filters: {
+        collection: args.collections ?? [],
+        verifiedOnly: args.onlyVerified || false,
+        mintToken: args.listedInToken || undefined,
+        range: ranges,
+      },
+      orderBy: args.orderBy || [],
+      select: args.onlySelectFields || [],
+      includeCount: args.includeCount || false,
+      top: args.top || 35,
+      skip: args.skip || 0,
+    };
+
+    const response = await this.api.fetchWithTimeout<GetDropsResponse>(
+      `/collection/drops/search`,
+      {
+        params: {
+          filter: JSON.stringify(payloadBody),
+        },
+        next: {
+          tags: ['/collection/drops/search'],
+        },
+      }
+    );
+    return {
+      ...response,
+      getNextPagePayload: {
+        ...args,
+        skip: (args.skip ?? 0) + (args.top ?? 35),
+      },
+    };
+  };
+
+  /**
+   * Get drops based on the provided arguments.
+   * @param {SearchNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
+   * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
+   * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 100.
+   */
   public getDrops = async (args: GETDropsArgs): Promise<GetDropsResponse> => {
     args?.collections?.forEach((element) => {
       if (!isValidCollectionTicker(element)) {
@@ -900,6 +961,7 @@ export class CollectionModule {
       });
     }
     const payloadBody = {
+      name: args.name,
       filters: {
         collection: args.collections ?? [],
         verifiedOnly: args.onlyVerified || false,
