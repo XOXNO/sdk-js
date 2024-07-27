@@ -349,7 +349,7 @@ export class SCInteraction {
         .withChainID(this.api.chain)
         .withSender(new Address(sender.address))
         .withGasLimit(
-          Math.min(600_000_000, 15_000_000 + auctionIDs.length * 7_500_000)
+          Math.min(600_000_000, 25_000_000 + auctionIDs.length * 8_000_000)
         )
         .buildTransaction()
         .toPlainObject();
@@ -377,7 +377,7 @@ export class SCInteraction {
     return interaction
       .withChainID(this.api.chain)
       .withSender(new Address(senderNonce.address))
-      .withGasLimit(15_000_000)
+      .withGasLimit(20_000_000)
       .buildTransaction()
       .toPlainObject();
   }
@@ -472,7 +472,7 @@ export class SCInteraction {
     }
     return interaction
       .withChainID(this.api.chain)
-      .withGasLimit(20_000_000 + (attributes ? attributes?.length * 1500 : 0))
+      .withGasLimit(25_000_000 + (attributes ? attributes?.length * 1500 : 0))
       .buildTransaction()
       .toPlainObject();
   }
@@ -929,7 +929,7 @@ export class SCInteraction {
     return interaction
       .withChainID(this.api.chain)
       .withGasLimit(
-        Math.min(600_000_000, 10_000_000 + listings.length * 4_000_000)
+        Math.min(600_000_000, 25_000_000 + listings.length * 5_000_000)
       )
       .buildTransaction()
       .toPlainObject();

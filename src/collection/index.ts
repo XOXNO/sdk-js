@@ -188,8 +188,101 @@ export class CollectionModule {
       });
     }
     const payloadBody: SearchNFTs = {
+      name: args.name,
       filters: {
-        name: args.name,
+        dataType: args.dataType ?? ['nft'],
+        // @borispoehland Has to be false only if we want to show the expired auctions, undefined to show all, and true only actives
+        activeAuction: args.activeAuctions,
+        collection: args.collections ?? [],
+        onSale: args.onlyOnSale,
+        saleInfo: {
+          seller: args.listedBy || [],
+          marketplace: args.listedOnlyOn || undefined,
+          paymentToken: args.listedInToken || [],
+          auctionType:
+            args.auctionType == AuctionTypes.Auctions
+              ? ['NftBid', 'SftAll']
+              : args.auctionType == AuctionTypes.FixedPrice
+                ? ['Nft', 'SftOnePerPayment']
+                : args.auctionType == AuctionTypes.AllListed
+                  ? ['NftBid', 'SftAll', 'Nft', 'SftOnePerPayment']
+                  : undefined,
+        },
+        owner: args.ownedBy || [],
+        verifiedOnly: args.onlyVerified || false,
+        metadata: {
+          attributes: args.attributes || undefined,
+        },
+        range: ranges,
+        nonce: args.nonces || undefined,
+        cp_staked: args.isStaked ?? undefined,
+      },
+      applyNftExtraDetails: args.applyNftExtraDetails,
+      orderBy: args.orderBy || [],
+      select: args.onlySelectFields || [],
+      strictSelect: args.strictSelect || false,
+      includeCount: args.includeCount || false,
+      top: args.top || 35,
+      skip: args.skip || 0,
+    };
+
+    const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
+      `/nft/query`,
+      {
+        params: {
+          filter: JSON.stringify(payloadBody),
+        },
+        next: {
+          tags: ['getCollectionNFTs'],
+        },
+      }
+    );
+    return {
+      ...response,
+      getNextPagePayload: {
+        ...args,
+        skip: (args.skip ?? 0) + (args.top ?? 35),
+      },
+    };
+  };
+
+  /**
+   * Searches for NFTs based on the provided arguments.
+   * @param {SearchNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
+   * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
+   * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 100.
+   */
+  public getSearchNFTs = async (
+    args: GetNFTsArgs
+  ): Promise<SearchNFTsResponse> => {
+    args?.collections?.forEach((element) => {
+      if (!isValidCollectionTicker(element)) {
+        throw new Error('Invalid collection ticker: ' + element);
+      }
+    });
+
+    if (args.top && args.top > 100) {
+      throw new Error('Top cannot be greater than 100');
+    }
+    const ranges = [];
+    if (args.priceRange) {
+      ranges.push({
+        ...args.priceRange,
+        field:
+          args.auctionType == AuctionTypes.Auctions
+            ? 'saleInfo.currentBidShort'
+            : 'saleInfo.minBidShort',
+      });
+    }
+    if (args.rankRange) {
+      ranges.push({
+        ...args.rankRange,
+        field: 'metadata.rarity.rank',
+      });
+    }
+    const payloadBody: SearchNFTs = {
+      name: args.name,
+      filters: {
         dataType: args.dataType ?? ['nft'],
         // @borispoehland Has to be false only if we want to show the expired auctions, undefined to show all, and true only actives
         activeAuction: args.activeAuctions,

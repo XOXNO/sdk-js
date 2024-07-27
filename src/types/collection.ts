@@ -278,7 +278,6 @@ export interface Filter {
   activeAuction?: boolean;
   customFilter?: string;
   verifiedOnly?: boolean;
-  name?: string;
 }
 
 export interface NftMetadataAttributes {
@@ -287,6 +286,7 @@ export interface NftMetadataAttributes {
 }
 
 export interface SearchNFTs {
+  name?: string;
   filters: Filter;
   applyNftExtraDetails?: boolean;
   select?: string[];
