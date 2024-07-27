@@ -278,6 +278,7 @@ export interface Filter {
   activeAuction?: boolean;
   customFilter?: string;
   verifiedOnly?: boolean;
+  name?: string;
 }
 
 export interface NftMetadataAttributes {
@@ -363,6 +364,7 @@ export interface GetNFTsArgs {
   attributes?: MetadataAttribute[];
   /** If set, will return only the selected fields */
   strictSelect?: boolean;
+  name?: string;
 }
 export interface GETDropsArgs {
   /** If set, will return only NFTs from the specified collections */

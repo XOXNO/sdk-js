@@ -189,6 +189,7 @@ export class CollectionModule {
     }
     const payloadBody: SearchNFTs = {
       filters: {
+        name: args.name,
         dataType: args.dataType ?? ['nft'],
         // @borispoehland Has to be false only if we want to show the expired auctions, undefined to show all, and true only actives
         activeAuction: args.activeAuctions,
