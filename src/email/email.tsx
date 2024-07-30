@@ -9,7 +9,6 @@ import {
   Link,
   Section,
   Text,
-  renderAsync,
 } from '@react-email/components';
 import { createTranslator } from 'next-intl';
 
@@ -35,7 +34,6 @@ import {
   IHost,
   MEDIA,
   Translations,
-  apiMappers,
   bodyStyle,
   buttonStyle,
   defaultHost,
@@ -255,10 +253,11 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
         <Container className="max-w-[500px]">
           <Section className="mb-4">
             <Img
-              src={`${MEDIA}/utils/${isUnsuccess ? 'unsuccess.png' : 'success.png'}`}
+              src={`${MEDIA}/utils/${isUnsuccess ? 'unsuccess.webp' : 'success.webp'}`}
               width="100%"
               height="140px"
               className="object-cover"
+              alt="XOXNO Banner"
             />
           </Section>
           <Section>
@@ -268,6 +267,7 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
                 width="260px"
                 height="260px"
                 className="rounded-xl mx-auto"
+                alt="NFT Image"
               />
             )}
             <Section className="pt-8 pb-6 px-5 text-center">

@@ -101,6 +101,7 @@ const EventEmail = ({
                 src="https://i.imgur.com/AKlqJNU.png"
                 width={130}
                 height={24}
+                alt="XOXNO Logo"
               />
             </Center>
           </Section>
@@ -121,7 +122,11 @@ const EventEmail = ({
               </Button>
             </Center>
             <Center>
-              <Img src={event.ticketImage} width={400} />
+              <Img
+                src={event.ticketImage}
+                width={400}
+                alt="Picture of ticket"
+              />
             </Center>
           </Section>
           <Section>
@@ -148,6 +153,7 @@ const EventEmail = ({
                         src="https://i.imgur.com/dYZo6ta.png"
                         width={24}
                         height={24}
+                        alt="Location pin"
                       />
                     </td>
                     <td style={{ verticalAlign: 'middle' }}>
