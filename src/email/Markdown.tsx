@@ -42,7 +42,7 @@ const MarkdownComponents: Partial<Components> = {
     </Text>
   ),
   ul: ({ children }) => (
-    <ul className="text-start" style={bodyStyle}>
+    <ul className="text-start list-disc list-inline pl-0" style={bodyStyle}>
       {children}
     </ul>
   ),
