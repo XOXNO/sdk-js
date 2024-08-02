@@ -80,3 +80,16 @@ export interface IBaseNotification {
 export interface INotification extends Omit<IBaseNotification, 'asset'> {
   asset: Omit<IBaseNotification['asset'], 'url'> & { url: string[] };
 }
+
+export interface IEvent {
+  name: string;
+  backgroundImage: string;
+  ticketImage: string;
+  time: string;
+  location: {
+    lat: number;
+    lng: number;
+    value: string;
+  };
+  ticketId: string;
+}

@@ -28,13 +28,14 @@ import {
   renderGenericEmail,
 } from './utils';
 import { IEvent } from './types';
+import { Markdown } from './Markdown';
 
 const translations = {
   namespace: '',
   translations: {
     en: {
-      event: {
-        meta: "You're invited to join {eventName}",
+      post: {
+        meta: 'An update for event {eventName}',
         title: 'Dear {name},',
         description:
           "We're excited to have you join us at the {eventName}! Please click the button below to redeem your ticket and secure your spot:",
@@ -49,8 +50,8 @@ const translations = {
 
 export type IProps = {
   host?: IHost;
-  name: string;
-  event: IEvent;
+  subject: string;
+  message: string;
   style?: {
     backgroundColor: string;
   };
@@ -58,30 +59,25 @@ export type IProps = {
 
 const messages = translations.translations.en;
 
-const EventEmail = ({
+const PostEmail = ({
   host = defaultHost,
-  event,
-  name,
+  subject,
+  message,
   style = { backgroundColor: '#121212' },
 }: IProps) => {
   const t = createTranslator({
     locale: 'en',
     messages,
-    namespace: 'event',
+    namespace: 'post',
   });
 
   const HOST = getHost(host);
 
-  const href = `${HOST}/tickets/${event.ticketId}`;
-
-  const mapsLink = `https://maps.google.com/?q=${event.location.lat},${event.location.lng}`;
-
   return (
-    <GeneralEmail title={t('meta', { eventName: event.name })}>
+    <GeneralEmail title={subject}>
       <Body
         className="min-h-screen bg-center bg-cover"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${event.backgroundImage})`,
           backgroundColor: style.backgroundColor,
         }}
       >
@@ -97,66 +93,7 @@ const EventEmail = ({
             </Center>
           </Section>
           <Section className="p-5">
-            <Center>
-              <Heading style={headingStyle} className="my-0">
-                {t('title', { name })}
-              </Heading>
-              <Text style={bodyStyle}>
-                {t('description', { eventName: event.name })}
-              </Text>
-              <Button
-                href={href}
-                style={buttonStyle}
-                className="mt-2 mb-[40px]"
-              >
-                {t('action')}
-              </Button>
-            </Center>
-            <Center>
-              <Img
-                src={event.ticketImage}
-                width={400}
-                alt="Picture of ticket"
-              />
-            </Center>
-          </Section>
-          <Section>
-            <Text style={headingStyle} className="mb-0">
-              {event.time}
-            </Text>
-            <Center>
-              <table
-                role="presentation"
-                cellSpacing="0"
-                cellPadding="0"
-                border={0}
-                style={{ borderCollapse: 'collapse' }}
-              >
-                <tbody>
-                  <tr>
-                    <td
-                      style={{
-                        paddingRight: '16px',
-                        verticalAlign: 'middle',
-                      }}
-                    >
-                      <Img
-                        src={`${MEDIA}/utils/email_pin.webp`}
-                        width={24}
-                        height={24}
-                        alt="Location pin"
-                      />
-                    </td>
-                    <td style={{ verticalAlign: 'middle' }}>
-                      <Text style={bodyStyle}>{event.location.value}</Text>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <Link href={mapsLink} style={linkStyle}>
-                {t('maps')}
-              </Link>
-            </Center>
+            <Markdown>{message.replace(/# /g, '# &nbsp;')}</Markdown>
           </Section>
           <Section className="px-5 py-8 text-center">
             <Text style={bodyStyle} className="my-0">
@@ -183,10 +120,10 @@ const EventEmail = ({
   );
 };
 
-export const renderEventEmail = async (
-  props: ComponentProps<typeof EventEmail>
+export const renderPostEmail = async (
+  props: ComponentProps<typeof PostEmail>
 ) => {
-  const Email = createElement(EventEmail, props, null);
+  const Email = createElement(PostEmail, props, null);
 
   return renderGenericEmail(Email);
 };
