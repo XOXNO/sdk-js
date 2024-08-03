@@ -795,7 +795,7 @@ export class SCInteraction {
     nonce?: number;
     quantity?: number;
     token?: string;
-    paymentAmount?: number;
+    paymentAmount?: string;
     withCheck?: boolean;
     isBigUintPayment?: boolean;
     isBid?: boolean;
