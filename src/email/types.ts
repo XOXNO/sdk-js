@@ -98,4 +98,5 @@ export interface IEvent {
     value: string;
   };
   ticketId: string;
+  eventId: string;
 }

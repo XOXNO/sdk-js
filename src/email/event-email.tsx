@@ -72,7 +72,7 @@ const EventEmail = ({
 
   const HOST = getHost(host);
 
-  const href = `${HOST}/tickets/${event.ticketId}`;
+  const href = `${HOST}/event/${event.eventId}?guest=${event.ticketId}`;
 
   const mapsLink = `https://maps.google.com/?q=${event.location.lat},${event.location.lng}`;
 
