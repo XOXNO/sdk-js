@@ -22,8 +22,6 @@ jobs:
       - run: npm version prerelease --preid=alpha
 
       - run: |
-          git status
-          git commit -am "ci: bump version to ${{ steps.bump_version.outputs.new_version }} [skip ci]"
           git push
 
   publish-npm:
