@@ -1,4 +1,4 @@
-name: npm publish
+name: npm publish to alpha
 
 on:
   push:
@@ -6,17 +6,8 @@ on:
       - alpha
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci
-
   bump-version:
-    needs: build
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,14 +20,15 @@ jobs:
 
       - name: Commit and push version bump
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add package.json
-          git commit -m "ci: bump version to ${{ steps.bump_version.outputs.new_version }}"
+          git commit -m "ci: bump version to ${{ steps.bump_version.outputs.new_version }} [skip ci]"
           git push origin main
 
   publish-npm:
     needs: bump-version
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
