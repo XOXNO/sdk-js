@@ -69,6 +69,6 @@ export interface StakingSummaryPools {
 
 export enum StakingStatus {
   Staked = 'staked',
-  Unbounding = 'unStaked',
+  Unbounding = 'unstaked',
   Available = 'available',
 }
