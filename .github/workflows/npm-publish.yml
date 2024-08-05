@@ -17,16 +17,15 @@ jobs:
           node-version: 20
 
       - run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - run: npm version prerelease --preid=alpha
 
-      - name: Commit and push version bump
-        run: |
-        git add package.json
-        git commit -m "ci: bump version to ${{ steps.bump_version.outputs.new_version }} [skip ci]"
-        git push origin main
+      - run: |
+          git add package.json
+          git commit -m "ci: bump version to ${{ steps.bump_version.outputs.new_version }} [skip ci]"
+          git push origin main
 
   publish-npm:
     needs: bump-version
@@ -41,4 +40,4 @@ jobs:
       - run: npm ci
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
