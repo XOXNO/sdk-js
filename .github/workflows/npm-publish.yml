@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   bump-version:
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,21 +18,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - run: npm version prerelease --preid=alpha
+      - run: npm version patch --preid=alpha
 
       - run: |
           git push
 
   publish-npm:
     needs: bump-version
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: https://registry.npmjs.org/
+          registry-url: https://registry.npmjs.org
       - run: npm ci
       - run: npm publish
         env:
