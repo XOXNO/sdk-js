@@ -15,9 +15,11 @@ import { createTranslator } from 'next-intl';
 import {
   IBaseNotification,
   IEmailActivityType,
+  IOfferTradeTypes,
   IVerifyEmailTypes,
   bidTypes,
   depositTypes,
+  offerTradeTypes,
   offerTypes,
   tradeTypes,
   verifyEmailTypes,
@@ -90,34 +92,10 @@ const translations = {
           hint: '',
           footer: '❤️ Thank you for using XOXNO!',
         },
-        [NftActivityType.BULK_TRADE]: {
-          title: 'Congrats, you sold {nftName}!',
-          description:
-            'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
-          action: 'View item',
-          hint: '',
-          footer: '❤️ Thank you for using XOXNO!',
-        },
-        [NftActivityType.OTHER_TRADE]: {
-          title: 'Congrats, you sold {nftName}!',
-          description:
-            'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
-          action: 'View item',
-          hint: '',
-          footer: '❤️ Thank you for using XOXNO!',
-        },
         [NftActivityType.OFFER_TRADE]: {
-          title: 'Congrats, you sold {nftName}!',
+          title: 'Congrats, you bought {nftName}!',
           description:
-            'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
-          action: 'View item',
-          hint: '',
-          footer: '❤️ Thank you for using XOXNO!',
-        },
-        [NftActivityType.GLOBAL_OFFER_TRADE]: {
-          title: 'Congrats, you sold {nftName}!',
-          description:
-            'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
+            'Hi {name}, we are pleased to inform you that your offer for <link>{nftName}</link> was accepted for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
           hint: '',
           footer: '❤️ Thank you for using XOXNO!',
@@ -151,7 +129,10 @@ const translations = {
   },
 } as const satisfies Translations<{
   emails: Record<
-    IEmailActivityType,
+    Exclude<
+      IEmailActivityType,
+      Exclude<ITradeTypes, 'trade'> | Exclude<IOfferTradeTypes, 'offerTrade'>
+    >,
     {
       title: string;
       description: string;
@@ -161,6 +142,10 @@ const translations = {
     }
   >;
 }>;
+
+function isOfferTrade(props: IProps) {
+  return offerTradeTypes.includes(props.activityType as IOfferTradeTypes);
+}
 
 function isTrade(props: IProps) {
   return tradeTypes.includes(props.activityType as ITradeTypes);
@@ -208,10 +193,13 @@ export type IProps = {
 const messages = translations.translations.en;
 
 const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
+  const isATrade = isTrade(props);
+  const isAOfferTrade = isOfferTrade(props);
+
   const t = createTranslator({
     locale: 'en',
     messages,
-    namespace: `emails.${props.activityType}`,
+    namespace: `emails.${isATrade ? NftActivityType.TRADE : isAOfferTrade ? NftActivityType.OFFER_TRADE : props.activityType}`,
   });
 
   const HOST = getHost(host);
@@ -222,8 +210,6 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
       NftActivityType.OFFER_REJECT,
     ] as IEmailActivityType[]
   ).includes(props.activityType);
-
-  const imgSrc = props.payload.nft ? props.payload.nft.asset.url : '';
 
   const payload = {
     name: props.payload.name,
@@ -238,8 +224,10 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
       : {}),
   };
 
+  const imgSrc = props.payload.nft ? props.payload.nft.asset.url : '';
+
   const href =
-    isTrade(props) || isBid(props)
+    isATrade || isAOfferTrade || isBid(props)
       ? `${HOST}/nft/${props.payload.nft?.asset.identifier}`
       : isDeposit(props)
         ? `${HOST}/profile/${props.payload.address}/wallet`

@@ -1,11 +1,14 @@
 import { NftActivityType } from '../types';
 
+export const offerTradeTypes = [
+  NftActivityType.OFFER_TRADE,
+  NftActivityType.GLOBAL_OFFER_TRADE,
+] as const;
+
 export const tradeTypes = [
   NftActivityType.TRADE,
   NftActivityType.BULK_TRADE,
   NftActivityType.OTHER_TRADE,
-  NftActivityType.OFFER_TRADE,
-  NftActivityType.GLOBAL_OFFER_TRADE,
 ] as const;
 
 export const offerTypes = [
@@ -22,6 +25,8 @@ export const depositTypes = ['deposit', 'withdrawDeposit'] as const;
 
 export const verifyEmailTypes = ['verifyEmail'] as const;
 
+export type IOfferTradeTypes = (typeof offerTradeTypes)[number];
+
 export type ITradeTypes = (typeof tradeTypes)[number];
 
 export type IDepositTypes = (typeof depositTypes)[number];
@@ -33,6 +38,7 @@ export type IOfferTypes = (typeof offerTypes)[number];
 export type IVerifyEmailTypes = (typeof verifyEmailTypes)[number];
 
 const emailActivityTypes = [
+  ...offerTradeTypes,
   ...tradeTypes,
   ...offerTypes,
   ...depositTypes,
