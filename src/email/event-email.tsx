@@ -89,7 +89,7 @@ const EventEmail = ({
           <Section className="min-h-[100px]">
             <Center>
               <Img
-                src={`${MEDIA}/utils/email_logo.webp`}
+                src={`${MEDIA}/hotlink-ok/email_logo.png`}
                 width={130}
                 height={24}
                 alt="XOXNO Logo"
@@ -141,7 +141,7 @@ const EventEmail = ({
                       }}
                     >
                       <Img
-                        src={`${MEDIA}/utils/email_pin.webp`}
+                        src={`${MEDIA}/hotlink-ok/email_pin.png`}
                         width={24}
                         height={24}
                         alt="Location pin"

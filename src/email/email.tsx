@@ -241,7 +241,7 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
         <Container className="max-w-[500px]">
           <Section className="mb-4">
             <Img
-              src={`${MEDIA}/utils/${isUnsuccess ? 'unsuccess.webp' : 'success.webp'}`}
+              src={`${MEDIA}/hotlink-ok/${isUnsuccess ? 'unsuccess.png' : 'success.png'}`}
               width="100%"
               height="140px"
               className="object-cover"

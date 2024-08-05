@@ -85,7 +85,7 @@ const PostEmail = ({
           <Section className="min-h-[100px]">
             <Center>
               <Img
-                src={`${MEDIA}/utils/email_logo.webp`}
+                src={`${MEDIA}/hotlink-ok/email_logo.png`}
                 width={130}
                 height={24}
                 alt="XOXNO Logo"
