@@ -53,6 +53,7 @@ export interface SaleInfo {
   marketplace: string;
   minBidUsdValue: string;
   maxBidUsdValue?: string;
+  royalties?: number;
 }
 
 export interface NftValue {
