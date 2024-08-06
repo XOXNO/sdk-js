@@ -544,7 +544,7 @@ export class SCInteraction {
         .buildTransaction()
         .toPlainObject();
     } else {
-      throw Error('Market not supperted');
+      throw Error('Market not supported');
     }
   }
 
@@ -580,7 +580,7 @@ export class SCInteraction {
         .buildTransaction()
         .toPlainObject();
     } else {
-      throw Error('Market not supperted');
+      throw Error('Market not supported');
     }
   }
 
@@ -618,7 +618,7 @@ export class SCInteraction {
         .buildTransaction()
         .toPlainObject();
     } else {
-      throw Error('Market not supperted');
+      throw Error('Market not supported');
     }
   }
 
