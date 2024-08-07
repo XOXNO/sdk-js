@@ -309,7 +309,7 @@ export interface GetNFTsArgs {
   listedBy?: string[];
   /** Owned by different users */
   ownedBy?: string[];
-
+  identifiers?: string[];
   auctionType: AuctionTypes;
   /** If set, will return only NFTs from the specified collections */
   collections?: string[];

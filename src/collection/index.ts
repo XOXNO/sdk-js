@@ -193,6 +193,7 @@ export class CollectionModule {
         dataType: args.dataType ?? ['nft'],
         // @borispoehland Has to be false only if we want to show the expired auctions, undefined to show all, and true only actives
         activeAuction: args.activeAuctions,
+        identifier: args.identifiers,
         collection: args.collections ?? [],
         onSale: args.onlyOnSale,
         saleInfo: {
