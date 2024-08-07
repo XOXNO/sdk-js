@@ -2,9 +2,7 @@ import { createElement, type ComponentProps } from 'react';
 
 import {
   Body,
-  Button,
   Container,
-  Heading,
   Img,
   Link,
   Section,
@@ -13,6 +11,7 @@ import {
 import { createTranslator } from 'next-intl';
 
 import React from 'react';
+import { Markdown } from './Markdown';
 import {
   Center,
   GeneralEmail,
@@ -20,15 +19,11 @@ import {
   MEDIA,
   Translations,
   bodyStyle,
-  buttonStyle,
   defaultHost,
   getHost,
-  headingStyle,
   linkStyle,
   renderGenericEmail,
-} from './utils';
-import { IEvent } from './types';
-import { Markdown } from './Markdown';
+} from '../email/utils';
 
 const translations = {
   namespace: '',

@@ -3,7 +3,7 @@ import React, { type ComponentProps } from 'react';
 
 import type { Components } from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
-import { bodyStyle, headingStyle, linkStyle } from './utils';
+import { bodyStyle, headingStyle, linkStyle } from '../email/utils';
 
 const MarkdownComponents: Partial<Components> = {
   h1: ({ children }) => (

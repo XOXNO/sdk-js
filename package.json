@@ -18,6 +18,11 @@
       "import": "./dist/email.esm.js",
       "require": "./dist/email.cjs.js",
       "types": "./dist/email.d.ts"
+    },
+    "./client-email": {
+      "import": "./dist/client-email.esm.js",
+      "require": "./dist/client-email.cjs.js",
+      "types": "./dist/client-email.d.ts"
     }
   },
   "types": "./dist/index.d.ts",
