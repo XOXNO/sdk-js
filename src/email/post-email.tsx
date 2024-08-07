@@ -8,9 +8,10 @@ import {
   Section,
   Text,
 } from '@react-email/components'
-import { createTranslator } from 'next-intl'
+import { createTranslator } from 'use-intl'
 
-import type { IHost, Translations } from '../email/utils'
+import { Markdown } from './Markdown'
+import type { IHost, Translations } from './utils'
 import {
   bodyStyle,
   Center,
@@ -20,8 +21,7 @@ import {
   linkStyle,
   MEDIA,
   renderGenericEmail,
-} from '../email/utils'
-import { Markdown } from './Markdown'
+} from './utils'
 
 const translations = {
   namespace: '',

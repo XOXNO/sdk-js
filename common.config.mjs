@@ -3,7 +3,6 @@ export default {
     index: './src/index.ts',
     interactor: './src/interactor.ts',
     email: './src/email.tsx',
-    'client-email': './src/client-email.tsx',
   },
   module: {
     rules: [
@@ -20,4 +19,4 @@ export default {
   optimization: {
     minimize: true,
   },
-};
+}

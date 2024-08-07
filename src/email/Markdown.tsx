@@ -1,10 +1,9 @@
-import React, { type ComponentProps } from 'react'
+import React, { PropsWithChildren, type ComponentProps } from 'react'
 
 import { Heading, Img, Link, Text } from '@react-email/components'
-import ReactMarkdown from 'react-markdown'
 import type { Components } from 'react-markdown'
 
-import { bodyStyle, headingStyle, linkStyle } from '../email/utils'
+import { bodyStyle, headingStyle, linkStyle } from './utils'
 
 const MarkdownComponents: Partial<Components> = {
   h1: ({ children }) => (
@@ -51,6 +50,6 @@ const MarkdownComponents: Partial<Components> = {
   a: (props) => <Link style={linkStyle} {...props} />,
 }
 
-export function Markdown(props: ComponentProps<typeof ReactMarkdown>) {
-  return <ReactMarkdown components={MarkdownComponents} {...props} />
+export function Markdown({ children }: PropsWithChildren) {
+  return <div>{children}</div>
 }

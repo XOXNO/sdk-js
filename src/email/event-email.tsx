@@ -10,7 +10,7 @@ import {
   Section,
   Text,
 } from '@react-email/components'
-import { createTranslator } from 'next-intl'
+import { createTranslator } from 'use-intl'
 
 import type { IEvent } from './types'
 import type { IHost, Translations } from './utils'
