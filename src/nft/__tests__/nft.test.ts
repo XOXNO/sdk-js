@@ -1,63 +1,63 @@
-import { NFTModule } from '..';
-import { OrderByTradingActivity } from '../../types';
-import { XOXNOClient } from '../../utils/api';
+import { NFTModule } from '..'
+import { OrderByTradingActivity } from '../../types'
+import { XOXNOClient } from '../../utils/api'
 
 describe('NFTModule', () => {
-  let nftModule: NFTModule;
-  const inputIdentifier = 'BANANA-e955fd-01';
-  const collection = 'BANANA-e955fd';
-  const nonce = 1;
-  const nonceHex = '01';
+  let nftModule: NFTModule
+  const inputIdentifier = 'BANANA-e955fd-01'
+  const collection = 'BANANA-e955fd'
+  const nonce = 1
+  const nonceHex = '01'
   beforeAll(() => {
-    XOXNOClient.init();
-    nftModule = new NFTModule();
-  });
+    XOXNOClient.init()
+    nftModule = new NFTModule()
+  })
 
   beforeEach(async () => {
-    return new Promise((resolve) => setTimeout(resolve, 1000));
-  });
+    return new Promise((resolve) => setTimeout(resolve, 1000))
+  })
 
   it('should return NFT data when given a valid identifier', async () => {
-    const nftData = await nftModule.getNFTByIdentifier(inputIdentifier);
-    expect(nftData).toBeDefined();
-    expect(nftData.identifier).toEqual(inputIdentifier);
-  });
+    const nftData = await nftModule.getNFTByIdentifier(inputIdentifier)
+    expect(nftData).toBeDefined()
+    expect(nftData.identifier).toEqual(inputIdentifier)
+  })
 
   it('should return NFT data when given a valid collection and nonce', async () => {
     const nftData = await nftModule.getNFTByCollectionAndNonce(
       collection,
       nonce
-    );
-    expect(nftData).toBeDefined();
-    expect(nftData.identifier).toEqual(inputIdentifier);
-  });
+    )
+    expect(nftData).toBeDefined()
+    expect(nftData.identifier).toEqual(inputIdentifier)
+  })
 
   it('should return NFT data when given a valid collection and nonce as hex', async () => {
     const nftData = await nftModule.getNFTByCollectionAndNonceHex(
       collection,
       nonceHex
-    );
-    expect(nftData).toBeDefined();
-    expect(nftData.identifier).toEqual(inputIdentifier);
-  });
+    )
+    expect(nftData).toBeDefined()
+    expect(nftData.identifier).toEqual(inputIdentifier)
+  })
 
   it('should return empty NFT trading activity', async () => {
     const nftTradingActivity = await nftModule.getTradingActivity({
       identifiers: [inputIdentifier],
-    });
-    expect(nftTradingActivity).toBeDefined();
-    expect(nftTradingActivity.empty).toEqual(true);
-  });
+    })
+    expect(nftTradingActivity).toBeDefined()
+    expect(nftTradingActivity.empty).toEqual(true)
+  })
 
   it('should return NFT trading activity', async () => {
     const nftTradingActivity = await nftModule.getTradingActivity({
       identifiers: ['BANANA-e955fd-05d9'],
       orderBy: [OrderByTradingActivity.OldestPlaced],
       top: 1,
-    });
-    expect(nftTradingActivity).toBeDefined();
-    expect(nftTradingActivity.empty).toEqual(false);
-    expect(nftTradingActivity.resources.length).toEqual(1);
+    })
+    expect(nftTradingActivity).toBeDefined()
+    expect(nftTradingActivity.empty).toEqual(false)
+    expect(nftTradingActivity.resources.length).toEqual(1)
     // expect(nftTradingActivity.resources[0]).toMatchObject({
     //   txHash:
     //     'f2cc0f9abbe6e18855cec144cecee5a6e7e0fdf2249a7e2b487935c4630aec3d',
@@ -84,5 +84,5 @@ describe('NFTModule', () => {
     //   sellerUsername: '@denysvicol',
     //   buyerUsername: '@stefanmorar',
     // });
-  });
-});
+  })
+})

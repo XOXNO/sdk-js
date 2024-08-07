@@ -1,19 +1,21 @@
-import he from 'he';
-import { PropsWithChildren, ReactElement, type CSSProperties } from 'react';
+import React, {
+  type CSSProperties,
+  type PropsWithChildren,
+  type ReactElement,
+} from 'react'
 
 import {
   Head,
   Html,
   Preview,
-  Tailwind,
   renderAsync,
-} from '@react-email/components';
+  Tailwind,
+} from '@react-email/components'
+import he from 'he'
 
-import React from 'react';
+export const MEDIA = 'https://media.xoxno.com'
 
-export const MEDIA = 'https://media.xoxno.com';
-
-const fallbackFont = 'Verdana';
+const fallbackFont = 'Verdana'
 
 const Font = ({
   webFont,
@@ -25,7 +27,7 @@ const Font = ({
 }: any) => {
   const src = webFont
     ? `src: url(${webFont.url}) format(${webFont.format});`
-    : '';
+    : ''
 
   return (
     <style>
@@ -39,8 +41,8 @@ const Font = ({
           }
           `}
     </style>
-  );
-};
+  )
+}
 
 export const GeneralEmail = ({
   title,
@@ -91,8 +93,8 @@ export const GeneralEmail = ({
         {children}
       </Html>
     </Tailwind>
-  );
-};
+  )
+}
 
 export function Center({ children }: PropsWithChildren) {
   return (
@@ -101,7 +103,7 @@ export function Center({ children }: PropsWithChildren) {
         <td align="center">{children}</td>
       </tr>
     </table>
-  );
+  )
 }
 
 export const headingStyle = {
@@ -112,7 +114,7 @@ export const headingStyle = {
   fontStyle: 'normal',
   fontWeight: 600,
   lineHeight: '36px',
-} satisfies CSSProperties;
+} satisfies CSSProperties
 
 export const linkStyle = {
   color: 'var(--color-palettes-lime-fill, #AEFB4F)',
@@ -122,7 +124,7 @@ export const linkStyle = {
   fontWeight: '500',
   lineHeight: '24px',
   whiteSpace: 'nowrap',
-} satisfies CSSProperties;
+} satisfies CSSProperties
 
 export const bodyStyle = {
   color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
@@ -132,7 +134,7 @@ export const bodyStyle = {
   fontStyle: 'normal',
   fontWeight: '400',
   lineHeight: '24px',
-} satisfies CSSProperties;
+} satisfies CSSProperties
 
 export const hintStyle = {
   color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
@@ -142,7 +144,7 @@ export const hintStyle = {
   fontStyle: 'normal',
   fontWeight: '300',
   lineHeight: '16px',
-} satisfies CSSProperties;
+} satisfies CSSProperties
 
 export const highlightStyle = {
   color: 'var(--color-palettes-primary-text-fill, #FFF)',
@@ -151,7 +153,7 @@ export const highlightStyle = {
   fontStyle: 'normal',
   fontWeight: '500',
   lineHeight: '24px',
-} satisfies CSSProperties;
+} satisfies CSSProperties
 
 export const buttonStyle = {
   fontFamily: `Button, ${fallbackFont}`,
@@ -163,48 +165,48 @@ export const buttonStyle = {
   fontStyle: 'normal',
   fontWeight: '500',
   lineHeight: '16px',
-} satisfies CSSProperties;
+} satisfies CSSProperties
 
-const locales = ['en', 'de'] as const;
+const locales = ['en', 'de'] as const
 
-type ILocale = (typeof locales)[number];
+type ILocale = (typeof locales)[number]
 export type Translations<T = object> = {
-  namespace: string;
+  namespace: string
   translations: {
-    en: T;
-  } & Partial<{ [key in Exclude<ILocale, 'en'>]: Partial<T> }>;
-};
+    en: T
+  } & Partial<{ [key in Exclude<ILocale, 'en'>]: Partial<T> }>
+}
 
-export const defaultHost = 'https://xoxno.com';
+export const defaultHost = 'https://xoxno.com'
 
 const hosts = [
   defaultHost,
   'https://next.xoxno.com',
   'https://devnet.xoxno.com',
-] as const;
+] as const
 
 export function getHost(propHost: IHost) {
-  return hosts.includes(propHost) ? propHost : defaultHost;
+  return hosts.includes(propHost) ? propHost : defaultHost
 }
 
-export type IHost = (typeof hosts)[number];
+export type IHost = (typeof hosts)[number]
 
 export const apiMappers: Record<IHost, string> = {
   'https://xoxno.com': 'https://api.xoxno.com',
   'https://next.xoxno.com': 'https://api.xoxno.com',
   'https://devnet.xoxno.com': 'https://devnet-api.xoxno.com',
-};
+}
 
 export async function renderGenericEmail(Email: ReactElement) {
   const html = await renderAsync(Email, {
     pretty: true,
-  });
+  })
 
   const plainText = await renderAsync(Email, {
     plainText: true,
-  });
+  })
 
-  const subject = he.decode(html.match(/<title[^>]*>([^<]+)<\/title>/)![1]);
+  const subject = he.decode(html.match(/<title[^>]*>([^<]+)<\/title>/)![1])
 
-  return { html, plainText, subject };
+  return { html, plainText, subject }
 }

@@ -1,19 +1,19 @@
-import { CollectionModule, XOXNOClient } from '..';
-import {
+import { CollectionModule, XOXNOClient } from '..'
+import type {
   CreatorInfo,
   GetNFTsArgs,
   IMintInfo,
-  StakingSummaryPools,
   SearchNFTsResponse,
+  StakingStatus,
+  StakingSummaryPools,
+  StakingSummaryPoolsSlim,
   StatusResponse,
   SuggestNFTsArgs,
   SuggestResults,
   TradincActivityArgs,
   TradingActivityResponse,
-  StakingStatus,
-  StakingSummaryPoolsSlim,
-} from '../types';
-import {
+} from '../types'
+import type {
   ArgsUserOffers,
   BulkAccount,
   CreatorProfile,
@@ -29,17 +29,17 @@ import {
   UserStats,
   UserTokenInventory,
   UserXOXNODrop,
-} from '../types/user';
-import { getActivity } from '../utils/getActivity';
-import { isAddressValid } from '../utils/helpers';
-import { isValidCollectionTicker } from '../utils/regex';
+} from '../types/user'
+import { getActivity } from '../utils/getActivity'
+import { isAddressValid } from '../utils/helpers'
+import { isValidCollectionTicker } from '../utils/regex'
 
 export class UserModule {
-  private api: XOXNOClient;
-  private collection: CollectionModule;
+  private api: XOXNOClient
+  private collection: CollectionModule
   constructor() {
-    this.api = XOXNOClient.getInstance();
-    this.collection = new CollectionModule();
+    this.api = XOXNOClient.getInstance()
+    this.collection = new CollectionModule()
   }
 
   /**
@@ -49,12 +49,12 @@ export class UserModule {
    * @returns {IUserProfile}
    */
   public getUserProfile = async (address: string): Promise<IUserProfile> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     const response = await this.api.fetchWithTimeout<IUserProfile>(
       `/user/${address}/profile`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Returns the wallet accounts
@@ -71,9 +71,9 @@ export class UserModule {
         method: 'POST',
         body: JSON.stringify(addresses),
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Returns the user account info that inclues nonce, guardian data, esdtTokens
@@ -84,12 +84,12 @@ export class UserModule {
   public getUserAccount = async (
     address: string
   ): Promise<UserNetworkAccount> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     const response = await this.api.fetchWithTimeout<UserNetworkAccount>(
       `/user/${address}/network-account`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Returns the user account info that inclues nonce, guardian data, esdtTokens
@@ -100,12 +100,12 @@ export class UserModule {
   public getUserTokenInventory = async (
     address: string
   ): Promise<UserTokenInventory> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     const response = await this.api.fetchWithTimeout<UserTokenInventory>(
       `/user/${address}/token-inventory`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Gets user's inventory
@@ -118,12 +118,12 @@ export class UserModule {
     address: string,
     activeAuctions = true
   ): Promise<UserInventory[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     const response = await this.api.fetchWithTimeout<UserInventory[]>(
       `/user/${address}/inventory-summary?activeAuction=${activeAuctions}`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Fetches the user's NFTs listed on the marketplaces
@@ -133,8 +133,8 @@ export class UserModule {
   public getUserNFTs = async (
     args: GetNFTsArgs
   ): Promise<SearchNFTsResponse> => {
-    return await this.collection.getNFTs(args);
-  };
+    return await this.collection.getNFTs(args)
+  }
 
   /**
    * @name getUserOffers
@@ -143,7 +143,7 @@ export class UserModule {
    * @returns {UserOffers} - The user's listings
    */
   public getUserOffers = async (args: ArgsUserOffers): Promise<UserOffers> => {
-    if (!isAddressValid(args.address)) throw new Error('Invalid address');
+    if (!isAddressValid(args.address)) throw new Error('Invalid address')
     const response = await this.api.fetchWithTimeout<UserOffers>(
       `/user/${args.address}/offers`,
       {
@@ -153,9 +153,9 @@ export class UserModule {
           top: args.top,
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -175,14 +175,14 @@ export class UserModule {
     args: SuggestNFTsArgs
   ): Promise<SuggestResults> => {
     if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
 
     const payloadBody: SuggestNFTsArgs = {
       name: args.name,
       top: args.top || 35,
       skip: args.skip || 0,
-    };
+    }
 
     return await this.api.fetchWithTimeout<SuggestResults>(`/user/search`, {
       params: {
@@ -192,8 +192,8 @@ export class UserModule {
         tags: ['/search/global'],
         /* revalidate: 180, */
       },
-    });
-  };
+    })
+  }
 
   /**
    * Retrieves trading history based on the provided arguments.
@@ -205,8 +205,8 @@ export class UserModule {
   public getTradingActivity = async (
     args: TradincActivityArgs
   ): Promise<TradingActivityResponse> => {
-    return await getActivity(args, this.api);
-  };
+    return await getActivity(args, this.api)
+  }
 
   /** Gets user's creator profile
    * @param {String} address - User's address
@@ -216,13 +216,13 @@ export class UserModule {
   public getUserCreatorProfile = async (
     address: string
   ): Promise<CreatorProfile> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
 
     const response = await this.api.fetchWithTimeout<CreatorProfile>(
       `/user/${address}/creator/profile`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Gets user's creator profile
    * @param {String} address - User's address
@@ -230,13 +230,13 @@ export class UserModule {
    * @throws {Error} Throws an error if the address is invalid
    *  */
   public getCreatorListings = async (address: string): Promise<IMintInfo[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
 
     const response = await this.api.fetchWithTimeout<IMintInfo[]>(
       `/user/${address}/creator/listing`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Gets user's staking info
    * @param {String} address - User's address
@@ -246,13 +246,13 @@ export class UserModule {
   public getUserStakingSummary = async (
     address: string
   ): Promise<StakingSummaryPoolsSlim[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
 
     const response = await this.api.fetchWithTimeout<StakingSummaryPoolsSlim[]>(
       `/user/${address}/staking/summary`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Gets user's staking info
    * @param {String} address - User's address
@@ -262,13 +262,13 @@ export class UserModule {
   public getUserStakingAailable = async (
     address: string
   ): Promise<StakingSummaryPools[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
 
     const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
       `/user/${address}/staking/available-pools`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Gets user's creator info
    * @param {String} address - User's address
@@ -276,13 +276,13 @@ export class UserModule {
    * @throws {Error} Throws an error if the address is invalid
    *  */
   public getUserCreatorInfo = async (address: string): Promise<CreatorInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
 
     const response = await this.api.fetchWithTimeout<CreatorInfo>(
       `/user/${address}/creator/details`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Gets pool details
    * @param {String} address - User's address
@@ -294,15 +294,15 @@ export class UserModule {
     address: string,
     collection: string
   ): Promise<StakingSummaryPools[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
+      throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
       `/user/${address}/staking/collection/${collection}`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Gets pool details
    * @param {number} poolId - User's address
@@ -314,12 +314,12 @@ export class UserModule {
     poolId: number,
     status: StakingStatus
   ): Promise<UserPoolStakingInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     const response = await this.api.fetchWithTimeout<UserPoolStakingInfo>(
       `/user/${address}/staking/pool/${poolId}/nfts?status=${status}`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Gets owned pools by address
    * @param {string} address - User's address
@@ -329,12 +329,12 @@ export class UserModule {
   public getOwnedPoolsByAddress = async (
     address: string
   ): Promise<StakingSummaryPools[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
       `/user/${address}/staking/owned-pools`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Gets user's analytics summary
@@ -346,12 +346,12 @@ export class UserModule {
   public getUserAnalyticsSummary = async (
     address: string
   ): Promise<UserAnalyticSummary> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     const response = await this.api.fetchWithTimeout<UserAnalyticSummary>(
       `/user/${address}/analytics/volume`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Gets user's favorite NFTs
    * @param {String} address - User's address
@@ -365,7 +365,7 @@ export class UserModule {
     top: number,
     skip: number
   ): Promise<SearchNFTsResponse> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
 
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
       `/user/${address}/favorite/nfts`,
@@ -375,9 +375,9 @@ export class UserModule {
           skip,
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Gets user's favorite collection tickers
    * @param {String} address - User's address
@@ -387,13 +387,13 @@ export class UserModule {
   public getUserFavoriteCollectionTickers = async (
     address: string
   ): Promise<string[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
 
     const response = await this.api.fetchWithTimeout<string[]>(
       `/user/${address}/favorite/collections`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Get if the creator tag is registered already
    * @param {String} creatorTag - The creator tag that needs to be checked
@@ -404,9 +404,9 @@ export class UserModule {
   ): Promise<StatusResponse> => {
     const response = await this.api.fetchWithTimeout<StatusResponse>(
       `/user/${creatorTag}/creator/is-registered`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -419,12 +419,12 @@ export class UserModule {
     skip,
     orderBy,
   }: {
-    top: number;
-    skip: number;
-    orderBy: string;
+    top: number
+    skip: number
+    orderBy: string
   }): Promise<UserStats[]> => {
     if (top && top > 35) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
 
     return await this.api.fetchWithTimeout<UserStats[]>(`/user/stats`, {
@@ -437,8 +437,8 @@ export class UserModule {
         tags: ['/user/stats'],
         /* revalidate: 180, */
       },
-    });
-  };
+    })
+  }
 
   /**
    * @public
@@ -458,8 +458,8 @@ export class UserModule {
           /* revalidate: 30, */
         },
       }
-    );
-  };
+    )
+  }
 
   /**
    * @public
@@ -472,16 +472,16 @@ export class UserModule {
     skip,
     address,
   }: {
-    top: number;
-    skip: number;
-    address?: string;
+    top: number
+    skip: number
+    address?: string
   }): Promise<UserXOXNODrop[]> => {
     if (top && top > 35) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
 
     if (address) {
-      if (!isAddressValid(address)) throw new Error('Invalid address');
+      if (!isAddressValid(address)) throw new Error('Invalid address')
     }
 
     return await this.api.fetchWithTimeout<UserXOXNODrop[]>(
@@ -497,8 +497,8 @@ export class UserModule {
           /* revalidate: 30, */
         },
       }
-    );
-  };
+    )
+  }
 
   /** Gets user's creator info
    * @param {String} address - User's address
@@ -508,12 +508,12 @@ export class UserModule {
   public getUserOwnerCollections = async (
     address: string
   ): Promise<IOwnerInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     const response = await this.api.fetchWithTimeout<IOwnerInfo>(
       `/user/${address}/staking/owned-collections`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Gets royalties shares creator info
    * @param {String} address - User's address
@@ -523,12 +523,12 @@ export class UserModule {
   public getRoyaltiesSharesCreator = async (
     address: string
   ): Promise<IApiShareholder[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     const response = await this.api.fetchWithTimeout<IApiShareholder[]>(
       `/launchpad/${address}/shareholders/royalties`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /** Gets mint shares creator info
    * @param {String} address - User's address
@@ -539,10 +539,10 @@ export class UserModule {
     address: string,
     collectionTag: string
   ): Promise<IApiShareholder[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address');
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     const response = await this.api.fetchWithTimeout<IApiShareholder[]>(
       `/launchpad/${address}/shareholders/collection/${collectionTag}`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 }

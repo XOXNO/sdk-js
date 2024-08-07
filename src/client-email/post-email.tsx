@@ -1,4 +1,4 @@
-import { createElement, type ComponentProps } from 'react';
+import React, { createElement, type ComponentProps } from 'react'
 
 import {
   Body,
@@ -7,23 +7,21 @@ import {
   Link,
   Section,
   Text,
-} from '@react-email/components';
-import { createTranslator } from 'next-intl';
+} from '@react-email/components'
+import { createTranslator } from 'next-intl'
 
-import React from 'react';
-import { Markdown } from './Markdown';
+import type { IHost, Translations } from '../email/utils'
 import {
-  Center,
-  GeneralEmail,
-  IHost,
-  MEDIA,
-  Translations,
   bodyStyle,
+  Center,
   defaultHost,
+  GeneralEmail,
   getHost,
   linkStyle,
+  MEDIA,
   renderGenericEmail,
-} from '../email/utils';
+} from '../email/utils'
+import { Markdown } from './Markdown'
 
 const translations = {
   namespace: '',
@@ -41,18 +39,18 @@ const translations = {
       },
     },
   },
-} as const satisfies Translations;
+} as const satisfies Translations
 
 type IProps = {
-  host?: IHost;
-  subject: string;
-  message: string;
+  host?: IHost
+  subject: string
+  message: string
   style?: {
-    backgroundColor: string;
-  };
-};
+    backgroundColor: string
+  }
+}
 
-const messages = translations.translations.en;
+const messages = translations.translations.en
 
 const PostEmail = ({
   host = defaultHost,
@@ -64,9 +62,9 @@ const PostEmail = ({
     locale: 'en',
     messages,
     namespace: 'post',
-  });
+  })
 
-  const HOST = getHost(host);
+  const HOST = getHost(host)
 
   return (
     <GeneralEmail title={subject}>
@@ -112,13 +110,13 @@ const PostEmail = ({
         </Container>
       </Body>
     </GeneralEmail>
-  );
-};
+  )
+}
 
 export const renderPostEmail = async (
   props: ComponentProps<typeof PostEmail>
 ) => {
-  const Email = createElement(PostEmail, props, null);
+  const Email = createElement(PostEmail, props, null)
 
-  return renderGenericEmail(Email);
-};
+  return renderGenericEmail(Email)
+}

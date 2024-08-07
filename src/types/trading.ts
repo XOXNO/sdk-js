@@ -1,9 +1,9 @@
-import {
+import type {
   Marketplace,
   MetadataAttribute,
   RangeFilter,
   TradingActivity,
-} from './collection';
+} from './collection'
 
 export enum NftActivityType {
   // MVX Built-in
@@ -35,66 +35,66 @@ export enum NftActivityType {
 
 export interface TradingActivityQueryFilter {
   filters: {
-    txHash?: string[];
-    activityAddress?: string[];
-    source?: Marketplace[];
-    activityType?: NftActivityType[];
-    from?: string[];
-    to?: string[];
+    txHash?: string[]
+    activityAddress?: string[]
+    source?: Marketplace[]
+    activityType?: NftActivityType[]
+    from?: string[]
+    to?: string[]
     activityData?: {
-      collection?: string[];
-      identifier?: string[];
-    };
-    range?: RangeFilter[];
-  };
-  strictSelect?: boolean;
-  includeCount?: boolean;
-  top: number;
-  skip: number;
-  select?: SelectFieldsTradingActivity[];
-  orderBy?: OrderByTradingActivity[];
+      collection?: string[]
+      identifier?: string[]
+    }
+    range?: RangeFilter[]
+  }
+  strictSelect?: boolean
+  includeCount?: boolean
+  top: number
+  skip: number
+  select?: SelectFieldsTradingActivity[]
+  orderBy?: OrderByTradingActivity[]
 }
 export interface TradincActivityArgs {
   /** The collections to fetch the trading activity from */
-  collections?: string[];
+  collections?: string[]
   /** The identifier of the NFTs to fetch the trading activity from */
-  identifiers?: string[];
+  identifiers?: string[]
   /** The wallets for which to fetch the trading activity */
-  wallets?: string[];
-  from?: string[];
-  to?: string[];
+  wallets?: string[]
+  from?: string[]
+  to?: string[]
   /** The marketplaces to fetch the trading activity from */
-  source?: Marketplace[];
-  activityType?: NftActivityType[];
+  source?: Marketplace[]
+  activityType?: NftActivityType[]
   /** The tokens to fetch the trading activity from */
-  placedInToken?: string[];
+  placedInToken?: string[]
   /** The price range to fetch the trading activity from */
   priceRange?: {
-    min: number;
-    max: number;
-  };
+    min: number
+    max: number
+  }
   /** The rank range to fetch the trading activity from */
   rankRange?: {
-    min: number;
-    max: number;
-  };
+    min: number
+    max: number
+  }
   /** The timestamp range to fetch the trading activity from */
   timestampRange?: {
-    min: number;
-    max: number;
-  };
+    min: number
+    max: number
+  }
   /** The number of results to return */
-  top?: number;
+  top?: number
   /** The number of results to skip */
-  skip?: number;
+  skip?: number
   /** The fields to select from the trading activity */
-  select?: SelectFieldsTradingActivity[];
-  includeCount?: boolean;
-  strictSelect?: boolean;
+  select?: SelectFieldsTradingActivity[]
+  includeCount?: boolean
+  strictSelect?: boolean
   /** The fields to order the trading activity by */
-  orderBy?: OrderByTradingActivity[];
+  orderBy?: OrderByTradingActivity[]
   /** The attributes to fetch the trading activity from */
-  attributes?: MetadataAttribute[];
+  attributes?: MetadataAttribute[]
 }
 
 export enum OrderByTradingActivity {
@@ -118,10 +118,10 @@ export enum SelectFieldsTradingActivity {
 }
 
 export interface TradingActivityResponse {
-  hasMoreResults: boolean;
+  hasMoreResults: boolean
   /** The total count of the results for the specific query */
-  count?: number;
-  resources: TradingActivity[];
-  getNextPagePayload: TradincActivityArgs;
-  empty: boolean;
+  count?: number
+  resources: TradingActivity[]
+  getNextPagePayload: TradincActivityArgs
+  empty: boolean
 }

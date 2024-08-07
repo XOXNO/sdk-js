@@ -1,31 +1,31 @@
-import {
-  AssetCategory,
+import type {
   FungibleAssetsMap,
   SuggestNFTsArgs,
   SuggestResults,
-} from '../types/collection';
-import {
+} from '../types/collection'
+import { AssetCategory } from '../types/collection'
+import type {
   AnalyticsGraphs,
   AshSwapPaymentData,
   StakingExplore,
   StatisticsSummary,
   TokenUSDPrices,
-} from '../types/common';
-import { XOXNOClient } from '../utils/api';
+} from '../types/common'
+import { XOXNOClient } from '../utils/api'
 
 export class CommonModule {
-  private api: XOXNOClient;
+  private api: XOXNOClient
   constructor() {
-    this.api = XOXNOClient.getInstance();
+    this.api = XOXNOClient.getInstance()
   }
   /** Gets all tokens usd price
    * @returns {TokenUSDPrices} User's creator info
    *  */
   public getTokensUsdPrice = async (): Promise<TokenUSDPrices> => {
     const response =
-      await this.api.fetchWithTimeout<TokenUSDPrices>(`/tokens/usd-price`);
-    return response;
-  };
+      await this.api.fetchWithTimeout<TokenUSDPrices>(`/tokens/usd-price`)
+    return response
+  }
 
   /** Gets all tokens usd price
    * @returns {TokenUSDPrices} User's creator info
@@ -35,9 +35,9 @@ export class CommonModule {
     originalTokenValue,
     paymentToken,
   }: {
-    originalToken: string;
-    originalTokenValue: string;
-    paymentToken: string;
+    originalToken: string
+    originalTokenValue: string
+    paymentToken: string
   }): Promise<AshSwapPaymentData> => {
     const response = await this.api.fetchWithTimeout<AshSwapPaymentData>(
       `/ash/min-token-quantity`,
@@ -48,9 +48,9 @@ export class CommonModule {
           paymentToken: paymentToken,
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -64,28 +64,28 @@ export class CommonModule {
     categories: AssetCategory[] = [AssetCategory.ALL],
     identifiers?: string[]
   ): Promise<FungibleAssetsMap> => {
-    let params = {};
+    let params = {}
 
     if (identifiers) {
       params = {
         identifier: identifiers.join(','),
-      };
+      }
     }
 
     if (categories) {
       params = {
         ...params,
         category: categories.join(','),
-      };
+      }
     }
     const response = await this.api.fetchWithTimeout<FungibleAssetsMap>(
       `/tokens`,
       {
         params,
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -113,9 +113,9 @@ export class CommonModule {
           /* revalidate: 60, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -133,9 +133,9 @@ export class CommonModule {
           /* revalidate: 60, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -158,14 +158,14 @@ export class CommonModule {
     args: SuggestNFTsArgs
   ): Promise<SuggestResults> => {
     if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
 
     const payloadBody: SuggestNFTsArgs = {
       name: args.name,
       top: args.top || 35,
       skip: args.skip || 0,
-    };
+    }
 
     return await this.api.fetchWithTimeout<SuggestResults>(`/search`, {
       params: {
@@ -175,8 +175,8 @@ export class CommonModule {
         tags: ['/search/global'],
         /* revalidate: 180, */
       },
-    });
-  };
+    })
+  }
 
   /**
    * @public
@@ -194,7 +194,7 @@ export class CommonModule {
           /* revalidate: 60, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 }

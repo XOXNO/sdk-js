@@ -1,9 +1,9 @@
-import { XOXNOClient } from '..';
-import {
+import type { XOXNOClient } from '..'
+import type {
   TradincActivityArgs,
-  TradingActivityResponse,
   TradingActivityQueryFilter,
-} from '../types/trading';
+  TradingActivityResponse,
+} from '../types/trading'
 
 /**
  * Fetches the trading activity of the given collections
@@ -17,21 +17,21 @@ export const getActivity = async (
   api: XOXNOClient
 ): Promise<TradingActivityResponse> => {
   if (args.top && args.top > 100) {
-    throw new Error('Top cannot be greater than 100');
+    throw new Error('Top cannot be greater than 100')
   }
 
-  const ranges = [];
+  const ranges = []
   if (args.priceRange) {
     ranges.push({
       ...args.priceRange,
       field: 'activityData.egldValue',
-    });
+    })
   }
   if (args.timestampRange) {
     ranges.push({
       ...args.timestampRange,
       field: 'timestamp',
-    });
+    })
   }
 
   const payloadBody: TradingActivityQueryFilter = {
@@ -56,7 +56,7 @@ export const getActivity = async (
     select: args.select,
     top: args.top || 35,
     skip: args.skip || 0,
-  };
+  }
 
   const response = await api.fetchWithTimeout<TradingActivityResponse>(
     `/activity/query`,
@@ -69,7 +69,7 @@ export const getActivity = async (
         /* revalidate: 180, */
       },
     }
-  );
+  )
 
   return {
     ...response,
@@ -78,5 +78,5 @@ export const getActivity = async (
       skip: (args.skip ?? 0) + (args.top ?? 35),
     },
     empty: response.resources.length === 0,
-  };
-};
+  }
+}

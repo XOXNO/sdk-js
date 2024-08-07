@@ -1,10 +1,13 @@
-import { XOXNOClient } from '..';
-import { NftData } from '../types/nft';
-import { TradingActivityResponse, TradincActivityArgs } from '../types/trading';
-import { UserOffers } from '../types/user';
-import { getActivity } from '../utils/getActivity';
-import { getIdentifierFromColAndNonce } from '../utils/helpers';
-import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex';
+import { XOXNOClient } from '..'
+import type { NftData } from '../types/nft'
+import type {
+  TradincActivityArgs,
+  TradingActivityResponse,
+} from '../types/trading'
+import type { UserOffers } from '../types/user'
+import { getActivity } from '../utils/getActivity'
+import { getIdentifierFromColAndNonce } from '../utils/helpers'
+import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex'
 
 /**
  * NFTModule provides a set of methods to interact with single NFTs.
@@ -15,9 +18,9 @@ import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex';
  */
 
 export class NFTModule {
-  private api: XOXNOClient;
+  private api: XOXNOClient
   constructor() {
-    this.api = XOXNOClient.getInstance();
+    this.api = XOXNOClient.getInstance()
   }
 
   /**
@@ -39,16 +42,16 @@ export class NFTModule {
     extra?: RequestInit
   ): Promise<NftData> => {
     if (!isValidNftIdentifier(identifier)) {
-      throw new Error('Invalid identifier: ' + identifier);
+      throw new Error('Invalid identifier: ' + identifier)
     }
     const response = await this.api.fetchWithTimeout<NftData>(
       `/nft/${identifier}`,
       {
         ...extra,
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -70,7 +73,7 @@ export class NFTModule {
     top: number = 25
   ): Promise<UserOffers> => {
     if (!isValidNftIdentifier(identifier)) {
-      throw new Error('Invalid identifier: ' + identifier);
+      throw new Error('Invalid identifier: ' + identifier)
     }
     const response = await this.api.fetchWithTimeout<UserOffers>(
       `/nft/${identifier}/offers?skip=${skip}&top=${top}`,
@@ -80,9 +83,9 @@ export class NFTModule {
           /* revalidate: 12, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Gets an NFT by collection and nonce.
@@ -96,14 +99,14 @@ export class NFTModule {
     nonce: number
   ): Promise<NftData> => {
     if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
+      throw new Error('Invalid collection ticker: ' + collection)
     }
 
     const response = await this.api.fetchWithTimeout<NftData>(
       `/${getIdentifierFromColAndNonce(collection, nonce)}`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Get NFT by collection and nonce hex
@@ -119,18 +122,18 @@ export class NFTModule {
   ): Promise<NftData> => {
     // check that collection is valid
     if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
+      throw new Error('Invalid collection ticker: ' + collection)
     }
     // make sure nonceHex is even
     if (nonceHex.length % 2 !== 0) {
-      nonceHex = '0' + nonceHex;
+      nonceHex = '0' + nonceHex
     }
     // fetch the NFT data
     const response = await this.api.fetchWithTimeout<NftData>(
       `/${[collection, nonceHex].join('-')}`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Retrieves trading history based on the provided arguments.
@@ -142,6 +145,6 @@ export class NFTModule {
   public getTradingActivity = async (
     args: TradincActivityArgs
   ): Promise<TradingActivityResponse> => {
-    return await getActivity(args, this.api);
-  };
+    return await getActivity(args, this.api)
+  }
 }

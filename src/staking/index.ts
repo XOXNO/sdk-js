@@ -1,10 +1,10 @@
-import { StakingSummaryPools } from '../types/staking';
-import { XOXNOClient } from '../utils/api';
+import type { StakingSummaryPools } from '../types/staking'
+import { XOXNOClient } from '../utils/api'
 
 export class StakingModule {
-  private api: XOXNOClient;
+  private api: XOXNOClient
   constructor() {
-    this.api = XOXNOClient.getInstance();
+    this.api = XOXNOClient.getInstance()
   }
   /** Gets pool details
    * @param {number} poolId - User's address
@@ -16,7 +16,7 @@ export class StakingModule {
   ): Promise<StakingSummaryPools> => {
     const response = await this.api.fetchWithTimeout<StakingSummaryPools>(
       `/pool/${poolId}/profile`
-    );
-    return response;
-  };
+    )
+    return response
+  }
 }

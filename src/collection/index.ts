@@ -1,34 +1,36 @@
-import { AnalyticsGraphs, NftData, StakingSummaryPools } from '../types';
-import {
+import { XOXNOClient } from '..'
+import type { AnalyticsGraphs, NftData, StakingSummaryPools } from '../types'
+import type {
+  CollectionListings,
+  CollectionRanksExport,
   CollectionsNFTsResponse,
+  CollectionStatsDoc,
+  CollectionStatsResults,
+  CollectionVolume,
+  GetCollectionMintInfo,
   GetCollectionsArgs,
+  GetCollectionStatsArgs,
+  GETDropsArgs,
+  GetDropsResponse,
+  GetGlobalOffersArgs,
+  GetNFTsArgs,
+  GlobalOffersResult,
   ICollectionAttributes,
   ICollectionProfile,
+  IOwners,
+  ISingleHolder,
   SearchNFTs,
-  GetNFTsArgs,
   SearchNFTsResponse,
   SuggestNFTsArgs,
   SuggestResults,
-  CollectionVolume,
-  IOwners,
-  ISingleHolder,
-  GetGlobalOffersArgs,
-  GlobalOffersResult,
-  GlobalOfferOrderBy,
-  GetCollectionMintInfo,
-  GetCollectionStatsArgs,
-  CollectionStatsResults,
-  CollectionRanksExport,
-  CollectionStatsDoc,
-  AuctionTypes,
-  GETDropsArgs,
-  GetDropsResponse,
-  CollectionListings,
-} from '../types/collection';
-import { TradincActivityArgs, TradingActivityResponse } from '../types/trading';
-import { XOXNOClient } from '..';
-import { getActivity } from '../utils/getActivity';
-import { isValidCollectionTicker } from '../utils/regex';
+} from '../types/collection'
+import { AuctionTypes, GlobalOfferOrderBy } from '../types/collection'
+import type {
+  TradincActivityArgs,
+  TradingActivityResponse,
+} from '../types/trading'
+import { getActivity } from '../utils/getActivity'
+import { isValidCollectionTicker } from '../utils/regex'
 
 /**
  * CollectionModule provides a set of methods to interact with NFT collections.
@@ -39,9 +41,9 @@ import { isValidCollectionTicker } from '../utils/regex';
  * const collectionModule = new CollectionModule();
  */
 export class CollectionModule {
-  private api: XOXNOClient;
+  private api: XOXNOClient
   constructor() {
-    this.api = XOXNOClient.getInstance();
+    this.api = XOXNOClient.getInstance()
   }
 
   /**
@@ -62,7 +64,7 @@ export class CollectionModule {
     collection: string
   ): Promise<ICollectionProfile> => {
     if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
+      throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<ICollectionProfile>(
       `/collection/${collection}/profile`,
@@ -72,9 +74,9 @@ export class CollectionModule {
           /* revalidate: 30, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -92,9 +94,9 @@ export class CollectionModule {
           /* revalidate: 180, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Fetches the floor price of a collection.
@@ -108,10 +110,10 @@ export class CollectionModule {
     token = 'EGLD'
   ): Promise<number> => {
     if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
+      throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<{
-      price: number;
+      price: number
     }>(`/collection/${collection}/floor-price`, {
       next: {
         tags: ['getCollectionFloorPrice'],
@@ -119,9 +121,9 @@ export class CollectionModule {
       params: {
         token,
       },
-    });
-    return response?.price ? response.price : 0;
-  };
+    })
+    return response?.price ? response.price : 0
+  }
 
   /**
    * @public
@@ -141,7 +143,7 @@ export class CollectionModule {
     collection: string
   ): Promise<ICollectionAttributes> => {
     if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
+      throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<ICollectionAttributes>(
       `/collection/${collection}/attributes`,
@@ -151,9 +153,9 @@ export class CollectionModule {
           /* revalidate: 180, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Searches for NFTs based on the provided arguments.
@@ -164,14 +166,14 @@ export class CollectionModule {
   public getNFTs = async (args: GetNFTsArgs): Promise<SearchNFTsResponse> => {
     args?.collections?.forEach((element) => {
       if (!isValidCollectionTicker(element)) {
-        throw new Error('Invalid collection ticker: ' + element);
+        throw new Error('Invalid collection ticker: ' + element)
       }
-    });
+    })
 
     if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
-    const ranges = [];
+    const ranges = []
     if (args.priceRange) {
       ranges.push({
         ...args.priceRange,
@@ -179,13 +181,13 @@ export class CollectionModule {
           args.auctionType == AuctionTypes.Auctions
             ? 'saleInfo.currentBidShort'
             : 'saleInfo.minBidShort',
-      });
+      })
     }
     if (args.rankRange) {
       ranges.push({
         ...args.rankRange,
         field: 'metadata.rarity.rank',
-      });
+      })
     }
     const payloadBody: SearchNFTs = {
       name: args.name,
@@ -225,7 +227,7 @@ export class CollectionModule {
       includeCount: args.includeCount || false,
       top: args.top || 35,
       skip: args.skip || 0,
-    };
+    }
 
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
       `/nft/query`,
@@ -237,15 +239,15 @@ export class CollectionModule {
           tags: ['getCollectionNFTs'],
         },
       }
-    );
+    )
     return {
       ...response,
       getNextPagePayload: {
         ...args,
         skip: (args.skip ?? 0) + (args.top ?? 35),
       },
-    };
-  };
+    }
+  }
 
   /**
    * Searches for NFTs based on the provided arguments.
@@ -258,14 +260,14 @@ export class CollectionModule {
   ): Promise<SearchNFTsResponse> => {
     args?.collections?.forEach((element) => {
       if (!isValidCollectionTicker(element)) {
-        throw new Error('Invalid collection ticker: ' + element);
+        throw new Error('Invalid collection ticker: ' + element)
       }
-    });
+    })
 
     if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
-    const ranges = [];
+    const ranges = []
     if (args.priceRange) {
       ranges.push({
         ...args.priceRange,
@@ -273,13 +275,13 @@ export class CollectionModule {
           args.auctionType == AuctionTypes.Auctions
             ? 'saleInfo.currentBidShort'
             : 'saleInfo.minBidShort',
-      });
+      })
     }
     if (args.rankRange) {
       ranges.push({
         ...args.rankRange,
         field: 'metadata.rarity.rank',
-      });
+      })
     }
     const payloadBody: SearchNFTs = {
       name: args.name,
@@ -318,7 +320,7 @@ export class CollectionModule {
       includeCount: args.includeCount || false,
       top: args.top || 35,
       skip: args.skip || 0,
-    };
+    }
 
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
       `/nft/search/query`,
@@ -330,15 +332,15 @@ export class CollectionModule {
           tags: ['getCollectionNFTs'],
         },
       }
-    );
+    )
     return {
       ...response,
       getNextPagePayload: {
         ...args,
         skip: (args.skip ?? 0) + (args.top ?? 35),
       },
-    };
-  };
+    }
+  }
 
   /**
    * @public
@@ -358,14 +360,14 @@ export class CollectionModule {
     args: SuggestNFTsArgs
   ): Promise<SuggestResults> => {
     if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
 
     const payloadBody: SuggestNFTsArgs = {
       name: args.name,
       top: args.top || 35,
       skip: args.skip || 0,
-    };
+    }
 
     return await this.api.fetchWithTimeout<SuggestResults>(
       `/collection/search`,
@@ -378,8 +380,8 @@ export class CollectionModule {
           /* revalidate: 180, */
         },
       }
-    );
-  };
+    )
+  }
 
   /**
    * @public
@@ -399,8 +401,8 @@ export class CollectionModule {
           /* revalidate: 500, */
         },
       }
-    );
-  };
+    )
+  }
 
   /**
    * Retrieves trading history based on the provided arguments.
@@ -412,8 +414,8 @@ export class CollectionModule {
   public getTradingActivity = async (
     args: TradincActivityArgs
   ): Promise<TradingActivityResponse> => {
-    return await getActivity(args, this.api);
-  };
+    return await getActivity(args, this.api)
+  }
 
   /**
    * Fetch collections profiles based on the provided arguments.
@@ -425,7 +427,7 @@ export class CollectionModule {
     args?: GetCollectionsArgs
   ): Promise<CollectionsNFTsResponse> => {
     if (args?.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
 
     const payloadBody = {
@@ -441,7 +443,7 @@ export class CollectionModule {
           }),
       },
       orderBy: [args?.orderBy || 'statistics.tradeData.weekEgldVolume desc'],
-    };
+    }
 
     const response = await this.api.fetchWithTimeout<ICollectionProfile[]>(
       `/collection/query`,
@@ -454,7 +456,7 @@ export class CollectionModule {
           /* revalidate: 180, */
         },
       }
-    );
+    )
     return {
       results: response,
       resultsCount: response.length,
@@ -464,8 +466,8 @@ export class CollectionModule {
         skip: (args?.skip || 0) + (args?.top || 25),
       },
       hasMoreResults: response.length >= (args?.top || 25),
-    };
-  };
+    }
+  }
 
   /**
    * Fetch global offers based on the provided arguments.
@@ -477,7 +479,7 @@ export class CollectionModule {
     args?: GetGlobalOffersArgs
   ): Promise<GlobalOffersResult> => {
     if (args?.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
 
     const payloadBody = {
@@ -497,7 +499,7 @@ export class CollectionModule {
         attributes: args?.attributes,
       },
       orderBy: args?.orderBy || [GlobalOfferOrderBy.PriceHighToLow],
-    };
+    }
 
     const response = await this.api.fetchWithTimeout<GlobalOffersResult>(
       `/collection/global-offer/query`,
@@ -510,15 +512,15 @@ export class CollectionModule {
           /* revalidate: 12, */
         },
       }
-    );
+    )
     return {
       ...response,
       getNextPagePayload: {
         ...args,
         skip: (args?.top || 25) + response.lastSkip,
       },
-    };
-  };
+    }
+  }
 
   /**
    * @public
@@ -547,7 +549,7 @@ export class CollectionModule {
     bin: string
   ): Promise<CollectionVolume[]> => {
     if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
+      throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<CollectionVolume[]>(
       `/collection/${collection}/analytics/volume?startTime=${after}&endTime=${before}&bin=${bin}`,
@@ -557,9 +559,9 @@ export class CollectionModule {
           /* revalidate: 180, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -593,9 +595,9 @@ export class CollectionModule {
           /* revalidate: 180, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -613,7 +615,7 @@ export class CollectionModule {
    */
   public getCollectionOwners = async (collection: string): Promise<IOwners> => {
     if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
+      throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<IOwners>(
       `/collection/${collection}/holders`,
@@ -624,9 +626,9 @@ export class CollectionModule {
           /* revalidate: 500, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -646,7 +648,7 @@ export class CollectionModule {
     collection: string
   ): Promise<ISingleHolder[]> => {
     if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
+      throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<ISingleHolder[]>(
       `/collection/${collection}/holders?exportHolders=true`,
@@ -656,9 +658,9 @@ export class CollectionModule {
           tags: ['getExportOwners'],
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -672,7 +674,7 @@ export class CollectionModule {
     args: GetCollectionStatsArgs
   ): Promise<CollectionStatsResults> => {
     if (args?.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
 
     const response = await this.api.fetchWithTimeout<CollectionStatsResults>(
@@ -686,15 +688,15 @@ export class CollectionModule {
           /* revalidate: 12, */
         },
       }
-    );
+    )
     return {
       ...response,
       getNextPagePayload: {
         ...args,
         skip: args.skip + args.top,
       },
-    };
-  };
+    }
+  }
 
   /**
    * @public
@@ -708,7 +710,7 @@ export class CollectionModule {
     ticker: string
   ): Promise<CollectionStatsDoc> => {
     if (!isValidCollectionTicker(ticker)) {
-      throw new Error('Invalid collection ticker: ' + ticker);
+      throw new Error('Invalid collection ticker: ' + ticker)
     }
 
     return await this.api.fetchWithTimeout<CollectionStatsDoc>(
@@ -719,16 +721,16 @@ export class CollectionModule {
           /* revalidate: 12, */
         },
       }
-    );
-  };
+    )
+  }
 
   public getAwaitEmpty = async (delay: number): Promise<boolean> => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(true);
-      }, delay);
-    });
-  };
+        resolve(true)
+      }, delay)
+    })
+  }
 
   /**
    * @public
@@ -742,11 +744,11 @@ export class CollectionModule {
     ticker,
     extra,
   }: {
-    ticker: string;
-    extra?: RequestInit;
+    ticker: string
+    extra?: RequestInit
   }): Promise<GetCollectionMintInfo> => {
     if (!isValidCollectionTicker(ticker)) {
-      throw new Error('Invalid collection ticker: ' + ticker);
+      throw new Error('Invalid collection ticker: ' + ticker)
     }
     const response = await this.api.fetchWithTimeout<GetCollectionMintInfo>(
       `/collection/${ticker}/drop-info`,
@@ -757,9 +759,9 @@ export class CollectionModule {
         },
         ...extra,
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -773,11 +775,11 @@ export class CollectionModule {
     ticker,
     extra,
   }: {
-    ticker: string;
-    extra?: RequestInit;
+    ticker: string
+    extra?: RequestInit
   }): Promise<CollectionRanksExport[]> => {
     if (!isValidCollectionTicker(ticker)) {
-      throw new Error('Invalid collection ticker: ' + ticker);
+      throw new Error('Invalid collection ticker: ' + ticker)
     }
     const response = await this.api.fetchWithTimeout<CollectionRanksExport[]>(
       `/collection/${ticker}/ranks`,
@@ -788,9 +790,9 @@ export class CollectionModule {
         },
         ...extra,
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -806,9 +808,9 @@ export class CollectionModule {
     creatorTag,
     extra,
   }: {
-    collectionTag: string;
-    creatorTag: string;
-    extra?: RequestInit;
+    collectionTag: string
+    creatorTag: string
+    extra?: RequestInit
   }): Promise<GetCollectionMintInfo> => {
     const response = await this.api.fetchWithTimeout<GetCollectionMintInfo>(
       `/collection/${creatorTag}/${collectionTag}/drop-info`,
@@ -819,9 +821,9 @@ export class CollectionModule {
         },
         ...extra,
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -838,7 +840,7 @@ export class CollectionModule {
     bin: string
   ): Promise<AnalyticsGraphs> => {
     if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
+      throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<AnalyticsGraphs>(
       `/collection/${collection}/analytics/volume`,
@@ -853,9 +855,9 @@ export class CollectionModule {
           /* revalidate: 60, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -872,9 +874,9 @@ export class CollectionModule {
           /* revalidate: 60, */
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * Get drops based on the provided arguments.
@@ -887,20 +889,20 @@ export class CollectionModule {
   ): Promise<GetDropsResponse> => {
     args?.collections?.forEach((element) => {
       if (!isValidCollectionTicker(element)) {
-        throw new Error('Invalid collection ticker: ' + element);
+        throw new Error('Invalid collection ticker: ' + element)
       }
-    });
+    })
 
     if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
-    const ranges = [];
+    const ranges = []
 
     if (args.timeRange) {
       ranges.push({
         ...args.timeRange,
         field: 'startTime',
-      });
+      })
     }
     const payloadBody = {
       name: args.name,
@@ -915,7 +917,7 @@ export class CollectionModule {
       includeCount: args.includeCount || false,
       top: args.top || 35,
       skip: args.skip || 0,
-    };
+    }
 
     const response = await this.api.fetchWithTimeout<GetDropsResponse>(
       `/collection/drops/search`,
@@ -927,15 +929,15 @@ export class CollectionModule {
           tags: ['/collection/drops/search'],
         },
       }
-    );
+    )
     return {
       ...response,
       getNextPagePayload: {
         ...args,
         skip: (args.skip ?? 0) + (args.top ?? 35),
       },
-    };
-  };
+    }
+  }
 
   /**
    * Get drops based on the provided arguments.
@@ -946,20 +948,20 @@ export class CollectionModule {
   public getDrops = async (args: GETDropsArgs): Promise<GetDropsResponse> => {
     args?.collections?.forEach((element) => {
       if (!isValidCollectionTicker(element)) {
-        throw new Error('Invalid collection ticker: ' + element);
+        throw new Error('Invalid collection ticker: ' + element)
       }
-    });
+    })
 
     if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100');
+      throw new Error('Top cannot be greater than 100')
     }
-    const ranges = [];
+    const ranges = []
 
     if (args.timeRange) {
       ranges.push({
         ...args.timeRange,
         field: 'startTime',
-      });
+      })
     }
     const payloadBody = {
       name: args.name,
@@ -974,7 +976,7 @@ export class CollectionModule {
       includeCount: args.includeCount || false,
       top: args.top || 35,
       skip: args.skip || 0,
-    };
+    }
 
     const response = await this.api.fetchWithTimeout<GetDropsResponse>(
       `/collection/drops/query`,
@@ -986,15 +988,15 @@ export class CollectionModule {
           tags: ['/collection/drops/query'],
         },
       }
-    );
+    )
     return {
       ...response,
       getNextPagePayload: {
         ...args,
         skip: (args.skip ?? 0) + (args.top ?? 35),
       },
-    };
-  };
+    }
+  }
 
   /** Gets collection staking info
    * @param {String} collection - User's address
@@ -1005,11 +1007,11 @@ export class CollectionModule {
     collection,
     extra,
   }: {
-    collection: string;
-    extra?: RequestInit;
+    collection: string
+    extra?: RequestInit
   }): Promise<StakingSummaryPools[]> => {
     if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection);
+      throw new Error('Invalid collection ticker: ' + collection)
     }
 
     const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
@@ -1017,9 +1019,9 @@ export class CollectionModule {
       {
         ...extra,
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 
   /**
    * @public
@@ -1034,9 +1036,9 @@ export class CollectionModule {
   ): Promise<Record<string, number>> => {
     collections?.forEach((element) => {
       if (!isValidCollectionTicker(element)) {
-        throw new Error('Invalid collection ticker: ' + element);
+        throw new Error('Invalid collection ticker: ' + element)
       }
-    });
+    })
     const response = await this.api.fetchWithTimeout<Record<string, number>>(
       `/collection/floor-price`,
       {
@@ -1044,7 +1046,7 @@ export class CollectionModule {
           collection: collections.join(','),
         },
       }
-    );
-    return response;
-  };
+    )
+    return response
+  }
 }

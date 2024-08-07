@@ -1,4 +1,4 @@
-import { createElement, type ComponentProps } from 'react';
+import React, { createElement, type ComponentProps } from 'react'
 
 import {
   Body,
@@ -9,25 +9,23 @@ import {
   Link,
   Section,
   Text,
-} from '@react-email/components';
-import { createTranslator } from 'next-intl';
+} from '@react-email/components'
+import { createTranslator } from 'next-intl'
 
-import React from 'react';
+import type { IEvent } from './types'
+import type { IHost, Translations } from './utils'
 import {
-  Center,
-  GeneralEmail,
-  IHost,
-  MEDIA,
-  Translations,
   bodyStyle,
   buttonStyle,
+  Center,
   defaultHost,
+  GeneralEmail,
   getHost,
   headingStyle,
   linkStyle,
+  MEDIA,
   renderGenericEmail,
-} from './utils';
-import { IEvent } from './types';
+} from './utils'
 
 const translations = {
   namespace: '',
@@ -45,18 +43,18 @@ const translations = {
       },
     },
   },
-} as const satisfies Translations;
+} as const satisfies Translations
 
 type IProps = {
-  host?: IHost;
-  name: string;
-  event: IEvent;
+  host?: IHost
+  name: string
+  event: IEvent
   style?: {
-    backgroundColor: string;
-  };
-};
+    backgroundColor: string
+  }
+}
 
-const messages = translations.translations.en;
+const messages = translations.translations.en
 
 const EventEmail = ({
   host = defaultHost,
@@ -68,13 +66,13 @@ const EventEmail = ({
     locale: 'en',
     messages,
     namespace: 'event',
-  });
+  })
 
-  const HOST = getHost(host);
+  const HOST = getHost(host)
 
-  const href = `${HOST}/event/${event.eventId}?guest=${event.ticketId}`;
+  const href = `${HOST}/event/${event.eventId}?guest=${event.ticketId}`
 
-  const mapsLink = `https://maps.google.com/?q=${event.location.lat},${event.location.lng}`;
+  const mapsLink = `https://maps.google.com/?q=${event.location.lat},${event.location.lng}`
 
   return (
     <GeneralEmail title={t('meta', { eventName: event.name })}>
@@ -180,13 +178,13 @@ const EventEmail = ({
         </Container>
       </Body>
     </GeneralEmail>
-  );
-};
+  )
+}
 
 export const renderEventEmail = async (
   props: ComponentProps<typeof EventEmail>
 ) => {
-  const Email = createElement(EventEmail, props, null);
+  const Email = createElement(EventEmail, props, null)
 
-  return renderGenericEmail(Email);
-};
+  return renderGenericEmail(Email)
+}

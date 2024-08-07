@@ -1,4 +1,4 @@
-import { createElement, type ComponentProps } from 'react';
+import React, { createElement, type ComponentProps } from 'react'
 
 import {
   Body,
@@ -9,14 +9,17 @@ import {
   Link,
   Section,
   Text,
-} from '@react-email/components';
-import { createTranslator } from 'next-intl';
+} from '@react-email/components'
+import { createTranslator } from 'next-intl'
 
-import {
+import { NftActivityType } from '../types'
+import type {
   IBaseNotification,
   IEmailActivityType,
   IOfferTradeTypes,
   IVerifyEmailTypes,
+} from './types'
+import {
   bidTypes,
   depositTypes,
   offerTradeTypes,
@@ -27,25 +30,21 @@ import {
   type IDepositTypes,
   type IOfferTypes,
   type ITradeTypes,
-} from './types';
-
-import React from 'react';
-import { NftActivityType } from '../types';
+} from './types'
+import type { IHost, Translations } from './utils'
 import {
-  GeneralEmail,
-  IHost,
-  MEDIA,
-  Translations,
   bodyStyle,
   buttonStyle,
   defaultHost,
+  GeneralEmail,
   getHost,
   headingStyle,
   highlightStyle,
   hintStyle,
   linkStyle,
+  MEDIA,
   renderGenericEmail,
-} from './utils';
+} from './utils'
 
 const translations = {
   namespace: '',
@@ -134,82 +133,82 @@ const translations = {
       Exclude<ITradeTypes, 'trade'> | Exclude<IOfferTradeTypes, 'offerTrade'>
     >,
     {
-      title: string;
-      description: string;
-      action: string;
-      hint: string;
-      footer: string;
+      title: string
+      description: string
+      action: string
+      hint: string
+      footer: string
     }
-  >;
-}>;
+  >
+}>
 
 function isOfferTrade(props: IProps) {
-  return offerTradeTypes.includes(props.activityType as IOfferTradeTypes);
+  return offerTradeTypes.includes(props.activityType as IOfferTradeTypes)
 }
 
 function isTrade(props: IProps) {
-  return tradeTypes.includes(props.activityType as ITradeTypes);
+  return tradeTypes.includes(props.activityType as ITradeTypes)
 }
 
 function isDeposit(props: IProps) {
-  return depositTypes.includes(props.activityType as IDepositTypes);
+  return depositTypes.includes(props.activityType as IDepositTypes)
 }
 
 function isOffer(props: IProps) {
-  return offerTypes.includes(props.activityType as IOfferTypes);
+  return offerTypes.includes(props.activityType as IOfferTypes)
 }
 
 function isBid(props: IProps) {
-  return bidTypes.includes(props.activityType as IBidTypes);
+  return bidTypes.includes(props.activityType as IBidTypes)
 }
 
 function isVerifyEmail(props: IProps) {
-  return verifyEmailTypes.includes(props.activityType as IVerifyEmailTypes);
+  return verifyEmailTypes.includes(props.activityType as IVerifyEmailTypes)
 }
 
 type IProps = {
-  host?: IHost;
+  host?: IHost
 } & (
   | {
-      activityType: Exclude<IEmailActivityType, 'verifyEmail'>;
+      activityType: Exclude<IEmailActivityType, 'verifyEmail'>
       payload: {
-        name: string;
-        address: string;
-        nft: Pick<IBaseNotification, 'asset' | 'owner' | 'activity'>;
-        code?: never;
-      };
+        name: string
+        address: string
+        nft: Pick<IBaseNotification, 'asset' | 'owner' | 'activity'>
+        code?: never
+      }
     }
   | {
-      activityType: Extract<IEmailActivityType, 'verifyEmail'>;
+      activityType: Extract<IEmailActivityType, 'verifyEmail'>
       payload: {
-        name: string;
-        address?: never;
-        nft?: never;
-        code: string;
-      };
+        name: string
+        address?: never
+        nft?: never
+        code: string
+      }
     }
-);
+)
 
-const messages = translations.translations.en;
+const messages = translations.translations.en
 
 const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
-  const isATrade = isTrade(props);
-  const isAOfferTrade = isOfferTrade(props);
+  const isATrade = isTrade(props)
+  const isAOfferTrade = isOfferTrade(props)
 
   const t = createTranslator({
     locale: 'en',
     messages,
     namespace: `emails.${isATrade ? NftActivityType.TRADE : isAOfferTrade ? NftActivityType.OFFER_TRADE : props.activityType}`,
-  });
+  })
 
-  const HOST = getHost(host);
+  const HOST = getHost(host)
 
   const isUnsuccess = (
     [
       NftActivityType.AUCTION_OUT_BID,
       NftActivityType.OFFER_REJECT,
     ] as IEmailActivityType[]
-  ).includes(props.activityType);
+  ).includes(props.activityType)
 
   const payload = {
     name: props.payload.name,
@@ -222,9 +221,9 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
           owner: props.payload.nft.owner,
         }
       : {}),
-  };
+  }
 
-  const imgSrc = props.payload.nft ? props.payload.nft.asset.url : '';
+  const imgSrc = props.payload.nft ? props.payload.nft.asset.url : ''
 
   const href =
     isATrade || isAOfferTrade || isBid(props)
@@ -233,7 +232,7 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
         ? `${HOST}/profile/${props.payload.address}/wallet`
         : isOffer(props)
           ? `${HOST}/profile/${props.payload.address}/offers${props.activityType === NftActivityType.OFFER_REJECT ? '/placed' : ''}`
-          : HOST;
+          : HOST
 
   return (
     <GeneralEmail title={t('title', payload)}>
@@ -309,11 +308,11 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
         </Container>
       </Body>
     </GeneralEmail>
-  );
-};
+  )
+}
 
 export const renderEmail = async (props: ComponentProps<typeof XOXNOEmail>) => {
-  const Email = createElement(XOXNOEmail, props, null);
+  const Email = createElement(XOXNOEmail, props, null)
 
-  return renderGenericEmail(Email);
-};
+  return renderGenericEmail(Email)
+}

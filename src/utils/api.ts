@@ -1,3 +1,5 @@
+import type { IChainID } from '@multiversx/sdk-core/out/interface'
+
 import {
   API_URL,
   API_URL_DEV,
@@ -12,33 +14,33 @@ import {
   Staking_SC_DEV,
   XOXNO_SC,
   XOXNO_SC_DEV,
-} from './const';
-import type { IChainID } from '@multiversx/sdk-core/out/interface';
+} from './const'
+
 export enum Chain {
   MAINNET = '1',
   DEVNET = 'D',
 }
 export class XOXNOClient {
-  private static instance: XOXNOClient;
-  public apiUrl: string;
-  private apiKey: string;
-  public chain: IChainID;
+  private static instance: XOXNOClient
+  public apiUrl: string
+  private apiKey: string
+  public chain: IChainID
   public config: {
-    mediaUrl: string;
-    gatewayUrl: string;
-    XO_SC: string;
-    FM_SC: string;
-    DR_SC: string;
-    KG_SC: string;
-    Staking_SC: string;
-    Manager_SC: string;
-    P2P_SC: string;
-  };
+    mediaUrl: string
+    gatewayUrl: string
+    XO_SC: string
+    FM_SC: string
+    DR_SC: string
+    KG_SC: string
+    Staking_SC: string
+    Manager_SC: string
+    P2P_SC: string
+  }
 
   private constructor(apiUrl: string = API_URL, apiKey = '', chain: Chain) {
-    this.apiUrl = apiUrl;
-    this.apiKey = apiKey;
-    this.chain = chain;
+    this.apiUrl = apiUrl
+    this.apiKey = apiKey
+    this.chain = chain
     this.config =
       chain == Chain.MAINNET
         ? {
@@ -62,7 +64,7 @@ export class XOXNOClient {
             Staking_SC: Staking_SC_DEV,
             Manager_SC: Manager_SC_DEV,
             P2P_SC: P2P_SC_DEV,
-          };
+          }
   }
 
   public static init({
@@ -70,9 +72,9 @@ export class XOXNOClient {
     apiKey = '',
     chain = Chain.MAINNET,
   }: Partial<{
-    apiUrl?: string;
-    apiKey?: string;
-    chain?: Chain;
+    apiUrl?: string
+    apiKey?: string
+    chain?: Chain
   }> = {}): XOXNOClient {
     if (XOXNOClient.instance == null || XOXNOClient.instance == undefined) {
       if (chain == Chain.DEVNET) {
@@ -80,19 +82,19 @@ export class XOXNOClient {
           apiUrl ?? API_URL_DEV,
           apiKey,
           chain
-        );
-        return XOXNOClient.instance;
+        )
+        return XOXNOClient.instance
       }
-      XOXNOClient.instance = new XOXNOClient(apiUrl, apiKey, chain);
+      XOXNOClient.instance = new XOXNOClient(apiUrl, apiKey, chain)
     }
-    return XOXNOClient.instance;
+    return XOXNOClient.instance
   }
 
   public static getInstance(): XOXNOClient {
     if (XOXNOClient.instance == null || XOXNOClient.instance == undefined) {
-      throw new Error('XOXNOClient is not initialized');
+      throw new Error('XOXNOClient is not initialized')
     }
-    return XOXNOClient.instance;
+    return XOXNOClient.instance
   }
 
   public fetchWithTimeout = async <T>(
@@ -108,8 +110,8 @@ export class XOXNOClient {
         ? { 'Content-Type': 'application/json' }
         : {}),
       ...((options.headers as object) ?? {}),
-    };
-    const shouldInsertOrigin = typeof path === 'string' && path.startsWith('/');
+    }
+    const shouldInsertOrigin = typeof path === 'string' && path.startsWith('/')
     const url = `${shouldInsertOrigin ? `${this.apiUrl}${path}` : path}${
       options.params
         ? '?' +
@@ -117,14 +119,14 @@ export class XOXNOClient {
             .map((key) => {
               return `${key}=${encodeURIComponent(
                 (options.params as any)[key]
-              )}`;
+              )}`
             })
             .join('&')
         : ''
-    }`;
+    }`
 
-    const controller = new AbortController();
-    setTimeout(() => controller.abort(), timeout);
+    const controller = new AbortController()
+    setTimeout(() => controller.abort(), timeout)
     const res = await fetch(url, {
       ...options,
       ...(options?.next && options.next.revalidate
@@ -133,8 +135,8 @@ export class XOXNOClient {
       signal: controller.signal,
       ...(Object.keys(headers).length ? { headers } : {}),
       method: (options.method as any) ?? 'GET',
-    });
-    if (!res.ok) throw new Error((await res.json()).message.toString());
-    return res.json() as T;
-  };
+    })
+    if (!res.ok) throw new Error((await res.json()).message.toString())
+    return res.json() as T
+  }
 }

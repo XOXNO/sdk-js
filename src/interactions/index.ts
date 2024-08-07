@@ -1,94 +1,93 @@
-import { GlobalOffer } from '../types/collection';
-import { NftData, XOXNOClient } from '..';
-import { ContractQueryRunner } from '../utils/scCalls';
-import { SmartContractAbis } from '../utils/SmartContractAbis';
-import { getSmartContract } from '../utils/SmartContractService';
-import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract';
+import type { Interaction } from '@multiversx/sdk-core/out'
+import { BytesValue, VariadicValue } from '@multiversx/sdk-core/out'
+import { Address } from '@multiversx/sdk-core/out/address'
+import type { IPlainTransactionObject } from '@multiversx/sdk-core/out/interface'
+import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract'
+import type { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+import {
+  BooleanType,
+  BooleanValue,
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem/boolean'
+import {
+  Field,
+  FieldDefinition,
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem/fields'
 import {
   BigUIntType,
   BigUIntValue,
   U64Type,
   U64Value,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical';
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical'
 import {
+  Struct,
+  StructType,
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem/struct'
+import {
+  TokenIdentifierType,
+  TokenIdentifierValue,
+} from '@multiversx/sdk-core/out/smartcontracts/typesystem/tokenIdentifier'
+import { Token, TokenTransfer } from '@multiversx/sdk-core/out/tokens'
+import { SmartContractTransactionsFactory } from '@multiversx/sdk-core/out/transactionsFactories/smartContractTransactionsFactory'
+import { TransactionsFactoryConfig } from '@multiversx/sdk-core/out/transactionsFactories/transactionsFactoryConfig'
+import BigNumber from 'bignumber.js'
+
+import type { NftData } from '..'
+import { XOXNOClient } from '..'
+import type { GlobalOffer } from '../types/collection'
+import type {
   AcceptGlobalOffer,
   Auction,
-  AuctionType,
   ChangeListing,
   NewListingArgs,
   Payment,
   SendCustomOffer,
   SendGlobalOffer,
   WithSenderAndNonce,
-} from '../types/interactions';
-import BigNumber from 'bignumber.js';
-import {
-  Struct,
-  StructType,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem/struct';
-import {
-  TokenIdentifierType,
-  TokenIdentifierValue,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem/tokenIdentifier';
-import {
-  Field,
-  FieldDefinition,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem/fields';
-import {
-  BooleanType,
-  BooleanValue,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem/boolean';
-import { Address } from '@multiversx/sdk-core/out/address';
-import { Token, TokenTransfer } from '@multiversx/sdk-core/out/tokens';
-import { TransactionsFactoryConfig } from '@multiversx/sdk-core/out/transactionsFactories/transactionsFactoryConfig';
-import { SmartContractTransactionsFactory } from '@multiversx/sdk-core/out/transactionsFactories/smartContractTransactionsFactory';
-import { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry';
-import { IPlainTransactionObject } from '@multiversx/sdk-core/out/interface';
-import {
-  BytesValue,
-  Interaction,
-  VariadicValue,
-} from '@multiversx/sdk-core/out';
+} from '../types/interactions'
+import { AuctionType } from '../types/interactions'
+import { ContractQueryRunner } from '../utils/scCalls'
+import { SmartContractAbis } from '../utils/SmartContractAbis'
+import { getSmartContract } from '../utils/SmartContractService'
 
 export class SCInteraction {
-  private xo: SmartContract;
-  private call: ContractQueryRunner;
-  private api: XOXNOClient;
+  private xo: SmartContract
+  private call: ContractQueryRunner
+  private api: XOXNOClient
   private config: {
-    mediaUrl: string;
-    XO_SC: string;
-    FM_SC: string;
-    DR_SC: string;
-    KG_SC: string;
-    Staking_SC: string;
-    Manager_SC: string;
-    P2P_SC: string;
-  };
-  private factory: SmartContractTransactionsFactory;
+    mediaUrl: string
+    XO_SC: string
+    FM_SC: string
+    DR_SC: string
+    KG_SC: string
+    Staking_SC: string
+    Manager_SC: string
+    P2P_SC: string
+  }
+  private factory: SmartContractTransactionsFactory
   private constructor(abi: AbiRegistry) {
-    this.config = XOXNOClient.getInstance().config;
-    const xo_abi = getSmartContract(abi, this.config.XO_SC);
-    this.xo = xo_abi;
-    this.call = new ContractQueryRunner();
-    this.api = XOXNOClient.getInstance();
+    this.config = XOXNOClient.getInstance().config
+    const xo_abi = getSmartContract(abi, this.config.XO_SC)
+    this.xo = xo_abi
+    this.call = new ContractQueryRunner()
+    this.api = XOXNOClient.getInstance()
     const factoryConfig = new TransactionsFactoryConfig({
       chainID: this.api.chain.valueOf(),
-    });
+    })
 
     this.factory = new SmartContractTransactionsFactory({
       config: factoryConfig,
       abi,
-    });
+    })
   }
 
   static async init() {
-    const marketAbiXOXNO = await SmartContractAbis.getMarket();
+    const marketAbiXOXNO = await SmartContractAbis.getMarket()
 
-    return new SCInteraction(marketAbiXOXNO);
+    return new SCInteraction(marketAbiXOXNO)
   }
 
   private async getResult(interaction: Interaction) {
-    return await this.call.runQuery(this.xo, interaction);
+    return await this.call.runQuery(this.xo, interaction)
   }
 
   /**
@@ -97,20 +96,20 @@ export class SCInteraction {
    * @returns The percentage of each transaction that will be paid to the marketplace.
    */
   public getMarketplaceFees = async (): Promise<number> => {
-    const interaction = this.xo.methods.getMarketplaceCutPercentage();
-    const result = await this.getResult(interaction);
-    return parseInt(result.firstValue?.valueOf());
-  };
+    const interaction = this.xo.methods.getMarketplaceCutPercentage()
+    const result = await this.getResult(interaction)
+    return parseInt(result.firstValue?.valueOf())
+  }
 
   /**
    * Retrieves the list of accepted payment tokens.
    * @returns {string[]} A list of accepted payment tokens.
    */
   public getAcceptedPaymentTokens = async (): Promise<string[]> => {
-    const interaction = this.xo.methods.getAcceptedTokens();
-    const result = await this.getResult(interaction);
-    return result.firstValue?.valueOf();
-  };
+    const interaction = this.xo.methods.getAcceptedTokens()
+    const result = await this.getResult(interaction)
+    return result.firstValue?.valueOf()
+  }
 
   /**
    * This function returns a list of IDs of global offers.
@@ -118,10 +117,10 @@ export class SCInteraction {
    */
 
   public getGlobalOfferIDs = async (): Promise<number[]> => {
-    const interaction = this.xo.methods.getGlobalOffers();
-    const result = await this.getResult(interaction);
-    return result.firstValue?.valueOf().map((id: string) => parseInt(id));
-  };
+    const interaction = this.xo.methods.getGlobalOffers()
+    const result = await this.getResult(interaction)
+    return result.firstValue?.valueOf().map((id: string) => parseInt(id))
+  }
 
   /**
    * Gets the balance of a user in a token of a specific pool.
@@ -137,21 +136,21 @@ export class SCInteraction {
   ): Promise<number> {
     const result = await this.getResult(
       this.xo.methods.userDeposit([address, token, nonce])
-    );
+    )
 
     if (!result?.firstValue) {
-      return 0;
+      return 0
     }
     return new BigUIntValue(result.firstValue.valueOf().amount)
       .valueOf()
       .shiftedBy(-18)
-      .toNumber();
+      .toNumber()
   }
 
   // function to determine if the offer is active
   // based on the offer price and user balance
   private isOfferActive(offer_price: number, user_balance: number): boolean {
-    return offer_price <= user_balance;
+    return offer_price <= user_balance
   }
 
   /**
@@ -165,15 +164,15 @@ export class SCInteraction {
   public getGlobalOfferData = async (
     global_offer_id: number
   ): Promise<GlobalOffer> => {
-    const interaction = this.xo.methods.getGlobalOffer([global_offer_id]);
-    const result = await this.getResult(interaction);
-    const body = result.firstValue?.valueOf();
-    body.offer_id = parseInt(body.offer_id.valueOf());
-    body.marketplace = 'xoxno';
+    const interaction = this.xo.methods.getGlobalOffer([global_offer_id])
+    const result = await this.getResult(interaction)
+    const body = result.firstValue?.valueOf()
+    body.offer_id = parseInt(body.offer_id.valueOf())
+    body.marketplace = 'xoxno'
     body.short_price = parseFloat(
       new BigUIntValue(body.price).valueOf().shiftedBy(-18).toString()
-    );
-    body.new_version = Boolean(body.new_version);
+    )
+    body.new_version = Boolean(body.new_version)
     if (!body.new_version) {
       body.isActive = this.isOfferActive(
         body.short_price,
@@ -182,25 +181,25 @@ export class SCInteraction {
           body.payment_token,
           body.payment_nonce
         )
-      );
+      )
     } else {
-      body.isActive = true;
+      body.isActive = true
     }
-    body.quantity = parseInt(body.quantity.valueOf());
-    body.payment_nonce = parseInt(body.payment_nonce.valueOf());
-    body.price = body.price.valueOf();
+    body.quantity = parseInt(body.quantity.valueOf())
+    body.payment_nonce = parseInt(body.payment_nonce.valueOf())
+    body.price = body.price.valueOf()
 
-    body.timestamp = parseInt(body.timestamp.valueOf());
-    body.owner = body.owner.valueOf().toString();
+    body.timestamp = parseInt(body.timestamp.valueOf())
+    body.owner = body.owner.valueOf().toString()
     if (body.attributes) {
       body.attributes = JSON.parse(
         Buffer.from(body.attributes.valueOf().toString(), 'base64').toString(
           'ascii'
         )
-      );
+      )
     }
-    return body as GlobalOffer;
-  };
+    return body as GlobalOffer
+  }
 
   /**
    * Returns the auction struct for the given id.
@@ -213,64 +212,64 @@ export class SCInteraction {
   public getAuctionInfo = async (
     auctionID: number
   ): Promise<Auction | null> => {
-    const interaction = this.xo.methods.getFullAuctionData([auctionID]);
-    const result = await this.getResult(interaction);
-    const body = result.firstValue?.valueOf();
+    const interaction = this.xo.methods.getFullAuctionData([auctionID])
+    const result = await this.getResult(interaction)
+    const body = result.firstValue?.valueOf()
     if (!body) {
-      return null;
+      return null
     }
-    body.auctioned_token_nonce = parseInt(body.auctioned_token_nonce.valueOf());
-    body.nr_auctioned_tokens = parseInt(body.nr_auctioned_tokens.valueOf());
-    body.auction_type = body.auction_type.name;
-    body.payment_token_nonce = parseInt(body.payment_token_nonce.valueOf());
-    body.min_bid = body.min_bid.valueOf();
-    body.max_bid = body.max_bid.valueOf();
-    body.start_time = parseInt(body.start_time.valueOf());
-    body.deadline = parseInt(body.deadline.valueOf());
-    body.original_owner = body.original_owner.valueOf().toString();
-    body.current_winner = body.current_winner.valueOf().toString();
-    body.current_bid = body.current_bid.valueOf().toString();
-    body.marketplace_cut_percentage = body.marketplace_cut_percentage.valueOf();
+    body.auctioned_token_nonce = parseInt(body.auctioned_token_nonce.valueOf())
+    body.nr_auctioned_tokens = parseInt(body.nr_auctioned_tokens.valueOf())
+    body.auction_type = body.auction_type.name
+    body.payment_token_nonce = parseInt(body.payment_token_nonce.valueOf())
+    body.min_bid = body.min_bid.valueOf()
+    body.max_bid = body.max_bid.valueOf()
+    body.start_time = parseInt(body.start_time.valueOf())
+    body.deadline = parseInt(body.deadline.valueOf())
+    body.original_owner = body.original_owner.valueOf().toString()
+    body.current_winner = body.current_winner.valueOf().toString()
+    body.current_bid = body.current_bid.valueOf().toString()
+    body.marketplace_cut_percentage = body.marketplace_cut_percentage.valueOf()
     body.creator_royalties_percentage =
-      body.creator_royalties_percentage.valueOf();
+      body.creator_royalties_percentage.valueOf()
 
-    return body as Auction;
-  };
+    return body as Auction
+  }
 
   /** Gets the number of listings.
    * @returns {number} The number of listings.
    * */
   public async getListingsCount(): Promise<number> {
-    const result = await this.getResult(this.xo.methods.getListingsCount());
-    const count = parseInt(result.firstValue?.valueOf());
-    return count;
+    const result = await this.getResult(this.xo.methods.getListingsCount())
+    const count = parseInt(result.firstValue?.valueOf())
+    return count
   }
 
   /** Gets the number of custom offers.
    * @returns {number} The number of custom offers.
    * */
   public async getOffersCount(): Promise<number> {
-    const result = await this.getResult(this.xo.methods.getOffersCount());
-    const count = parseInt(result.firstValue?.valueOf());
-    return count;
+    const result = await this.getResult(this.xo.methods.getOffersCount())
+    const count = parseInt(result.firstValue?.valueOf())
+    return count
   }
 
   /** Gets the number of global offers.
    * @returns {number} The number of global offers.
    * */
   public async getGlobalOffersCount(): Promise<number> {
-    const result = await this.getResult(this.xo.methods.getGlobalOffersCount());
-    const count = parseInt(result.firstValue?.valueOf());
-    return count;
+    const result = await this.getResult(this.xo.methods.getGlobalOffersCount())
+    const count = parseInt(result.firstValue?.valueOf())
+    return count
   }
 
   /** Gets the number of collections listed.
    * @returns {number} The number of collections listed.
    * */
   public async getCollectionsCount(): Promise<number> {
-    const result = await this.getResult(this.xo.methods.getCollectionsCount());
-    const count = parseInt(result.firstValue?.valueOf());
-    return count;
+    const result = await this.getResult(this.xo.methods.getCollectionsCount())
+    const count = parseInt(result.firstValue?.valueOf())
+    return count
   }
 
   /**
@@ -282,8 +281,8 @@ export class SCInteraction {
   public async isCollectionListed(collection: string): Promise<boolean> {
     const result = await this.getResult(
       this.xo.methods.isCollectionListed([collection])
-    );
-    return Boolean(result.firstValue?.valueOf());
+    )
+    return Boolean(result.firstValue?.valueOf())
   }
 
   /** Gets the on sale NFT count of the collection.
@@ -297,8 +296,8 @@ export class SCInteraction {
   ): Promise<number> {
     const result = await this.getResult(
       this.xo.methods.getTokenItemsForSaleCount([collection])
-    );
-    return parseInt(result.firstValue?.valueOf());
+    )
+    return parseInt(result.firstValue?.valueOf())
   }
 
   /** Gets the active unique auction IDs of collection.
@@ -313,9 +312,9 @@ export class SCInteraction {
   ): Promise<number[]> {
     const result = await this.getResult(
       this.xo.methods.getAuctionsForTicker([collection])
-    );
-    const ids = result.firstValue?.valueOf().map((id: string) => parseInt(id));
-    return ids;
+    )
+    const ids = result.firstValue?.valueOf().map((id: string) => parseInt(id))
+    return ids
   }
 
   /**
@@ -331,19 +330,19 @@ export class SCInteraction {
     market = 'xoxno',
     signature,
   }: {
-    auctionIDs: number[];
-    sender: WithSenderAndNonce;
-    signature?: string;
-    market?: string;
+    auctionIDs: number[]
+    sender: WithSenderAndNonce
+    signature?: string
+    market?: string
   }): IPlainTransactionObject {
     if (market === 'xoxno') {
       const interaction = this.xo.methodsExplicit.withdraw([
         BytesValue.fromHex(signature!),
         ...auctionIDs.map((nr) => new U64Value(nr)),
-      ]);
+      ])
 
       if (sender.nonce) {
-        interaction.withNonce(sender.nonce);
+        interaction.withNonce(sender.nonce)
       }
       return interaction
         .withChainID(this.api.chain)
@@ -352,9 +351,9 @@ export class SCInteraction {
           Math.min(600_000_000, 25_000_000 + auctionIDs.length * 8_000_000)
         )
         .buildTransaction()
-        .toPlainObject();
+        .toPlainObject()
     } else {
-      throw new Error('Market not supported');
+      throw new Error('Market not supported')
     }
   }
 
@@ -369,17 +368,17 @@ export class SCInteraction {
     offerID: number,
     senderNonce: WithSenderAndNonce
   ): IPlainTransactionObject {
-    const interaction = this.xo.methods.withdrawGlobalOffer([offerID]);
+    const interaction = this.xo.methods.withdrawGlobalOffer([offerID])
 
     if (senderNonce.nonce) {
-      interaction.withNonce(senderNonce.nonce);
+      interaction.withNonce(senderNonce.nonce)
     }
     return interaction
       .withChainID(this.api.chain)
       .withSender(new Address(senderNonce.address))
       .withGasLimit(20_000_000)
       .buildTransaction()
-      .toPlainObject();
+      .toPlainObject()
   }
 
   /**
@@ -399,7 +398,7 @@ export class SCInteraction {
     nonce,
   }: AcceptGlobalOffer & WithSenderAndNonce): IPlainTransactionObject {
     if (market != 'xoxno') {
-      throw Error('Marketplace not supported');
+      throw Error('Marketplace not supported')
     }
     const interaction = signature
       ? this.xo.methods.acceptGlobalOffer([
@@ -407,17 +406,17 @@ export class SCInteraction {
           auction_ids_opt,
           signature,
         ])
-      : this.xo.methods.acceptGlobalOffer([offer_id, auction_ids_opt]);
-    interaction.withSender(new Address(address));
+      : this.xo.methods.acceptGlobalOffer([offer_id, auction_ids_opt])
+    interaction.withSender(new Address(address))
     if (nfts.length > 0) {
       interaction.withMultiESDTNFTTransfer(
         nfts.map((nft) =>
           TokenTransfer.semiFungible(nft.collection, nft.nonce, nft.amount ?? 1)
         )
-      );
+      )
     }
     if (nonce) {
-      interaction.withNonce(nonce);
+      interaction.withNonce(nonce)
     }
     return interaction
       .withChainID(this.api.chain)
@@ -430,7 +429,7 @@ export class SCInteraction {
         )
       )
       .buildTransaction()
-      .toPlainObject();
+      .toPlainObject()
   }
 
   /**
@@ -461,20 +460,20 @@ export class SCInteraction {
       collection,
       quantity,
       ...(attributes ? [attributes] : []),
-    ]);
+    ])
 
     if (nonce) {
-      interaction.withNonce(nonce);
+      interaction.withNonce(nonce)
     }
-    interaction.withSender(new Address(address));
+    interaction.withSender(new Address(address))
     if (depositAmount) {
-      interaction.withValue(TokenTransfer.egldFromAmount(depositAmount));
+      interaction.withValue(TokenTransfer.egldFromAmount(depositAmount))
     }
     return interaction
       .withChainID(this.api.chain)
       .withGasLimit(25_000_000 + (attributes ? attributes?.length * 1500 : 0))
       .buildTransaction()
-      .toPlainObject();
+      .toPlainObject()
   }
 
   /**
@@ -505,19 +504,19 @@ export class SCInteraction {
       nft.nonce,
       nft.amount ?? 1,
       deadline,
-    ]);
+    ])
     if (nonce) {
-      interaction.withNonce(nonce);
+      interaction.withNonce(nonce)
     }
-    interaction.withSender(new Address(address));
+    interaction.withSender(new Address(address))
     if (depositAmount) {
-      interaction.withValue(TokenTransfer.egldFromAmount(depositAmount));
+      interaction.withValue(TokenTransfer.egldFromAmount(depositAmount))
     }
     return interaction
       .withChainID(this.api.chain)
       .withGasLimit(30_000_000)
       .buildTransaction()
-      .toPlainObject();
+      .toPlainObject()
   }
 
   /**
@@ -533,18 +532,18 @@ export class SCInteraction {
     market: string
   ): IPlainTransactionObject {
     if (market === 'xoxno') {
-      const interaction = this.xo.methods.withdrawOffer([offerID]);
+      const interaction = this.xo.methods.withdrawOffer([offerID])
       if (senderNonce.nonce) {
-        interaction.withNonce(senderNonce.nonce);
+        interaction.withNonce(senderNonce.nonce)
       }
-      interaction.withSender(new Address(senderNonce.address));
+      interaction.withSender(new Address(senderNonce.address))
       return interaction
         .withChainID(this.api.chain)
         .withGasLimit(15_000_000)
         .buildTransaction()
-        .toPlainObject();
+        .toPlainObject()
     } else {
-      throw Error('Market not supported');
+      throw Error('Market not supported')
     }
   }
 
@@ -564,23 +563,23 @@ export class SCInteraction {
     if (market == 'xoxno') {
       const interaction = nft.onSale
         ? this.xo.methods.declineOffer([offerID, nft.saleInfo?.auctionId])
-        : this.xo.methods.declineOffer([offerID]);
+        : this.xo.methods.declineOffer([offerID])
       if (sender.nonce) {
-        interaction.withNonce(sender.nonce);
+        interaction.withNonce(sender.nonce)
       }
-      interaction.withSender(new Address(sender.address));
+      interaction.withSender(new Address(sender.address))
       if (!nft.onSale) {
         interaction.withSingleESDTNFTTransfer(
           TokenTransfer.semiFungible(nft.collection, nft.nonce, 1)
-        );
+        )
       }
       return interaction
         .withChainID(this.api.chain)
         .withGasLimit(20_000_000)
         .buildTransaction()
-        .toPlainObject();
+        .toPlainObject()
     } else {
-      throw Error('Market not supported');
+      throw Error('Market not supported')
     }
   }
 
@@ -600,25 +599,25 @@ export class SCInteraction {
     if (market == 'xoxno') {
       const interaction = nft.onSale
         ? this.xo.methods.acceptOffer([offerID, nft.saleInfo?.auctionId])
-        : this.xo.methods.acceptOffer([offerID]);
+        : this.xo.methods.acceptOffer([offerID])
 
       if (sender.nonce) {
-        interaction.withNonce(sender.nonce);
+        interaction.withNonce(sender.nonce)
       }
-      interaction.withSender(new Address(sender.address));
+      interaction.withSender(new Address(sender.address))
       if (!nft.onSale) {
         interaction.withSingleESDTNFTTransfer(
           TokenTransfer.semiFungible(nft.collection, nft.nonce, 1)
-        );
+        )
       }
 
       return interaction
         .withChainID(this.api.chain)
         .withGasLimit(45_000_000)
         .buildTransaction()
-        .toPlainObject();
+        .toPlainObject()
     } else {
-      throw Error('Market not supported');
+      throw Error('Market not supported')
     }
   }
 
@@ -641,19 +640,19 @@ export class SCInteraction {
     market = 'xoxno'
   ): IPlainTransactionObject {
     if (market == 'xoxno') {
-      const interaction = this.xo.methods.endAuction([auctionID]);
+      const interaction = this.xo.methods.endAuction([auctionID])
 
       if (sender.nonce) {
-        interaction.withNonce(sender.nonce);
+        interaction.withNonce(sender.nonce)
       }
-      interaction.withSender(new Address(sender.address));
+      interaction.withSender(new Address(sender.address))
       return interaction
         .withChainID(this.api.chain)
         .withGasLimit(25_000_000)
         .buildTransaction()
-        .toPlainObject();
+        .toPlainObject()
     } else {
-      throw new Error('Market not supported');
+      throw new Error('Market not supported')
     }
   }
 
@@ -675,9 +674,9 @@ export class SCInteraction {
     sender: WithSenderAndNonce
   ): IPlainTransactionObject {
     if (!payment.amount) {
-      throw new Error('Payment amount is required');
+      throw new Error('Payment amount is required')
     }
-    const isEgld = payment.collection == 'EGLD';
+    const isEgld = payment.collection == 'EGLD'
     const tx = this.factory.createTransactionForExecute({
       sender: new Address(sender.address),
       contract: new Address(this.config.XO_SC),
@@ -696,13 +695,13 @@ export class SCInteraction {
               amount: BigInt(payment.amount),
             }),
           ],
-    });
+    })
 
     if (sender.nonce) {
-      tx.nonce = BigInt(sender.nonce);
+      tx.nonce = BigInt(sender.nonce)
     }
 
-    return tx.toPlainObject();
+    return tx.toPlainObject()
   }
 
   /**
@@ -718,17 +717,17 @@ export class SCInteraction {
     payment: Payment,
     sender: WithSenderAndNonce
   ): IPlainTransactionObject {
-    const interaction = this.xo.methods.bulkBuy(auctionIDs);
+    const interaction = this.xo.methods.bulkBuy(auctionIDs)
 
     if (sender.nonce) {
-      interaction.withNonce(sender.nonce);
+      interaction.withNonce(sender.nonce)
     }
-    interaction.withSender(new Address(sender.address));
+    interaction.withSender(new Address(sender.address))
     if (!payment.amount) {
-      throw new Error('Payment amount is required');
+      throw new Error('Payment amount is required')
     }
     if (payment.collection == 'EGLD' && payment.amount) {
-      interaction.withValue(TokenTransfer.egldFromAmount(payment.amount));
+      interaction.withValue(TokenTransfer.egldFromAmount(payment.amount))
     } else {
       interaction.withSingleESDTTransfer(
         TokenTransfer.fungibleFromAmount(
@@ -736,7 +735,7 @@ export class SCInteraction {
           payment.amount,
           payment.decimals ?? 18
         )
-      );
+      )
     }
     return interaction
       .withChainID(this.api.chain)
@@ -744,7 +743,7 @@ export class SCInteraction {
         Math.min(600_000_000, 25_000_000 + auctionIDs.length * 20_000_000)
       )
       .buildTransaction()
-      .toPlainObject();
+      .toPlainObject()
   }
 
   /**
@@ -790,45 +789,45 @@ export class SCInteraction {
     market = 'xoxno',
     sender,
   }: {
-    auctionID: number;
-    collection?: string;
-    nonce?: number;
-    quantity?: number;
-    token?: string;
-    paymentAmount?: string;
-    withCheck?: boolean;
-    isBigUintPayment?: boolean;
-    isBid?: boolean;
-    market?: string;
-    decimals?: number;
-    sender: WithSenderAndNonce;
+    auctionID: number
+    collection?: string
+    nonce?: number
+    quantity?: number
+    token?: string
+    paymentAmount?: string
+    withCheck?: boolean
+    isBigUintPayment?: boolean
+    isBid?: boolean
+    market?: string
+    decimals?: number
+    sender: WithSenderAndNonce
   }): Promise<IPlainTransactionObject> {
     if (market !== 'xoxno') {
-      throw new Error('Market not supported');
+      throw new Error('Market not supported')
     }
     if (!auctionID) {
-      throw new Error('AuctionID not provided');
+      throw new Error('AuctionID not provided')
     }
-    let auction: Auction | null = null;
+    let auction: Auction | null = null
     if (!paymentAmount || !token || !collection || !nonce || withCheck) {
-      auction = await this.getAuctionInfo(auctionID);
+      auction = await this.getAuctionInfo(auctionID)
       if (auction === null) {
-        throw new Error('Auction not found');
+        throw new Error('Auction not found')
       }
       if (
         auction.auction_type === AuctionType.Nft ||
         auction.auction_type === AuctionType.SftOnePerPayment
       ) {
-        throw new Error('Auction type is not NFT or SftOnePerPayment');
+        throw new Error('Auction type is not NFT or SftOnePerPayment')
       }
     }
-    const paymentToken = auction?.payment_token_type ?? token;
-    const bigNumber = auction ? true : isBigUintPayment;
+    const paymentToken = auction?.payment_token_type ?? token
+    const bigNumber = auction ? true : isBigUintPayment
     let amount = isBid
       ? (auction?.max_bid ?? paymentAmount)
-      : (auction?.min_bid ?? paymentAmount);
+      : (auction?.min_bid ?? paymentAmount)
     if (!amount) {
-      throw new Error('Payment amount not provided');
+      throw new Error('Payment amount not provided')
     }
 
     const interaction = this.xo.methods.buy([
@@ -836,12 +835,12 @@ export class SCInteraction {
       auction?.auctioned_token_type ?? collection,
       auction?.auctioned_token_nonce ?? nonce,
       quantity ?? 1,
-    ]);
+    ])
 
     if (sender.nonce) {
-      interaction.withNonce(sender.nonce);
+      interaction.withNonce(sender.nonce)
     }
-    interaction.withSender(new Address(sender.address));
+    interaction.withSender(new Address(sender.address))
     if (token === 'EGLD') {
       interaction.withValue(
         bigNumber
@@ -851,25 +850,25 @@ export class SCInteraction {
           : TokenTransfer.egldFromAmount(
               new BigNumber(amount).multipliedBy(quantity)
             )
-      );
+      )
     } else {
       if (!bigNumber) {
-        auction = await this.getAuctionInfo(auctionID);
+        auction = await this.getAuctionInfo(auctionID)
         if (auction === null) {
-          throw new Error('Auction not found');
+          throw new Error('Auction not found')
         }
-        amount = isBid ? auction.max_bid : auction.min_bid;
+        amount = isBid ? auction.max_bid : auction.min_bid
       }
       interaction.withSingleESDTTransfer(
         TokenTransfer.fungibleFromBigInteger(paymentToken, amount, decimals)
-      );
+      )
     }
 
     return interaction
       .withChainID(this.api.chain)
       .withGasLimit(45_000_000)
       .buildTransaction()
-      .toPlainObject();
+      .toPlainObject()
   }
 
   /**
@@ -896,15 +895,15 @@ export class SCInteraction {
     marketplace: string
   ): Promise<IPlainTransactionObject> {
     if (!marketplace) {
-      throw Error('Market is required');
+      throw Error('Market is required')
     }
     const fooType = new StructType('BulkUpdateListing', [
       new FieldDefinition('payment_token_type', '', new TokenIdentifierType()),
       new FieldDefinition('new_price', '', new BigUIntType()),
       new FieldDefinition('auction_id', '', new U64Type()),
       new FieldDefinition('deadline', '', new U64Type()),
-    ]);
-    const structs: Struct[] = [];
+    ])
+    const structs: Struct[] = []
     listings.forEach(({ paymentToken, price, auctionID, deadline }) => {
       structs.push(
         new Struct(fooType, [
@@ -916,15 +915,15 @@ export class SCInteraction {
           new Field(new U64Value(auctionID), 'auction_id'),
           new Field(new U64Value(deadline), 'deadline'),
         ])
-      );
-    });
+      )
+    })
     const interaction = this.xo.methods.changeListing([
       VariadicValue.fromItems(...structs),
-    ]);
+    ])
     if (sender.nonce) {
-      interaction.withNonce(sender.nonce);
+      interaction.withNonce(sender.nonce)
     }
-    interaction.withSender(new Address(sender.address));
+    interaction.withSender(new Address(sender.address))
 
     return interaction
       .withChainID(this.api.chain)
@@ -932,7 +931,7 @@ export class SCInteraction {
         Math.min(600_000_000, 25_000_000 + listings.length * 5_000_000)
       )
       .buildTransaction()
-      .toPlainObject();
+      .toPlainObject()
   }
 
   public async listNFTs(
@@ -954,13 +953,13 @@ export class SCInteraction {
       new FieldDefinition('collection', '', new TokenIdentifierType()),
       new FieldDefinition('nonce', '', new U64Type()),
       new FieldDefinition('nft_amount', '', new BigUIntType()),
-    ]);
-    const structs: Struct[] = [];
-    const tokens: any = [];
+    ])
+    const structs: Struct[] = []
+    const tokens: any = []
     listings.forEach((listing: NewListingArgs) => {
-      const decimals = listing.accepted_payment_token_decimals ?? 18;
-      const minBID = new BigNumber(listing.min_bid).shiftedBy(decimals);
-      const maxBID = new BigNumber(listing.max_bid ?? 0).shiftedBy(decimals);
+      const decimals = listing.accepted_payment_token_decimals ?? 18
+      const minBID = new BigNumber(listing.min_bid).shiftedBy(decimals)
+      const maxBID = new BigNumber(listing.max_bid ?? 0).shiftedBy(decimals)
 
       tokens.push(
         TokenTransfer.semiFungible(
@@ -968,7 +967,7 @@ export class SCInteraction {
           listing.nonce,
           listing.nft_amount
         )
-      );
+      )
 
       structs.push(
         new Struct(fooType, [
@@ -1000,21 +999,21 @@ export class SCInteraction {
             'nft_amount'
           ),
         ])
-      );
-    });
+      )
+    })
 
-    const interaction = this.xo.methods.listings(structs);
+    const interaction = this.xo.methods.listings(structs)
     if (sender.nonce) {
-      interaction.withNonce(sender.nonce);
+      interaction.withNonce(sender.nonce)
     }
-    interaction.withSender(new Address(sender.address));
-    interaction.withMultiESDTNFTTransfer(tokens);
+    interaction.withSender(new Address(sender.address))
+    interaction.withMultiESDTNFTTransfer(tokens)
     return interaction
       .withChainID(this.api.chain)
       .withGasLimit(
         Math.min(600_000_000, 25_000_000 + listings.length * 4_500_000)
       )
       .buildTransaction()
-      .toPlainObject();
+      .toPlainObject()
   }
 }

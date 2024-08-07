@@ -1,15 +1,16 @@
-import { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry';
-import { XOXNOClient } from './api';
-import * as marketplace from '../abis/marketplace-xoxno.json';
-import * as minter from '../abis/minter.json';
+import { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+
+import * as marketplace from '../abis/marketplace-xoxno.json'
+import * as minter from '../abis/minter.json'
+import { XOXNOClient } from './api'
 
 export class SmartContractAbis {
-  private static manager: AbiRegistry;
-  private static exchange: AbiRegistry;
-  private static minter: AbiRegistry;
-  private static market: AbiRegistry;
-  private static staking: AbiRegistry;
-  private static p2p: AbiRegistry;
+  private static manager: AbiRegistry
+  private static exchange: AbiRegistry
+  private static minter: AbiRegistry
+  private static market: AbiRegistry
+  private static staking: AbiRegistry
+  private static p2p: AbiRegistry
 
   public static async getMarket(): Promise<AbiRegistry> {
     if (!SmartContractAbis.market) {
@@ -21,11 +22,11 @@ export class SmartContractAbis {
       //     },
       //   }
       // );
-      const abiRegistry = AbiRegistry.create(marketplace);
-      SmartContractAbis.market = abiRegistry;
+      const abiRegistry = AbiRegistry.create(marketplace)
+      SmartContractAbis.market = abiRegistry
     }
 
-    return SmartContractAbis.market;
+    return SmartContractAbis.market
   }
 
   public static async getManager(): Promise<AbiRegistry> {
@@ -37,12 +38,12 @@ export class SmartContractAbis {
             tags: ['getManager'],
           },
         }
-      );
-      const abiRegistry = AbiRegistry.create(data);
-      SmartContractAbis.manager = abiRegistry;
+      )
+      const abiRegistry = AbiRegistry.create(data)
+      SmartContractAbis.manager = abiRegistry
     }
 
-    return SmartContractAbis.manager;
+    return SmartContractAbis.manager
   }
 
   public static async getMinter(): Promise<AbiRegistry> {
@@ -55,11 +56,11 @@ export class SmartContractAbis {
       //     },
       //   }
       // );
-      const abiRegistry = AbiRegistry.create(minter);
-      SmartContractAbis.minter = abiRegistry;
+      const abiRegistry = AbiRegistry.create(minter)
+      SmartContractAbis.minter = abiRegistry
     }
 
-    return SmartContractAbis.minter;
+    return SmartContractAbis.minter
   }
 
   public static async getStaking(): Promise<AbiRegistry> {
@@ -71,12 +72,12 @@ export class SmartContractAbis {
             tags: ['getStaking'],
           },
         }
-      );
-      const abiRegistry = AbiRegistry.create(data);
-      SmartContractAbis.staking = abiRegistry;
+      )
+      const abiRegistry = AbiRegistry.create(data)
+      SmartContractAbis.staking = abiRegistry
     }
 
-    return SmartContractAbis.staking;
+    return SmartContractAbis.staking
   }
 
   public static async getExchange(): Promise<AbiRegistry> {
@@ -88,12 +89,12 @@ export class SmartContractAbis {
             tags: ['getExchange'],
           },
         }
-      );
-      const abiRegistry = AbiRegistry.create(data);
-      SmartContractAbis.exchange = abiRegistry;
+      )
+      const abiRegistry = AbiRegistry.create(data)
+      SmartContractAbis.exchange = abiRegistry
     }
 
-    return SmartContractAbis.exchange;
+    return SmartContractAbis.exchange
   }
 
   public static async getP2P(): Promise<AbiRegistry> {
@@ -106,11 +107,11 @@ export class SmartContractAbis {
             /* revalidate: 500, */
           },
         }
-      );
-      const abiRegistry = AbiRegistry.create(data);
-      SmartContractAbis.p2p = abiRegistry;
+      )
+      const abiRegistry = AbiRegistry.create(data)
+      SmartContractAbis.p2p = abiRegistry
     }
 
-    return SmartContractAbis.p2p;
+    return SmartContractAbis.p2p
   }
 }

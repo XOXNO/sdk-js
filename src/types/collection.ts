@@ -1,131 +1,131 @@
-import {
+import type {
   CollectionInfo,
+  Media,
   NftData,
+  NFTMetadata,
   Owner,
   SaleInfo,
-  Media,
-  NFTMetadata,
-} from './nft';
-import { NftActivityType } from './trading';
-import { IUserProfileSearch } from './user';
+} from './nft'
+import type { NftActivityType } from './trading'
+import type { IUserProfileSearch } from './user'
 
 export interface ISocials {
-  twitter: string;
-  instagram: string;
-  website: string;
-  telegram: string;
-  discord: string;
-  facebook: string;
-  youtube: string;
+  twitter: string
+  instagram: string
+  website: string
+  telegram: string
+  discord: string
+  facebook: string
+  youtube: string
 }
 
 export interface IMintInfo {
-  dataType: string;
-  collection: string;
-  contractAddress: string;
-  collectionTag: string;
-  cid: string;
-  mediaType: string;
-  baseNftName: string;
-  hasAttributes: boolean;
-  ownerTransferred: boolean;
-  collectionSize: number;
-  totalNftMinted: number;
-  globalWalletLimit: number;
-  royalties: number;
-  oldVersion: boolean;
-  nameShuffle: boolean;
-  nftTransferLimited: boolean;
-  allowsPublicBurn: boolean;
-  kycRequired: boolean;
-  allowsRefund: boolean;
-  hasBotProtection: boolean;
-  hasReveal: boolean;
-  tags: string[];
-  id: string;
-  _ts: number;
+  dataType: string
+  collection: string
+  contractAddress: string
+  collectionTag: string
+  cid: string
+  mediaType: string
+  baseNftName: string
+  hasAttributes: boolean
+  ownerTransferred: boolean
+  collectionSize: number
+  totalNftMinted: number
+  globalWalletLimit: number
+  royalties: number
+  oldVersion: boolean
+  nameShuffle: boolean
+  nftTransferLimited: boolean
+  allowsPublicBurn: boolean
+  kycRequired: boolean
+  allowsRefund: boolean
+  hasBotProtection: boolean
+  hasReveal: boolean
+  tags: string[]
+  id: string
+  _ts: number
 }
 
 export interface IMintInfoExtended extends IMintInfo {
   collectionInfo: {
-    name: string;
-    isVerified: boolean;
-    profile: string;
-    banner: string;
-    volume: number;
-  };
+    name: string
+    isVerified: boolean
+    profile: string
+    banner: string
+    volume: number
+  }
 }
 
 export interface CreatorInfo {
-  name: string;
-  contractAddress: string;
-  address: string;
-  profile: string;
-  banner: string;
-  description?: string;
-  socials?: any;
-  id: string;
-  listing: IMintInfoExtended[];
+  name: string
+  contractAddress: string
+  address: string
+  profile: string
+  banner: string
+  description?: string
+  socials?: any
+  id: string
+  listing: IMintInfoExtended[]
 }
 
 export interface CollectionStatisticsProfile {
-  tradeData: TradeData;
-  mintData: MintStatistics;
-  other: OtherStatistics;
+  tradeData: TradeData
+  mintData: MintStatistics
+  other: OtherStatistics
 }
 
 export interface ICollectionProfile {
-  dataType: 'collectionProfile';
-  collection: string;
-  name: string;
-  description: string;
-  isVisible: boolean;
-  isVerified: boolean;
-  profile: string;
-  banner: string;
-  statistics: CollectionStatisticsProfile;
-  owner: string;
-  creator: string;
-  isMintable: boolean;
-  hasStaking: boolean;
-  id: string;
-  socials: ISocials;
-  type: string;
-  lastVerifiedTimestamp: number;
-  lastVerifiedBy: string;
+  dataType: 'collectionProfile'
+  collection: string
+  name: string
+  description: string
+  isVisible: boolean
+  isVerified: boolean
+  profile: string
+  banner: string
+  statistics: CollectionStatisticsProfile
+  owner: string
+  creator: string
+  isMintable: boolean
+  hasStaking: boolean
+  id: string
+  socials: ISocials
+  type: string
+  lastVerifiedTimestamp: number
+  lastVerifiedBy: string
   customConfig?: {
-    collection: string;
-    reversedCutFees: boolean;
-    reversedRoyalties: boolean;
-    customRoyalties: boolean;
-    minRoyalties: number;
-    maxRoyalties: number;
+    collection: string
+    reversedCutFees: boolean
+    reversedRoyalties: boolean
+    customRoyalties: boolean
+    minRoyalties: number
+    maxRoyalties: number
     extraFees: {
-      amount: number;
-      address: string;
-    };
-  };
-  _ts: number;
+      amount: number
+      address: string
+    }
+  }
+  _ts: number
 }
 
 export interface AttributeData {
-  attributeOccurrence: number;
-  floorPrice: number;
-  onSaleCount: number;
-  usdValue: number;
+  attributeOccurrence: number
+  floorPrice: number
+  onSaleCount: number
+  usdValue: number
 }
 
 export interface MetadataAttribute {
-  trait_type: string;
-  value: string;
+  trait_type: string
+  value: string
 }
 
 export interface TraitValues {
-  [traitValue: string]: AttributeData;
+  [traitValue: string]: AttributeData
 }
 
 export interface ICollectionAttributes {
-  [traitType: string]: TraitValues;
+  [traitType: string]: TraitValues
 }
 
 export enum Marketplace {
@@ -136,20 +136,20 @@ export enum Marketplace {
 }
 
 export interface GlobalOffer {
-  attributes: MetadataAttribute[];
-  collection: string;
-  isActive: boolean;
-  marketplace: string;
-  offer_id: number;
-  owner: string;
-  ownerProfile?: string;
-  ownerUsername?: string;
-  payment_nonce: number;
-  payment_token: string;
-  price: string;
-  quantity: number;
-  short_price: number;
-  timestamp: number;
+  attributes: MetadataAttribute[]
+  collection: string
+  isActive: boolean
+  marketplace: string
+  offer_id: number
+  owner: string
+  ownerProfile?: string
+  ownerUsername?: string
+  payment_nonce: number
+  payment_token: string
+  price: string
+  quantity: number
+  short_price: number
+  timestamp: number
 }
 
 export enum FieldsToSelect {
@@ -254,47 +254,47 @@ export enum GlobalOfferFieldsToSelect {
 }
 
 export interface Filter {
-  dataType?: string[];
-  identifier?: string[];
-  collection?: string[];
-  mintToken?: string[];
-  type?: string[];
-  nonce?: number[];
-  onSale?: boolean;
-  owner?: string[];
-  currentOwner?: string[];
+  dataType?: string[]
+  identifier?: string[]
+  collection?: string[]
+  mintToken?: string[]
+  type?: string[]
+  nonce?: number[]
+  onSale?: boolean
+  owner?: string[]
+  currentOwner?: string[]
   saleInfo?: {
-    seller?: string[];
-    paymentToken?: string[];
-    marketplace?: string[];
-    auctionType?: string[];
-  };
-  range?: RangeFilter[];
+    seller?: string[]
+    paymentToken?: string[]
+    marketplace?: string[]
+    auctionType?: string[]
+  }
+  range?: RangeFilter[]
   metadata?: {
-    attributes?: NftMetadataAttributes[];
-  };
-  wasProcessed?: boolean;
-  cp_staked?: boolean;
-  activeAuction?: boolean;
-  customFilter?: string;
-  verifiedOnly?: boolean;
+    attributes?: NftMetadataAttributes[]
+  }
+  wasProcessed?: boolean
+  cp_staked?: boolean
+  activeAuction?: boolean
+  customFilter?: string
+  verifiedOnly?: boolean
 }
 
 export interface NftMetadataAttributes {
-  trait_type: string;
-  value: string;
+  trait_type: string
+  value: string
 }
 
 export interface SearchNFTs {
-  name?: string;
-  filters: Filter;
-  applyNftExtraDetails?: boolean;
-  select?: string[];
-  strictSelect?: boolean;
-  orderBy?: string[];
-  top?: number;
-  skip?: number;
-  includeCount?: boolean;
+  name?: string
+  filters: Filter
+  applyNftExtraDetails?: boolean
+  select?: string[]
+  strictSelect?: boolean
+  orderBy?: string[]
+  top?: number
+  skip?: number
+  includeCount?: boolean
 }
 
 export enum AuctionTypes {
@@ -306,131 +306,131 @@ export enum AuctionTypes {
 
 export interface GetNFTsArgs {
   /** Listed by different users */
-  listedBy?: string[];
+  listedBy?: string[]
   /** Owned by different users */
-  ownedBy?: string[];
-  identifiers?: string[];
-  auctionType: AuctionTypes;
+  ownedBy?: string[]
+  identifiers?: string[]
+  auctionType: AuctionTypes
   /** If set, will return only NFTs from the specified collections */
-  collections?: string[];
+  collections?: string[]
   /** If set, will return only NFTs from verified collections */
-  onlyVerified?: boolean;
+  onlyVerified?: boolean
   /** If true, will return only NFTs that are on sale */
-  onlyOnSale?: boolean;
+  onlyOnSale?: boolean
   /** If true, will return only NFTs that are active, deadline not expired */
-  activeAuctions?: boolean;
+  activeAuctions?: boolean
   /** If true the extra details of an NFT will be appended to each NFT, such as collection size and owners name */
-  applyNftExtraDetails?: boolean;
+  applyNftExtraDetails?: boolean
   /** If set, will return only NFTs with a price in the specified range */
   priceRange?: {
-    min: number;
-    max: number;
-  };
+    min: number
+    max: number
+  }
   /** If set, will return only NFTs listed in the specified tokens */
-  listedInToken?: string[];
+  listedInToken?: string[]
   /** If set, will return only NFTs with a rank in the specified range */
   rankRange?: {
-    min: number;
-    max: number;
-  };
+    min: number
+    max: number
+  }
   /** If set, will return only NFTs with a cantina level in the specified range */
   cantinaLevelRange?: {
-    min: number;
-    max: number;
-  };
+    min: number
+    max: number
+  }
   /** If set, will return the total count of the NFTs, recommended to be set true only for the first call, then false for the next pages */
-  includeCount?: boolean;
+  includeCount?: boolean
   /** If set, will apply the extra manual filters on top of the main payload */
-  extraSearch?: string[];
+  extraSearch?: string[]
   /** If set, will return only NFTs with a name that contains the specified string */
-  searchName?: string;
+  searchName?: string
   /** The number of results to return */
-  top?: number;
+  top?: number
   /** The order by to use */
-  skip?: number;
+  skip?: number
   /** Document type */
-  dataType?: string[];
+  dataType?: string[]
   /** The nonces of the NFTs */
-  nonces?: number[];
+  nonces?: number[]
   /** If set, will return only NFTs that are staked */
-  isStaked?: boolean;
+  isStaked?: boolean
   /** The order of the results based on a field */
-  orderBy?: SearchOrderBy[];
+  orderBy?: SearchOrderBy[]
   /** If set, will return only the specified fields */
-  onlySelectFields?: FieldsToSelect[];
+  onlySelectFields?: FieldsToSelect[]
   /** If set, will return only NFTs listed in the specified marketplaces */
-  listedOnlyOn?: Marketplace[];
+  listedOnlyOn?: Marketplace[]
   /** If set, will return only NFTs with the specified attributes */
-  attributes?: MetadataAttribute[];
+  attributes?: MetadataAttribute[]
   /** If set, will return only the selected fields */
-  strictSelect?: boolean;
-  name?: string;
+  strictSelect?: boolean
+  name?: string
 }
 export interface GETDropsArgs {
-  name?: string;
+  name?: string
   /** If set, will return only NFTs from the specified collections */
-  collections?: string[];
+  collections?: string[]
   /** If set, will return only NFTs from verified collections */
-  onlyVerified?: boolean;
+  onlyVerified?: boolean
   /** If set, will return only NFTs listed in the specified tokens */
-  listedInToken?: string[];
+  listedInToken?: string[]
   /** If set, will return only NFTs with a cantina level in the specified range */
   timeRange?: {
-    min: number;
-    max: number;
-  };
+    min: number
+    max: number
+  }
   /** If set, will return the total count of the NFTs, recommended to be set true only for the first call, then false for the next pages */
-  includeCount?: boolean;
+  includeCount?: boolean
   /** The number of results to return */
-  top?: number;
+  top?: number
   /** The order by to use */
-  skip?: number;
+  skip?: number
   /** The order of the results based on a field */
-  orderBy?: DropsOderBy[];
+  orderBy?: DropsOderBy[]
   /** If set, will return only the specified fields */
-  onlySelectFields?: FieldsToSelect[];
+  onlySelectFields?: FieldsToSelect[]
 }
 export interface SuggestNFTsArgs {
   /** If set, will return only collections or users with a name that contains the specified string */
-  name: string;
+  name: string
   /** The number of results to return */
-  top?: number;
+  top?: number
   /** The order by to use */
-  skip?: number;
+  skip?: number
   /** The order of the results based on a field */
-  orderBy?: SuggestOrderBy[];
+  orderBy?: SuggestOrderBy[]
 }
 
 export interface SearchNFTsResponse {
   /** The total count of the results for the specific query */
-  count?: number;
+  count?: number
   /** The results for the current page */
-  resources: NftData[];
+  resources: NftData[]
   /** The payload to use to get the next page */
-  getNextPagePayload: GetNFTsArgs;
+  getNextPagePayload: GetNFTsArgs
   /** If there are more results to fetch */
-  hasMoreResults: boolean;
+  hasMoreResults: boolean
 }
 
 export interface GetDropsResponse {
   /** The total count of the results for the specific query */
-  count?: number;
+  count?: number
   /** The results for the current page */
-  resources: GetCollectionMintInfo[];
+  resources: GetCollectionMintInfo[]
   /** The payload to use to get the next page */
-  getNextPagePayload: GETDropsArgs;
+  getNextPagePayload: GETDropsArgs
   /** If there are more results to fetch */
-  hasMoreResults: boolean;
+  hasMoreResults: boolean
 }
 
 export type ActivityData = {
-  collection: string;
-  identifier: string;
-  price: number;
-  paymentToken: string;
-  scId: number;
-  usdValue: number;
-  egldValue: number;
+  collection: string
+  identifier: string
+  price: number
+  paymentToken: string
+  scId: number
+  usdValue: number
+  egldValue: number
   nftInfo: Pick<
     NftData,
     | 'identifier'
@@ -440,184 +440,184 @@ export type ActivityData = {
     | 'url'
     | 'wasProcessed'
     | 'media'
-  >;
-  collectionInfo: ShortCollectionInfo;
-};
+  >
+  collectionInfo: ShortCollectionInfo
+}
 
 export type ShortCollectionInfo = Pick<
   ICollectionProfile,
   'name' | 'isVerified' | 'isVisible' | 'profile' | 'description'
-> & { collectionSize: number; holderCount: number; followCount: number };
+> & { collectionSize: number; holderCount: number; followCount: number }
 
 export type TradingActivity = {
-  txHash: string;
-  eventIdentifier: string;
-  timestamp: number;
-  activityType: NftActivityType;
-  source: string;
-  from: Owner;
-  to: Owner;
-  activityData: ActivityData;
-};
+  txHash: string
+  eventIdentifier: string
+  timestamp: number
+  activityType: NftActivityType
+  source: string
+  from: Owner
+  to: Owner
+  activityData: ActivityData
+}
 
 export interface GetCollectionsArgs {
   /**  The collections to fetch the profile */
-  collections?: string[];
+  collections?: string[]
   /** If true, will return only NFTs that are mintable */
-  onlyMintable?: boolean;
+  onlyMintable?: boolean
   /** The number of results to return */
-  top?: number;
+  top?: number
   /** The order by to use */
-  skip?: number;
+  skip?: number
   /** The order of the results based on a field */
-  orderBy?: CollectionsOrderBy;
+  orderBy?: CollectionsOrderBy
   /** If set, will return only the specified fields */
-  onlySelectFields?: CollectionsFieldsToSelect[];
+  onlySelectFields?: CollectionsFieldsToSelect[]
 }
 
 export interface GetGlobalOffersArgs {
   /**  The collections to fetch the profile */
-  collections?: string[];
+  collections?: string[]
   /** The number of results to return */
-  top?: number;
+  top?: number
   /** The order by to use */
-  skip?: number;
+  skip?: number
   /** The order of the results based on a field */
-  orderBy?: GlobalOfferOrderBy[];
+  orderBy?: GlobalOfferOrderBy[]
   /** If set, will return only the offers with required attributes */
-  withAttributes?: boolean;
+  withAttributes?: boolean
   /** If set, will return only the specified fields */
-  onlySelectFields?: GlobalOfferFieldsToSelect[];
+  onlySelectFields?: GlobalOfferFieldsToSelect[]
   //** If set, will return only the offers that have deposit balance*/
-  onlyActive?: boolean;
-  offerIds?: number[];
-  ownedBy?: string[];
-  listedOnlyOn?: Marketplace[];
-  priceRange?: RangeFilter;
-  attributes?: MetadataAttribute[];
+  onlyActive?: boolean
+  offerIds?: number[]
+  ownedBy?: string[]
+  listedOnlyOn?: Marketplace[]
+  priceRange?: RangeFilter
+  attributes?: MetadataAttribute[]
 }
 
 export interface CollectionsNFTsResponse {
   /** The results count for the current page */
-  resultsCount: number;
+  resultsCount: number
   /** The results for the current page */
-  results: ICollectionProfile[];
+  results: ICollectionProfile[]
   /** If the results are empty */
-  empty: boolean;
+  empty: boolean
   /** The payload to use to get the next page */
-  getNextPagePayload: GetCollectionsArgs;
+  getNextPagePayload: GetCollectionsArgs
   /** If there are more results to fetch */
-  hasMoreResults: boolean;
+  hasMoreResults: boolean
 }
 
 export interface SuggestResults {
-  count: number;
-  hasMoreResults: boolean;
-  resources: ResultsBody;
+  count: number
+  hasMoreResults: boolean
+  resources: ResultsBody
 }
 
 export interface ResultsBody {
-  collections: (ICollectionProfile & { floorPrice: number })[];
-  users: IUserProfileSearch[];
-  nft: NftData[];
+  collections: (ICollectionProfile & { floorPrice: number })[]
+  users: IUserProfileSearch[]
+  nft: NftData[]
 }
 
 export interface OtherStatistics {
-  nftCount: number;
-  followCount: number;
-  holdersCount?: number;
+  nftCount: number
+  followCount: number
+  holdersCount?: number
 }
 
 export interface TradeData {
-  dayEgldVolume: number;
-  weekEgldVolume: number;
-  totalEgldVolume: number;
-  averageEgldPrice: number;
-  athEgldPrice: number;
-  athTxHash: string;
-  totalTrades: number;
+  dayEgldVolume: number
+  weekEgldVolume: number
+  totalEgldVolume: number
+  averageEgldPrice: number
+  athEgldPrice: number
+  athTxHash: string
+  totalTrades: number
 }
 
 export interface MintStatistics {
-  totalMintEgldVolume: number;
-  weekMintEgldVolume: number;
-  dayMintEgldVolume: number;
+  totalMintEgldVolume: number
+  weekMintEgldVolume: number
+  dayMintEgldVolume: number
 }
 
 export interface CollectionVolume {
-  Day: string;
-  DR_Trades: number;
-  DR_Volume: number;
-  DR_VolumeUSD: number;
-  DR_Buyers: number;
-  DR_Sellers: number;
-  DR_FeesPaid: number;
-  DR_FeesPaidUSD: number;
-  DR_RoyaltiesPaid: number;
-  DR_RoyaltiesPaidUSD: number;
-  FM_Trades: number;
-  FM_Volume: number;
-  FM_VolumeUSD: number;
-  FM_Buyers: number;
-  FM_Sellers: number;
-  FM_FeesPaid: number;
-  FM_FeesPaidUSD: number;
-  FM_RoyaltiesPaid: number;
-  FM_RoyaltiesPaidUSD: number;
-  KG_Trades: number;
-  KG_Volume: number;
-  KG_VolumeUSD: number;
-  KG_Buyers: number;
-  KG_Sellers: number;
-  KG_FeesPaid: number;
-  KG_FeesPaidUSD: number;
-  KG_RoyaltiesPaid: number;
-  KG_RoyaltiesPaidUSD: number;
-  Total_Trades: number;
-  Total_Volume: number;
-  Total_VolumeUSD: number;
-  Total_Buyers: number;
-  Total_Sellers: number;
-  Total_FeesPaid: number;
-  Total_FeesPaidUSD: number;
-  Total_RoyaltiesPaid: number;
-  Total_RoyaltiesPaidUSD: number;
-  XO_Trades: number;
-  XO_Volume: number;
-  XO_VolumeUSD: number;
-  XO_Buyers: number;
-  XO_Sellers: number;
-  XO_FeesPaid: number;
-  XO_FeesPaidUSD: number;
-  XO_RoyaltiesPaid: number;
-  XO_RoyaltiesPaidUSD: number;
+  Day: string
+  DR_Trades: number
+  DR_Volume: number
+  DR_VolumeUSD: number
+  DR_Buyers: number
+  DR_Sellers: number
+  DR_FeesPaid: number
+  DR_FeesPaidUSD: number
+  DR_RoyaltiesPaid: number
+  DR_RoyaltiesPaidUSD: number
+  FM_Trades: number
+  FM_Volume: number
+  FM_VolumeUSD: number
+  FM_Buyers: number
+  FM_Sellers: number
+  FM_FeesPaid: number
+  FM_FeesPaidUSD: number
+  FM_RoyaltiesPaid: number
+  FM_RoyaltiesPaidUSD: number
+  KG_Trades: number
+  KG_Volume: number
+  KG_VolumeUSD: number
+  KG_Buyers: number
+  KG_Sellers: number
+  KG_FeesPaid: number
+  KG_FeesPaidUSD: number
+  KG_RoyaltiesPaid: number
+  KG_RoyaltiesPaidUSD: number
+  Total_Trades: number
+  Total_Volume: number
+  Total_VolumeUSD: number
+  Total_Buyers: number
+  Total_Sellers: number
+  Total_FeesPaid: number
+  Total_FeesPaidUSD: number
+  Total_RoyaltiesPaid: number
+  Total_RoyaltiesPaidUSD: number
+  XO_Trades: number
+  XO_Volume: number
+  XO_VolumeUSD: number
+  XO_Buyers: number
+  XO_Sellers: number
+  XO_FeesPaid: number
+  XO_FeesPaidUSD: number
+  XO_RoyaltiesPaid: number
+  XO_RoyaltiesPaidUSD: number
 }
 
 export interface FloorPriceHistory {
-  Day: string;
-  FloorPrice: number;
-  AveragePrice: number;
+  Day: string
+  FloorPrice: number
+  AveragePrice: number
 }
 
 export type FungibleAssets = {
-  id?: string;
-  identifier: string;
-  collection?: string;
-  dataType?: string;
-  decimals: number;
-  name: string;
-  type: string;
-  category: string[];
-  svgUrl: string;
-  pngUrl: string;
-  ticker: string;
-  usdPrice?: number;
-  _ts?: number;
-};
+  id?: string
+  identifier: string
+  collection?: string
+  dataType?: string
+  decimals: number
+  name: string
+  type: string
+  category: string[]
+  svgUrl: string
+  pngUrl: string
+  ticker: string
+  usdPrice?: number
+  _ts?: number
+}
 
 export type FungibleAssetsMap = {
-  [key: string]: FungibleAssets;
-};
+  [key: string]: FungibleAssets
+}
 
 export enum AssetCategory {
   ALL = 'all',
@@ -628,62 +628,62 @@ export enum AssetCategory {
 }
 
 export type ISingleHolder = {
-  address: string;
-  username?: string;
-  count: number;
-  weight: number;
-};
+  address: string
+  username?: string
+  count: number
+  weight: number
+}
 
 export type IOwners = {
-  totalSupply: number;
-  onMarket: HoldedDetails;
-  staked: HoldedDetails;
-  otherSCs: HoldedDetails;
-  burnWallet: HoldedDetails;
-  uniqueHolders: HoldedDetails;
-  holded: AvgHolder;
-  walletDetails: ISingleHolder[];
-};
+  totalSupply: number
+  onMarket: HoldedDetails
+  staked: HoldedDetails
+  otherSCs: HoldedDetails
+  burnWallet: HoldedDetails
+  uniqueHolders: HoldedDetails
+  holded: AvgHolder
+  walletDetails: ISingleHolder[]
+}
 
 export type HoldedDetails = {
-  count: number;
-  weight: number;
-};
+  count: number
+  weight: number
+}
 
 export interface AvgHolder extends HoldedDetails {
-  avgPerHodler: number;
+  avgPerHodler: number
 }
 
 export type CollectionsSummary = {
-  data: CollectionsSummaryItem[];
-  count: number;
-};
+  data: CollectionsSummaryItem[]
+  count: number
+}
 
 export type CollectionsSummaryItem = {
-  Collection: string;
-  TotalVolume: number;
-  TotalTrades: number;
-  DailyVolume: number | null;
-  Last2DaysVolume: number | null;
-  DailyTrades: number | null;
-  Last2DaysTrades: number | null;
-  WeekTrades: number;
-  LastWeekTrades: number | null;
-  WeekVolume: number;
-  LastWeekVolume: number | null;
-  WeeklyTradesMargin: number | null;
-  DailyTradesMargin: number | null;
-  WeeklyVolumeMargin: number | null;
-  DailyVolumeEgldMargin: number | null;
-  CollectionAthTrade: number;
-  CollectionAthTxHash: string;
-  Name: string;
-  AthHash: string;
-  Profile: string;
-  Banner: string;
-  isVerified: boolean;
-  FloorPrice: number;
-};
+  Collection: string
+  TotalVolume: number
+  TotalTrades: number
+  DailyVolume: number | null
+  Last2DaysVolume: number | null
+  DailyTrades: number | null
+  Last2DaysTrades: number | null
+  WeekTrades: number
+  LastWeekTrades: number | null
+  WeekVolume: number
+  LastWeekVolume: number | null
+  WeeklyTradesMargin: number | null
+  DailyTradesMargin: number | null
+  WeeklyVolumeMargin: number | null
+  DailyVolumeEgldMargin: number | null
+  CollectionAthTrade: number
+  CollectionAthTxHash: string
+  Name: string
+  AthHash: string
+  Profile: string
+  Banner: string
+  isVerified: boolean
+  FloorPrice: number
+}
 
 export enum CollectionsSummaryFilter {
   TotalVolume = 'TotalVolume',
@@ -704,121 +704,121 @@ export enum CollectionsSummaryFilter {
 }
 
 export type GlobalOffersResult = {
-  resources: GlobalOffers[];
-  hasMoreResults: boolean;
-  lastSkip: number;
-  getNextPagePayload?: GetGlobalOffersArgs;
-};
+  resources: GlobalOffers[]
+  hasMoreResults: boolean
+  lastSkip: number
+  getNextPagePayload?: GetGlobalOffersArgs
+}
 
 export type GlobalOffers = {
-  offerId: number;
-  collection: string;
-  quantity: number;
-  paymentToken: string;
-  price: string;
-  priceShort: number;
-  owner: Owner;
-  usdValue: string;
-  marketplace: string;
-  timestamp: number;
-  attributes: MetadataAttribute[];
-  collectionInfo?: CollectionInfo;
-  isActive: boolean;
-  floorPrice: number;
-  floorPriceMargin: number | null;
-};
+  offerId: number
+  collection: string
+  quantity: number
+  paymentToken: string
+  price: string
+  priceShort: number
+  owner: Owner
+  usdValue: string
+  marketplace: string
+  timestamp: number
+  attributes: MetadataAttribute[]
+  collectionInfo?: CollectionInfo
+  isActive: boolean
+  floorPrice: number
+  floorPriceMargin: number | null
+}
 
 export type GlobalOfferOwner = {
-  address: string;
-  userName: string;
-  profile: string;
-};
+  address: string
+  userName: string
+  profile: string
+}
 
 export type CollectionRanksExport = Partial<
   Pick<NftData, 'identifier' | 'name'>
 > & {
-  rank: number;
-};
+  rank: number
+}
 
 export type GetCollectionMintInfo = {
-  collection: string;
-  contractAddress: string;
-  collectionTag: string;
-  startTime: number;
-  prices?: StagePrice[];
-  nftTransferLimited: boolean;
-  hasBotProtection: boolean;
-  kycRequired: boolean;
-  totalNftMinted: number;
-  collectionSize: number;
-  globalWalletLimit: number;
-  cid: string;
-  mediaType: string;
-  mintStages: MintStage[];
+  collection: string
+  contractAddress: string
+  collectionTag: string
+  startTime: number
+  prices?: StagePrice[]
+  nftTransferLimited: boolean
+  hasBotProtection: boolean
+  kycRequired: boolean
+  totalNftMinted: number
+  collectionSize: number
+  globalWalletLimit: number
+  cid: string
+  mediaType: string
+  mintStages: MintStage[]
   collectionInfo: {
-    name: string;
-    isVerified: boolean;
-    description?: string;
-    socials?: ISocials;
-    profile: string;
-    banner: string;
-    owner: string;
-    isVisible: boolean;
-  };
-  creatorInfo: CreatorInfo;
-};
+    name: string
+    isVerified: boolean
+    description?: string
+    socials?: ISocials
+    profile: string
+    banner: string
+    owner: string
+    isVisible: boolean
+  }
+  creatorInfo: CreatorInfo
+}
 
 export type MintStage = {
-  name: string;
-  startTime: number;
-  endTime: number;
-  mintCount: number;
-  mintLimit: number;
-  mintEnabled: boolean;
-  isWhitelist: boolean;
-  walletLimit: number;
-  maxBuyable?: number;
-  walletLimitReached?: boolean;
-  userMintsPerStage?: number;
-  prices?: StagePrice[];
-  isSoldOut: boolean;
-};
+  name: string
+  startTime: number
+  endTime: number
+  mintCount: number
+  mintLimit: number
+  mintEnabled: boolean
+  isWhitelist: boolean
+  walletLimit: number
+  maxBuyable?: number
+  walletLimitReached?: boolean
+  userMintsPerStage?: number
+  prices?: StagePrice[]
+  isSoldOut: boolean
+}
 
 export type StagePrice = {
-  tokenIdentifier: string;
-  tokenNonce: string;
-  amount: string;
-  amountShort: number;
-  usdValue: number;
-  decimals: number;
-};
+  tokenIdentifier: string
+  tokenNonce: string
+  amount: string
+  amountShort: number
+  usdValue: number
+  decimals: number
+}
 
 export type CollectionStatsResults = {
-  resources: CollectionStatsDoc[];
-  hasMoreResults: boolean;
-  getNextPagePayload?: GetCollectionStatsArgs;
-};
+  resources: CollectionStatsDoc[]
+  hasMoreResults: boolean
+  getNextPagePayload?: GetCollectionStatsArgs
+}
 
 export type GetCollectionStatsArgs = {
   filters?: {
-    collection?: string[];
-    verifiedOnly?: boolean;
-    range?: RangeFilter[];
-  };
-  orderBy?: CollectionStatsOrderBy[];
-  select?: CollectionStatsSelectFields[];
-  top: number;
-  skip: number;
-};
+    collection?: string[]
+    verifiedOnly?: boolean
+    range?: RangeFilter[]
+  }
+  orderBy?: CollectionStatsOrderBy[]
+  select?: CollectionStatsSelectFields[]
+  top: number
+  skip: number
+}
 
 export enum CollectionStatsSelectFields {
   TradingStats = 'tradingStats',
 }
 
 export interface RangeFilter {
-  min?: number;
-  max?: number;
-  field?: string;
+  min?: number
+  max?: number
+  field?: string
 }
 
 export enum CollectionStatsOrderBy {
@@ -874,51 +874,51 @@ export enum CollectionStatsOrderBy {
 }
 
 export type CollectionStatsDoc = {
-  collection: string;
-  listedCount: number;
-  floorPrice: number;
+  collection: string
+  listedCount: number
+  floorPrice: number
   tradingStats: {
-    totalVolume: number;
-    totalTrades: number;
+    totalVolume: number
+    totalTrades: number
     allTimeHigh: {
-      price: number;
-      timestamp: number;
-      txHash: string;
-      identifier: string;
-    };
-    day: TradingDataSummary;
-    week: TradingDataSummary;
-    month: TradingDataSummary;
-    quarter: TradingDataSummary;
-    halfYear: TradingDataSummary;
-    year: TradingDataSummary;
-  };
+      price: number
+      timestamp: number
+      txHash: string
+      identifier: string
+    }
+    day: TradingDataSummary
+    week: TradingDataSummary
+    month: TradingDataSummary
+    quarter: TradingDataSummary
+    halfYear: TradingDataSummary
+    year: TradingDataSummary
+  }
   // applied after db call
   collectionInfo?: {
-    name?: string;
-    description?: string;
-    isVerified: boolean;
-    isVisible: boolean;
-    profile?: string;
-    holdersCount?: number;
-    collectionSize?: number;
-    followCount?: number;
-  };
-  id: string;
-};
+    name?: string
+    description?: string
+    isVerified: boolean
+    isVisible: boolean
+    profile?: string
+    holdersCount?: number
+    collectionSize?: number
+    followCount?: number
+  }
+  id: string
+}
 
 export type TradingDataSummary = {
-  volume: number;
-  volumeMargin: number;
-  trades: number;
-  tradesMargin: number;
-  minPrice?: number;
-  maxPrice?: number;
-  averagePrice?: number;
-};
+  volume: number
+  volumeMargin: number
+  trades: number
+  tradesMargin: number
+  minPrice?: number
+  maxPrice?: number
+  averagePrice?: number
+}
 
 export interface CollectionListings {
-  density: Density[];
+  density: Density[]
   listings: Pick<
     NftData,
     | 'name'
@@ -930,23 +930,23 @@ export interface CollectionListings {
     | 'url'
     | 'identifier'
     | 'id'
-  >[];
+  >[]
 }
 
 export interface Density {
-  key: string;
-  intervalName: string;
-  intervalCount: number;
-  totalCount: number;
+  key: string
+  intervalName: string
+  intervalCount: number
+  totalCount: number
 }
 
 export interface Listing {
-  identifier: string;
-  name: string;
-  collection: string;
-  metadata: Pick<NFTMetadata, 'rarity'>;
-  url: string;
-  media: Media;
-  wasProcessed: boolean;
-  saleInfo: Pick<SaleInfo, 'minBidShort'>;
+  identifier: string
+  name: string
+  collection: string
+  metadata: Pick<NFTMetadata, 'rarity'>
+  url: string
+  media: Media
+  wasProcessed: boolean
+  saleInfo: Pick<SaleInfo, 'minBidShort'>
 }
