@@ -48,7 +48,7 @@ const translations = {
   },
 } as const satisfies Translations;
 
-export type IProps = {
+type IProps = {
   host?: IHost;
   subject: string;
   message: string;

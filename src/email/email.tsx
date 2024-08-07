@@ -167,7 +167,7 @@ function isVerifyEmail(props: IProps) {
   return verifyEmailTypes.includes(props.activityType as IVerifyEmailTypes);
 }
 
-export type IProps = {
+type IProps = {
   host?: IHost;
 } & (
   | {

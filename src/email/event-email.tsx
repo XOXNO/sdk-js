@@ -47,7 +47,7 @@ const translations = {
   },
 } as const satisfies Translations;
 
-export type IProps = {
+type IProps = {
   host?: IHost;
   name: string;
   event: IEvent;
