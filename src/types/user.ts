@@ -208,6 +208,7 @@ export type CreatorProfile = {
   contractAddress: string
   address: string
   followCount: number
+  creatorTag: string
   _ts: number
 }
 
