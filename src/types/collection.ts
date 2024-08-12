@@ -7,7 +7,7 @@ import type {
   SaleInfo,
 } from './nft'
 import type { NftActivityType } from './trading'
-import type { IUserProfileSearch } from './user'
+import type { IUserProfileSearch, OfferBody } from './user'
 
 export interface ISocials {
   twitter: string
@@ -420,6 +420,36 @@ export interface GetDropsResponse {
   /** The payload to use to get the next page */
   getNextPagePayload: GETDropsArgs
   /** If there are more results to fetch */
+  hasMoreResults: boolean
+}
+
+export interface OfferFilters {
+  isActive?: boolean[]
+  identifier?: string[]
+  collection?: string[]
+  owner?: string[]
+  nftOwner?: string[]
+  marketplace?: Marketplace[]
+  range?: {
+    min: number
+    max: number
+    field: string
+  }[]
+}
+
+export interface GetOffersArgs {
+  select?: string[]
+  strictSelect?: boolean
+  orderBy?: string[]
+  top?: number
+  skip?: number
+  includeCount?: boolean
+  filters?: OfferFilters
+}
+
+export interface GetOffersResponse {
+  count?: number
+  resources: OfferBody[]
   hasMoreResults: boolean
 }
 

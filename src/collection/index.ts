@@ -14,6 +14,8 @@ import type {
   GetDropsResponse,
   GetGlobalOffersArgs,
   GetNFTsArgs,
+  GetOffersArgs,
+  GetOffersResponse,
   GlobalOffersResult,
   ICollectionAttributes,
   ICollectionProfile,
@@ -415,6 +417,23 @@ export class CollectionModule {
     args: TradincActivityArgs
   ): Promise<TradingActivityResponse> => {
     return await getActivity(args, this.api)
+  }
+
+  public getOffers = async (
+    args: GetOffersArgs
+  ): Promise<GetOffersResponse> => {
+    return await this.api.fetchWithTimeout<GetOffersResponse>(
+      '/nft/offer/query',
+      {
+        params: {
+          filter: JSON.stringify(args),
+        },
+        next: {
+          tags: ['/nft/offer/query'],
+          /* revalidate: 500, */
+        },
+      }
+    )
   }
 
   /**
