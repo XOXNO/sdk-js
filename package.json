@@ -108,8 +108,7 @@
   "dependencies": {
     "@multiversx/sdk-core": "^13.2.2",
     "@multiversx/sdk-network-providers": "^2.4.3",
-    "@react-email/components": "0.0.22",
-    "@react-email/render": "^0.0.17",
+    "@react-email/components": "^0.0.22",
     "he": "^1.2.0",
     "protobufjs": "^7.3.2",
     "react-markdown": "^9.0.1",
