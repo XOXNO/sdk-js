@@ -14,4 +14,5 @@ export {
   hintStyle,
   highlightStyle,
   buttonStyle,
+  type IHost,
 } from './email/utils'
