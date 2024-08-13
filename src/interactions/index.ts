@@ -1,8 +1,5 @@
-import {
-  BytesValue,
-  Interaction,
-  VariadicValue,
-} from '@multiversx/sdk-core/out'
+import type { Interaction } from '@multiversx/sdk-core/out'
+import { BytesValue, VariadicValue } from '@multiversx/sdk-core/out'
 import { Address } from '@multiversx/sdk-core/out/address'
 import type { IPlainTransactionObject } from '@multiversx/sdk-core/out/interface'
 import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract'
