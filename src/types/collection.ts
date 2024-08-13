@@ -926,6 +926,7 @@ export type CollectionStatsDoc = {
   // applied after db call
   collectionInfo?: {
     name?: string
+    banner?: string
     description?: string
     isVerified: boolean
     isVisible: boolean
