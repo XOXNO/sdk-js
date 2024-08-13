@@ -1,5 +1,8 @@
-import { Interaction } from '@multiversx/sdk-core/out'
-import { BytesValue, VariadicValue } from '@multiversx/sdk-core/out'
+import type {
+  BytesValue,
+  Interaction,
+  VariadicValue,
+} from '@multiversx/sdk-core/out'
 import { Address } from '@multiversx/sdk-core/out/address'
 import type { IPlainTransactionObject } from '@multiversx/sdk-core/out/interface'
 import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract'
@@ -344,14 +347,16 @@ export class SCInteraction {
       if (sender.nonce) {
         interaction.withNonce(sender.nonce)
       }
-      return [interaction
-        .withChainID(this.api.chain)
-        .withSender(new Address(sender.address))
-        .withGasLimit(
-          Math.min(600_000_000, 25_000_000 + auctionIDs.length * 8_000_000)
-        )
-        .buildTransaction()
-        .toPlainObject()];
+      return [
+        interaction
+          .withChainID(this.api.chain)
+          .withSender(new Address(sender.address))
+          .withGasLimit(
+            Math.min(600_000_000, 25_000_000 + auctionIDs.length * 8_000_000)
+          )
+          .buildTransaction()
+          .toPlainObject(),
+      ]
     } else if (market == 'frameit') {
       return auctionIDs.map((auction_id, index) => {
         const interaction = this.xo.methodsExplicit.withdraw([
@@ -363,12 +368,10 @@ export class SCInteraction {
         return interaction
           .withChainID(this.api.chain)
           .withSender(new Address(sender.address))
-          .withGasLimit(
-            Math.min(600_000_000, 25_000_000)
-          )
+          .withGasLimit(Math.min(600_000_000, 25_000_000))
           .withExplicitReceiver(new Address(this.config.FM_SC))
           .buildTransaction()
-          .toPlainObject();
+          .toPlainObject()
       })
     } else if (market == 'deadrare') {
       return auctionIDs.map((auction_id, index) => {
@@ -381,12 +384,10 @@ export class SCInteraction {
         return interaction
           .withChainID(this.api.chain)
           .withSender(new Address(sender.address))
-          .withGasLimit(
-            Math.min(600_000_000, 25_000_000)
-          )
+          .withGasLimit(Math.min(600_000_000, 25_000_000))
           .withExplicitReceiver(new Address(this.config.DR_SC))
           .buildTransaction()
-          .toPlainObject();
+          .toPlainObject()
       })
     } else {
       throw new Error('Market not supported')
@@ -402,9 +403,12 @@ export class SCInteraction {
 
   public withdrawGlobalOffer(
     offerID: number,
-    market = "xoxno",
+    market = 'xoxno',
     senderNonce: WithSenderAndNonce
   ): IPlainTransactionObject {
+    if (market != 'xoxno') {
+      throw Error('Marketplace not supported')
+    }
 
     const interaction = this.xo.methods.withdrawGlobalOffer([offerID])
 
@@ -417,7 +421,6 @@ export class SCInteraction {
       .withGasLimit(20_000_000)
       .buildTransaction()
       .toPlainObject()
-  
   }
 
   /**
@@ -441,10 +444,10 @@ export class SCInteraction {
     }
     const interaction = signature
       ? this.xo.methods.acceptGlobalOffer([
-        offer_id,
-        auction_ids_opt ?? [],
-        signature,
-      ])
+          offer_id,
+          auction_ids_opt ?? [],
+          signature,
+        ])
       : this.xo.methods.acceptGlobalOffer([offer_id, auction_ids_opt])
     interaction.withSender(new Address(address))
     if (nfts.length > 0) {
@@ -462,8 +465,8 @@ export class SCInteraction {
       .withGasLimit(
         Math.min(
           35_000_000 +
-          (nfts.length + auction_ids_opt.length) * 7_000_000 +
-          (signature == undefined ? 15_000_000 : 0),
+            (nfts.length + auction_ids_opt.length) * 7_000_000 +
+            (signature == undefined ? 15_000_000 : 0),
           600_000_000
         )
       )
@@ -726,14 +729,14 @@ export class SCInteraction {
       tokenTransfers: isEgld
         ? undefined
         : [
-          new TokenTransfer({
-            token: new Token({
-              identifier: payment.collection,
-              nonce: BigInt(payment.nonce ?? 0),
+            new TokenTransfer({
+              token: new Token({
+                identifier: payment.collection,
+                nonce: BigInt(payment.nonce ?? 0),
+              }),
+              amount: BigInt(payment.amount),
             }),
-            amount: BigInt(payment.amount),
-          }),
-        ],
+          ],
     })
 
     if (sender.nonce) {
@@ -884,11 +887,11 @@ export class SCInteraction {
       interaction.withValue(
         bigNumber
           ? TokenTransfer.egldFromBigInteger(
-            new BigNumber(amount).multipliedBy(quantity)
-          )
+              new BigNumber(amount).multipliedBy(quantity)
+            )
           : TokenTransfer.egldFromAmount(
-            new BigNumber(amount).multipliedBy(quantity)
-          )
+              new BigNumber(amount).multipliedBy(quantity)
+            )
       )
     } else {
       if (!bigNumber) {
