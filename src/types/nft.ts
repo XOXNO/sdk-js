@@ -105,6 +105,7 @@ export interface CollectionInfo {
   name: string
   isVerified: boolean
   profile: string
+  banner: string
   collectionSize: number
   description?: string
   followCount?: number
