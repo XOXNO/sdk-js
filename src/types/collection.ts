@@ -783,6 +783,7 @@ export type GetCollectionMintInfo = {
   collectionSize: number
   globalWalletLimit: number
   cid: string
+  hasMetadata: boolean
   mediaType: string
   mintStages: MintStage[]
   collectionInfo: {
