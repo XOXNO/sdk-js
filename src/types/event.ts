@@ -4,6 +4,7 @@ export interface IEventDoc {
   profile: string
   background?: string
   id: string
+  slug: string
   title: string
   startTime: number
   endTime: number
