@@ -1,3 +1,4 @@
+import { IEventDoc } from './event'
 import type {
   CollectionInfo,
   Media,
@@ -66,6 +67,7 @@ export interface CreatorInfo {
   socials?: any
   id: string
   listing: IMintInfoExtended[]
+  events: IEventDoc[]
 }
 
 export interface CollectionStatisticsProfile {
