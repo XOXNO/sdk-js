@@ -202,7 +202,6 @@ export type CreatorProfile = {
   profile: string
   banner: string
   description?: string
-  isVerified?: boolean
   socials?: ISocials
   joinedDate?: number
   contractAddress: string
