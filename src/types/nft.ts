@@ -104,6 +104,7 @@ export interface NftData {
 export interface CollectionInfo {
   name: string
   isVerified: boolean
+  isVisible: boolean
   profile: string
   banner: string
   collectionSize: number
