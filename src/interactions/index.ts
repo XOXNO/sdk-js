@@ -506,7 +506,7 @@ export class SCInteraction {
     }
     interaction.withSender(new Address(address))
     if (depositAmount) {
-      interaction.withValue(TokenTransfer.egldFromAmount(depositAmount))
+      interaction.withValue(depositAmount)
     }
     return interaction
       .withChainID(this.api.chain)
@@ -549,7 +549,7 @@ export class SCInteraction {
     }
     interaction.withSender(new Address(address))
     if (depositAmount) {
-      interaction.withValue(TokenTransfer.egldFromAmount(depositAmount))
+      interaction.withValue(depositAmount)
     }
     return interaction
       .withChainID(this.api.chain)

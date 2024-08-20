@@ -62,7 +62,7 @@ export interface SendGlobalOffer {
   price: number
   collection: string
   attributes?: string
-  depositAmount?: number
+  depositAmount?: string
 }
 
 export interface SendCustomOffer {
@@ -71,7 +71,7 @@ export interface SendCustomOffer {
   price: number
   nft: NFTBody
   deadline: number
-  depositAmount?: number
+  depositAmount?: string
 }
 
 export interface AcceptGlobalOffer {
