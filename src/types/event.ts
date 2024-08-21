@@ -55,7 +55,9 @@ export interface ITicketDoc {
 }
 
 export interface ITicketStageDoc {
-  ticketId: string
+  dataType: 'event-ticket-stage'
+  eventId: string
+  ticketTypeId: string
   name: string
   startTime: number
   endTime: number
@@ -68,5 +70,10 @@ export interface ITicketStageDoc {
     tokenIdentifier: string
     tokenNonce: number
     amount: string
+    amountShort: number
+    decimals: number
+    usdValue: number
   }[]
+  ticketsSold: number
+  id: string
 }
