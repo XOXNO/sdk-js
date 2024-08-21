@@ -12,6 +12,7 @@ import {
 } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
+import { getOnlineLocation } from '../utils'
 import type { IEvent } from './types'
 import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
@@ -73,7 +74,7 @@ const EventEmail = ({
 
   const href = `${HOST}/event/${event.eventId}?guest=${event.ticketId}`
 
-  const mapsLink = `https://maps.google.com/?q=${event.location.lat},${event.location.lng}`
+  const mapsLink = `https://maps.google.com/?q=${event.location.lat},${event.location.long}`
 
   return (
     <GeneralEmail
@@ -151,7 +152,11 @@ const EventEmail = ({
                       />
                     </td>
                     <td style={{ verticalAlign: 'middle' }}>
-                      <Text style={bodyStyle}>{event.location.value}</Text>
+                      <Text style={bodyStyle}>
+                        {event.location.onlineLink
+                          ? getOnlineLocation(event.location.onlineLink)
+                          : event.location.address}
+                      </Text>
                     </td>
                   </tr>
                 </tbody>

@@ -94,8 +94,9 @@ export interface IEvent {
   time: string
   location: {
     lat: number
-    lng: number
-    value: string
+    long: number
+    address: string
+    onlineLink?: string
   }
   ticketId: string
   eventId: string
