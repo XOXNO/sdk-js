@@ -57,7 +57,7 @@ export interface ITicketDoc {
 export interface ITicketStageDoc {
   dataType: 'event-ticket-stage'
   eventId: string
-  ticketTypeId: string
+  ticketId: string
   name: string
   startTime: number
   endTime: number
