@@ -37,3 +37,36 @@ export interface IEventDoc {
     alternativeTitle?: string
   }
 }
+
+export interface ITicketDoc {
+  dataType: 'event-ticket-profile'
+  eventId: string
+  name: string
+  description: string
+  profile: string
+  royalties: number
+  badgeColor: string
+  characteristics: {}
+  maxLimit: number
+  userLimit: number
+  soldCount: number
+  createdAt: number
+  id: string
+}
+
+export interface ITicketStageDoc {
+  ticketId: string
+  name: string
+  startTime: number
+  endTime: number
+  maxLimit: number
+  userLimit: number
+  isEnabled: boolean
+  isWhitelist: boolean
+  requiredApproval: boolean
+  prices: {
+    tokenIdentifier: string
+    tokenNonce: number
+    amount: string
+  }[]
+}
