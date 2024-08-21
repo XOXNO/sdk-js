@@ -31,7 +31,7 @@ import {
   type IOfferTypes,
   type ITradeTypes,
 } from './types'
-import type { IHost, Translations } from './utils'
+import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
   bodyStyle,
   buttonStyle,
@@ -191,7 +191,11 @@ type IProps = {
 
 const messages = translations.translations.en
 
-const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
+const XOXNOEmail = ({
+  host = defaultHost,
+  unsubscribeToken,
+  ...props
+}: IProps & WithUnsubscribeToken) => {
   const isATrade = isTrade(props)
   const isAOfferTrade = isOfferTrade(props)
 
@@ -235,7 +239,11 @@ const XOXNOEmail = ({ host = defaultHost, ...props }: IProps) => {
           : HOST
 
   return (
-    <GeneralEmail title={t('title', payload)}>
+    <GeneralEmail
+      title={t('title', payload)}
+      HOST={HOST}
+      unsubscribeToken={unsubscribeToken}
+    >
       <Body className="bg-[#121212]">
         <Container className="max-w-[500px]">
           <Section className="mb-4">

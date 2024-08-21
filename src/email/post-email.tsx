@@ -11,7 +11,7 @@ import {
 import { createTranslator } from 'use-intl'
 
 import { Markdown } from './Markdown'
-import type { IHost, Translations } from './utils'
+import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
   bodyStyle,
   Center,
@@ -57,7 +57,8 @@ const PostEmail = ({
   subject,
   message,
   style = { backgroundColor: '#121212' },
-}: IProps) => {
+  unsubscribeToken,
+}: IProps & WithUnsubscribeToken) => {
   const t = createTranslator({
     locale: 'en',
     messages,
@@ -67,7 +68,11 @@ const PostEmail = ({
   const HOST = getHost(host)
 
   return (
-    <GeneralEmail title={subject}>
+    <GeneralEmail
+      title={subject}
+      HOST={HOST}
+      unsubscribeToken={unsubscribeToken}
+    >
       <Body
         className="min-h-screen bg-center bg-cover"
         style={{

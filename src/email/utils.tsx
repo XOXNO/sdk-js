@@ -7,11 +7,14 @@ import React, {
 import {
   Head,
   Html,
+  Link,
   Preview,
   renderAsync,
+  Section,
   Tailwind,
 } from '@react-email/components'
 import he from 'he'
+import { createTranslator } from 'use-intl'
 
 export const MEDIA = 'https://media.xoxno.com'
 
@@ -44,10 +47,36 @@ const Font = ({
   )
 }
 
+const translations = {
+  namespace: '',
+  translations: {
+    en: {
+      unsubscribe: {
+        label: 'No longer want to receive emails?',
+        action: 'Unsubscribe',
+      },
+    },
+  },
+} as const satisfies Translations
+
+const messages = translations.translations.en
+
+export type WithUnsubscribeToken = { unsubscribeToken: string }
+
 export const GeneralEmail = ({
   title,
   children,
-}: PropsWithChildren<{ title: string }>) => {
+  HOST,
+  unsubscribeToken,
+}: PropsWithChildren<
+  { title: string; HOST: string } & WithUnsubscribeToken
+>) => {
+  const t = createTranslator({
+    locale: 'en',
+    messages,
+    namespace: 'unsubscribe',
+  })
+
   return (
     <Tailwind>
       <Html lang="en" className="no-scrollbar">
@@ -91,6 +120,15 @@ export const GeneralEmail = ({
         </Head>
         <Preview>{title}</Preview>
         {children}
+        <Section className="py-6 px-5 pb-12 text-center" style={bodyStyle}>
+          {t('label')}{' '}
+          <Link
+            href={`${HOST}/unsubscribe?token=${unsubscribeToken}`}
+            style={linkStyle}
+          >
+            {t('action')}
+          </Link>
+        </Section>
       </Html>
     </Tailwind>
   )

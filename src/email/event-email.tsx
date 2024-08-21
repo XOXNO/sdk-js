@@ -13,7 +13,7 @@ import {
 import { createTranslator } from 'use-intl'
 
 import type { IEvent } from './types'
-import type { IHost, Translations } from './utils'
+import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
   bodyStyle,
   buttonStyle,
@@ -61,7 +61,8 @@ const EventEmail = ({
   event,
   name,
   style = { backgroundColor: '#121212' },
-}: IProps) => {
+  unsubscribeToken,
+}: IProps & WithUnsubscribeToken) => {
   const t = createTranslator({
     locale: 'en',
     messages,
@@ -75,7 +76,11 @@ const EventEmail = ({
   const mapsLink = `https://maps.google.com/?q=${event.location.lat},${event.location.lng}`
 
   return (
-    <GeneralEmail title={t('meta', { eventName: event.name })}>
+    <GeneralEmail
+      title={t('meta', { eventName: event.name })}
+      HOST={HOST}
+      unsubscribeToken={unsubscribeToken}
+    >
       <Body
         className="min-h-screen bg-center bg-cover"
         style={{
