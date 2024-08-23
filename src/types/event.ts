@@ -18,10 +18,13 @@ export interface IEventDoc {
   isVirtualEvent: boolean
   registration: {
     visibility: 'public' | 'private'
-    maxCapacity: number
-    maxPerUser: number
-    onlyKYC: boolean
+    maxLimit: number
+    userLimit: number
+    requireKYC: boolean
     hasWaitlist: boolean
+    refundable: boolean
+    nameWithNumber: boolean
+    botProtection: boolean
     requireName: boolean
     requireEmail: boolean
     requirePhoneNumber: boolean
