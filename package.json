@@ -109,7 +109,7 @@
     "axios": "^1.7.5",
     "@multiversx/sdk-core": "^13.4.1",
     "@multiversx/sdk-network-providers": "^2.6.0",
-    "@react-email/components": "^0.0.23",
+    "@react-email/components": "^0.0.22",
     "he": "^1.2.0",
     "protobufjs": "^7.4.0",
     "react-markdown": "^9.0.1",
