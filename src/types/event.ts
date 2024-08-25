@@ -77,6 +77,6 @@ export interface ITicketStageDoc {
     decimals: number
     usdValue: number
   }[]
-  ticketsSold: number
+  soldCount: number
   id: string
 }
