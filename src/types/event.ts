@@ -1,4 +1,4 @@
-import { CreatorInfo } from './collection'
+import { CreatorInfo, ISocials } from './collection'
 import { CreatorProfile } from './user'
 
 export interface IEventDoc {
@@ -50,6 +50,7 @@ export interface IEventDoc {
     banner: string
     description: string
     creatorTag: string
+    socials?: ISocials
   }
 }
 
