@@ -42,16 +42,7 @@ export interface IEventDoc {
     tags: string[]
     alternativeTitle?: string
   }
-  creatorProfile: {
-    name: string
-    contractAddress: string
-    address: string
-    profile: string
-    banner: string
-    description: string
-    creatorTag: string
-    socials?: ISocials
-  }
+  creatorProfile: CreatorProfile
 }
 
 export interface ITicketDoc {
