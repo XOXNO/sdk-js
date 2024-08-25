@@ -31,8 +31,8 @@ const translations = {
         meta: 'An update for event {eventName}',
         title: 'Dear {name},',
         description:
-          "We're excited to have you join us at the {eventName}! Please click the button below to redeem your ticket and secure your spot:",
-        action: 'Redeem your ticket',
+          "We're excited to have you join us at the {eventName}! Please click the button below to claim your ticket and secure your spot:",
+        action: 'Claim your ticket',
         info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         maps: 'Open in Google Maps',
         footer: '❤️ Thank you for using XOXNO!',

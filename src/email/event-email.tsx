@@ -33,10 +33,10 @@ const translations = {
   translations: {
     en: {
       event: {
-        meta: "You're invited to join {eventName}",
+        meta: 'Your {eventName} Ticket is Here – Claim Now!',
         title: 'Dear {name},',
         description:
-          "We're excited to have you join us at the {eventName}! Please click the button below to redeem your ticket and secure your spot:",
+          'We’re excited to have you join us at the {eventName}! Please click the button below to claim your ticket and secure your spot:',
         action: 'Claim your ticket',
         info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         maps: 'Open in Google Maps',
