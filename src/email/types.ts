@@ -1,4 +1,4 @@
-import { NftActivityType } from '../types'
+import { IEventDoc, NftActivityType } from '../types'
 
 export const offerTradeTypes = [
   NftActivityType.OFFER_TRADE,
@@ -92,12 +92,7 @@ export interface IEvent {
   backgroundImage: string
   ticketImage: string
   time: string
-  location: {
-    lat: number
-    long: number
-    address: string
-    onlineLink?: string
-  }
+  location: IEventDoc['location']
   ticketId: string
   eventId: string
 }

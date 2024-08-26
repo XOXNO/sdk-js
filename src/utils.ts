@@ -1,3 +1,5 @@
+import { IEventDoc } from './types'
+
 export function getDomain(hostname: string) {
   const host = hostname.split('.')
   host.reverse()
@@ -8,4 +10,8 @@ export function getOnlineLocation(onlineLink: string) {
   const subHost = new URL(onlineLink).hostname
   const host = getDomain(subHost)
   return { 'google.com': 'Google Meet', 'zoom.us': 'Zoom' }[host] ?? 'Online'
+}
+
+export function getMapsLink(location: IEventDoc['location']) {
+  return `https://maps.google.com/?query=${location.address}&query_place_id=${location.placeId}`
 }

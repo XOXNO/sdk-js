@@ -12,6 +12,7 @@ export interface IEventDoc {
   startTime: number
   endTime: number
   location: {
+    placeId?: string
     address?: string
     lat?: number
     long?: number
