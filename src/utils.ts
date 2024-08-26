@@ -13,5 +13,5 @@ export function getOnlineLocation(onlineLink: string) {
 }
 
 export function getMapsLink(location: IEventDoc['location']) {
-  return `https://maps.google.com/?query=${location.address}&query_place_id=${location.placeId}`
+  return `https://www.google.com/maps/search/?api=1&query=${location.address}&query_place_id=${location.placeId}`
 }
