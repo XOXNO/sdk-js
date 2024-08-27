@@ -1,4 +1,4 @@
-import { IEventDoc } from './event'
+import type { IEventDoc } from './event'
 import type {
   CollectionInfo,
   Media,

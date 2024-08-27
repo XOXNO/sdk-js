@@ -1,4 +1,5 @@
-import { IEventDoc, NftActivityType } from '../types'
+import type { IEventDoc } from '../types'
+import { NftActivityType } from '../types'
 
 export const offerTradeTypes = [
   NftActivityType.OFFER_TRADE,

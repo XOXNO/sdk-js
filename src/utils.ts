@@ -1,4 +1,4 @@
-import { IEventDoc } from './types'
+import type { IEventDoc } from './types'
 
 export function getDomain(hostname: string) {
   const host = hostname.split('.')

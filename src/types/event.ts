@@ -1,5 +1,4 @@
-import { CreatorInfo, ISocials } from './collection'
-import { CreatorProfile } from './user'
+import type { CreatorProfile } from './user'
 
 export interface IEventDoc {
   dataType: 'event-profile'
@@ -54,7 +53,7 @@ export interface ITicketDoc {
   profile: string
   royalties: number
   badgeColor: string
-  characteristics: {}
+  characteristics: Record<string, string>
   maxLimit: number
   userLimit: number
   soldCount: number
