@@ -1,3 +1,4 @@
+import { Owner } from './nft'
 import type { CreatorProfile } from './user'
 
 export interface IEventDoc {
@@ -43,6 +44,10 @@ export interface IEventDoc {
     alternativeTitle?: string
   }
   creatorProfile: CreatorProfile
+  guestSummary: {
+    count: number
+    guests: Owner[]
+  }
 }
 
 export interface ITicketDoc {
