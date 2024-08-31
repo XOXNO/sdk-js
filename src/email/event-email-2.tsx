@@ -91,6 +91,7 @@ const EventEmail = ({
         className="min-h-screen bg-center bg-cover"
         style={{
           backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${event.backgroundImage})`,
+          mixBlendMode: 'difference',
           backgroundColor: style.backgroundColor,
         }}
       >
@@ -107,7 +108,7 @@ const EventEmail = ({
           </Section>
           <Section className="p-5">
             <Center>
-              <Heading style={headingStyle} className="my-0 heading-style">
+              <Heading style={headingStyle} className="my-0">
                 {t('title', { eventName: event.name })}
               </Heading>
               <Text style={bodyStyle} className="body-style">
@@ -131,9 +132,7 @@ const EventEmail = ({
           </Section>
           <Section>
             <Center>
-              <Text className="body-style" style={bodyStyle}>
-                {t('hint')}
-              </Text>
+              <Text style={bodyStyle}>{t('hint')}</Text>
               <Button
                 href={href}
                 style={buttonStyle}
@@ -147,6 +146,7 @@ const EventEmail = ({
                 cellPadding="0"
                 border={0}
                 className="mb-[40px] warning-label-bg p-3 rounded-xl border border-solid"
+                style={{ mixBlendMode: 'difference' }}
               >
                 <tbody>
                   <tr>
