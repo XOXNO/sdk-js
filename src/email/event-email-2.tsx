@@ -91,7 +91,6 @@ const EventEmail = ({
         className="min-h-screen bg-center bg-cover"
         style={{
           backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${event.backgroundImage})`,
-          mixBlendMode: 'difference',
           backgroundColor: style.backgroundColor,
         }}
       >
@@ -146,7 +145,6 @@ const EventEmail = ({
                 cellPadding="0"
                 border={0}
                 className="mb-[40px] warning-label-bg p-3 rounded-xl border border-solid"
-                style={{ mixBlendMode: 'difference' }}
               >
                 <tbody>
                   <tr>

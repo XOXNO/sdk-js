@@ -117,47 +117,6 @@ export const GeneralEmail = ({
     display: none;
   }
 
-  .body-style {
-    color: #D0D0D0 !important;
-  }
-
-  .heading-style {
-    color: #FFF !important;
-  }
-
-  .small-heading-style {
-    color: #FFF !important;
-  }
-
-  .button-style {
-    color: #000 !important;
-    background: #AEFB4F !important;
-  }
-
-  .warning-label {
-    color: #E8EC0D;
-  }
-
-  .warning-label-bg {
-    background-color: #161502;
-    border-color: #E8EC0D;
-  }
-
-  .warning-label-border {
-    border-color: #161502;
-  }
-
-  @media (prefers-color-scheme: light) {
-    :root {
-      --color-palettes-primary-text-fill: #FFF;
-      --color-palettes-lime-fill: #AEFB4F;
-      --color-palettes-button-tertiary-text: #D0D0D0;
-      --color-palettes-button-primary-fill: #AEFB4F;
-      --color-palettes-button-primary-text: #000;
-      --color-palettes-background-color: #121212;
-    }
-  }
-
   @media (prefers-color-scheme: dark) {
     :root {
       --color-palettes-primary-text-fill: #FFF;
@@ -168,31 +127,6 @@ export const GeneralEmail = ({
       --color-palettes-background-color: #121212;
     }
 
-    .body-style {
-      color: #D0D0D0 !important;
-    }
-
-    .heading-style {
-      color: #FFF !important;
-    }
-
-    .small-heading-style {
-      color: #FFF !important;
-    }
-
-    .button-style {
-      color: #000 !important;
-      background: #AEFB4F !important;
-    }
-
-    .warning-label {
-      color: #E8EC0D !important;
-    }
-
-    .warning-label-bg {
-      background-color: #161502 !important;
-      border-color: #E8EC0D !important;
-    }
   }
 `}
           </style>
@@ -226,7 +160,6 @@ export function Center({ children }: PropsWithChildren) {
 export const headingStyle = {
   color: 'var(--color-palettes-primary-text-fill, #FFF) !important',
   fontFamily: `Heading, ${fallbackFont}`,
-  mixBlendMode: 'difference',
   textAlign: 'center',
   fontSize: '28px',
   fontStyle: 'normal',
@@ -237,7 +170,6 @@ export const headingStyle = {
 export const smallHeadingStyle = {
   color: 'var(--color-palettes-primary-text-fill, #FFF) !important',
   fontFamily: `Button, ${fallbackFont}`,
-  mixBlendMode: 'difference',
   textAlign: 'center',
   fontSize: '19px',
   fontStyle: 'normal',
@@ -248,7 +180,6 @@ export const smallHeadingStyle = {
 export const linkStyle = {
   color: 'var(--color-palettes-lime-fill, #AEFB4F) !important',
   fontFamily: `Body, ${fallbackFont}`,
-  mixBlendMode: 'difference',
   fontSize: '16px',
   fontStyle: 'normal',
   fontWeight: '500',
@@ -259,7 +190,6 @@ export const linkStyle = {
 export const bodyStyle = {
   color: 'var(--color-palettes-button-tertiary-text, #D0D0D0) !important',
   textAlign: 'center',
-  mixBlendMode: 'difference',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
   fontStyle: 'normal',
@@ -271,7 +201,6 @@ export const hintStyle = {
   color: 'var(--color-palettes-button-tertiary-text, #D0D0D0) !important',
   textAlign: 'center',
   fontFamily: `Body, ${fallbackFont}`,
-  mixBlendMode: 'difference',
   fontSize: '14px',
   fontStyle: 'normal',
   fontWeight: '300',
@@ -281,7 +210,6 @@ export const hintStyle = {
 export const highlightStyle = {
   color: 'var(--color-palettes-primary-text-fill, #FFF) !important',
   fontFamily: `Body, ${fallbackFont}`,
-  mixBlendMode: 'difference',
   fontSize: '16px',
   fontStyle: 'normal',
   fontWeight: '500',
@@ -292,7 +220,6 @@ export const buttonStyle = {
   fontFamily: `Button, ${fallbackFont}`,
   padding: '12px 20px',
   borderRadius: '8px',
-  mixBlendMode: 'difference',
   background: 'var(--color-palettes-button-primary-fill, #AEFB4F) !important',
   color: 'var(--color-palettes-button-primary-text, #000) !important',
   fontSize: '14px',
