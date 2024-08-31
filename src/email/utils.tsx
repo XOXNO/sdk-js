@@ -147,7 +147,7 @@ export function Center({ children }: PropsWithChildren) {
 }
 
 export const headingStyle = {
-  color: '#FFF',
+  color: 'var(--color-palettes-primary-text-fill, #FFF)',
   fontFamily: `Heading, ${fallbackFont}`,
   textAlign: 'center',
   fontSize: '28px',
@@ -157,7 +157,7 @@ export const headingStyle = {
 } satisfies CSSProperties
 
 export const smallHeadingStyle = {
-  color: '#FFF',
+  color: 'var(--color-palettes-primary-text-fill, #FFF)',
   fontFamily: `Button, ${fallbackFont}`,
   textAlign: 'center',
   fontSize: '19px',
@@ -167,7 +167,7 @@ export const smallHeadingStyle = {
 } satisfies CSSProperties
 
 export const linkStyle = {
-  color: '#AEFB4F',
+  color: 'var(--color-palettes-lime-fill, #AEFB4F)',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
   fontStyle: 'normal',
@@ -177,7 +177,7 @@ export const linkStyle = {
 } satisfies CSSProperties
 
 export const bodyStyle = {
-  color: '#D0D0D0',
+  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
   textAlign: 'center',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
@@ -187,7 +187,7 @@ export const bodyStyle = {
 } satisfies CSSProperties
 
 export const hintStyle = {
-  color: '#D0D0D0',
+  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
   textAlign: 'center',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '14px',
@@ -197,7 +197,7 @@ export const hintStyle = {
 } satisfies CSSProperties
 
 export const highlightStyle = {
-  color: '#FFF',
+  color: 'var(--color-palettes-primary-text-fill, #FFF)',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
   fontStyle: 'normal',
@@ -209,8 +209,8 @@ export const buttonStyle = {
   fontFamily: `Button, ${fallbackFont}`,
   padding: '12px 20px',
   borderRadius: '8px',
-  background: '#AEFB4F',
-  color: '#000',
+  background: 'var(--color-palettes-button-primary-fill, #AEFB4F)',
+  color: 'var(--color-palettes-button-primary-text, #000)',
   fontSize: '14px',
   fontStyle: 'normal',
   fontWeight: '500',
