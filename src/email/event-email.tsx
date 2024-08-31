@@ -107,7 +107,7 @@ const EventEmail = ({
               <Heading style={headingStyle} className="my-0 heading-style">
                 {t('title', { name })}
               </Heading>
-              <Text style={bodyStyle}>
+              <Text style={bodyStyle} className="body-style">
                 {t('description', { eventName: event.name })}
               </Text>
               <Button
