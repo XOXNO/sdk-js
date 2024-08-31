@@ -118,11 +118,13 @@ const EventEmail = ({
               </Text>
             </Center>
             <Center>
-              <Img
-                src={event.ticketImage}
-                width={320}
-                alt="Picture of ticket"
-              />
+              <Link href={href}>
+                <Img
+                  src={event.ticketImage}
+                  width={320}
+                  alt="Picture of ticket"
+                />
+              </Link>
             </Center>
           </Section>
           <Section>
