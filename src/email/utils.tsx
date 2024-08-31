@@ -247,6 +247,7 @@ export const buttonStyle = {
   lineHeight: '16px',
 } satisfies CSSProperties
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const locales = ['en', 'de'] as const
 
 type ILocale = (typeof locales)[number]

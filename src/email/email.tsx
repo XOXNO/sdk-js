@@ -1,15 +1,6 @@
 import React, { createElement, type ComponentProps } from 'react'
 
-import {
-  Body,
-  Button,
-  Container,
-  Heading,
-  Img,
-  Link,
-  Section,
-  Text,
-} from '@react-email/components'
+import { Body, Container, Img, Section } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
 import { NftActivityType } from '../types'
@@ -33,8 +24,6 @@ import {
 } from './types'
 import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
-  bodyStyle,
-  buttonStyle,
   defaultHost,
   FixedButton,
   FixedHeading,
@@ -45,7 +34,6 @@ import {
   headingStyle,
   highlightStyle,
   hintStyle,
-  linkStyle,
   MEDIA,
   renderGenericEmail,
 } from './utils'
@@ -58,7 +46,7 @@ const translations = {
         [NftActivityType.AUCTION_BID]: {
           title: 'You have a new bid on {nftName}',
           description:
-            'Hi {name}, there is a new bid of <highlight>{amount} {token}</highlight> for your <FixedLink>{nftName}</FixedLink> on XOXNO.',
+            'Hi {name}, there is a new bid of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on XOXNO.',
           action: 'View bids',
           hint: '',
           footer: '❤️ Thank you for using XOXNO!',
@@ -66,7 +54,7 @@ const translations = {
         [NftActivityType.AUCTION_OUT_BID]: {
           title: 'You have been outbid on {nftName}',
           description:
-            'Hi {name}, your previous bid has been outbid by a new bid of <highlight>{amount} {token}</highlight> for <FixedLink>{nftName}</FixedLink> on XOXNO.',
+            'Hi {name}, your previous bid has been outbid by a new bid of <highlight>{amount} {token}</highlight> for <link>{nftName}</link> on XOXNO.',
           action: 'View bids',
           hint: '',
           footer: '❤️ Thank you for using XOXNO!',
@@ -74,23 +62,23 @@ const translations = {
         [NftActivityType.OFFER_CREATE]: {
           title: 'You have a new offer on {nftName}',
           description:
-            'Hi {name}, you have received a new offer of <highlight>{amount} {token}</highlight> for your <FixedLink>{nftName}</FixedLink> on XOXNO.',
+            'Hi {name}, you have received a new offer of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on XOXNO.',
           action: 'View offer',
           hint: '',
-          footer: 'Check your recent offers on <FixedLink>XOXNO</FixedLink>',
+          footer: 'Check your recent offers on <link>XOXNO</link>',
         },
         [NftActivityType.OFFER_REJECT]: {
           title: 'Your offer on {nftName} was declined',
           description:
-            'Hi {name}, we regret to inform you that your offer of <highlight>{amount} {token}</highlight> was declined by <FixedLink>{owner}</FixedLink>.',
+            'Hi {name}, we regret to inform you that your offer of <highlight>{amount} {token}</highlight> was declined by <link>{owner}</link>.',
           action: 'View offer',
           hint: '',
-          footer: 'Check your recent offers on <FixedLink>XOXNO</FixedLink>',
+          footer: 'Check your recent offers on <link>XOXNO</link>',
         },
         [NftActivityType.TRADE]: {
           title: 'Congrats, you sold {nftName}!',
           description:
-            'Hi {name}, we are pleased to inform you that your item <FixedLink>{nftName}</FixedLink> has been sold for <highlight>{amount} {token}</highlight>.',
+            'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
           hint: '',
           footer: '❤️ Thank you for using XOXNO!',
@@ -98,7 +86,7 @@ const translations = {
         [NftActivityType.OFFER_TRADE]: {
           title: 'Congrats, you bought {nftName}!',
           description:
-            'Hi {name}, we are pleased to inform you that your offer for <FixedLink>{nftName}</FixedLink> was accepted for <highlight>{amount} {token}</highlight>.',
+            'Hi {name}, we are pleased to inform you that your offer for <link>{nftName}</link> was accepted for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
           hint: '',
           footer: '❤️ Thank you for using XOXNO!',

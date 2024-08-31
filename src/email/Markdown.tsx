@@ -4,13 +4,7 @@ import { Img } from '@react-email/components'
 import type { Components } from 'react-markdown'
 import ReactMarkdown from 'react-markdown'
 
-import {
-  bodyStyle,
-  FixedHeading,
-  FixedLink,
-  FixedText,
-  headingStyle,
-} from './utils'
+import { bodyStyle, FixedHeading, FixedLink, FixedText } from './utils'
 
 const MarkdownComponents: Partial<Components> = {
   h1: ({ children }) => (

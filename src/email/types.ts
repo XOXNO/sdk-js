@@ -38,6 +38,7 @@ export type IOfferTypes = (typeof offerTypes)[number]
 
 export type IVerifyEmailTypes = (typeof verifyEmailTypes)[number]
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emailActivityTypes = [
   ...offerTradeTypes,
   ...tradeTypes,
