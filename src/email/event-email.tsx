@@ -55,9 +55,7 @@ type IProps = {
     color: string
   }
 }
-const imgStyle = {
-  filter: 'none !important',
-}
+
 const messages = translations.translations.en
 
 const EventEmail = ({
