@@ -35,10 +35,11 @@ const translations = {
     en: {
       event: {
         meta: 'Your {eventName} Ticket is Here – Claim Now!',
-        title: 'Redeem your {eventName} Ticket:',
+        title: 'Your {eventName} Ticket is Here',
         description:
-          "Dear {name},<br></br>We're excited to have you join us at the {eventName}! Please click the button below to redeem your ticket and secure your spot:",
-        action: 'Access your ticket here',
+          "Dear {name},<br></br>We're excited to have you join us at the {eventName}! Please click the button below to claim your ticket and secure your spot:",
+        action: 'CLAIM YOUR DIGITAL TICKET HERE',
+        hint: 'If you want to get the best experience and a unique collectible as a memory of this event, click below to claim your digital ticket:',
         qr: 'If you have trouble accessing the ticket on the website, use the <b>QR Code attached to this email</b> to pass the check-in.',
         info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         maps: 'Open in Google Maps',
@@ -123,10 +124,11 @@ const EventEmail = ({
               />
             </Center>
           </Section>
-          <Section className="max-w-[360px]">
+          <Section>
             <Center>
+              <Text style={bodyStyle}>{t('hint')}</Text>
               <Button href={href} style={buttonStyle} className="mb-3 block">
-                {t('action').toUpperCase()}
+                {t('action')}
               </Button>
               <table
                 role="presentation"
