@@ -52,16 +52,19 @@ type IProps = {
   event: IEvent
   style?: {
     backgroundColor: string
+    color: string
   }
 }
-
+const imgStyle = {
+  filter: 'none !important',
+}
 const messages = translations.translations.en
 
 const EventEmail = ({
   host = defaultHost,
   event,
   name,
-  style = { backgroundColor: '#121212' },
+  style = { backgroundColor: '#121212', color: '#121212' },
   unsubscribeToken,
 }: IProps & WithUnsubscribeToken) => {
   const t = createTranslator({
@@ -87,6 +90,7 @@ const EventEmail = ({
         style={{
           backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${event.backgroundImage})`,
           backgroundColor: style.backgroundColor,
+          color: style.color,
         }}
       >
         <Container>
