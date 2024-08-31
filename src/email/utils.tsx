@@ -150,8 +150,18 @@ export const headingStyle = {
   textAlign: 'center',
   fontSize: '28px',
   fontStyle: 'normal',
-  fontWeight: 600,
+  fontWeight: '600',
   lineHeight: '36px',
+} satisfies CSSProperties
+
+export const smallHeadingStyle = {
+  color: 'var(--color-palettes-primary-text-fill, #FFF)',
+  fontFamily: `Button, ${fallbackFont}`,
+  textAlign: 'center',
+  fontSize: '19px',
+  fontStyle: 'normal',
+  fontWeight: '500',
+  lineHeight: '26px',
 } satisfies CSSProperties
 
 export const linkStyle = {

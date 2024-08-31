@@ -1,5 +1,6 @@
 export * from './email/email'
 export * from './email/event-email'
+export * from './email/event-email-2'
 export * from './email/types'
 export {
   renderGenericEmail,
