@@ -64,7 +64,9 @@ const EventEmail = ({
   host = defaultHost,
   event,
   name,
-  style = { backgroundColor: '#121212' },
+  style = {
+    backgroundColor: 'var(--color-palettes-background-color, #121212)',
+  },
   unsubscribeToken,
 }: IProps & WithUnsubscribeToken) => {
   const t = createTranslator({
@@ -138,7 +140,7 @@ const EventEmail = ({
                 cellSpacing="0"
                 cellPadding="0"
                 border={0}
-                className="mb-[40px] bg-[#161502] p-3 rounded-xl border border-solid border-[#E8EC0D]"
+                className="mb-[40px] warning-label-bg p-3 rounded-xl border border-solid"
               >
                 <tbody>
                   <tr>
@@ -159,7 +161,7 @@ const EventEmail = ({
                     <td style={{ verticalAlign: 'middle' }}>
                       <Text
                         style={bodyStyle}
-                        className="text-[#E8EC0D] my-0 text-start"
+                        className="warning-label my-0 text-start"
                       >
                         {t.rich('qr', { b: (chunks) => <b>{chunks}</b> })}
                       </Text>

@@ -56,7 +56,9 @@ const PostEmail = ({
   host = defaultHost,
   subject,
   message,
-  style = { backgroundColor: '#121212' },
+  style = {
+    backgroundColor: 'var(--color-palettes-background-color, #121212)',
+  },
   unsubscribeToken,
 }: IProps & WithUnsubscribeToken) => {
   const t = createTranslator({

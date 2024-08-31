@@ -115,6 +115,33 @@ export const GeneralEmail = ({
             .no-scrollbar::-webkit-scrollbar {
               display: none;
             }
+            .warning-label {
+              color: #E8EC0D;
+            }
+            .warning-label-bg {
+              background-color: #161502;
+              border-color: #E8EC0D;
+            }
+            .warning-label-border {
+              border-color: #161502;
+            }
+            @media (prefers-color-scheme: dark) {
+             --color-palettes-primary-text-fill: #FFF;
+             --color-palettes-lime-fill: #AEFB4F;
+             --color-palettes-button-tertiary-text: #D0D0D0;
+             --color-palettes-button-primary-fill: #AEFB4F;
+             --color-palettes-button-primary-text: #000;
+             --color-palettes-background-color: #121212;
+
+             .warning-label {
+                color: #E8EC0D;
+              }
+              
+            .warning-label-bg {
+              background-color: #161502;
+              border-color: #E8EC0D;
+              }
+            }
           `}
           </style>
           <meta name="color-scheme" content="light only" />
