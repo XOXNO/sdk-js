@@ -107,10 +107,10 @@ const EventEmail = ({
           </Section>
           <Section className="p-5">
             <Center>
-              <Heading style={headingStyle} className="my-0">
+              <Heading style={headingStyle} className="my-0 heading-style">
                 {t('title', { eventName: event.name })}
               </Heading>
-              <Text style={bodyStyle}>
+              <Text style={bodyStyle} className="body-style">
                 {t.rich('description', {
                   eventName: event.name,
                   name,
@@ -131,8 +131,14 @@ const EventEmail = ({
           </Section>
           <Section>
             <Center>
-              <Text style={bodyStyle}>{t('hint')}</Text>
-              <Button href={href} style={buttonStyle} className="mb-3 block">
+              <Text className="body-style" style={bodyStyle}>
+                {t('hint')}
+              </Text>
+              <Button
+                href={href}
+                style={buttonStyle}
+                className="mb-3 block button-style"
+              >
                 {t('action')}
               </Button>
               <table

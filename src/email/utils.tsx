@@ -108,44 +108,94 @@ export const GeneralEmail = ({
           />
           <style>
             {`
-            .no-scrollbar {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-            }
-            .no-scrollbar::-webkit-scrollbar {
-              display: none;
-            }
-            .warning-label {
-              color: #E8EC0D;
-            }
-            .warning-label-bg {
-              background-color: #161502;
-              border-color: #E8EC0D;
-            }
-            .warning-label-border {
-              border-color: #161502;
-            }
-            @media (prefers-color-scheme: dark) {
-             --color-palettes-primary-text-fill: #FFF;
-             --color-palettes-lime-fill: #AEFB4F;
-             --color-palettes-button-tertiary-text: #D0D0D0;
-             --color-palettes-button-primary-fill: #AEFB4F;
-             --color-palettes-button-primary-text: #000;
-             --color-palettes-background-color: #121212;
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
-             .warning-label {
-                color: #E8EC0D;
-              }
-              
-            .warning-label-bg {
-              background-color: #161502;
-              border-color: #E8EC0D;
-              }
-            }
-          `}
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .body-style {
+    color: #D0D0D0 !important;
+  }
+
+  .heading-style {
+    color: #FFF !important;
+  }
+
+  .small-heading-style {
+    color: #FFF !important;
+  }
+
+  .button-style {
+    color: #000 !important;
+    background: #AEFB4F !important;
+  }
+
+  .warning-label {
+    color: #E8EC0D;
+  }
+
+  .warning-label-bg {
+    background-color: #161502;
+    border-color: #E8EC0D;
+  }
+
+  .warning-label-border {
+    border-color: #161502;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --color-palettes-primary-text-fill: #FFF;
+      --color-palettes-lime-fill: #AEFB4F;
+      --color-palettes-button-tertiary-text: #D0D0D0;
+      --color-palettes-button-primary-fill: #AEFB4F;
+      --color-palettes-button-primary-text: #000;
+      --color-palettes-background-color: #121212;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-palettes-primary-text-fill: #FFF;
+      --color-palettes-lime-fill: #AEFB4F;
+      --color-palettes-button-tertiary-text: #D0D0D0;
+      --color-palettes-button-primary-fill: #AEFB4F;
+      --color-palettes-button-primary-text: #000;
+      --color-palettes-background-color: #121212;
+    }
+
+    .body-style {
+      color: #D0D0D0 !important;
+    }
+
+    .heading-style {
+      color: #FFF !important;
+    }
+
+    .small-heading-style {
+      color: #FFF !important;
+    }
+
+    .button-style {
+      color: #000 !important;
+      background: #AEFB4F !important;
+    }
+
+    .warning-label {
+      color: #E8EC0D !important;
+    }
+
+    .warning-label-bg {
+      background-color: #161502 !important;
+      border-color: #E8EC0D !important;
+    }
+  }
+`}
           </style>
-          <meta name="color-scheme" content="light only" />
-          <meta name="supported-color-schemes" content="light only" />
         </Head>
         <Preview>{title}</Preview>
         {children}
@@ -174,7 +224,7 @@ export function Center({ children }: PropsWithChildren) {
 }
 
 export const headingStyle = {
-  color: 'var(--color-palettes-primary-text-fill, #FFF)',
+  color: 'var(--color-palettes-primary-text-fill, #FFF) !important',
   fontFamily: `Heading, ${fallbackFont}`,
   textAlign: 'center',
   fontSize: '28px',
@@ -184,7 +234,7 @@ export const headingStyle = {
 } satisfies CSSProperties
 
 export const smallHeadingStyle = {
-  color: 'var(--color-palettes-primary-text-fill, #FFF)',
+  color: 'var(--color-palettes-primary-text-fill, #FFF) !important',
   fontFamily: `Button, ${fallbackFont}`,
   textAlign: 'center',
   fontSize: '19px',
@@ -194,7 +244,7 @@ export const smallHeadingStyle = {
 } satisfies CSSProperties
 
 export const linkStyle = {
-  color: 'var(--color-palettes-lime-fill, #AEFB4F)',
+  color: 'var(--color-palettes-lime-fill, #AEFB4F) !important',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
   fontStyle: 'normal',
@@ -204,7 +254,7 @@ export const linkStyle = {
 } satisfies CSSProperties
 
 export const bodyStyle = {
-  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
+  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0) !important',
   textAlign: 'center',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
@@ -214,7 +264,7 @@ export const bodyStyle = {
 } satisfies CSSProperties
 
 export const hintStyle = {
-  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
+  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0) !important',
   textAlign: 'center',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '14px',
@@ -224,7 +274,7 @@ export const hintStyle = {
 } satisfies CSSProperties
 
 export const highlightStyle = {
-  color: 'var(--color-palettes-primary-text-fill, #FFF)',
+  color: 'var(--color-palettes-primary-text-fill, #FFF) !important',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
   fontStyle: 'normal',
@@ -236,8 +286,8 @@ export const buttonStyle = {
   fontFamily: `Button, ${fallbackFont}`,
   padding: '12px 20px',
   borderRadius: '8px',
-  background: 'var(--color-palettes-button-primary-fill, #AEFB4F)',
-  color: 'var(--color-palettes-button-primary-text, #000)',
+  background: 'var(--color-palettes-button-primary-fill, #AEFB4F) !important',
+  color: 'var(--color-palettes-button-primary-text, #000) !important',
   fontSize: '14px',
   fontStyle: 'normal',
   fontWeight: '500',

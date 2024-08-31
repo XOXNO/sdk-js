@@ -104,7 +104,7 @@ const EventEmail = ({
           </Section>
           <Section className="p-5">
             <Center>
-              <Heading style={headingStyle} className="my-0">
+              <Heading style={headingStyle} className="my-0 heading-style">
                 {t('title', { name })}
               </Heading>
               <Text style={bodyStyle}>
@@ -113,7 +113,7 @@ const EventEmail = ({
               <Button
                 href={href}
                 style={buttonStyle}
-                className="mt-2 mb-[40px]"
+                className="mt-2 mb-[40px] button-style"
               >
                 {t('action')}
               </Button>
