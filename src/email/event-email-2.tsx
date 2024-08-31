@@ -37,7 +37,7 @@ const translations = {
         meta: 'Your {eventName} Ticket is Here – Claim Now!',
         title: 'Your {eventName} Ticket is Here',
         description:
-          "Dear {name},<br></br>We're excited to have you join us at the {eventName}! Please click the button below to claim your ticket and secure your spot:",
+          "Dear {name},<br></br>We're excited to have you join us at the {eventName}! You can use the <b>QR Code attached to this email</b> to pass the event check-in.",
         action: 'CLAIM YOUR DIGITAL TICKET HERE',
         hint: 'If you want to get the best experience and a unique collectible as a memory of this event, click below to claim your digital ticket:',
         qr: 'If you have trouble accessing the ticket on the website, use the <b>QR Code attached to this email</b> to pass the check-in.',
@@ -113,6 +113,7 @@ const EventEmail = ({
                   eventName: event.name,
                   name,
                   br: () => <br />,
+                  b: (chunks) => <b>{chunks}</b>,
                 })}
               </Text>
             </Center>
