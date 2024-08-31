@@ -1,54 +1,44 @@
 import React, { type ComponentProps } from 'react'
 
-import { Heading, Img, Link, Text } from '@react-email/components'
-import ReactMarkdown from 'react-markdown'
+import { Img } from '@react-email/components'
 import type { Components } from 'react-markdown'
+import ReactMarkdown from 'react-markdown'
 
-import { bodyStyle, headingStyle, linkStyle } from './utils'
+import {
+  bodyStyle,
+  FixedHeading,
+  FixedLink,
+  FixedText,
+  headingStyle,
+} from './utils'
 
 const MarkdownComponents: Partial<Components> = {
   h1: ({ children }) => (
-    <Heading className="text-start" style={headingStyle}>
-      {children}
-    </Heading>
+    <FixedHeading className="text-start">{children}</FixedHeading>
   ),
   h2: ({ children }) => (
-    <Heading className="text-start" style={headingStyle}>
-      {children}
-    </Heading>
+    <FixedHeading className="text-start">{children}</FixedHeading>
   ),
   h3: ({ children }) => (
-    <Heading className="text-start" style={headingStyle}>
-      {children}
-    </Heading>
+    <FixedHeading className="text-start">{children}</FixedHeading>
   ),
   h4: ({ children }) => (
-    <Heading className="text-start" style={headingStyle}>
-      {children}
-    </Heading>
+    <FixedHeading className="text-start">{children}</FixedHeading>
   ),
   h5: ({ children }) => (
-    <Heading className="text-start" style={headingStyle}>
-      {children}
-    </Heading>
+    <FixedHeading className="text-start">{children}</FixedHeading>
   ),
   h6: ({ children }) => (
-    <Heading className="text-start" style={headingStyle}>
-      {children}
-    </Heading>
+    <FixedHeading className="text-start">{children}</FixedHeading>
   ),
-  p: ({ children }) => (
-    <Text className="text-start" style={bodyStyle}>
-      {children}
-    </Text>
-  ),
+  p: ({ children }) => <FixedText className="text-start">{children}</FixedText>,
   ul: ({ children }) => (
     <ul className="text-start list-disc list-inline pl-0" style={bodyStyle}>
       {children}
     </ul>
   ),
   img: (props) => <Img {...props} width="100%" className="rounded-lg" />,
-  a: (props) => <Link style={linkStyle} {...props} />,
+  a: (props) => <FixedLink {...props} />,
 }
 
 export function Markdown(props: ComponentProps<typeof ReactMarkdown>) {

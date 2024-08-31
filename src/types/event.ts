@@ -1,4 +1,4 @@
-import { Owner } from './nft'
+import type { Owner } from './nft'
 import type { CreatorProfile } from './user'
 
 export interface IEventDoc {

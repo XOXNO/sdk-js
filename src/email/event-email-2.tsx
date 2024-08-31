@@ -1,15 +1,6 @@
 import React, { createElement, type ComponentProps } from 'react'
 
-import {
-  Body,
-  Button,
-  Container,
-  Heading,
-  Img,
-  Link,
-  Section,
-  Text,
-} from '@react-email/components'
+import { Body, Container, Img, Section } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
 import { getMapsLink, getOnlineLocation } from '../utils'
@@ -17,13 +8,14 @@ import type { IEvent } from './types'
 import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
   bodyStyle,
-  buttonStyle,
   Center,
   defaultHost,
+  FixedButton,
+  FixedHeading,
+  FixedLink,
+  FixedText,
   GeneralEmail,
   getHost,
-  headingStyle,
-  linkStyle,
   MEDIA,
   renderGenericEmail,
   smallHeadingStyle,
@@ -54,6 +46,7 @@ type IProps = {
   name: string
   event: IEvent
   style?: {
+    background: string
     backgroundColor: string
   }
 }
@@ -65,6 +58,8 @@ const EventEmail = ({
   event,
   name,
   style = {
+    background:
+      'linear-gradient(var(--color-palettes-background-color, #121212),var(--color-palettes-background-color, #121212))',
     backgroundColor: 'var(--color-palettes-background-color, #121212)',
   },
   unsubscribeToken,
@@ -90,11 +85,13 @@ const EventEmail = ({
       <Body
         className="min-h-screen bg-center bg-cover"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${event.backgroundImage})`,
-          backgroundColor: style.backgroundColor,
+          ...style,
+          backgroundImage: event.backgroundImage
+            ? `url(${event.backgroundImage})`
+            : style.background,
         }}
       >
-        <Container>
+        <Container className="max-w-[500px] px-5">
           <Section className="min-h-[100px]">
             <Center>
               <Img
@@ -107,44 +104,47 @@ const EventEmail = ({
           </Section>
           <Section className="p-5">
             <Center>
-              <Heading style={headingStyle} className="my-0">
+              <FixedHeading className="my-0">
                 {t('title', { eventName: event.name })}
-              </Heading>
-              <Text style={bodyStyle} className="body-style">
+              </FixedHeading>
+              <FixedText>
                 {t.rich('description', {
                   eventName: event.name,
                   name,
                   br: () => <br />,
                   b: (chunks) => <b>{chunks}</b>,
                 })}
-              </Text>
+              </FixedText>
             </Center>
             <Center>
-              <Link href={href}>
+              <FixedLink href={href}>
                 <Img
                   src={event.ticketImage}
                   width={320}
                   alt="Picture of ticket"
                 />
-              </Link>
+              </FixedLink>
             </Center>
           </Section>
           <Section>
             <Center>
-              <Text style={bodyStyle}>{t('hint')}</Text>
-              <Button
-                href={href}
-                style={buttonStyle}
-                className="mb-3 block button-style"
-              >
+              <FixedText>{t('hint')}</FixedText>
+              <FixedButton href={href} className="mb-3 block">
                 {t('action')}
-              </Button>
+              </FixedButton>
               <table
                 role="presentation"
                 cellSpacing="0"
                 cellPadding="0"
                 border={0}
-                className="mb-[40px] warning-label-bg p-3 rounded-xl border border-solid"
+                style={{
+                  background:
+                    'linear-gradient(var(--color-palettes-background-color, #121212),var(--color-palettes-background-color, #121212))',
+                  backgroundColor:
+                    'var(--color-palettes-background-color, #121212)',
+                  borderColor: 'var(--color-palettes-yellow, #E8EC0D)',
+                }}
+                className="mb-[40px] p-3 rounded-xl border border-solid"
               >
                 <tbody>
                   <tr>
@@ -163,12 +163,15 @@ const EventEmail = ({
                       />
                     </td>
                     <td style={{ verticalAlign: 'middle' }}>
-                      <Text
-                        style={bodyStyle}
-                        className="warning-label my-0 text-start"
+                      <FixedText
+                        style={{
+                          ...bodyStyle,
+                          color: 'var(--color-palettes-yellow, #E8EC0D)',
+                        }}
+                        className="my-0 text-start"
                       >
                         {t.rich('qr', { b: (chunks) => <b>{chunks}</b> })}
-                      </Text>
+                      </FixedText>
                     </td>
                   </tr>
                 </tbody>
@@ -176,9 +179,9 @@ const EventEmail = ({
             </Center>
           </Section>
           <Section>
-            <Text style={smallHeadingStyle} className="mb-0">
+            <FixedText style={smallHeadingStyle} className="mb-0">
               {event.time}
-            </Text>
+            </FixedText>
             <Center>
               <table
                 role="presentation"
@@ -203,40 +206,40 @@ const EventEmail = ({
                       />
                     </td>
                     <td style={{ verticalAlign: 'middle' }}>
-                      <Text style={bodyStyle} className="my-0">
+                      <FixedText className="my-0">
                         {event.location.onlineLink
                           ? getOnlineLocation(event.location.onlineLink)
                           : event.location.address}
-                      </Text>
+                      </FixedText>
                     </td>
                   </tr>
                 </tbody>
               </table>
               {event.location.address && event.location.placeId && (
-                <Link href={mapsLink} style={linkStyle}>
-                  {t('maps')}
-                </Link>
+                <FixedLink href={mapsLink}>{t('maps')}</FixedLink>
               )}
             </Center>
           </Section>
-          <Section className="px-5 py-8 mt-8 text-center border-t border-solid border-[#fff]/[0.1]">
-            <Text style={bodyStyle} className="my-0">
+          <Section
+            className="py-8 mt-8 text-center border-t border-solid"
+            style={{
+              borderColor:
+                'var(--color-palettes-primary-text-opaque,#FFFFFF1A)',
+            }}
+          >
+            <FixedText className="my-0">
               {t.rich('info', {
                 xoxnolink: (children) => (
-                  <Link href={HOST} style={linkStyle}>
-                    {children}
-                  </Link>
+                  <FixedLink href={HOST}>{children}</FixedLink>
                 ),
                 emaillink: (children) => (
-                  <Link href="mailto:contact@xoxno.com" style={linkStyle}>
+                  <FixedLink href="mailto:contact@xoxno.com">
                     {children}
-                  </Link>
+                  </FixedLink>
                 ),
               })}
-            </Text>
-            <Text style={bodyStyle} className="mt-5">
-              {t('footer')}
-            </Text>
+            </FixedText>
+            <FixedText className="mt-5">{t('footer')}</FixedText>
           </Section>
         </Container>
       </Body>

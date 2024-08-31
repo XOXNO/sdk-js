@@ -36,6 +36,10 @@ import {
   bodyStyle,
   buttonStyle,
   defaultHost,
+  FixedButton,
+  FixedHeading,
+  FixedLink,
+  FixedText,
   GeneralEmail,
   getHost,
   headingStyle,
@@ -54,7 +58,7 @@ const translations = {
         [NftActivityType.AUCTION_BID]: {
           title: 'You have a new bid on {nftName}',
           description:
-            'Hi {name}, there is a new bid of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on XOXNO.',
+            'Hi {name}, there is a new bid of <highlight>{amount} {token}</highlight> for your <FixedLink>{nftName}</FixedLink> on XOXNO.',
           action: 'View bids',
           hint: '',
           footer: '❤️ Thank you for using XOXNO!',
@@ -62,7 +66,7 @@ const translations = {
         [NftActivityType.AUCTION_OUT_BID]: {
           title: 'You have been outbid on {nftName}',
           description:
-            'Hi {name}, your previous bid has been outbid by a new bid of <highlight>{amount} {token}</highlight> for <link>{nftName}</link> on XOXNO.',
+            'Hi {name}, your previous bid has been outbid by a new bid of <highlight>{amount} {token}</highlight> for <FixedLink>{nftName}</FixedLink> on XOXNO.',
           action: 'View bids',
           hint: '',
           footer: '❤️ Thank you for using XOXNO!',
@@ -70,23 +74,23 @@ const translations = {
         [NftActivityType.OFFER_CREATE]: {
           title: 'You have a new offer on {nftName}',
           description:
-            'Hi {name}, you have received a new offer of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on XOXNO.',
+            'Hi {name}, you have received a new offer of <highlight>{amount} {token}</highlight> for your <FixedLink>{nftName}</FixedLink> on XOXNO.',
           action: 'View offer',
           hint: '',
-          footer: 'Check your recent offers on <link>XOXNO</link>',
+          footer: 'Check your recent offers on <FixedLink>XOXNO</FixedLink>',
         },
         [NftActivityType.OFFER_REJECT]: {
           title: 'Your offer on {nftName} was declined',
           description:
-            'Hi {name}, we regret to inform you that your offer of <highlight>{amount} {token}</highlight> was declined by <link>{owner}</link>.',
+            'Hi {name}, we regret to inform you that your offer of <highlight>{amount} {token}</highlight> was declined by <FixedLink>{owner}</FixedLink>.',
           action: 'View offer',
           hint: '',
-          footer: 'Check your recent offers on <link>XOXNO</link>',
+          footer: 'Check your recent offers on <FixedLink>XOXNO</FixedLink>',
         },
         [NftActivityType.TRADE]: {
           title: 'Congrats, you sold {nftName}!',
           description:
-            'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
+            'Hi {name}, we are pleased to inform you that your item <FixedLink>{nftName}</FixedLink> has been sold for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
           hint: '',
           footer: '❤️ Thank you for using XOXNO!',
@@ -94,7 +98,7 @@ const translations = {
         [NftActivityType.OFFER_TRADE]: {
           title: 'Congrats, you bought {nftName}!',
           description:
-            'Hi {name}, we are pleased to inform you that your offer for <link>{nftName}</link> was accepted for <highlight>{amount} {token}</highlight>.',
+            'Hi {name}, we are pleased to inform you that your offer for <FixedLink>{nftName}</FixedLink> was accepted for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
           hint: '',
           footer: '❤️ Thank you for using XOXNO!',
@@ -244,8 +248,14 @@ const XOXNOEmail = ({
       HOST={HOST}
       unsubscribeToken={unsubscribeToken}
     >
-      <Body className="bg-[#121212]">
-        <Container className="max-w-[500px]">
+      <Body
+        style={{
+          background:
+            'linear-gradient(var(--color-palettes-background-color, #121212),var(--color-palettes-background-color, #121212))',
+          backgroundColor: 'var(--color-palettes-background-color, #121212)',
+        }}
+      >
+        <Container className="max-w-[500px] px-5">
           <Section className="mb-4">
             <Img
               src={`${MEDIA}/hotlink-ok/${isUnsuccess ? 'unsuccess.png' : 'success.png'}`}
@@ -265,53 +275,47 @@ const XOXNOEmail = ({
                 alt="NFT Image"
               />
             )}
-            <Section className="pt-8 pb-6 px-5 text-center">
-              <Heading style={headingStyle} className="m-0">
-                {t('title', payload)}
-              </Heading>
-              <Text style={bodyStyle} className="m-0 mt-2.5">
+            <Section className="pt-8 pb-6 text-center">
+              <FixedHeading className="m-0">{t('title', payload)}</FixedHeading>
+              <FixedText className="m-0 mt-2.5">
                 {t.rich('description', {
                   ...payload,
                   link: (children) => (
-                    <Link href={href} style={linkStyle}>
-                      {children}
-                    </Link>
+                    <FixedLink href={href}>{children}</FixedLink>
                   ),
                   highlight: (children) => (
-                    <span style={highlightStyle}>{children}</span>
+                    <FixedText style={highlightStyle}>{children}</FixedText>
                   ),
                 })}
-              </Text>
+              </FixedText>
               {isVerifyEmail(props) ? (
                 <Section className="mt-6">
-                  <Text style={bodyStyle} className="mt-0 mb-2.5">
-                    {t('action')}
-                  </Text>
-                  <Text style={headingStyle} className="my-0">
+                  <FixedText className="mt-0 mb-2.5">{t('action')}</FixedText>
+                  <FixedText style={headingStyle} className="my-0">
                     {props.payload.code}
-                  </Text>
-                  <Text style={hintStyle} className="mb-0">
+                  </FixedText>
+                  <FixedText style={hintStyle} className="mb-0">
                     {t('hint')}
-                  </Text>
+                  </FixedText>
                 </Section>
               ) : (
-                <Button href={href} style={buttonStyle} className="mt-5">
+                <FixedButton href={href} className="mt-5">
                   {t('action')}
-                </Button>
+                </FixedButton>
               )}
             </Section>
           </Section>
-          <Section className="py-6 px-5 pb-12 text-center" style={bodyStyle}>
-            {t.rich('footer', {
-              link: (children) => (
-                <Link href={href} style={linkStyle}>
-                  {children}
-                </Link>
-              ),
-              highlight: (children) => (
-                <span style={highlightStyle}>{children}</span>
-              ),
-            })}
+          <Section className="py-6 pb-12">
+            <FixedText>
+              {t.rich('footer', {
+                link: (children) => (
+                  <FixedLink href={href}>{children}</FixedLink>
+                ),
+                highlight: (children) => (
+                  <FixedText style={highlightStyle}>{children}</FixedText>
+                ),
+              })}
+            </FixedText>
           </Section>
         </Container>
       </Body>

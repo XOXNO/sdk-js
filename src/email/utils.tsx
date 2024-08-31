@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import React, {
   type CSSProperties,
   type PropsWithChildren,
@@ -5,13 +6,16 @@ import React, {
 } from 'react'
 
 import {
+  Button,
   Head,
+  Heading,
   Html,
   Link,
   Preview,
   renderAsync,
   Section,
   Tailwind,
+  Text,
 } from '@react-email/components'
 import he from 'he'
 import { createTranslator } from 'use-intl'
@@ -82,6 +86,8 @@ export const GeneralEmail = ({
       <Html lang="en" className="no-scrollbar">
         <Head>
           <title>{title}</title>
+          <meta name="color-scheme" content="light" />
+          <meta name="supported-color-schemes" content="light" />
           <Font
             fontFamily="Heading"
             fallbackFontFamily="Verdana"
@@ -117,30 +123,41 @@ export const GeneralEmail = ({
     display: none;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
+  :root {
       --color-palettes-primary-text-fill: #FFF;
+      --color-palettes-primary-text-opaque: #FFFFFF1A;
       --color-palettes-lime-fill: #AEFB4F;
       --color-palettes-button-tertiary-text: #D0D0D0;
       --color-palettes-button-primary-fill: #AEFB4F;
       --color-palettes-button-primary-text: #000;
       --color-palettes-background-color: #121212;
+      --color-palettes-yellow: #E8EC0D;
+      --color-palettes-yellow-bg: #161502;
     }
 
+  @media (prefers-color-scheme: dark) {
+    :root {
+        --color-palettes-primary-text-fill: #FFF;
+        --color-palettes-primary-text-opaque: #FFFFFF1A;
+        --color-palettes-lime-fill: #AEFB4F;
+        --color-palettes-button-tertiary-text: #D0D0D0;
+        --color-palettes-button-primary-fill: #AEFB4F;
+        --color-palettes-button-primary-text: #000;
+        --color-palettes-background-color: #121212;
+        --color-palettes-yellow: #E8EC0D;
+        --color-palettes-yellow-bg: #161502;
+      }
   }
 `}
           </style>
         </Head>
         <Preview>{title}</Preview>
         {children}
-        <Section className="py-6 px-5 pb-12 text-center" style={bodyStyle}>
-          {t('label')}{' '}
-          <Link
-            href={`${HOST}/unsubscribe?token=${unsubscribeToken}`}
-            style={linkStyle}
-          >
+        <Section className="px-5 py-6 pb-12 text-center">
+          <FixedText className="mb-0">{t('label')}</FixedText>
+          <FixedLink href={`${HOST}/unsubscribe?token=${unsubscribeToken}`}>
             {t('action')}
-          </Link>
+          </FixedLink>
         </Section>
       </Html>
     </Tailwind>
@@ -158,7 +175,7 @@ export function Center({ children }: PropsWithChildren) {
 }
 
 export const headingStyle = {
-  color: 'var(--color-palettes-primary-text-fill, #FFF) !important',
+  color: 'var(--color-palettes-primary-text-fill, #FFF)',
   fontFamily: `Heading, ${fallbackFont}`,
   textAlign: 'center',
   fontSize: '28px',
@@ -168,7 +185,7 @@ export const headingStyle = {
 } satisfies CSSProperties
 
 export const smallHeadingStyle = {
-  color: 'var(--color-palettes-primary-text-fill, #FFF) !important',
+  color: 'var(--color-palettes-primary-text-fill, #FFF)',
   fontFamily: `Button, ${fallbackFont}`,
   textAlign: 'center',
   fontSize: '19px',
@@ -178,7 +195,7 @@ export const smallHeadingStyle = {
 } satisfies CSSProperties
 
 export const linkStyle = {
-  color: 'var(--color-palettes-lime-fill, #AEFB4F) !important',
+  color: 'var(--color-palettes-lime-fill, #AEFB4F)',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
   fontStyle: 'normal',
@@ -188,7 +205,7 @@ export const linkStyle = {
 } satisfies CSSProperties
 
 export const bodyStyle = {
-  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0) !important',
+  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
   textAlign: 'center',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
@@ -198,7 +215,7 @@ export const bodyStyle = {
 } satisfies CSSProperties
 
 export const hintStyle = {
-  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0) !important',
+  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
   textAlign: 'center',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '14px',
@@ -208,7 +225,7 @@ export const hintStyle = {
 } satisfies CSSProperties
 
 export const highlightStyle = {
-  color: 'var(--color-palettes-primary-text-fill, #FFF) !important',
+  color: 'var(--color-palettes-primary-text-fill, #FFF)',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
   fontStyle: 'normal',
@@ -220,8 +237,10 @@ export const buttonStyle = {
   fontFamily: `Button, ${fallbackFont}`,
   padding: '12px 20px',
   borderRadius: '8px',
-  background: 'var(--color-palettes-button-primary-fill, #AEFB4F) !important',
-  color: 'var(--color-palettes-button-primary-text, #000) !important',
+  background:
+    'linear-gradient(var(--color-palettes-button-primary-fill, #AEFB4F),var(--color-palettes-button-primary-fill, #AEFB4F))',
+  backgroundColor: 'var(--color-palettes-button-primary-fill, #AEFB4F)',
+  color: 'var(--color-palettes-button-primary-text, #000)',
   fontSize: '14px',
   fontStyle: 'normal',
   fontWeight: '500',
@@ -270,4 +289,42 @@ export async function renderGenericEmail(Email: ReactElement) {
   const subject = he.decode(html.match(/<title[^>]*>([^<]+)<\/title>/)![1])
 
   return { html, plainText, subject }
+}
+
+export function FixedHeading({
+  children,
+  ...props
+}: ComponentProps<typeof Heading>) {
+  return (
+    <Heading {...props} style={{ ...headingStyle, ...props.style }}>
+      {children}
+    </Heading>
+  )
+}
+
+export function FixedText({ children, ...props }: ComponentProps<typeof Text>) {
+  return (
+    <Text {...props} style={{ ...bodyStyle, ...props.style }}>
+      {children}
+    </Text>
+  )
+}
+
+export function FixedLink({ children, ...props }: ComponentProps<typeof Link>) {
+  return (
+    <Link {...props} style={{ ...linkStyle, ...props.style }}>
+      {children}
+    </Link>
+  )
+}
+
+export function FixedButton({
+  children,
+  ...props
+}: ComponentProps<typeof Button>) {
+  return (
+    <Button {...props} style={{ ...buttonStyle, ...props.style }}>
+      {children}
+    </Button>
+  )
 }

@@ -1,24 +1,17 @@
 import React, { createElement, type ComponentProps } from 'react'
 
-import {
-  Body,
-  Container,
-  Img,
-  Link,
-  Section,
-  Text,
-} from '@react-email/components'
+import { Body, Container, Img, Section } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
 import { Markdown } from './Markdown'
 import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
-  bodyStyle,
   Center,
   defaultHost,
+  FixedLink,
+  FixedText,
   GeneralEmail,
   getHost,
-  linkStyle,
   MEDIA,
   renderGenericEmail,
 } from './utils'
@@ -46,6 +39,7 @@ type IProps = {
   subject: string
   message: string
   style?: {
+    background: string
     backgroundColor: string
   }
 }
@@ -57,6 +51,8 @@ const PostEmail = ({
   subject,
   message,
   style = {
+    background:
+      'linear-gradient(var(--color-palettes-background-color, #121212),var(--color-palettes-background-color, #121212))',
     backgroundColor: 'var(--color-palettes-background-color, #121212)',
   },
   unsubscribeToken,
@@ -75,13 +71,8 @@ const PostEmail = ({
       HOST={HOST}
       unsubscribeToken={unsubscribeToken}
     >
-      <Body
-        className="min-h-screen bg-center bg-cover"
-        style={{
-          backgroundColor: style.backgroundColor,
-        }}
-      >
-        <Container>
+      <Body style={style}>
+        <Container className="max-w-[500px] px-5">
           <Section className="min-h-[100px]">
             <Center>
               <Img
@@ -95,24 +86,20 @@ const PostEmail = ({
           <Section className="p-5">
             <Markdown>{message.replace(/# /g, '# &nbsp;')}</Markdown>
           </Section>
-          <Section className="px-5 py-8 text-center">
-            <Text style={bodyStyle} className="my-0">
+          <Section className="py-8 text-center">
+            <FixedText className="my-0">
               {t.rich('info', {
                 xoxnolink: (children) => (
-                  <Link href={HOST} style={linkStyle}>
-                    {children}
-                  </Link>
+                  <FixedLink href={HOST}>{children}</FixedLink>
                 ),
                 emaillink: (children) => (
-                  <Link href="mailto:contact@xoxno.com" style={linkStyle}>
+                  <FixedLink href="mailto:contact@xoxno.com">
                     {children}
-                  </Link>
+                  </FixedLink>
                 ),
               })}
-            </Text>
-            <Text style={bodyStyle} className="mt-5">
-              {t('footer')}
-            </Text>
+            </FixedText>
+            <FixedText className="mt-5">{t('footer')}</FixedText>
           </Section>
         </Container>
       </Body>
