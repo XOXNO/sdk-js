@@ -244,7 +244,7 @@ const XOXNOEmail = ({
           backgroundColor: '#121212',
         }}
       >
-        <Container className="max-w-[500px] px-5">
+        <Container className="px-5">
           <Section className="mb-4">
             <Img
               src={`${MEDIA}/hotlink-ok/${isUnsuccess ? 'unsuccess.png' : 'success.png'}`}

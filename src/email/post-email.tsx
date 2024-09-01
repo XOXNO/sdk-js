@@ -72,7 +72,7 @@ const PostEmail = ({
       unsubscribeToken={unsubscribeToken}
     >
       <Body className="body" style={style}>
-        <Container className="max-w-[500px] px-5">
+        <Container className="px-5">
           <Section className="min-h-[100px]">
             <Center>
               <Img

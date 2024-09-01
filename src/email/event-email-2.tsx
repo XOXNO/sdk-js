@@ -29,8 +29,9 @@ const translations = {
       event: {
         meta: 'Your {eventName} Ticket is Here – Claim Now!',
         title: 'Your {eventName} Ticket is Here',
+        greeting: 'Dear {name},',
         description:
-          "Dear {name},<br></br>We're excited to have you join us at the {eventName}! You can use the <b>QR Code attached to this email</b> to pass the event check-in.",
+          "We're excited to have you join us at the {eventName}! You can use the <b>QR Code attached to this email</b> to pass the event check-in.",
         action: 'CLAIM YOUR DIGITAL TICKET HERE',
         hint: 'If you want to get the best experience and a unique collectible as a memory of this event, click below to claim your digital ticket:',
         qr: 'If you have trouble accessing the ticket on the website, use the <b>QR Code attached to this email</b> to pass the check-in.',
@@ -91,7 +92,7 @@ const EventEmail = ({
             : style.background,
         }}
       >
-        <Container className="max-w-[500px] px-5">
+        <Container className="px-5">
           <Section className="min-h-[100px]">
             <Center>
               <Img
@@ -107,11 +108,10 @@ const EventEmail = ({
               <FixedHeading className="my-0">
                 {t('title', { eventName: event.name })}
               </FixedHeading>
+              <FixedText className="mb-0">{t('greeting', { name })}</FixedText>
               <FixedText>
                 {t.rich('description', {
                   eventName: event.name,
-                  name,
-                  br: () => <br />,
                   b: (chunks) => <b>{chunks}</b>,
                 })}
               </FixedText>
