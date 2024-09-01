@@ -36,6 +36,7 @@ import {
   hintStyle,
   MEDIA,
   renderGenericEmail,
+  ThankYou,
 } from './utils'
 
 const translations = {
@@ -49,7 +50,7 @@ const translations = {
             'Hi {name}, there is a new bid of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on XOXNO.',
           action: 'View bids',
           hint: '',
-          footer: '❤️ Thank you for using XOXNO!',
+          footer: 'Thank you for using XOXNO!',
         },
         [NftActivityType.AUCTION_OUT_BID]: {
           title: 'You have been outbid on {nftName}',
@@ -57,7 +58,7 @@ const translations = {
             'Hi {name}, your previous bid has been outbid by a new bid of <highlight>{amount} {token}</highlight> for <link>{nftName}</link> on XOXNO.',
           action: 'View bids',
           hint: '',
-          footer: '❤️ Thank you for using XOXNO!',
+          footer: 'Thank you for using XOXNO!',
         },
         [NftActivityType.OFFER_CREATE]: {
           title: 'You have a new offer on {nftName}',
@@ -81,7 +82,7 @@ const translations = {
             'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
           hint: '',
-          footer: '❤️ Thank you for using XOXNO!',
+          footer: 'Thank you for using XOXNO!',
         },
         [NftActivityType.OFFER_TRADE]: {
           title: 'Congrats, you bought {nftName}!',
@@ -89,7 +90,7 @@ const translations = {
             'Hi {name}, we are pleased to inform you that your offer for <link>{nftName}</link> was accepted for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
           hint: '',
-          footer: '❤️ Thank you for using XOXNO!',
+          footer: 'Thank you for using XOXNO!',
         },
         deposit: {
           title: 'Deposit balance updated',
@@ -97,7 +98,7 @@ const translations = {
             'Hi {name}, your deposit balance {amount, select, 0 {decreased to <highlight>{amount} {token}</highlight>. Visit your profile to top it up again} other {was updated to <highlight>{amount} {token}</highlight>}}.',
           action: 'Go to my profile',
           hint: '',
-          footer: '❤️ Thank you for using XOXNO!',
+          footer: 'Thank you for using XOXNO!',
         },
         withdrawDeposit: {
           title: 'Deposit balance updated',
@@ -105,7 +106,7 @@ const translations = {
             'Hi {name}, your deposit balance {amount, select, 0 {decreased to <highlight>{amount} {token}</highlight>. Visit your profile to top it up again} other {was updated to <highlight>{amount} {token}</highlight>}}.',
           action: 'Go to my profile',
           hint: '',
-          footer: '❤️ Thank you for using XOXNO!',
+          footer: 'Thank you for using XOXNO!',
         },
         verifyEmail: {
           title: 'Verify your email address',
@@ -113,7 +114,7 @@ const translations = {
             'Hi {name}, please enter the following code on XOXNO to verify your email address:',
           action: 'Verification code',
           hint: 'This code is valid for 10 minutes',
-          footer: '❤️ Thank you for using XOXNO!',
+          footer: 'Thank you for using XOXNO!',
         },
       },
     },
@@ -269,10 +270,12 @@ const XOXNOEmail = ({
                 {t.rich('description', {
                   ...payload,
                   link: (children) => (
-                    <FixedLink href={href}>{children}</FixedLink>
+                    <FixedLink href={href} disableFix>
+                      {children}
+                    </FixedLink>
                   ),
                   highlight: (children) => (
-                    <FixedText style={highlightStyle}>{children}</FixedText>
+                    <span style={highlightStyle}>{children}</span>
                   ),
                 })}
               </FixedText>
@@ -293,18 +296,19 @@ const XOXNOEmail = ({
               )}
             </Section>
           </Section>
-          <Section className="py-6 pb-12">
-            <FixedText>
-              {t.rich('footer', {
-                link: (children) => (
-                  <FixedLink href={href}>{children}</FixedLink>
-                ),
-                highlight: (children) => (
-                  <FixedText style={highlightStyle}>{children}</FixedText>
-                ),
-              })}
-            </FixedText>
-          </Section>
+          <ThankYou
+            text={t.rich('footer', {
+              link: (children) => (
+                <FixedLink href={href} disableFix>
+                  {children}
+                </FixedLink>
+              ),
+              highlight: (children) => (
+                <span style={highlightStyle}>{children}</span>
+              ),
+            })}
+            isThankYou={!isOffer(props)}
+          />
         </Container>
       </Body>
     </GeneralEmail>

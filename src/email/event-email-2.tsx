@@ -19,6 +19,7 @@ import {
   MEDIA,
   renderGenericEmail,
   smallHeadingStyle,
+  ThankYou,
 } from './utils'
 
 const translations = {
@@ -35,7 +36,7 @@ const translations = {
         qr: 'If you have trouble accessing the ticket on the website, use the <b>QR Code attached to this email</b> to pass the check-in.',
         info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         maps: 'Open in Google Maps',
-        footer: '❤️ Thank you for using XOXNO!',
+        footer: 'Thank you for using XOXNO!',
       },
     },
   },
@@ -230,16 +231,18 @@ const EventEmail = ({
             <FixedText className="my-0">
               {t.rich('info', {
                 xoxnolink: (children) => (
-                  <FixedLink href={HOST}>{children}</FixedLink>
+                  <FixedLink href={HOST} disableFix>
+                    {children}
+                  </FixedLink>
                 ),
                 emaillink: (children) => (
-                  <FixedLink href="mailto:contact@xoxno.com">
+                  <FixedLink href="mailto:contact@xoxno.com" disableFix>
                     {children}
                   </FixedLink>
                 ),
               })}
             </FixedText>
-            <FixedText className="mt-5">{t('footer')}</FixedText>
+            <ThankYou text={t('footer')} />
           </Section>
         </Container>
       </Body>

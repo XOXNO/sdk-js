@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import React, {
   type CSSProperties,
   type PropsWithChildren,
@@ -86,8 +86,8 @@ export const GeneralEmail = ({
       <Html lang="en" className="no-scrollbar">
         <Head>
           <title>{title}</title>
-          <meta name="color-scheme" content="light" />
-          <meta name="supported-color-schemes" content="light" />
+          <meta name="color-scheme" content="light dark" />
+          <meta name="supported-color-schemes" content="light dark only" />
           <Font
             fontFamily="Heading"
             fallbackFontFamily="Verdana"
@@ -124,12 +124,13 @@ export const GeneralEmail = ({
   }
 
   :root {
+      color-scheme: light dark;
+      supported-color-schemes: light dark;
       --color-palettes-primary-text-fill: #FFF;
       --color-palettes-primary-text-opaque: #FFFFFF1A;
       --color-palettes-lime-fill: #AEFB4F;
       --color-palettes-button-tertiary-text: #D0D0D0;
-      --color-palettes-button-primary-fill: #AEFB4F;
-      --color-palettes-button-primary-text: #000;
+      --color-palettes-button-primary-fill: #953fff;
       --color-palettes-background-color: #121212;
       --color-palettes-yellow: #E8EC0D;
       --color-palettes-yellow-bg: #161502;
@@ -141,8 +142,7 @@ export const GeneralEmail = ({
         --color-palettes-primary-text-opaque: #FFFFFF1A;
         --color-palettes-lime-fill: #AEFB4F;
         --color-palettes-button-tertiary-text: #D0D0D0;
-        --color-palettes-button-primary-fill: #AEFB4F;
-        --color-palettes-button-primary-text: #000;
+        --color-palettes-button-primary-fill: #953fff;
         --color-palettes-background-color: #121212;
         --color-palettes-yellow: #E8EC0D;
         --color-palettes-yellow-bg: #161502;
@@ -161,16 +161,6 @@ export const GeneralEmail = ({
         </Section>
       </Html>
     </Tailwind>
-  )
-}
-
-export function Center({ children }: PropsWithChildren) {
-  return (
-    <table width="100%" border={0} cellSpacing="0" cellPadding="0">
-      <tr>
-        <td align="center">{children}</td>
-      </tr>
-    </table>
   )
 }
 
@@ -194,7 +184,7 @@ export const smallHeadingStyle = {
   lineHeight: '26px',
 } satisfies CSSProperties
 
-export const linkStyle = {
+const linkStyle = {
   color: 'var(--color-palettes-lime-fill, #AEFB4F)',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
@@ -233,14 +223,14 @@ export const highlightStyle = {
   lineHeight: '24px',
 } satisfies CSSProperties
 
-export const buttonStyle = {
+const buttonStyle = {
   fontFamily: `Button, ${fallbackFont}`,
   padding: '12px 20px',
   borderRadius: '8px',
   background:
-    'linear-gradient(var(--color-palettes-button-primary-fill, #AEFB4F),var(--color-palettes-button-primary-fill, #AEFB4F))',
-  backgroundColor: 'var(--color-palettes-button-primary-fill, #AEFB4F)',
-  color: 'var(--color-palettes-button-primary-text, #000)',
+    'linear-gradient(var(--color-palettes-button-primary-fill, #953fff),var(--color-palettes-button-primary-fill, #953fff))',
+  backgroundColor: 'var(--color-palettes-button-primary-fill, #953fff)',
+  color: 'var(--color-palettes-primary-text-fill, #FFF)',
   fontSize: '14px',
   fontStyle: 'normal',
   fontWeight: '500',
@@ -298,7 +288,11 @@ export function FixedHeading({
 }: ComponentProps<typeof Heading>) {
   return (
     <Heading {...props} style={{ ...headingStyle, ...props.style }}>
-      {children}
+      <span style={{ background: '#000', mixBlendMode: 'screen' }}>
+        <span style={{ background: '#000', mixBlendMode: 'difference' }}>
+          {children}
+        </span>
+      </span>
     </Heading>
   )
 }
@@ -306,15 +300,31 @@ export function FixedHeading({
 export function FixedText({ children, ...props }: ComponentProps<typeof Text>) {
   return (
     <Text {...props} style={{ ...bodyStyle, ...props.style }}>
-      {children}
+      <span style={{ background: '#000', mixBlendMode: 'screen' }}>
+        <span style={{ background: '#000', mixBlendMode: 'difference' }}>
+          {children}
+        </span>
+      </span>
     </Text>
   )
 }
 
-export function FixedLink({ children, ...props }: ComponentProps<typeof Link>) {
+export function FixedLink({
+  children,
+  disableFix,
+  ...props
+}: ComponentProps<typeof Link> & { disableFix?: boolean }) {
   return (
     <Link {...props} style={{ ...linkStyle, ...props.style }}>
-      {children}
+      {disableFix ? (
+        children
+      ) : (
+        <span style={{ background: '#000', mixBlendMode: 'screen' }}>
+          <span style={{ background: '#000', mixBlendMode: 'difference' }}>
+            {children}
+          </span>
+        </span>
+      )}
     </Link>
   )
 }
@@ -325,7 +335,62 @@ export function FixedButton({
 }: ComponentProps<typeof Button>) {
   return (
     <Button {...props} style={{ ...buttonStyle, ...props.style }}>
-      {children}
+      <span style={{ background: '#000', mixBlendMode: 'screen' }}>
+        <span style={{ background: '#000', mixBlendMode: 'difference' }}>
+          {children}
+        </span>
+      </span>
     </Button>
   )
+}
+
+export function Center({ children }: PropsWithChildren) {
+  return (
+    <table width="100%" border={0} cellSpacing="0" cellPadding="0">
+      <tr>
+        <td align="center">{children}</td>
+      </tr>
+    </table>
+  )
+}
+
+export function ThankYou({
+  text,
+  isThankYou = true,
+}: {
+  text: ReactNode
+  isThankYou?: boolean
+}) {
+  if (isThankYou) {
+    return (
+      <table
+        role="presentation"
+        cellSpacing="0"
+        cellPadding="0"
+        border={0}
+        style={{ borderCollapse: 'collapse' }}
+        className="mt-5"
+        align="center"
+      >
+        <tbody>
+          <tr>
+            <td
+              style={{
+                paddingRight: '8px',
+                paddingTop: '4px',
+                verticalAlign: 'middle',
+              }}
+            >
+              ❤️
+            </td>
+            <td style={{ verticalAlign: 'middle' }}>
+              <FixedText className="my-0">{text}</FixedText>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    )
+  }
+
+  return <FixedText className="mt-5">{text}</FixedText>
 }

@@ -9,12 +9,6 @@ export {
   getHost,
   MEDIA,
   Center,
-  headingStyle,
-  linkStyle,
-  bodyStyle,
-  hintStyle,
-  highlightStyle,
-  buttonStyle,
   type WithUnsubscribeToken,
   type IHost,
 } from './email/utils'
