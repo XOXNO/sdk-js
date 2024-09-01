@@ -218,13 +218,7 @@ const EventEmail = ({
               )}
             </Center>
           </Section>
-          <Section
-            className="py-8 mt-8 text-center border-t border-solid"
-            style={{
-              borderColor:
-                'var(--color-palettes-primary-text-opaque,#FFFFFF1A)',
-            }}
-          >
+          <Section className="py-8 mt-8 text-center border-t border-solid border-[#FFF]/[0.1]">
             <FixedText className="my-0">
               {t.rich('info', {
                 xoxnolink: (children) => (
