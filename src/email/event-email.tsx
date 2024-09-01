@@ -57,9 +57,8 @@ const EventEmail = ({
   event,
   name,
   style = {
-    background:
-      'linear-gradient(var(--color-palettes-background-color, #121212),var(--color-palettes-background-color, #121212))',
-    backgroundColor: 'var(--color-palettes-background-color, #121212)',
+    background: 'linear-gradient(#121212,#121212)',
+    backgroundColor: '#121212',
   },
   unsubscribeToken,
 }: IProps & WithUnsubscribeToken) => {
@@ -82,7 +81,7 @@ const EventEmail = ({
       unsubscribeToken={unsubscribeToken}
     >
       <Body
-        className="min-h-screen bg-center bg-cover"
+        className="body min-h-screen bg-center bg-cover"
         style={{
           ...style,
           backgroundImage: event.backgroundImage

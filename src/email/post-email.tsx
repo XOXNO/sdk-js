@@ -52,9 +52,8 @@ const PostEmail = ({
   subject,
   message,
   style = {
-    background:
-      'linear-gradient(var(--color-palettes-background-color, #121212),var(--color-palettes-background-color, #121212))',
-    backgroundColor: 'var(--color-palettes-background-color, #121212)',
+    background: 'linear-gradient(#121212,#121212)',
+    backgroundColor: '#121212',
   },
   unsubscribeToken,
 }: IProps & WithUnsubscribeToken) => {
@@ -72,7 +71,7 @@ const PostEmail = ({
       HOST={HOST}
       unsubscribeToken={unsubscribeToken}
     >
-      <Body style={style}>
+      <Body className="body" style={style}>
         <Container className="max-w-[500px] px-5">
           <Section className="min-h-[100px]">
             <Center>

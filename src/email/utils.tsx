@@ -123,31 +123,8 @@ export const GeneralEmail = ({
     display: none;
   }
 
-  :root {
-      color-scheme: light dark;
-      supported-color-schemes: light dark;
-      --color-palettes-primary-text-fill: #FFF;
-      --color-palettes-primary-text-opaque: #FFFFFF1A;
-      --color-palettes-lime-fill: #AEFB4F;
-      --color-palettes-button-tertiary-text: #D0D0D0;
-      --color-palettes-button-primary-fill: #953fff;
-      --color-palettes-background-color: #121212;
-      --color-palettes-yellow: #E8EC0D;
-      --color-palettes-yellow-bg: #161502;
-    }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-        --color-palettes-primary-text-fill: #FFF;
-        --color-palettes-primary-text-opaque: #FFFFFF1A;
-        --color-palettes-lime-fill: #AEFB4F;
-        --color-palettes-button-tertiary-text: #D0D0D0;
-        --color-palettes-button-primary-fill: #953fff;
-        --color-palettes-background-color: #121212;
-        --color-palettes-yellow: #E8EC0D;
-        --color-palettes-yellow-bg: #161502;
-      }
-  }
+  .body .gmail-screen { background:#000; mix-blend-mode:screen; /* background:transparent; */ }
+  .body .gmail-difference { background:#000; mix-blend-mode:difference; /* background:transparent; */ }
 `}
           </style>
         </Head>
@@ -165,7 +142,7 @@ export const GeneralEmail = ({
 }
 
 export const headingStyle = {
-  color: 'var(--color-palettes-primary-text-fill, #FFF)',
+  color: '#FFF',
   fontFamily: `Heading, ${fallbackFont}`,
   textAlign: 'center',
   fontSize: '28px',
@@ -175,7 +152,7 @@ export const headingStyle = {
 } satisfies CSSProperties
 
 export const smallHeadingStyle = {
-  color: 'var(--color-palettes-primary-text-fill, #FFF)',
+  color: '#FFF',
   fontFamily: `Button, ${fallbackFont}`,
   textAlign: 'center',
   fontSize: '19px',
@@ -185,7 +162,7 @@ export const smallHeadingStyle = {
 } satisfies CSSProperties
 
 const linkStyle = {
-  color: 'var(--color-palettes-lime-fill, #AEFB4F)',
+  color: '#AEFB4F',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
   fontStyle: 'normal',
@@ -195,7 +172,7 @@ const linkStyle = {
 } satisfies CSSProperties
 
 export const bodyStyle = {
-  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
+  color: '#D0D0D0',
   textAlign: 'center',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
@@ -205,7 +182,7 @@ export const bodyStyle = {
 } satisfies CSSProperties
 
 export const hintStyle = {
-  color: 'var(--color-palettes-button-tertiary-text, #D0D0D0)',
+  color: '#D0D0D0',
   textAlign: 'center',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '14px',
@@ -215,7 +192,7 @@ export const hintStyle = {
 } satisfies CSSProperties
 
 export const highlightStyle = {
-  color: 'var(--color-palettes-primary-text-fill, #FFF)',
+  color: '#FFF',
   fontFamily: `Body, ${fallbackFont}`,
   fontSize: '16px',
   fontStyle: 'normal',
@@ -227,10 +204,9 @@ const buttonStyle = {
   fontFamily: `Button, ${fallbackFont}`,
   padding: '12px 20px',
   borderRadius: '8px',
-  background:
-    'linear-gradient(var(--color-palettes-button-primary-fill, #953fff),var(--color-palettes-button-primary-fill, #953fff))',
-  backgroundColor: 'var(--color-palettes-button-primary-fill, #953fff)',
-  color: 'var(--color-palettes-primary-text-fill, #FFF)',
+  background: 'linear-gradient(#953fff,#953fff)',
+  backgroundColor: '#953fff',
+  color: '#FFF',
   fontSize: '14px',
   fontStyle: 'normal',
   fontWeight: '500',
@@ -288,10 +264,8 @@ export function FixedHeading({
 }: ComponentProps<typeof Heading>) {
   return (
     <Heading {...props} style={{ ...headingStyle, ...props.style }}>
-      <span style={{ background: '#000', mixBlendMode: 'screen' }}>
-        <span style={{ background: '#000', mixBlendMode: 'difference' }}>
-          {children}
-        </span>
+      <span className="gmail-screen">
+        <span className="gmail-difference">{children}</span>
       </span>
     </Heading>
   )
@@ -300,10 +274,8 @@ export function FixedHeading({
 export function FixedText({ children, ...props }: ComponentProps<typeof Text>) {
   return (
     <Text {...props} style={{ ...bodyStyle, ...props.style }}>
-      <span style={{ background: '#000', mixBlendMode: 'screen' }}>
-        <span style={{ background: '#000', mixBlendMode: 'difference' }}>
-          {children}
-        </span>
+      <span className="gmail-screen">
+        <span className="gmail-difference">{children}</span>
       </span>
     </Text>
   )
@@ -319,10 +291,8 @@ export function FixedLink({
       {disableFix ? (
         children
       ) : (
-        <span style={{ background: '#000', mixBlendMode: 'screen' }}>
-          <span style={{ background: '#000', mixBlendMode: 'difference' }}>
-            {children}
-          </span>
+        <span className="gmail-screen">
+          <span className="gmail-difference">{children}</span>
         </span>
       )}
     </Link>
@@ -335,10 +305,8 @@ export function FixedButton({
 }: ComponentProps<typeof Button>) {
   return (
     <Button {...props} style={{ ...buttonStyle, ...props.style }}>
-      <span style={{ background: '#000', mixBlendMode: 'screen' }}>
-        <span style={{ background: '#000', mixBlendMode: 'difference' }}>
-          {children}
-        </span>
+      <span className="gmail-screen">
+        <span className="gmail-difference">{children}</span>
       </span>
     </Button>
   )

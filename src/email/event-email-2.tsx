@@ -59,9 +59,8 @@ const EventEmail = ({
   event,
   name,
   style = {
-    background:
-      'linear-gradient(var(--color-palettes-background-color, #121212),var(--color-palettes-background-color, #121212))',
-    backgroundColor: 'var(--color-palettes-background-color, #121212)',
+    background: 'linear-gradient(#121212,#121212)',
+    backgroundColor: '#121212',
   },
   unsubscribeToken,
 }: IProps & WithUnsubscribeToken) => {
@@ -84,7 +83,7 @@ const EventEmail = ({
       unsubscribeToken={unsubscribeToken}
     >
       <Body
-        className="min-h-screen bg-center bg-cover"
+        className="body min-h-screen bg-center bg-cover"
         style={{
           ...style,
           backgroundImage: event.backgroundImage
@@ -139,11 +138,9 @@ const EventEmail = ({
                 cellPadding="0"
                 border={0}
                 style={{
-                  background:
-                    'linear-gradient(var(--color-palettes-background-color, #121212),var(--color-palettes-background-color, #121212))',
-                  backgroundColor:
-                    'var(--color-palettes-background-color, #121212)',
-                  borderColor: 'var(--color-palettes-yellow, #E8EC0D)',
+                  background: 'linear-gradient(#121212,#121212)',
+                  backgroundColor: '#121212',
+                  borderColor: '#E8EC0D',
                 }}
                 className="mb-[40px] p-3 rounded-xl border border-solid"
               >
@@ -167,7 +164,7 @@ const EventEmail = ({
                       <FixedText
                         style={{
                           ...bodyStyle,
-                          color: 'var(--color-palettes-yellow, #E8EC0D)',
+                          color: '#E8EC0D',
                         }}
                         className="my-0 text-start"
                       >

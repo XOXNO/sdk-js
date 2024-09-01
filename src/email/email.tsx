@@ -238,10 +238,10 @@ const XOXNOEmail = ({
       unsubscribeToken={unsubscribeToken}
     >
       <Body
+        className="body"
         style={{
-          background:
-            'linear-gradient(var(--color-palettes-background-color, #121212),var(--color-palettes-background-color, #121212))',
-          backgroundColor: 'var(--color-palettes-background-color, #121212)',
+          background: 'linear-gradient(#121212,#121212)',
+          backgroundColor: '#121212',
         }}
       >
         <Container className="max-w-[500px] px-5">
