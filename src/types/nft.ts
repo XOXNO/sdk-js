@@ -99,6 +99,17 @@ export interface NftData {
   currentEpoch?: number
   poolId?: number
   globalOffer?: GlobalOffers
+  isTicket?: boolean
+  eventData?: {
+    eventId: string
+    checkInStatus: boolean
+    ticketId: string
+    timestamp: number
+  }
+  uris?: string[]
+  statistics?: {
+    likeCount: number
+  }
 }
 
 export interface CollectionInfo {
