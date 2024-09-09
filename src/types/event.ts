@@ -34,6 +34,7 @@ export interface IEventDoc {
     requirePhoneNumber: boolean
     hasSideEvents: boolean
     isPublished: boolean
+    hasCustomQuestions: boolean
   }
   creatorAddress: string
   pk: string
