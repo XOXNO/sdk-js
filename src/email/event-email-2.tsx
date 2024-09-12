@@ -120,7 +120,7 @@ const EventEmail = ({
               <FixedLink href={href}>
                 <Img
                   src={event.ticketImage}
-                  width={320}
+                  width={200}
                   alt="Picture of ticket"
                 />
               </FixedLink>

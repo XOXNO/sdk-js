@@ -18,7 +18,6 @@ import {
   headingStyle,
   MEDIA,
   renderGenericEmail,
-  smallHeadingStyle,
   ThankYou,
 } from './utils'
 
@@ -115,7 +114,7 @@ const EventEmail = ({
             <Center>
               <Img
                 src={event.ticketImage}
-                width={320}
+                width={200}
                 alt="Picture of ticket"
               />
             </Center>
