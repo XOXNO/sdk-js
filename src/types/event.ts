@@ -35,6 +35,7 @@ export interface IEventDoc {
     hasSideEvents: boolean
     isPublished: boolean
     hasCustomQuestions: boolean
+    showGuestCount: boolean
   }
   creatorAddress: string
   pk: string
