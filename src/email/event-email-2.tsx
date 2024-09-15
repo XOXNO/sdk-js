@@ -38,6 +38,10 @@ const translations = {
         info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         maps: 'Open in Google Maps',
         footer: 'Thank you for using XOXNO!',
+        unsubscribe: {
+          label: 'No longer want to receive emails?',
+          action: 'Unsubscribe',
+        },
       },
     },
   },
@@ -84,7 +88,7 @@ const EventEmail = ({
       unsubscribeToken={unsubscribeToken}
     >
       <Container
-        className="body min-h-screen max-w-[900px] bg-center bg-cover"
+        className="body max-w-[900px] bg-center bg-cover"
         style={{
           ...style,
           backgroundRepeat: 'no-repeat',
@@ -244,6 +248,12 @@ const EventEmail = ({
               })}
             </FixedText>
             <ThankYou text={t('footer')} />
+          </Section>
+          <Section className="px-5 py-6 pb-12 text-center">
+            <FixedText className="mb-0">{t('unsubscribe.label')}</FixedText>
+            <FixedLink href={`${HOST}/unsubscribe?token=${unsubscribeToken}`}>
+              {t('unsubscribe.action')}
+            </FixedLink>
           </Section>
         </Container>
       </Container>

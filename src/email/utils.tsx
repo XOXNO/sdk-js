@@ -13,12 +13,10 @@ import {
   Link,
   Preview,
   renderAsync,
-  Section,
   Tailwind,
   Text,
 } from '@react-email/components'
 import he from 'he'
-import { createTranslator } from 'use-intl'
 
 export const MEDIA = 'https://media.xoxno.com'
 
@@ -51,36 +49,14 @@ const Font = ({
   )
 }
 
-const translations = {
-  namespace: '',
-  translations: {
-    en: {
-      unsubscribe: {
-        label: 'No longer want to receive emails?',
-        action: 'Unsubscribe',
-      },
-    },
-  },
-} as const satisfies Translations
-
-const messages = translations.translations.en
-
 export type WithUnsubscribeToken = { unsubscribeToken: string }
 
 export const GeneralEmail = ({
   title,
   children,
-  HOST,
-  unsubscribeToken,
 }: PropsWithChildren<
   { title: string; HOST: string } & WithUnsubscribeToken
 >) => {
-  const t = createTranslator({
-    locale: 'en',
-    messages,
-    namespace: 'unsubscribe',
-  })
-
   return (
     <Tailwind>
       <Html
@@ -134,12 +110,6 @@ export const GeneralEmail = ({
         </Head>
         <Preview>{title}</Preview>
         {children}
-        <Section className="px-5 py-6 pb-12 text-center">
-          <FixedText className="mb-0">{t('label')}</FixedText>
-          <FixedLink href={`${HOST}/unsubscribe?token=${unsubscribeToken}`}>
-            {t('action')}
-          </FixedLink>
-        </Section>
       </Html>
     </Tailwind>
   )
