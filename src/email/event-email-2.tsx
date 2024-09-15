@@ -1,6 +1,6 @@
 import React, { createElement, type ComponentProps } from 'react'
 
-import { Body, Container, Img, Section } from '@react-email/components'
+import { Container, Img, Section } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
 import { getMapsLink, getOnlineLocation } from '../utils'
@@ -60,7 +60,7 @@ const EventEmail = ({
   event,
   name,
   style = {
-    background: 'linear-gradient(#121212,#121212)',
+    background: '#121212',
     backgroundColor: '#121212',
   },
   unsubscribeToken,
@@ -83,15 +83,25 @@ const EventEmail = ({
       HOST={HOST}
       unsubscribeToken={unsubscribeToken}
     >
-      <Body
-        className="body min-h-screen bg-center bg-cover"
+      <Container
+        className="body min-h-screen max-w-[900px] bg-center bg-cover"
         style={{
           ...style,
+          backgroundRepeat: 'no-repeat',
           backgroundImage: event.backgroundImage
             ? `url(${event.backgroundImage})`
             : style.background,
         }}
       >
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `<!--[if gte mso 9]>
+      <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
+        <v:fill type="frame" src="${event.backgroundImage}" color="#121212"/>
+      </v:background>
+    <![endif]-->`,
+          }}
+        />
         <Container className="px-5">
           <Section className="min-h-[100px]">
             <Center>
@@ -126,7 +136,7 @@ const EventEmail = ({
               </FixedLink>
             </Center>
           </Section>
-          <Section>
+          <Section width={'95%'}>
             <Center>
               <FixedText>{t('hint')}</FixedText>
               <FixedButton href={href} className="mb-3 block">
@@ -236,7 +246,7 @@ const EventEmail = ({
             <ThankYou text={t('footer')} />
           </Section>
         </Container>
-      </Body>
+      </Container>
     </GeneralEmail>
   )
 }

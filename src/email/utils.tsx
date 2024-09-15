@@ -83,7 +83,11 @@ export const GeneralEmail = ({
 
   return (
     <Tailwind>
-      <Html lang="en" className="no-scrollbar">
+      <Html
+        lang="en"
+        className="no-scrollbar"
+        style={{ background: '#121212', backgroundColor: '#121212' }}
+      >
         <Head>
           <title>{title}</title>
           <meta name="color-scheme" content="light dark" />
@@ -123,8 +127,8 @@ export const GeneralEmail = ({
     display: none;
   }
 
-  .body .gmail-screen { background:#000; mix-blend-mode:screen; /* background:transparent; */ }
-  .body .gmail-difference { background:#000; mix-blend-mode:difference; /* background:transparent; */ }
+  u ~ div .gmail-screen { background:#000; mix-blend-mode:screen; /* background:transparent; */ }
+  u ~ div .gmail-difference { background:#000; mix-blend-mode:difference; /* background:transparent; */ }
 `}
           </style>
         </Head>
