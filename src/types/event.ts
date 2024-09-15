@@ -27,6 +27,7 @@ export interface IEventDoc {
     requireKYC: boolean
     hasWaitlist: boolean
     refundable: boolean
+    soldCount: number
     nameWithNumber: boolean
     botProtection: boolean
     requireName: boolean
