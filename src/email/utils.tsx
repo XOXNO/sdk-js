@@ -103,8 +103,8 @@ export const GeneralEmail = ({
     display: none;
   }
 
-  u ~ div .gmail-screen { background:#000; mix-blend-mode:screen; /* background:transparent; */ }
-  u ~ div .gmail-difference { background:#000; mix-blend-mode:difference; /* background:transparent; */ }
+  u + table .gmail-screen { background:#000; mix-blend-mode:screen; /* background:transparent; */ }
+  u + table .gmail-difference { background:#000; mix-blend-mode:difference; /* background:transparent; */ }
 `}
           </style>
         </Head>
