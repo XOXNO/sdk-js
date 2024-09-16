@@ -7,6 +7,7 @@ import { Markdown } from './Markdown'
 import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
   Center,
+  defaultBodyStyle,
   defaultHost,
   FixedLink,
   FixedText,
@@ -51,10 +52,7 @@ const PostEmail = ({
   host = defaultHost,
   subject,
   message,
-  style = {
-    background: 'linear-gradient(#121212,#121212)',
-    backgroundColor: '#121212',
-  },
+  style = defaultBodyStyle,
   unsubscribeToken,
 }: IProps & WithUnsubscribeToken) => {
   const t = createTranslator({
@@ -71,40 +69,45 @@ const PostEmail = ({
       HOST={HOST}
       unsubscribeToken={unsubscribeToken}
     >
-      <Body className="body" style={style}>
-        <Container className="px-5">
-          <Section className="min-h-[100px]">
-            <Center>
-              <Img
-                src={`${MEDIA}/hotlink-ok/email_logo.png`}
-                width={130}
-                height={24}
-                alt="XOXNO Logo"
-              />
-            </Center>
-          </Section>
-          <Section className="p-5">
-            <Markdown>{message.replace(/# /g, '# &nbsp;')}</Markdown>
-          </Section>
-          <Section className="py-8 text-center">
-            <FixedText className="my-0">
-              {t.rich('info', {
-                xoxnolink: (children) => (
-                  <FixedLink href={HOST} disableFix>
-                    {children}
-                  </FixedLink>
-                ),
-                emaillink: (children) => (
-                  <FixedLink href="mailto:contact@xoxno.com" disableFix>
-                    {children}
-                  </FixedLink>
-                ),
-              })}
-            </FixedText>
-            <ThankYou text={t('footer')} />
-          </Section>
-        </Container>
-      </Body>
+      {({ unsubscribeSection }) => {
+        return (
+          <Body className="body" style={style}>
+            <Container className="px-5">
+              <Section className="min-h-[100px]">
+                <Center>
+                  <Img
+                    src={`${MEDIA}/hotlink-ok/email_logo.png`}
+                    width={130}
+                    height={24}
+                    alt="XOXNO Logo"
+                  />
+                </Center>
+              </Section>
+              <Section className="p-5">
+                <Markdown>{message.replace(/# /g, '# &nbsp;')}</Markdown>
+              </Section>
+              <Section className="pt-8 pb-3 text-center">
+                <FixedText className="my-0">
+                  {t.rich('info', {
+                    xoxnolink: (children) => (
+                      <FixedLink href={HOST} disableFix>
+                        {children}
+                      </FixedLink>
+                    ),
+                    emaillink: (children) => (
+                      <FixedLink href="mailto:contact@xoxno.com" disableFix>
+                        {children}
+                      </FixedLink>
+                    ),
+                  })}
+                </FixedText>
+                <ThankYou text={t('footer')} />
+              </Section>
+              {unsubscribeSection}
+            </Container>
+          </Body>
+        )
+      }}
     </GeneralEmail>
   )
 }

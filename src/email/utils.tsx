@@ -13,10 +13,12 @@ import {
   Link,
   Preview,
   renderAsync,
+  Section,
   Tailwind,
   Text,
 } from '@react-email/components'
 import he from 'he'
+import { createTranslator } from 'use-intl'
 
 export const MEDIA = 'https://media.xoxno.com'
 
@@ -51,12 +53,43 @@ const Font = ({
 
 export type WithUnsubscribeToken = { unsubscribeToken: string }
 
+export const defaultBodyStyle = {
+  background: 'linear-gradient(#121212,#121212)',
+  backgroundColor: '#121212',
+}
+
+const translations = {
+  namespace: '',
+  translations: {
+    en: {
+      unsubscribe: {
+        label: 'No longer want to receive emails?',
+        action: 'Unsubscribe',
+      },
+    },
+  },
+} as const satisfies Translations
+
+const messages = translations.translations.en
+
 export const GeneralEmail = ({
   title,
   children,
-}: PropsWithChildren<
-  { title: string; HOST: string } & WithUnsubscribeToken
->) => {
+  HOST,
+  unsubscribeToken,
+}: { title: string; HOST: string } & WithUnsubscribeToken & {
+    children: ({
+      unsubscribeSection,
+    }: {
+      unsubscribeSection: ReactNode
+    }) => ReactNode
+  }) => {
+  const t = createTranslator({
+    locale: 'en',
+    messages,
+    namespace: 'unsubscribe',
+  })
+
   return (
     <Tailwind>
       <Html
@@ -103,13 +136,23 @@ export const GeneralEmail = ({
     display: none;
   }
 
-  u + table .gmail-screen { background:#000; mix-blend-mode:screen; /* background:transparent; */ }
-  u + table .gmail-difference { background:#000; mix-blend-mode:difference; /* background:transparent; */ }
+  .body { margin: 0; }
+  .body .gmail-screen { background:#000; mix-blend-mode:screen; /* background:transparent; */ }
+  .body .gmail-difference { background:#000; mix-blend-mode:difference; /* background:transparent; */ }
 `}
           </style>
         </Head>
         <Preview>{title}</Preview>
-        {children}
+        {children({
+          unsubscribeSection: (
+            <Section className="px-5 py-6 pb-12 text-center">
+              <FixedText className="my-0">{t('label')}</FixedText>
+              <FixedLink href={`${HOST}/unsubscribe?token=${unsubscribeToken}`}>
+                {t('action')}
+              </FixedLink>
+            </Section>
+          ),
+        })}
       </Html>
     </Tailwind>
   )
@@ -311,7 +354,7 @@ export function ThankYou({
         cellPadding="0"
         border={0}
         style={{ borderCollapse: 'collapse' }}
-        className="mt-5"
+        className="my-5"
         align="center"
       >
         <tbody>

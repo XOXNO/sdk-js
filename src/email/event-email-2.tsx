@@ -1,6 +1,6 @@
 import React, { createElement, type ComponentProps } from 'react'
 
-import { Container, Img, Section } from '@react-email/components'
+import { Body, Container, Img, Section } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
 import { getMapsLink, getOnlineLocation } from '../utils'
@@ -9,6 +9,7 @@ import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
   bodyStyle,
   Center,
+  defaultBodyStyle,
   defaultHost,
   FixedButton,
   FixedHeading,
@@ -38,10 +39,6 @@ const translations = {
         info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         maps: 'Open in Google Maps',
         footer: 'Thank you for using XOXNO!',
-        unsubscribe: {
-          label: 'No longer want to receive emails?',
-          action: 'Unsubscribe',
-        },
       },
     },
   },
@@ -63,10 +60,7 @@ const EventEmail = ({
   host = defaultHost,
   event,
   name,
-  style = {
-    background: '#121212',
-    backgroundColor: '#121212',
-  },
+  style = defaultBodyStyle,
   unsubscribeToken,
 }: IProps & WithUnsubscribeToken) => {
   const t = createTranslator({
@@ -87,176 +81,168 @@ const EventEmail = ({
       HOST={HOST}
       unsubscribeToken={unsubscribeToken}
     >
-      <Container
-        className="body max-w-[900px] bg-center bg-cover"
-        style={{
-          ...style,
-          backgroundRepeat: 'no-repeat',
-          backgroundImage: event.backgroundImage
-            ? `url(${event.backgroundImage})`
-            : style.background,
-        }}
-      >
-        <div
-          dangerouslySetInnerHTML={{
-            __html: `<!--[if gte mso 9]>
-      <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
-        <v:fill type="frame" src="${event.backgroundImage}" color="#121212"/>
-      </v:background>
-    <![endif]-->`,
-          }}
-        />
-        <Container className="px-5">
-          <Section className="min-h-[100px]">
-            <Center>
-              <Img
-                src={`${MEDIA}/hotlink-ok/email_logo.png`}
-                width={130}
-                height={24}
-                alt="XOXNO Logo"
-              />
-            </Center>
-          </Section>
-          <Section className="p-5">
-            <Center>
-              <FixedHeading className="my-0">
-                {t('title', { eventName: event.name })}
-              </FixedHeading>
-              <FixedText className="mb-0">{t('greeting', { name })}</FixedText>
-              <FixedText>
-                {t.rich('description', {
-                  eventName: event.name,
-                  b: (chunks) => <b>{chunks}</b>,
-                })}
-              </FixedText>
-            </Center>
-            <Center>
-              <FixedLink href={href}>
-                <Img
-                  src={event.ticketImage}
-                  width={200}
-                  alt="Picture of ticket"
-                />
-              </FixedLink>
-            </Center>
-          </Section>
-          <Section width={'95%'}>
-            <Center>
-              <FixedText>{t('hint')}</FixedText>
-              <FixedButton href={href} className="mb-3 block">
-                {t('action')}
-              </FixedButton>
-              <table
-                role="presentation"
-                cellSpacing="0"
-                cellPadding="0"
-                border={0}
-                style={{
-                  background: 'linear-gradient(#121212,#121212)',
-                  backgroundColor: '#121212',
-                  borderColor: '#E8EC0D',
-                }}
-                className="mb-[40px] p-3 rounded-xl border border-solid"
-              >
-                <tbody>
-                  <tr>
-                    <td
-                      style={{
-                        paddingRight: '16px',
-                        paddingTop: '4px',
-                        verticalAlign: 'baseline',
-                      }}
-                    >
+      {({ unsubscribeSection }) => {
+        return (
+          <Body className="body" style={style}>
+            <Section
+              className="max-w-[1200px] mx-auto bg-center bg-cover"
+              style={{
+                ...style,
+                backgroundImage: event.backgroundImage
+                  ? `url(${event.backgroundImage})`
+                  : style.background,
+              }}
+            >
+              <Container className="px-5">
+                <Section className="min-h-[100px]">
+                  <Center>
+                    <Img
+                      src={`${MEDIA}/hotlink-ok/email_logo.png`}
+                      width={130}
+                      height={24}
+                      alt="XOXNO Logo"
+                    />
+                  </Center>
+                </Section>
+                <Section className="p-5">
+                  <Center>
+                    <FixedHeading className="my-0">
+                      {t('title', { eventName: event.name })}
+                    </FixedHeading>
+                    <FixedText className="mb-0">
+                      {t('greeting', { name })}
+                    </FixedText>
+                    <FixedText>
+                      {t.rich('description', {
+                        eventName: event.name,
+                        b: (chunks) => <b>{chunks}</b>,
+                      })}
+                    </FixedText>
+                  </Center>
+                  <Center>
+                    <FixedLink href={href}>
                       <Img
-                        src={`${MEDIA}/hotlink-ok/email_info.png`}
-                        width={24}
-                        height={24}
-                        alt="Info Icon"
+                        src={event.ticketImage}
+                        width={200}
+                        alt="Picture of ticket"
                       />
-                    </td>
-                    <td style={{ verticalAlign: 'middle' }}>
-                      <FixedText
-                        style={{
-                          ...bodyStyle,
-                          color: '#E8EC0D',
-                        }}
-                        className="my-0 text-start"
-                      >
-                        {t.rich('qr', { b: (chunks) => <b>{chunks}</b> })}
-                      </FixedText>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </Center>
-          </Section>
-          <Section>
-            <FixedText style={smallHeadingStyle} className="mb-0">
-              {event.time}
-            </FixedText>
-            <Center>
-              <table
-                role="presentation"
-                cellSpacing="0"
-                cellPadding="0"
-                border={0}
-                style={{ borderCollapse: 'collapse' }}
-              >
-                <tbody>
-                  <tr>
-                    <td
+                    </FixedLink>
+                  </Center>
+                </Section>
+                <Section>
+                  <Center>
+                    <FixedText>{t('hint')}</FixedText>
+                    <FixedButton href={href} className="mb-3 block">
+                      {t('action')}
+                    </FixedButton>
+                    <table
+                      role="presentation"
+                      cellSpacing="0"
+                      cellPadding="0"
+                      border={0}
                       style={{
-                        paddingRight: '16px',
-                        verticalAlign: 'middle',
+                        ...defaultBodyStyle,
+                        borderColor: '#E8EC0D',
                       }}
+                      className="mb-[40px] p-3 rounded-xl border border-solid"
                     >
-                      <Img
-                        src={`${MEDIA}/hotlink-ok/email_pin.png`}
-                        width={24}
-                        height={24}
-                        alt="Location pin"
-                      />
-                    </td>
-                    <td style={{ verticalAlign: 'middle' }}>
-                      <FixedText className="my-0">
-                        {event.location.onlineLink
-                          ? getOnlineLocation(event.location.onlineLink)
-                          : event.location.address}
-                      </FixedText>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              {event.location.address && event.location.placeId && (
-                <FixedLink href={mapsLink}>{t('maps')}</FixedLink>
-              )}
-            </Center>
-          </Section>
-          <Section className="py-8 mt-8 text-center border-t border-solid border-[#FFF]/[0.1]">
-            <FixedText className="my-0">
-              {t.rich('info', {
-                xoxnolink: (children) => (
-                  <FixedLink href={HOST} disableFix>
-                    {children}
-                  </FixedLink>
-                ),
-                emaillink: (children) => (
-                  <FixedLink href="mailto:contact@xoxno.com" disableFix>
-                    {children}
-                  </FixedLink>
-                ),
-              })}
-            </FixedText>
-            <ThankYou text={t('footer')} />
-          </Section>
-          <Section className="px-5 py-6 pb-12 text-center">
-            <FixedText className="mb-0">{t('unsubscribe.label')}</FixedText>
-            <FixedLink href={`${HOST}/unsubscribe?token=${unsubscribeToken}`}>
-              {t('unsubscribe.action')}
-            </FixedLink>
-          </Section>
-        </Container>
-      </Container>
+                      <tbody>
+                        <tr>
+                          <td
+                            style={{
+                              paddingRight: '16px',
+                              paddingTop: '4px',
+                              verticalAlign: 'baseline',
+                            }}
+                          >
+                            <Img
+                              src={`${MEDIA}/hotlink-ok/email_info.png`}
+                              width={24}
+                              height={24}
+                              alt="Info Icon"
+                            />
+                          </td>
+                          <td style={{ verticalAlign: 'middle' }}>
+                            <FixedText
+                              style={{
+                                ...bodyStyle,
+                                color: '#E8EC0D',
+                              }}
+                              className="my-0 text-start"
+                            >
+                              {t.rich('qr', { b: (chunks) => <b>{chunks}</b> })}
+                            </FixedText>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </Center>
+                </Section>
+                <Section>
+                  <FixedText style={smallHeadingStyle} className="mb-0">
+                    {event.time}
+                  </FixedText>
+                  <Center>
+                    <table
+                      role="presentation"
+                      cellSpacing="0"
+                      cellPadding="0"
+                      border={0}
+                      style={{ borderCollapse: 'collapse' }}
+                    >
+                      <tbody>
+                        <tr>
+                          <td
+                            style={{
+                              paddingRight: '16px',
+                              verticalAlign: 'middle',
+                            }}
+                          >
+                            <Img
+                              src={`${MEDIA}/hotlink-ok/email_pin.png`}
+                              width={24}
+                              height={24}
+                              alt="Location pin"
+                            />
+                          </td>
+                          <td style={{ verticalAlign: 'middle' }}>
+                            <FixedText className="my-0">
+                              {event.location.onlineLink
+                                ? getOnlineLocation(event.location.onlineLink)
+                                : event.location.address}
+                            </FixedText>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    {event.location.address && event.location.placeId && (
+                      <FixedLink href={mapsLink}>{t('maps')}</FixedLink>
+                    )}
+                  </Center>
+                </Section>
+                <Section className="pt-8 pb-3 mt-8 text-center border-t border-solid border-[#FFF]/[0.1]">
+                  <FixedText className="my-0">
+                    {t.rich('info', {
+                      xoxnolink: (children) => (
+                        <FixedLink href={HOST} disableFix>
+                          {children}
+                        </FixedLink>
+                      ),
+                      emaillink: (children) => (
+                        <FixedLink href="mailto:contact@xoxno.com" disableFix>
+                          {children}
+                        </FixedLink>
+                      ),
+                    })}
+                  </FixedText>
+                  <ThankYou text={t('footer')} />
+                </Section>
+                {unsubscribeSection}
+              </Container>
+            </Section>
+          </Body>
+        )
+      }}
     </GeneralEmail>
   )
 }

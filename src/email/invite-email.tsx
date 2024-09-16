@@ -3,8 +3,7 @@ import React, { createElement, type ComponentProps } from 'react'
 import { Body, Container, Img, Section } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
-import { getMapsLink, getOnlineLocation } from '../utils'
-import type { IEvent } from './types'
+import { eventRoles, EventUserRoles } from '../types'
 import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
   Center,
@@ -16,7 +15,6 @@ import {
   FixedText,
   GeneralEmail,
   getHost,
-  headingStyle,
   MEDIA,
   renderGenericEmail,
   ThankYou,
@@ -26,15 +24,30 @@ const translations = {
   namespace: '',
   translations: {
     en: {
-      event: {
-        meta: 'Your {eventName} Ticket is Here – Claim Now!',
-        title: 'Dear {name},',
+      invite: {
+        meta: "You're invited to join the {eventName} team - Join Now!",
+        title: "You're invited to join the {eventName} team",
+        greeting: 'Dear {name},',
         description:
-          "We're excited to have you join us at the {eventName}! Please click the button below to claim your ticket and secure your spot:",
-        action: 'Claim your ticket',
+          "You're invited to join the {eventName} team as <b>{roleName}</b>!",
+        action: 'CLAIM YOUR TEAM SPOT HERE',
         info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
-        maps: 'Open in Google Maps',
         footer: 'Thank you for using XOXNO!',
+        types: {
+          'check-in-manager': {
+            label: 'Check-in Manager',
+            description: 'This will allow you to scan tickets of attendees.',
+          },
+          'event-manager': {
+            label: 'Event Manager',
+            description: 'This will allow you to manage the event.',
+          },
+          'event-reader': {
+            label: 'Event Viewer',
+            description:
+              'This will allow you to view the settings of the event.',
+          },
+        },
       },
     },
   },
@@ -43,7 +56,13 @@ const translations = {
 type IProps = {
   host?: IHost
   name: string
-  event: IEvent
+  event: {
+    name: string
+    backgroundImage: string
+    eventId: string
+    inviteId: string
+    role: EventUserRoles[]
+  }
   style?: {
     background: string
     backgroundColor: string
@@ -52,7 +71,7 @@ type IProps = {
 
 const messages = translations.translations.en
 
-const EventEmail = ({
+const InviteEmail = ({
   host = defaultHost,
   event,
   name,
@@ -62,14 +81,16 @@ const EventEmail = ({
   const t = createTranslator({
     locale: 'en',
     messages,
-    namespace: 'event',
+    namespace: 'invite',
   })
 
   const HOST = getHost(host)
 
-  const href = `${HOST}/event/${event.eventId}?guest=${event.ticketId}`
+  const href = `${HOST}/event/${event.eventId}/join?guest=${event.inviteId}`
 
-  const mapsLink = getMapsLink(event.location)
+  const mainRole = event.role.sort((a, b) => {
+    return eventRoles.indexOf(a) - eventRoles.indexOf(b)
+  })
 
   return (
     <GeneralEmail
@@ -100,69 +121,28 @@ const EventEmail = ({
                     />
                   </Center>
                 </Section>
-                <Section className="p-5">
+                <Section className="p-5 pb-0">
                   <Center>
                     <FixedHeading className="my-0">
-                      {t('title', { name })}
+                      {t('title', { eventName: event.name })}
                     </FixedHeading>
-                    <FixedText>
-                      {t('description', { eventName: event.name })}
+                    <FixedText className="mb-0">
+                      {t('greeting', { name })}
                     </FixedText>
-                    <FixedButton href={href} className="mt-2 mb-[40px]">
+                    <FixedText>
+                      {t.rich('description', {
+                        eventName: event.name,
+                        roleName: t(`types.${mainRole}.label`),
+                        b: (chunks) => <b>{chunks}</b>,
+                      })}{' '}
+                      {t(`types.${mainRole}.description`)}
+                    </FixedText>
+                    <FixedButton href={href} className="block">
                       {t('action')}
                     </FixedButton>
                   </Center>
-                  <Center>
-                    <Img
-                      src={event.ticketImage}
-                      width={200}
-                      alt="Picture of ticket"
-                    />
-                  </Center>
                 </Section>
-                <Section>
-                  <FixedText style={headingStyle} className="mb-0">
-                    {event.time}
-                  </FixedText>
-                  <Center>
-                    <table
-                      role="presentation"
-                      cellSpacing="0"
-                      cellPadding="0"
-                      border={0}
-                      style={{ borderCollapse: 'collapse' }}
-                    >
-                      <tbody>
-                        <tr>
-                          <td
-                            style={{
-                              paddingRight: '16px',
-                              verticalAlign: 'middle',
-                            }}
-                          >
-                            <Img
-                              src={`${MEDIA}/hotlink-ok/email_pin.png`}
-                              width={24}
-                              height={24}
-                              alt="Location pin"
-                            />
-                          </td>
-                          <td style={{ verticalAlign: 'middle' }}>
-                            <FixedText>
-                              {event.location.onlineLink
-                                ? getOnlineLocation(event.location.onlineLink)
-                                : event.location.address}
-                            </FixedText>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    {event.location.address && event.location.placeId && (
-                      <FixedLink href={mapsLink}>{t('maps')}</FixedLink>
-                    )}
-                  </Center>
-                </Section>
-                <Section className="pt-8 pb-3 text-center">
+                <Section className="pt-8 pb-3 mt-8 text-center border-t border-solid border-[#FFF]/[0.1]">
                   <FixedText className="my-0">
                     {t.rich('info', {
                       xoxnolink: (children) => (
@@ -189,10 +169,10 @@ const EventEmail = ({
   )
 }
 
-export const renderEventEmail = async (
-  props: ComponentProps<typeof EventEmail>
+export const renderInviteEmail = async (
+  props: ComponentProps<typeof InviteEmail>
 ) => {
-  const Email = createElement(EventEmail, props, null)
+  const Email = createElement(InviteEmail, props, null)
 
   return renderGenericEmail(Email)
 }

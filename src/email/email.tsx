@@ -24,6 +24,7 @@ import {
 } from './types'
 import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
+  defaultBodyStyle,
   defaultHost,
   FixedButton,
   FixedHeading,
@@ -187,8 +188,15 @@ const messages = translations.translations.en
 const XOXNOEmail = ({
   host = defaultHost,
   unsubscribeToken,
+  style = defaultBodyStyle,
   ...props
-}: IProps & WithUnsubscribeToken) => {
+}: IProps &
+  WithUnsubscribeToken & {
+    style?: {
+      background: string
+      backgroundColor: string
+    }
+  }) => {
   const isATrade = isTrade(props)
   const isAOfferTrade = isOfferTrade(props)
 
@@ -237,38 +245,67 @@ const XOXNOEmail = ({
       HOST={HOST}
       unsubscribeToken={unsubscribeToken}
     >
-      <Body
-        className="body"
-        style={{
-          background: 'linear-gradient(#121212,#121212)',
-          backgroundColor: '#121212',
-        }}
-      >
-        <Container className="px-5">
-          <Section className="mb-4">
-            <Img
-              src={`${MEDIA}/hotlink-ok/${isUnsuccess ? 'unsuccess.png' : 'success.png'}`}
-              width="100%"
-              height="140px"
-              className="object-cover"
-              alt="XOXNO Banner"
-            />
-          </Section>
-          <Section>
-            {imgSrc && (
-              <Img
-                src={imgSrc}
-                width="260px"
-                height="260px"
-                className="rounded-xl mx-auto"
-                alt="NFT Image"
-              />
-            )}
-            <Section className="pt-8 pb-6 text-center">
-              <FixedHeading className="m-0">{t('title', payload)}</FixedHeading>
-              <FixedText className="m-0 mt-2.5">
-                {t.rich('description', {
-                  ...payload,
+      {({ unsubscribeSection }) => {
+        return (
+          <Body className="body" style={style}>
+            <Container className="px-5">
+              <Section className="mb-4">
+                <Img
+                  src={`${MEDIA}/hotlink-ok/${isUnsuccess ? 'unsuccess.png' : 'success.png'}`}
+                  width="100%"
+                  height="140px"
+                  className="object-cover"
+                  alt="XOXNO Banner"
+                />
+              </Section>
+              <Section>
+                {imgSrc && (
+                  <Img
+                    src={imgSrc}
+                    width="260px"
+                    height="260px"
+                    className="rounded-xl mx-auto"
+                    alt="NFT Image"
+                  />
+                )}
+                <Section className="pt-8 pb-6 text-center">
+                  <FixedHeading className="m-0">
+                    {t('title', payload)}
+                  </FixedHeading>
+                  <FixedText className="m-0 mt-2.5">
+                    {t.rich('description', {
+                      ...payload,
+                      link: (children) => (
+                        <FixedLink href={href} disableFix>
+                          {children}
+                        </FixedLink>
+                      ),
+                      highlight: (children) => (
+                        <span style={highlightStyle}>{children}</span>
+                      ),
+                    })}
+                  </FixedText>
+                  {isVerifyEmail(props) ? (
+                    <Section className="mt-6">
+                      <FixedText className="mt-0 mb-2.5">
+                        {t('action')}
+                      </FixedText>
+                      <FixedText style={headingStyle} className="my-0">
+                        {props.payload.code}
+                      </FixedText>
+                      <FixedText style={hintStyle} className="mb-0">
+                        {t('hint')}
+                      </FixedText>
+                    </Section>
+                  ) : (
+                    <FixedButton href={href} className="mt-5">
+                      {t('action')}
+                    </FixedButton>
+                  )}
+                </Section>
+              </Section>
+              <ThankYou
+                text={t.rich('footer', {
                   link: (children) => (
                     <FixedLink href={href} disableFix>
                       {children}
@@ -278,39 +315,13 @@ const XOXNOEmail = ({
                     <span style={highlightStyle}>{children}</span>
                   ),
                 })}
-              </FixedText>
-              {isVerifyEmail(props) ? (
-                <Section className="mt-6">
-                  <FixedText className="mt-0 mb-2.5">{t('action')}</FixedText>
-                  <FixedText style={headingStyle} className="my-0">
-                    {props.payload.code}
-                  </FixedText>
-                  <FixedText style={hintStyle} className="mb-0">
-                    {t('hint')}
-                  </FixedText>
-                </Section>
-              ) : (
-                <FixedButton href={href} className="mt-5">
-                  {t('action')}
-                </FixedButton>
-              )}
-            </Section>
-          </Section>
-          <ThankYou
-            text={t.rich('footer', {
-              link: (children) => (
-                <FixedLink href={href} disableFix>
-                  {children}
-                </FixedLink>
-              ),
-              highlight: (children) => (
-                <span style={highlightStyle}>{children}</span>
-              ),
-            })}
-            isThankYou={!isOffer(props)}
-          />
-        </Container>
-      </Body>
+                isThankYou={!isOffer(props)}
+              />
+              {unsubscribeSection}
+            </Container>
+          </Body>
+        )
+      }}
     </GeneralEmail>
   )
 }
