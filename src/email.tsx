@@ -11,6 +11,7 @@ export {
   MEDIA,
   Center,
   ThankYou,
+  MsFix,
   FixedLink,
   FixedHeading,
   FixedText,

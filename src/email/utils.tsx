@@ -339,6 +339,26 @@ export function Center({ children }: PropsWithChildren) {
   )
 }
 
+export function MsFix({
+  backgroundColor,
+  backgroundImage,
+}: {
+  backgroundColor: string
+  backgroundImage?: string
+}) {
+  return (
+    <div
+      dangerouslySetInnerHTML={{
+        __html: `<!--[if gte mso 9]>
+<v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
+<v:fill type="frame" ${backgroundImage ? `src="${backgroundImage}"` : ''} color="${backgroundColor}"/>
+</v:background>
+<![endif]-->`,
+      }}
+    />
+  )
+}
+
 export function ThankYou({
   text,
   isThankYou = true,

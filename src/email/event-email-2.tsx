@@ -18,6 +18,7 @@ import {
   GeneralEmail,
   getHost,
   MEDIA,
+  MsFix,
   renderGenericEmail,
   smallHeadingStyle,
   ThankYou,
@@ -93,6 +94,10 @@ const EventEmail = ({
                   : style.background,
               }}
             >
+              <MsFix
+                backgroundColor={style.backgroundColor}
+                backgroundImage={event.backgroundImage}
+              />
               <Container className="px-5">
                 <Section className="min-h-[100px]">
                   <Center>
@@ -120,7 +125,7 @@ const EventEmail = ({
                     </FixedText>
                   </Center>
                   <Center>
-                    <FixedLink href={href}>
+                    <FixedLink href={href} disableFix>
                       <Img
                         src={event.ticketImage}
                         width={200}

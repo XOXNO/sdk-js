@@ -18,6 +18,7 @@ import {
   getHost,
   headingStyle,
   MEDIA,
+  MsFix,
   renderGenericEmail,
   ThankYou,
 } from './utils'
@@ -89,6 +90,10 @@ const EventEmail = ({
                   : style.background,
               }}
             >
+              <MsFix
+                backgroundColor={style.backgroundColor}
+                backgroundImage={event.backgroundImage}
+              />
               <Container className="px-5">
                 <Section className="min-h-[100px]">
                   <Center>
