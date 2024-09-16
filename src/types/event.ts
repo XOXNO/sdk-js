@@ -51,6 +51,7 @@ export interface IEventDoc {
     count: number
     guests: Owner[]
   }
+  eventPermissions?: Pick<IEventRoles, 'role' | 'permissions' | 'endTime'>
 }
 
 export interface ITicketDoc {
