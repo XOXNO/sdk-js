@@ -90,7 +90,7 @@ const InviteEmail = ({
 
   const mainRole = event.role.sort((a, b) => {
     return eventRoles.indexOf(a) - eventRoles.indexOf(b)
-  })
+  })[0]
 
   return (
     <GeneralEmail
