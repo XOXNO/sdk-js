@@ -51,8 +51,9 @@ export interface WithSenderAndNonce {
   nonce?: number
 }
 
-export interface Payment extends NFTBody {
+export interface Payment extends Omit<NFTBody, 'amount'> {
   decimals?: number
+  amount: string
 }
 
 export interface SendGlobalOffer {

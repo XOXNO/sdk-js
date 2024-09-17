@@ -765,11 +765,11 @@ export class SCInteraction {
     if (!payment.amount) {
       throw new Error('Payment amount is required')
     }
-    if (payment.collection == 'EGLD' && payment.amount) {
-      interaction.withValue(TokenTransfer.egldFromAmount(payment.amount))
+    if (payment.collection == 'EGLD') {
+      interaction.withValue(payment.amount)
     } else {
       interaction.withSingleESDTTransfer(
-        TokenTransfer.fungibleFromAmount(
+        TokenTransfer.fungibleFromBigInteger(
           payment.collection,
           payment.amount,
           payment.decimals ?? 18
