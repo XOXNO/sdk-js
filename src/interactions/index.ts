@@ -712,9 +712,6 @@ export class SCInteraction {
     payment: Payment,
     sender: WithSenderAndNonce
   ): IPlainTransactionObject {
-    if (!payment.amount) {
-      throw new Error('Payment amount is required')
-    }
     const isEgld = payment.collection == 'EGLD'
     const tx = this.factory.createTransactionForExecute({
       sender: new Address(sender.address),
@@ -762,9 +759,6 @@ export class SCInteraction {
       interaction.withNonce(sender.nonce)
     }
     interaction.withSender(new Address(sender.address))
-    if (!payment.amount) {
-      throw new Error('Payment amount is required')
-    }
     if (payment.collection == 'EGLD') {
       interaction.withValue(payment.amount)
     } else {
