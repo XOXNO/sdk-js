@@ -1,6 +1,7 @@
 import type {
   GlobalOffers,
   ICollectionProfile,
+  ISocials,
   MetadataAttribute,
 } from './collection'
 
@@ -118,10 +119,12 @@ export interface CollectionInfo {
   isVisible: boolean
   profile: string
   banner: string
-  collectionSize: number
+  socials?: ISocials
+  collectionSize?: number
   description?: string
   followCount?: number
   holdersCount?: number
+  volume?: number
   customConfig?: ICollectionProfile['customConfig']
 }
 
