@@ -1,5 +1,6 @@
 import { CollectionModule, XOXNOClient } from '..'
 import type {
+  CollectionCreatorInfo,
   CreatorInfo,
   GetNFTsArgs,
   IMintInfo,
@@ -232,10 +233,10 @@ export class UserModule {
    *  */
   public getCreatorListings = async (
     address: string
-  ): Promise<IMintInfoExtended[]> => {
+  ): Promise<CollectionCreatorInfo> => {
     if (!isAddressValid(address)) throw new Error('Invalid address')
 
-    const response = await this.api.fetchWithTimeout<IMintInfoExtended[]>(
+    const response = await this.api.fetchWithTimeout<CollectionCreatorInfo>(
       `/user/${address}/creator/listing`
     )
     return response

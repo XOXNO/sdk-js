@@ -57,7 +57,7 @@ export interface IMintInfoExtended extends IMintInfo {
   }
 }
 
-export interface CreatorInfo {
+export interface CollectionCreatorInfo {
   name: string
   contractAddress: string
   address: string
@@ -67,6 +67,9 @@ export interface CreatorInfo {
   socials?: any
   id: string
   listing: IMintInfoExtended[]
+}
+
+export interface CreatorInfo extends CollectionCreatorInfo {
   events: IEventDoc[]
 }
 
