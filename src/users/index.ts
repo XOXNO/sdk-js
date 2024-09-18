@@ -2,6 +2,7 @@ import { CollectionModule, XOXNOClient } from '..'
 import type {
   CollectionCreatorInfo,
   CreatorInfo,
+  EventCreatorInfo,
   GetNFTsArgs,
   IMintInfo,
   IMintInfoExtended,
@@ -238,6 +239,26 @@ export class UserModule {
 
     const response = await this.api.fetchWithTimeout<CollectionCreatorInfo>(
       `/user/${address}/creator/listing`
+    )
+    return response
+  }
+
+  /** Gets user's creator info
+   * @param {String} address - User's address
+   * @returns {EventCreatorInfo} User's creator info
+   * @throws {Error} Throws an error if the address is invalid
+   *  */
+  public getCreatorEvents = async (
+    address: string,
+    extra?: RequestInit
+  ): Promise<EventCreatorInfo> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address')
+
+    const response = await this.api.fetchWithTimeout<EventCreatorInfo>(
+      `/user/${address}/creator/events`,
+      {
+        ...extra,
+      }
     )
     return response
   }

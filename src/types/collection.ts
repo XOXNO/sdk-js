@@ -57,7 +57,7 @@ export interface IMintInfoExtended extends IMintInfo {
   }
 }
 
-export interface CollectionCreatorInfo {
+interface BaseCreatorInfo {
   name: string
   contractAddress: string
   address: string
@@ -66,12 +66,17 @@ export interface CollectionCreatorInfo {
   description?: string
   socials?: any
   id: string
+}
+
+export interface CollectionCreatorInfo extends BaseCreatorInfo {
   listing: IMintInfoExtended[]
 }
 
-export interface CreatorInfo extends CollectionCreatorInfo {
+export interface EventCreatorInfo extends BaseCreatorInfo {
   events: IEventDoc[]
 }
+
+export interface CreatorInfo extends CollectionCreatorInfo, EventCreatorInfo {}
 
 export interface CollectionStatisticsProfile {
   tradeData: TradeData
@@ -801,7 +806,7 @@ export type GetCollectionMintInfo = {
     owner: string
     isVisible: boolean
   }
-  creatorInfo: CreatorInfo
+  creatorInfo: BaseCreatorInfo
 }
 
 export type MintStage = {
