@@ -8,7 +8,7 @@ import type {
   SaleInfo,
 } from './nft'
 import type { NftActivityType } from './trading'
-import type { IUserProfileSearch, OfferBody } from './user'
+import type { CreatorProfile, IUserProfileSearch, OfferBody } from './user'
 
 export interface ISocials {
   twitter: string
@@ -57,22 +57,11 @@ export interface IMintInfoExtended extends IMintInfo {
   }
 }
 
-interface BaseCreatorInfo {
-  name: string
-  contractAddress: string
-  address: string
-  profile: string
-  banner: string
-  description?: string
-  socials?: any
-  id: string
-}
-
-export interface CollectionCreatorInfo extends BaseCreatorInfo {
+export interface CollectionCreatorInfo extends CreatorProfile {
   listing: IMintInfoExtended[]
 }
 
-export interface EventCreatorInfo extends BaseCreatorInfo {
+export interface EventCreatorInfo extends CreatorProfile {
   events: IEventDoc[]
 }
 
@@ -806,7 +795,7 @@ export type GetCollectionMintInfo = {
     owner: string
     isVisible: boolean
   }
-  creatorInfo: BaseCreatorInfo
+  creatorInfo: CreatorProfile
 }
 
 export type MintStage = {
