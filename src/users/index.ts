@@ -279,11 +279,17 @@ export class UserModule {
    * @returns {CreatorInfo} User's creator info
    * @throws {Error} Throws an error if the address is invalid
    *  */
-  public getUserCreatorInfo = async (address: string): Promise<CreatorInfo> => {
+  public getUserCreatorInfo = async (
+    address: string,
+    extra?: RequestInit
+  ): Promise<CreatorInfo> => {
     if (!isAddressValid(address)) throw new Error('Invalid address')
 
     const response = await this.api.fetchWithTimeout<CreatorInfo>(
-      `/user/${address}/creator/details`
+      `/user/${address}/creator/details`,
+      {
+        ...extra,
+      }
     )
     return response
   }
