@@ -48,13 +48,7 @@ export interface IMintInfo {
 }
 
 export interface IMintInfoExtended extends IMintInfo {
-  collectionInfo: {
-    name: string
-    isVerified: boolean
-    profile: string
-    banner: string
-    volume: number
-  }
+  collectionInfo: CollectionInfo
 }
 
 export interface CollectionCreatorInfo extends CreatorProfile {
@@ -785,16 +779,7 @@ export type GetCollectionMintInfo = {
   hasMetadata: boolean
   mediaType: string
   mintStages: MintStage[]
-  collectionInfo: {
-    name: string
-    isVerified: boolean
-    description?: string
-    socials?: ISocials
-    profile: string
-    banner: string
-    owner: string
-    isVisible: boolean
-  }
+  collectionInfo: CollectionInfo
   creatorInfo: CreatorProfile
 }
 
@@ -924,17 +909,7 @@ export type CollectionStatsDoc = {
     year: TradingDataSummary
   }
   // applied after db call
-  collectionInfo?: {
-    name?: string
-    banner?: string
-    description?: string
-    isVerified: boolean
-    isVisible: boolean
-    profile?: string
-    holdersCount?: number
-    collectionSize?: number
-    followCount?: number
-  }
+  collectionInfo?: CollectionInfo
   id: string
 }
 
