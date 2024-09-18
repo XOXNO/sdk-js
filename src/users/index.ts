@@ -3,6 +3,7 @@ import type {
   CreatorInfo,
   GetNFTsArgs,
   IMintInfo,
+  IMintInfoExtended,
   SearchNFTsResponse,
   StakingStatus,
   StakingSummaryPools,
@@ -229,10 +230,12 @@ export class UserModule {
    * @returns {IMintInfo[]} User's creator profile struct
    * @throws {Error} Throws an error if the address is invalid
    *  */
-  public getCreatorListings = async (address: string): Promise<IMintInfo[]> => {
+  public getCreatorListings = async (
+    address: string
+  ): Promise<IMintInfoExtended[]> => {
     if (!isAddressValid(address)) throw new Error('Invalid address')
 
-    const response = await this.api.fetchWithTimeout<IMintInfo[]>(
+    const response = await this.api.fetchWithTimeout<IMintInfoExtended[]>(
       `/user/${address}/creator/listing`
     )
     return response
