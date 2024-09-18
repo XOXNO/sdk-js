@@ -125,6 +125,7 @@ export interface CollectionInfo {
   followCount?: number
   holdersCount?: number
   volume?: number
+  owner?: string
   customConfig?: ICollectionProfile['customConfig']
 }
 

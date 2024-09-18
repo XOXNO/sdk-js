@@ -908,8 +908,7 @@ export type CollectionStatsDoc = {
     halfYear: TradingDataSummary
     year: TradingDataSummary
   }
-  // applied after db call
-  collectionInfo?: CollectionInfo
+  collectionInfo: CollectionInfo
   id: string
 }
 
