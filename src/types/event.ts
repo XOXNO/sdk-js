@@ -37,6 +37,7 @@ export interface IEventDoc {
     isPublished: boolean
     hasCustomQuestions: boolean
     showGuestCount: boolean
+    acceptCrypto: boolean
   }
   creatorAddress: string
   pk: string
