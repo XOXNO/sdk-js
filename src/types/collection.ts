@@ -635,6 +635,7 @@ export type FungibleAssets = {
   pngUrl: string
   ticker: string
   usdPrice?: number
+  isAshSupported: boolean
   _ts?: number
 }
 
