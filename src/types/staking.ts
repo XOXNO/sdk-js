@@ -53,6 +53,7 @@ export interface StakingSummaryPools {
   collection: string[]
   poolStakedCount: number
   userStakedCount: number
+  userUnboundCount: number
   poolReward: RewardAvaiblePools[]
   userReward: RewardStakinSummary[]
   rewardDuration: number
