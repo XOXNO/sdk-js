@@ -782,6 +782,7 @@ export type GetCollectionMintInfo = {
   mintStages: MintStage[]
   collectionInfo: CollectionInfo
   creatorInfo: CreatorProfile
+  isExcludedFromMint: boolean
 }
 
 export type MintStage = {
