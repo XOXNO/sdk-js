@@ -188,7 +188,7 @@ export type EsdtToken = {
   usdValue: number
   egldValue: number
   assets: Assets
-  isAshSupported?: boolean
+  isAshSupported: boolean
   weight: number
 }
 
