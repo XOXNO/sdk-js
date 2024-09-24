@@ -110,12 +110,16 @@ export class CollectionModule {
   public getCollectionFloorPrice = async (
     collection: string,
     token = 'EGLD'
-  ): Promise<number> => {
+  ): Promise<{
+    price: number
+    usdPrice: number
+  }> => {
     if (!isValidCollectionTicker(collection)) {
       throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<{
       price: number
+      usdPrice: number
     }>(`/collection/${collection}/floor-price`, {
       next: {
         tags: ['getCollectionFloorPrice'],
@@ -124,7 +128,7 @@ export class CollectionModule {
         token,
       },
     })
-    return response?.price ? response.price : 0
+    return response
   }
 
   /**
