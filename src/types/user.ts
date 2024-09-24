@@ -74,6 +74,7 @@ export interface UserDeposit {
   balance: string
   paymentToken: string
   paymentTokenNonce: number
+  usdPrice: number
 }
 
 export interface UserInventory {
