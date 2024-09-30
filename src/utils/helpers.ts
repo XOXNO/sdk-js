@@ -14,5 +14,5 @@ export const getIdentifierFromColAndNonce = (
 }
 
 export const isAddressValid = (address: string | Buffer): boolean => {
-  return address.includes('erd1')
+  return address.includes('erd1') && address?.length === 62
 }

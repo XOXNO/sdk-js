@@ -45,6 +45,7 @@ import type {
   WithSenderAndNonce,
 } from '../types/interactions'
 import { AuctionType } from '../types/interactions'
+import { isAddressValid } from '../utils/helpers'
 import { ContractQueryRunner } from '../utils/scCalls'
 import { SmartContractAbis } from '../utils/SmartContractAbis'
 import { getSmartContract } from '../utils/SmartContractService'
@@ -134,6 +135,7 @@ export class SCInteraction {
     token: string,
     nonce: number
   ): Promise<number> {
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     const result = await this.getResult(
       this.xo.methods.userDeposit([address, token, nonce])
     )

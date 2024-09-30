@@ -4,8 +4,6 @@ import type {
   CreatorInfo,
   EventCreatorInfo,
   GetNFTsArgs,
-  IMintInfo,
-  IMintInfoExtended,
   SearchNFTsResponse,
   StakingStatus,
   StakingSummaryPools,
@@ -481,6 +479,7 @@ export class UserModule {
   public getStakingCreatorInfo = async (
     address: string
   ): Promise<StakingCreatorInfo> => {
+    if (!isAddressValid(address)) throw new Error('Invalid address')
     return await this.api.fetchWithTimeout<StakingCreatorInfo>(
       `/user/${address}/staking/creator`,
       {
