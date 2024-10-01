@@ -13,11 +13,6 @@
       "import": "./dist/interactor.esm.js",
       "require": "./dist/interactor.cjs.js",
       "types": "./dist/interactor.d.ts"
-    },
-    "./email": {
-      "import": "./dist/email.esm.js",
-      "require": "./dist/email.cjs.js",
-      "types": "./dist/email.d.ts"
     }
   },
   "types": "./dist/index.d.ts",
