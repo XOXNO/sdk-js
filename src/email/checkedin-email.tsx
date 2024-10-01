@@ -3,8 +3,7 @@ import React, { createElement, type ComponentProps } from 'react'
 import { Body, Container, Img, Section } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
-import { eventRoles, EventUserRoles } from '../types'
-import { defaultHost, IEmailConfig } from '../utils'
+import { defaultHost, getMapsLink, IEmailConfig } from '../utils'
 import { IEvent } from './types'
 import type { Translations, WithUnsubscribeToken } from './utils'
 import {
@@ -25,30 +24,15 @@ const translations = {
   namespace: '',
   translations: {
     en: {
-      invite: {
-        meta: "You're invited to join the {eventName} team - Join Now!",
-        title: "You're invited to join the {eventName} team",
+      approval: {
+        meta: 'Congrats, you were checked in for {eventName}!',
+        title: 'You were checked in for {eventName}',
         greeting: 'Dear {name},',
         description:
-          "You're invited to join the {eventName} team as <b>{roleName}</b>!",
-        action: 'CLAIM YOUR TEAM SPOT HERE',
+          "You were checked in to {eventName}, we hope you're enjoying the event! Did you know that you also <b>received a digital memory</b>? Click below to view or trade it:",
+        action: 'VIEW YOUR DIGITAL TICKET HERE',
         info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         footer: 'Thank you for using {appName}!',
-        types: {
-          'check-in-manager': {
-            label: 'Check-in Manager',
-            description: 'This will allow you to scan tickets of attendees.',
-          },
-          'event-manager': {
-            label: 'Event Manager',
-            description: 'This will allow you to manage the event.',
-          },
-          'event-reader': {
-            label: 'Event Viewer',
-            description:
-              'This will allow you to view the settings of the event.',
-          },
-        },
       },
     },
   },
@@ -57,10 +41,7 @@ const translations = {
 type IProps = {
   host?: IEmailConfig
   name: string
-  event: Pick<IEvent, 'name' | 'backgroundImage' | 'eventId'> & {
-    inviteId: string
-    role: EventUserRoles[]
-  }
+  event: IEvent & { ticketImage: string }
   style?: {
     background: string
     backgroundColor: string
@@ -69,7 +50,7 @@ type IProps = {
 
 const messages = translations.translations.en
 
-const InviteEmail = ({
+const CheckedInEmail = ({
   host = defaultHost,
   event,
   name,
@@ -79,18 +60,16 @@ const InviteEmail = ({
   const t = createTranslator({
     locale: 'en',
     messages,
-    namespace: 'invite',
+    namespace: 'approval',
   })
 
   const tPayload = { appName: host.appName }
 
   const HOST = `https://${host.host}`
 
-  const href = `${HOST}/event/${event.eventId}/join?guest=${event.inviteId}`
+  const href = `${HOST}/profile`
 
-  const mainRole = event.role.sort((a, b) => {
-    return eventRoles.indexOf(a) - eventRoles.indexOf(b)
-  })[0]
+  const mapsLink = getMapsLink(event.location)
 
   return (
     <GeneralEmail
@@ -110,10 +89,7 @@ const InviteEmail = ({
                   : style.background,
               }}
             >
-              <MsFix
-                backgroundColor={style.backgroundColor}
-                backgroundImage={event.backgroundImage}
-              />
+              <MsFix backgroundColor={style.backgroundColor} />
               <Container className="px-5">
                 <Section className="min-h-[100px]">
                   <Center>
@@ -125,7 +101,7 @@ const InviteEmail = ({
                     />
                   </Center>
                 </Section>
-                <Section className="p-5 pb-0">
+                <Section className="p-5">
                   <Center>
                     <FixedHeading className="my-0">
                       {t('title', { eventName: event.name, ...tPayload })}
@@ -137,12 +113,21 @@ const InviteEmail = ({
                       {t.rich('description', {
                         ...tPayload,
                         eventName: event.name,
-                        roleName: t(`types.${mainRole}.label`, tPayload),
                         b: (chunks) => <b>{chunks}</b>,
-                      })}{' '}
-                      {t(`types.${mainRole}.description`, tPayload)}
+                      })}
                     </FixedText>
-                    <FixedButton href={href} className="block">
+                  </Center>
+                  <Center>
+                    <FixedLink href={href} disableFix>
+                      <Img
+                        src={event.ticketImage}
+                        width={200}
+                        alt="Picture of ticket"
+                      />
+                    </FixedLink>
+                  </Center>
+                  <Center>
+                    <FixedButton href={href} className="block mt-5">
                       {t('action', tPayload)}
                     </FixedButton>
                   </Center>
@@ -178,10 +163,10 @@ const InviteEmail = ({
   )
 }
 
-export const renderInviteEmail = async (
-  props: ComponentProps<typeof InviteEmail>
+export const renderCheckedInEmail = async (
+  props: ComponentProps<typeof CheckedInEmail>
 ) => {
-  const Email = createElement(InviteEmail, props, null)
+  const Email = createElement(CheckedInEmail, props, null)
 
   return renderGenericEmail(Email)
 }

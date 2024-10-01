@@ -31,7 +31,7 @@ export interface IEmailConfig {
   }
 }
 
-export const defaultHost: IEmailConfig = {
+export const defaultHost = {
   host: 'xoxno.com',
   appName: 'XOXNO',
   socials: {
@@ -40,4 +40,4 @@ export const defaultHost: IEmailConfig = {
     twitter: 'https://twitter.com/XoxnoNetwork',
     telegram: 'https://t.me/xoxno',
   },
-}
+} as const satisfies IEmailConfig

@@ -52,6 +52,7 @@ const translations = {
           action: 'View bids',
           hint: '',
           footer: 'Thank you for using {appName}!',
+          info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         },
         [NftActivityType.AUCTION_OUT_BID]: {
           title: 'You have been outbid on {nftName}',
@@ -60,6 +61,7 @@ const translations = {
           action: 'View bids',
           hint: '',
           footer: 'Thank you for using {appName}!',
+          info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         },
         [NftActivityType.OFFER_CREATE]: {
           title: 'You have a new offer on {nftName}',
@@ -67,7 +69,8 @@ const translations = {
             'Hi {name}, you have received a new offer of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on {appName}.',
           action: 'View offer',
           hint: '',
-          footer: 'Check your recent offers on <link>{appName}</link>',
+          footer: 'Thank you for using {appName}!',
+          info: 'Check your recent offers on <offerslink>{appName}</offerslink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         },
         [NftActivityType.OFFER_REJECT]: {
           title: 'Your offer on {nftName} was declined',
@@ -75,7 +78,8 @@ const translations = {
             'Hi {name}, we regret to inform you that your offer of <highlight>{amount} {token}</highlight> was declined by <link>{owner}</link>.',
           action: 'View offer',
           hint: '',
-          footer: 'Check your recent offers on <link>{appName}</link>',
+          footer: 'Thank you for using {appName}!',
+          info: 'Check your recent offers on <offerslink>{appName}</offerslink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         },
         [NftActivityType.TRADE]: {
           title: 'Congrats, you sold {nftName}!',
@@ -84,6 +88,7 @@ const translations = {
           action: 'View item',
           hint: '',
           footer: 'Thank you for using {appName}!',
+          info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         },
         [NftActivityType.OFFER_TRADE]: {
           title: 'Congrats, you bought {nftName}!',
@@ -92,6 +97,7 @@ const translations = {
           action: 'View item',
           hint: '',
           footer: 'Thank you for using {appName}!',
+          info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         },
         deposit: {
           title: 'Deposit balance updated',
@@ -100,6 +106,7 @@ const translations = {
           action: 'Go to my profile',
           hint: '',
           footer: 'Thank you for using {appName}!',
+          info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         },
         withdrawDeposit: {
           title: 'Deposit balance updated',
@@ -108,6 +115,7 @@ const translations = {
           action: 'Go to my profile',
           hint: '',
           footer: 'Thank you for using {appName}!',
+          info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         },
         verifyEmail: {
           title: 'Verify your email address',
@@ -116,6 +124,7 @@ const translations = {
           action: 'Verification code',
           hint: 'This code is valid for 10 minutes',
           footer: 'Thank you for using {appName}!',
+          info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         },
       },
     },
@@ -132,6 +141,7 @@ const translations = {
       action: string
       hint: string
       footer: string
+      info: string
     }
   >
 }>
@@ -272,7 +282,7 @@ const XOXNOEmail = ({
                       alt="NFT Image"
                     />
                   )}
-                  <Section className="pt-8 pb-6 text-center">
+                  <Section className="pt-8 pb-0 text-center">
                     <FixedHeading className="m-0">
                       {t('title', { ...payload, ...tPayload })}
                     </FixedHeading>
@@ -309,20 +319,32 @@ const XOXNOEmail = ({
                     )}
                   </Section>
                 </Section>
-                <ThankYou
-                  text={t.rich('footer', {
-                    ...tPayload,
-                    link: (children) => (
-                      <FixedLink href={href} disableFix>
-                        {children}
-                      </FixedLink>
-                    ),
-                    highlight: (children) => (
-                      <span style={highlightStyle}>{children}</span>
-                    ),
-                  })}
-                  isThankYou={!isOffer(props)}
-                />
+                <Section className="pt-8 pb-3 mt-8 text-center border-t border-solid border-[#FFF]/[0.1]">
+                  <FixedText className="my-0">
+                    {t.rich('info', {
+                      ...tPayload,
+                      xoxnolink: (children) => (
+                        <FixedLink href={HOST} disableFix>
+                          {children}
+                        </FixedLink>
+                      ),
+                      emaillink: (children) => (
+                        <FixedLink
+                          href={`mailto:${host.socials.email}`}
+                          disableFix
+                        >
+                          {children}
+                        </FixedLink>
+                      ),
+                      offerslink: (children) => (
+                        <FixedLink href={href} disableFix>
+                          {children}
+                        </FixedLink>
+                      ),
+                    })}
+                  </FixedText>
+                  <ThankYou text={t('footer', tPayload)} />
+                </Section>
                 {unsubscribeSection}
               </Container>
             </Section>

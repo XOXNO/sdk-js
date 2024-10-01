@@ -32,8 +32,8 @@ const translations = {
   translations: {
     en: {
       event: {
-        meta: 'Your {eventName} Ticket is Here – Claim Now!',
-        title: 'Your {eventName} Ticket is Here',
+        meta: "Congrats, you're invited to join {eventName}!",
+        title: 'Your {eventName} ticket is Here',
         greeting: 'Dear {name},',
         description:
           "We're excited to have you join us at the {eventName}! You can use the <b>QR Code attached to this email</b> to pass the event check-in.",
@@ -51,7 +51,7 @@ const translations = {
 type IProps = {
   host?: IEmailConfig
   name: string
-  event: IEvent
+  event: IEvent & { ticketImage: string; ticketId: string }
   style?: {
     background: string
     backgroundColor: string

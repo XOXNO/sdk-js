@@ -3,14 +3,12 @@ import React, { createElement, type ComponentProps } from 'react'
 import { Body, Container, Img, Section } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
-import { eventRoles, EventUserRoles } from '../types'
 import { defaultHost, IEmailConfig } from '../utils'
 import { IEvent } from './types'
 import type { Translations, WithUnsubscribeToken } from './utils'
 import {
   Center,
   defaultBodyStyle,
-  FixedButton,
   FixedHeading,
   FixedLink,
   FixedText,
@@ -25,30 +23,14 @@ const translations = {
   namespace: '',
   translations: {
     en: {
-      invite: {
-        meta: "You're invited to join the {eventName} team - Join Now!",
-        title: "You're invited to join the {eventName} team",
+      approval: {
+        meta: 'You requested to join {eventName}',
+        title: 'You requested to join {eventName}',
         greeting: 'Dear {name},',
         description:
-          "You're invited to join the {eventName} team as <b>{roleName}</b>!",
-        action: 'CLAIM YOUR TEAM SPOT HERE',
+          '<b>You requested to join the {eventName} as a guest!</b> <br></br> The organizer will accept or reject your request, in the meantime you can <explorelink>explore more events on {appName}</explorelink>.',
         info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         footer: 'Thank you for using {appName}!',
-        types: {
-          'check-in-manager': {
-            label: 'Check-in Manager',
-            description: 'This will allow you to scan tickets of attendees.',
-          },
-          'event-manager': {
-            label: 'Event Manager',
-            description: 'This will allow you to manage the event.',
-          },
-          'event-reader': {
-            label: 'Event Viewer',
-            description:
-              'This will allow you to view the settings of the event.',
-          },
-        },
       },
     },
   },
@@ -57,10 +39,7 @@ const translations = {
 type IProps = {
   host?: IEmailConfig
   name: string
-  event: Pick<IEvent, 'name' | 'backgroundImage' | 'eventId'> & {
-    inviteId: string
-    role: EventUserRoles[]
-  }
+  event: Pick<IEvent, 'name' | 'backgroundImage'>
   style?: {
     background: string
     backgroundColor: string
@@ -69,7 +48,7 @@ type IProps = {
 
 const messages = translations.translations.en
 
-const InviteEmail = ({
+const ApprovalPendingEmail = ({
   host = defaultHost,
   event,
   name,
@@ -79,18 +58,14 @@ const InviteEmail = ({
   const t = createTranslator({
     locale: 'en',
     messages,
-    namespace: 'invite',
+    namespace: 'approval',
   })
 
   const tPayload = { appName: host.appName }
 
   const HOST = `https://${host.host}`
 
-  const href = `${HOST}/event/${event.eventId}/join?guest=${event.inviteId}`
-
-  const mainRole = event.role.sort((a, b) => {
-    return eventRoles.indexOf(a) - eventRoles.indexOf(b)
-  })[0]
+  const href = `${HOST}/explore/events`
 
   return (
     <GeneralEmail
@@ -137,14 +112,15 @@ const InviteEmail = ({
                       {t.rich('description', {
                         ...tPayload,
                         eventName: event.name,
-                        roleName: t(`types.${mainRole}.label`, tPayload),
                         b: (chunks) => <b>{chunks}</b>,
+                        br: () => <br />,
+                        explorelink: (children) => (
+                          <FixedLink href={href} disableFix>
+                            {children}
+                          </FixedLink>
+                        ),
                       })}{' '}
-                      {t(`types.${mainRole}.description`, tPayload)}
                     </FixedText>
-                    <FixedButton href={href} className="block">
-                      {t('action', tPayload)}
-                    </FixedButton>
                   </Center>
                 </Section>
                 <Section className="pt-8 pb-3 mt-8 text-center border-t border-solid border-[#FFF]/[0.1]">
@@ -178,10 +154,10 @@ const InviteEmail = ({
   )
 }
 
-export const renderInviteEmail = async (
-  props: ComponentProps<typeof InviteEmail>
+export const renderApprovalPendingEmail = async (
+  props: ComponentProps<typeof ApprovalPendingEmail>
 ) => {
-  const Email = createElement(InviteEmail, props, null)
+  const Email = createElement(ApprovalPendingEmail, props, null)
 
   return renderGenericEmail(Email)
 }

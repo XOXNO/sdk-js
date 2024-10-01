@@ -92,9 +92,7 @@ export interface INotification extends Omit<IBaseNotification, 'asset'> {
 export interface IEvent {
   name: string
   backgroundImage: string
-  ticketImage: string
   time: string
   location: IEventDoc['location']
-  ticketId: string
   eventId: string
 }
