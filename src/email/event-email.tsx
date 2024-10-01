@@ -3,23 +3,27 @@ import React, { createElement, type ComponentProps } from 'react'
 import { Body, Container, Img, Section } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
-import { getMapsLink, getOnlineLocation } from '../utils'
-import type { IEvent } from './types'
-import type { IHost, Translations, WithUnsubscribeToken } from './utils'
 import {
+  defaultHost,
+  getMapsLink,
+  getOnlineLocation,
+  IEmailConfig,
+} from '../utils'
+import type { IEvent } from './types'
+import type { Translations, WithUnsubscribeToken } from './utils'
+import {
+  bodyStyle,
   Center,
   defaultBodyStyle,
-  defaultHost,
   FixedButton,
   FixedHeading,
   FixedLink,
   FixedText,
   GeneralEmail,
-  getHost,
-  headingStyle,
   MEDIA,
   MsFix,
   renderGenericEmail,
+  smallHeadingStyle,
   ThankYou,
 } from './utils'
 
@@ -29,20 +33,23 @@ const translations = {
     en: {
       event: {
         meta: 'Your {eventName} Ticket is Here – Claim Now!',
-        title: 'Dear {name},',
+        title: 'Your {eventName} Ticket is Here',
+        greeting: 'Dear {name},',
         description:
-          "We're excited to have you join us at the {eventName}! Please click the button below to claim your ticket and secure your spot:",
-        action: 'Claim your ticket',
+          "We're excited to have you join us at the {eventName}! You can use the <b>QR Code attached to this email</b> to pass the event check-in.",
+        action: 'CLAIM YOUR DIGITAL TICKET HERE',
+        hint: 'If you want to get the best experience and a unique collectible as a memory of this event, click below to claim your digital ticket:',
+        qr: 'If you have trouble accessing the ticket on the website, use the <b>QR Code attached to this email</b> to pass the check-in.',
         info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
         maps: 'Open in Google Maps',
-        footer: 'Thank you for using XOXNO!',
+        footer: 'Thank you for using {appName}!',
       },
     },
   },
 } as const satisfies Translations
 
 type IProps = {
-  host?: IHost
+  host?: IEmailConfig
   name: string
   event: IEvent
   style?: {
@@ -66,7 +73,9 @@ const EventEmail = ({
     namespace: 'event',
   })
 
-  const HOST = getHost(host)
+  const tPayload = { appName: host.appName }
+
+  const HOST = `https://${host.host}`
 
   const href = `${HOST}/event/${event.eventId}?guest=${event.ticketId}`
 
@@ -74,7 +83,7 @@ const EventEmail = ({
 
   return (
     <GeneralEmail
-      title={t('meta', { eventName: event.name })}
+      title={t('meta', { eventName: event.name, ...tPayload })}
       HOST={HOST}
       unsubscribeToken={unsubscribeToken}
     >
@@ -108,25 +117,83 @@ const EventEmail = ({
                 <Section className="p-5">
                   <Center>
                     <FixedHeading className="my-0">
-                      {t('title', { name })}
+                      {t('title', { eventName: event.name, ...tPayload })}
                     </FixedHeading>
-                    <FixedText>
-                      {t('description', { eventName: event.name })}
+                    <FixedText className="mb-0">
+                      {t('greeting', { name, ...tPayload })}
                     </FixedText>
-                    <FixedButton href={href} className="mt-2 mb-[40px]">
-                      {t('action')}
-                    </FixedButton>
+                    <FixedText>
+                      {t.rich('description', {
+                        ...tPayload,
+                        eventName: event.name,
+                        b: (chunks) => <b>{chunks}</b>,
+                      })}
+                    </FixedText>
                   </Center>
                   <Center>
-                    <Img
-                      src={event.ticketImage}
-                      width={200}
-                      alt="Picture of ticket"
-                    />
+                    <FixedLink href={href} disableFix>
+                      <Img
+                        src={event.ticketImage}
+                        width={200}
+                        alt="Picture of ticket"
+                      />
+                    </FixedLink>
                   </Center>
                 </Section>
                 <Section>
-                  <FixedText style={headingStyle} className="mb-0">
+                  <Center>
+                    <FixedText>{t('hint', tPayload)}</FixedText>
+                    <FixedButton href={href} className="mb-3 block">
+                      {t('action', tPayload)}
+                    </FixedButton>
+                    <table
+                      role="presentation"
+                      cellSpacing="0"
+                      cellPadding="0"
+                      border={0}
+                      style={{
+                        ...defaultBodyStyle,
+                        borderColor: '#E8EC0D',
+                      }}
+                      className="mb-[40px] p-3 rounded-xl border border-solid"
+                    >
+                      <tbody>
+                        <tr>
+                          <td
+                            style={{
+                              paddingRight: '16px',
+                              paddingTop: '4px',
+                              verticalAlign: 'baseline',
+                            }}
+                          >
+                            <Img
+                              src={`${MEDIA}/hotlink-ok/email_info.png`}
+                              width={24}
+                              height={24}
+                              alt="Info Icon"
+                            />
+                          </td>
+                          <td style={{ verticalAlign: 'middle' }}>
+                            <FixedText
+                              style={{
+                                ...bodyStyle,
+                                color: '#E8EC0D',
+                              }}
+                              className="my-0 text-start"
+                            >
+                              {t.rich('qr', {
+                                ...tPayload,
+                                b: (chunks) => <b>{chunks}</b>,
+                              })}
+                            </FixedText>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </Center>
+                </Section>
+                <Section>
+                  <FixedText style={smallHeadingStyle} className="mb-0">
                     {event.time}
                   </FixedText>
                   <Center>
@@ -153,7 +220,7 @@ const EventEmail = ({
                             />
                           </td>
                           <td style={{ verticalAlign: 'middle' }}>
-                            <FixedText>
+                            <FixedText className="my-0">
                               {event.location.onlineLink
                                 ? getOnlineLocation(event.location.onlineLink)
                                 : event.location.address}
@@ -163,26 +230,32 @@ const EventEmail = ({
                       </tbody>
                     </table>
                     {event.location.address && event.location.placeId && (
-                      <FixedLink href={mapsLink}>{t('maps')}</FixedLink>
+                      <FixedLink href={mapsLink}>
+                        {t('maps', tPayload)}
+                      </FixedLink>
                     )}
                   </Center>
                 </Section>
-                <Section className="pt-8 pb-3 text-center">
+                <Section className="pt-8 pb-3 mt-8 text-center border-t border-solid border-[#FFF]/[0.1]">
                   <FixedText className="my-0">
                     {t.rich('info', {
+                      ...tPayload,
                       xoxnolink: (children) => (
                         <FixedLink href={HOST} disableFix>
                           {children}
                         </FixedLink>
                       ),
                       emaillink: (children) => (
-                        <FixedLink href="mailto:contact@xoxno.com" disableFix>
+                        <FixedLink
+                          href={`mailto:${host.socials.email}`}
+                          disableFix
+                        >
                           {children}
                         </FixedLink>
                       ),
                     })}
                   </FixedText>
-                  <ThankYou text={t('footer')} />
+                  <ThankYou text={t('footer', tPayload)} />
                 </Section>
                 {unsubscribeSection}
               </Container>

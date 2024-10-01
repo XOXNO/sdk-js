@@ -4,6 +4,7 @@ import { Body, Container, Img, Section } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
 import { NftActivityType } from '../types'
+import { defaultHost, IEmailConfig } from '../utils'
 import type {
   IBaseNotification,
   IEmailActivityType,
@@ -22,16 +23,14 @@ import {
   type IOfferTypes,
   type ITradeTypes,
 } from './types'
-import type { IHost, Translations, WithUnsubscribeToken } from './utils'
+import type { Translations, WithUnsubscribeToken } from './utils'
 import {
   defaultBodyStyle,
-  defaultHost,
   FixedButton,
   FixedHeading,
   FixedLink,
   FixedText,
   GeneralEmail,
-  getHost,
   headingStyle,
   highlightStyle,
   hintStyle,
@@ -49,26 +48,26 @@ const translations = {
         [NftActivityType.AUCTION_BID]: {
           title: 'You have a new bid on {nftName}',
           description:
-            'Hi {name}, there is a new bid of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on XOXNO.',
+            'Hi {name}, there is a new bid of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on {appName}.',
           action: 'View bids',
           hint: '',
-          footer: 'Thank you for using XOXNO!',
+          footer: 'Thank you for using {appName}!',
         },
         [NftActivityType.AUCTION_OUT_BID]: {
           title: 'You have been outbid on {nftName}',
           description:
-            'Hi {name}, your previous bid has been outbid by a new bid of <highlight>{amount} {token}</highlight> for <link>{nftName}</link> on XOXNO.',
+            'Hi {name}, your previous bid has been outbid by a new bid of <highlight>{amount} {token}</highlight> for <link>{nftName}</link> on {appName}.',
           action: 'View bids',
           hint: '',
-          footer: 'Thank you for using XOXNO!',
+          footer: 'Thank you for using {appName}!',
         },
         [NftActivityType.OFFER_CREATE]: {
           title: 'You have a new offer on {nftName}',
           description:
-            'Hi {name}, you have received a new offer of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on XOXNO.',
+            'Hi {name}, you have received a new offer of <highlight>{amount} {token}</highlight> for your <link>{nftName}</link> on {appName}.',
           action: 'View offer',
           hint: '',
-          footer: 'Check your recent offers on <link>XOXNO</link>',
+          footer: 'Check your recent offers on <link>{appName}</link>',
         },
         [NftActivityType.OFFER_REJECT]: {
           title: 'Your offer on {nftName} was declined',
@@ -76,7 +75,7 @@ const translations = {
             'Hi {name}, we regret to inform you that your offer of <highlight>{amount} {token}</highlight> was declined by <link>{owner}</link>.',
           action: 'View offer',
           hint: '',
-          footer: 'Check your recent offers on <link>XOXNO</link>',
+          footer: 'Check your recent offers on <link>{appName}</link>',
         },
         [NftActivityType.TRADE]: {
           title: 'Congrats, you sold {nftName}!',
@@ -84,7 +83,7 @@ const translations = {
             'Hi {name}, we are pleased to inform you that your item <link>{nftName}</link> has been sold for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
           hint: '',
-          footer: 'Thank you for using XOXNO!',
+          footer: 'Thank you for using {appName}!',
         },
         [NftActivityType.OFFER_TRADE]: {
           title: 'Congrats, you bought {nftName}!',
@@ -92,7 +91,7 @@ const translations = {
             'Hi {name}, we are pleased to inform you that your offer for <link>{nftName}</link> was accepted for <highlight>{amount} {token}</highlight>.',
           action: 'View item',
           hint: '',
-          footer: 'Thank you for using XOXNO!',
+          footer: 'Thank you for using {appName}!',
         },
         deposit: {
           title: 'Deposit balance updated',
@@ -100,7 +99,7 @@ const translations = {
             'Hi {name}, your deposit balance {amount, select, 0 {decreased to <highlight>{amount} {token}</highlight>. Visit your profile to top it up again} other {was updated to <highlight>{amount} {token}</highlight>}}.',
           action: 'Go to my profile',
           hint: '',
-          footer: 'Thank you for using XOXNO!',
+          footer: 'Thank you for using {appName}!',
         },
         withdrawDeposit: {
           title: 'Deposit balance updated',
@@ -108,15 +107,15 @@ const translations = {
             'Hi {name}, your deposit balance {amount, select, 0 {decreased to <highlight>{amount} {token}</highlight>. Visit your profile to top it up again} other {was updated to <highlight>{amount} {token}</highlight>}}.',
           action: 'Go to my profile',
           hint: '',
-          footer: 'Thank you for using XOXNO!',
+          footer: 'Thank you for using {appName}!',
         },
         verifyEmail: {
           title: 'Verify your email address',
           description:
-            'Hi {name}, please enter the following code on XOXNO to verify your email address:',
+            'Hi {name}, please enter the following code on {appName} to verify your email address:',
           action: 'Verification code',
           hint: 'This code is valid for 10 minutes',
-          footer: 'Thank you for using XOXNO!',
+          footer: 'Thank you for using {appName}!',
         },
       },
     },
@@ -162,7 +161,7 @@ function isVerifyEmail(props: IProps) {
 }
 
 type IProps = {
-  host?: IHost
+  host?: IEmailConfig
 } & (
   | {
       activityType: Exclude<IEmailActivityType, 'verifyEmail'>
@@ -207,7 +206,9 @@ const XOXNOEmail = ({
     namespace: `emails.${isATrade ? NftActivityType.TRADE : isAOfferTrade ? NftActivityType.OFFER_TRADE : props.activityType}`,
   })
 
-  const HOST = getHost(host)
+  const tPayload = { appName: host.appName }
+
+  const HOST = `https://${host.host}`
 
   const isUnsuccess = (
     [
@@ -242,7 +243,7 @@ const XOXNOEmail = ({
 
   return (
     <GeneralEmail
-      title={t('title', payload)}
+      title={t('title', { ...payload, ...tPayload })}
       HOST={HOST}
       unsubscribeToken={unsubscribeToken}
     >
@@ -273,11 +274,12 @@ const XOXNOEmail = ({
                   )}
                   <Section className="pt-8 pb-6 text-center">
                     <FixedHeading className="m-0">
-                      {t('title', payload)}
+                      {t('title', { ...payload, ...tPayload })}
                     </FixedHeading>
                     <FixedText className="m-0 mt-2.5">
                       {t.rich('description', {
                         ...payload,
+                        ...tPayload,
                         link: (children) => (
                           <FixedLink href={href} disableFix>
                             {children}
@@ -291,24 +293,25 @@ const XOXNOEmail = ({
                     {isVerifyEmail(props) ? (
                       <Section className="mt-6">
                         <FixedText className="mt-0 mb-2.5">
-                          {t('action')}
+                          {t('action', tPayload)}
                         </FixedText>
                         <FixedText style={headingStyle} className="my-0">
                           {props.payload.code}
                         </FixedText>
                         <FixedText style={hintStyle} className="mb-0">
-                          {t('hint')}
+                          {t('hint', tPayload)}
                         </FixedText>
                       </Section>
                     ) : (
                       <FixedButton href={href} className="mt-5">
-                        {t('action')}
+                        {t('action', tPayload)}
                       </FixedButton>
                     )}
                   </Section>
                 </Section>
                 <ThankYou
                   text={t.rich('footer', {
+                    ...tPayload,
                     link: (children) => (
                       <FixedLink href={href} disableFix>
                         {children}

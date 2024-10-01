@@ -241,26 +241,6 @@ export type Translations<T = object> = {
   } & Partial<{ [key in Exclude<ILocale, 'en'>]: Partial<T> }>
 }
 
-export const defaultHost = 'https://xoxno.com'
-
-const hosts = [
-  defaultHost,
-  'https://next.xoxno.com',
-  'https://devnet.xoxno.com',
-] as const
-
-export function getHost(propHost: IHost) {
-  return hosts.includes(propHost) ? propHost : defaultHost
-}
-
-export type IHost = (typeof hosts)[number]
-
-export const apiMappers: Record<IHost, string> = {
-  'https://xoxno.com': 'https://api.xoxno.com',
-  'https://next.xoxno.com': 'https://api.xoxno.com',
-  'https://devnet.xoxno.com': 'https://devnet-api.xoxno.com',
-}
-
 export async function renderGenericEmail(Email: ReactElement) {
   const html = await renderAsync(Email, {
     pretty: true,
@@ -399,3 +379,9 @@ export function ThankYou({
 
   return <FixedText className="mt-5">{text}</FixedText>
 }
+
+/* export const apiMappers: Record<IHost, string> = {
+  'xoxno.com': 'https://api.xoxno.com',
+  'devnet.xoxno.com': 'https://devnet-api.xoxno.com',
+  'zonatix.com': 'https://api.xoxno.com',
+} */

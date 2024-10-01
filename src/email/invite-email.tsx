@@ -4,17 +4,16 @@ import { Body, Container, Img, Section } from '@react-email/components'
 import { createTranslator } from 'use-intl'
 
 import { eventRoles, EventUserRoles } from '../types'
-import type { IHost, Translations, WithUnsubscribeToken } from './utils'
+import { defaultHost, IEmailConfig } from '../utils'
+import type { Translations, WithUnsubscribeToken } from './utils'
 import {
   Center,
   defaultBodyStyle,
-  defaultHost,
   FixedButton,
   FixedHeading,
   FixedLink,
   FixedText,
   GeneralEmail,
-  getHost,
   MEDIA,
   MsFix,
   renderGenericEmail,
@@ -33,7 +32,7 @@ const translations = {
           "You're invited to join the {eventName} team as <b>{roleName}</b>!",
         action: 'CLAIM YOUR TEAM SPOT HERE',
         info: 'For more information and updates, <xoxnolink>visit our website</xoxnolink>. If you have any questions, feel free to reach out to us <emaillink>via email</emaillink>.',
-        footer: 'Thank you for using XOXNO!',
+        footer: 'Thank you for using {appName}!',
         types: {
           'check-in-manager': {
             label: 'Check-in Manager',
@@ -55,7 +54,7 @@ const translations = {
 } as const satisfies Translations
 
 type IProps = {
-  host?: IHost
+  host?: IEmailConfig
   name: string
   event: {
     name: string
@@ -85,7 +84,9 @@ const InviteEmail = ({
     namespace: 'invite',
   })
 
-  const HOST = getHost(host)
+  const tPayload = { appName: host.appName }
+
+  const HOST = `https://${host.host}`
 
   const href = `${HOST}/event/${event.eventId}/join?guest=${event.inviteId}`
 
@@ -95,7 +96,7 @@ const InviteEmail = ({
 
   return (
     <GeneralEmail
-      title={t('meta', { eventName: event.name })}
+      title={t('meta', { eventName: event.name, ...tPayload })}
       HOST={HOST}
       unsubscribeToken={unsubscribeToken}
     >
@@ -129,40 +130,45 @@ const InviteEmail = ({
                 <Section className="p-5 pb-0">
                   <Center>
                     <FixedHeading className="my-0">
-                      {t('title', { eventName: event.name })}
+                      {t('title', { eventName: event.name, ...tPayload })}
                     </FixedHeading>
                     <FixedText className="mb-0">
-                      {t('greeting', { name })}
+                      {t('greeting', { name, ...tPayload })}
                     </FixedText>
                     <FixedText>
                       {t.rich('description', {
+                        ...tPayload,
                         eventName: event.name,
-                        roleName: t(`types.${mainRole}.label`),
+                        roleName: t(`types.${mainRole}.label`, tPayload),
                         b: (chunks) => <b>{chunks}</b>,
                       })}{' '}
-                      {t(`types.${mainRole}.description`)}
+                      {t(`types.${mainRole}.description`, tPayload)}
                     </FixedText>
                     <FixedButton href={href} className="block">
-                      {t('action')}
+                      {t('action', tPayload)}
                     </FixedButton>
                   </Center>
                 </Section>
                 <Section className="pt-8 pb-3 mt-8 text-center border-t border-solid border-[#FFF]/[0.1]">
                   <FixedText className="my-0">
                     {t.rich('info', {
+                      ...tPayload,
                       xoxnolink: (children) => (
                         <FixedLink href={HOST} disableFix>
                           {children}
                         </FixedLink>
                       ),
                       emaillink: (children) => (
-                        <FixedLink href="mailto:contact@xoxno.com" disableFix>
+                        <FixedLink
+                          href={`mailto:${host.socials.email}`}
+                          disableFix
+                        >
                           {children}
                         </FixedLink>
                       ),
                     })}
                   </FixedText>
-                  <ThankYou text={t('footer')} />
+                  <ThankYou text={t('footer', tPayload)} />
                 </Section>
                 {unsubscribeSection}
               </Container>
