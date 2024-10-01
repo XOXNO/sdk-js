@@ -2,7 +2,6 @@ export default {
   entry: {
     index: './src/index.ts',
     interactor: './src/interactor.ts',
-    email: './src/email.tsx',
   },
   module: {
     rules: [
