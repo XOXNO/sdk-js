@@ -689,7 +689,7 @@ export class SCInteraction {
       interaction.withSender(new Address(sender.address))
       return interaction
         .withChainID(this.api.chain)
-        .withGasLimit(25_000_000)
+        .withGasLimit(30_000_000)
         .buildTransaction()
         .toPlainObject()
     } else {
