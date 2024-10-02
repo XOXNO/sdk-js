@@ -719,7 +719,7 @@ export class SCInteraction {
       sender: new Address(sender.address),
       contract: new Address(this.config.XO_SC),
       function: 'bid',
-      gasLimit: 25_000_000n,
+      gasLimit: 30_000_000n,
       arguments: [auctionID, collection, nonce],
       nativeTransferAmount: isEgld ? BigInt(payment.amount) : undefined,
       tokenTransfers: isEgld
