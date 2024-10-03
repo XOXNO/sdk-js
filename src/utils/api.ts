@@ -99,8 +99,7 @@ export class XOXNOClient {
 
   public fetchWithTimeout = async <T>(
     path: string,
-    options: Record<string, any> = {},
-    timeout = 40000
+    options: Record<string, any> = {}
   ): Promise<T> => {
     const headers = {
       'Accept-Encoding': 'gzip,deflate,br',
@@ -125,18 +124,14 @@ export class XOXNOClient {
         : ''
     }`
 
-    const controller = new AbortController()
-    setTimeout(() => controller.abort(), timeout)
     const res = await fetch(url, {
       ...options,
-      ...(options?.next && options.next.revalidate
-        ? {}
-        : { cache: 'no-store' }),
-      signal: controller.signal,
+      cache: 'no-store',
       ...(Object.keys(headers).length ? { headers } : {}),
       method: (options.method as any) ?? 'GET',
     })
-    if (!res.ok) throw new Error((await res.json()).message.toString())
-    return res.json() as T
+    const consumed = await res.json()
+    if (!res.ok) throw new Error(consumed.message.toString())
+    return consumed as T
   }
 }
