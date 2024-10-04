@@ -135,7 +135,7 @@ export class SCInteraction {
     token: string,
     nonce: number
   ): Promise<number> {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     const result = await this.getResult(
       this.xo.methods.userDeposit([address, token, nonce])
     )

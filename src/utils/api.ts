@@ -130,8 +130,20 @@ export class XOXNOClient {
       ...(Object.keys(headers).length ? { headers } : {}),
       method: (options.method as any) ?? 'GET',
     })
-    const consumed = await res.json()
-    if (!res.ok) throw new Error(consumed.message.toString())
-    return consumed as T
+    if (!res.ok) {
+      const text = await res.text()
+
+      let message
+
+      try {
+        message = JSON.parse(text)
+      } catch (_error) {
+        message = text
+      }
+
+      throw new Error(message)
+    }
+
+    return res.json() as T
   }
 }

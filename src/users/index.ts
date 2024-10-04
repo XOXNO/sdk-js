@@ -50,7 +50,7 @@ export class UserModule {
    * @returns {IUserProfile}
    */
   public getUserProfile = async (address: string): Promise<IUserProfile> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     const response = await this.api.fetchWithTimeout<IUserProfile>(
       `/user/${address}/profile`
     )
@@ -85,7 +85,7 @@ export class UserModule {
   public getUserAccount = async (
     address: string
   ): Promise<UserNetworkAccount> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     const response = await this.api.fetchWithTimeout<UserNetworkAccount>(
       `/user/${address}/network-account`
     )
@@ -101,7 +101,7 @@ export class UserModule {
   public getUserTokenInventory = async (
     address: string
   ): Promise<UserTokenInventory> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     const response = await this.api.fetchWithTimeout<UserTokenInventory>(
       `/user/${address}/token-inventory`
     )
@@ -119,7 +119,7 @@ export class UserModule {
     address: string,
     activeAuctions = true
   ): Promise<UserInventory[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     const response = await this.api.fetchWithTimeout<UserInventory[]>(
       `/user/${address}/inventory-summary?activeAuction=${activeAuctions}`
     )
@@ -144,7 +144,8 @@ export class UserModule {
    * @returns {UserOffers} - The user's listings
    */
   public getUserOffers = async (args: ArgsUserOffers): Promise<UserOffers> => {
-    if (!isAddressValid(args.address)) throw new Error('Invalid address')
+    if (!isAddressValid(args.address))
+      throw new Error('Invalid address:' + args.address)
     const response = await this.api.fetchWithTimeout<UserOffers>(
       `/user/${args.address}/offers`,
       {
@@ -217,7 +218,7 @@ export class UserModule {
   public getUserCreatorProfile = async (
     address: string
   ): Promise<CreatorProfile> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
 
     const response = await this.api.fetchWithTimeout<CreatorProfile>(
       `/user/${address}/creator/profile`
@@ -233,7 +234,7 @@ export class UserModule {
   public getCreatorListings = async (
     address: string
   ): Promise<CollectionCreatorInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
 
     const response = await this.api.fetchWithTimeout<CollectionCreatorInfo>(
       `/user/${address}/creator/listing`
@@ -250,7 +251,7 @@ export class UserModule {
     address: string,
     extra?: RequestInit
   ): Promise<EventCreatorInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
 
     const response = await this.api.fetchWithTimeout<EventCreatorInfo>(
       `/user/${address}/creator/events`,
@@ -269,7 +270,7 @@ export class UserModule {
   public getUserStakingSummary = async (
     address: string
   ): Promise<StakingSummaryPoolsSlim[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
 
     const response = await this.api.fetchWithTimeout<StakingSummaryPoolsSlim[]>(
       `/user/${address}/staking/summary`
@@ -285,7 +286,7 @@ export class UserModule {
   public getUserStakingAailable = async (
     address: string
   ): Promise<StakingSummaryPools[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
 
     const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
       `/user/${address}/staking/available-pools`
@@ -302,7 +303,7 @@ export class UserModule {
     address: string,
     extra?: RequestInit
   ): Promise<CreatorInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
 
     const response = await this.api.fetchWithTimeout<CreatorInfo>(
       `/user/${address}/creator/details`,
@@ -323,7 +324,7 @@ export class UserModule {
     address: string,
     collection: string
   ): Promise<StakingSummaryPools[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     if (!isValidCollectionTicker(collection)) {
       throw new Error('Invalid collection ticker: ' + collection)
     }
@@ -343,7 +344,7 @@ export class UserModule {
     poolId: number,
     status: StakingStatus
   ): Promise<UserPoolStakingInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     const response = await this.api.fetchWithTimeout<UserPoolStakingInfo>(
       `/user/${address}/staking/pool/${poolId}/nfts?status=${status}`
     )
@@ -358,7 +359,7 @@ export class UserModule {
   public getOwnedPoolsByAddress = async (
     address: string
   ): Promise<StakingSummaryPools[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
       `/user/${address}/staking/owned-pools`
     )
@@ -375,7 +376,7 @@ export class UserModule {
   public getUserAnalyticsSummary = async (
     address: string
   ): Promise<UserAnalyticSummary> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     const response = await this.api.fetchWithTimeout<UserAnalyticSummary>(
       `/user/${address}/analytics/volume`
     )
@@ -394,7 +395,7 @@ export class UserModule {
     top: number,
     skip: number
   ): Promise<SearchNFTsResponse> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
 
     const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
       `/user/${address}/favorite/nfts`,
@@ -416,7 +417,7 @@ export class UserModule {
   public getUserFavoriteCollectionTickers = async (
     address: string
   ): Promise<string[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
 
     const response = await this.api.fetchWithTimeout<string[]>(
       `/user/${address}/favorite/collections`
@@ -479,7 +480,7 @@ export class UserModule {
   public getStakingCreatorInfo = async (
     address: string
   ): Promise<StakingCreatorInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     return await this.api.fetchWithTimeout<StakingCreatorInfo>(
       `/user/${address}/staking/creator`,
       {
@@ -511,7 +512,8 @@ export class UserModule {
     }
 
     if (address) {
-      if (!isAddressValid(address)) throw new Error('Invalid address')
+      if (!isAddressValid(address))
+        throw new Error('Invalid address:' + address)
     }
 
     return await this.api.fetchWithTimeout<UserXOXNODrop[]>(
@@ -538,7 +540,7 @@ export class UserModule {
   public getUserOwnerCollections = async (
     address: string
   ): Promise<IOwnerInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     const response = await this.api.fetchWithTimeout<IOwnerInfo>(
       `/user/${address}/staking/owned-collections`
     )
@@ -553,7 +555,7 @@ export class UserModule {
   public getRoyaltiesSharesCreator = async (
     address: string
   ): Promise<IApiShareholder[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     const response = await this.api.fetchWithTimeout<IApiShareholder[]>(
       `/launchpad/${address}/shareholders/royalties`
     )
@@ -569,7 +571,7 @@ export class UserModule {
     address: string,
     collectionTag: string
   ): Promise<IApiShareholder[]> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address')
+    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     const response = await this.api.fetchWithTimeout<IApiShareholder[]>(
       `/launchpad/${address}/shareholders/collection/${collectionTag}`
     )
