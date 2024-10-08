@@ -130,6 +130,7 @@ export class XOXNOClient {
       ...(Object.keys(headers).length ? { headers } : {}),
       method: (options.method as any) ?? 'GET',
     })
+
     if (!res.ok) {
       const text = await res.text()
 
