@@ -77,6 +77,7 @@ export interface NftData {
   collection: string
   type: string
   supply?: number
+  supplyLong?: string
   url: string
   wasProcessed: boolean
   royalties: number
@@ -93,6 +94,7 @@ export interface NftData {
   owner?: Owner
   currentOwner?: Owner
   balance?: number // Only for non listed NFTs
+  balanceLong?: string
   collectionInfo?: CollectionInfo
   isStaked?: boolean
   hasUboundPeriod?: boolean
