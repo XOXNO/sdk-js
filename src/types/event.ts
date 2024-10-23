@@ -53,6 +53,9 @@ export interface IEventDoc {
     guests: Owner[]
   }
   eventPermissions?: Pick<IEventRoles, 'role' | 'permissions' | 'endTime'>
+  contractAddress: string
+  collection: string
+  ticketingContractAddress: string
 }
 
 export interface ITicketDoc {
