@@ -206,6 +206,7 @@ export type CreatorProfile = {
   socials?: ISocials
   joinedDate?: number
   contractAddress: string
+  ticketingContractAddress?: string
   address: string
   followCount: number
   creatorTag: string

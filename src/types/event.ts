@@ -55,7 +55,6 @@ export interface IEventDoc {
   eventPermissions?: Pick<IEventRoles, 'role' | 'permissions' | 'endTime'>
   contractAddress: string
   collection: string
-  ticketingContractAddress: string
 }
 
 export interface ITicketDoc {
