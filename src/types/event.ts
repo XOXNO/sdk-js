@@ -52,6 +52,10 @@ export interface IEventDoc {
     count: number
     guests: Owner[]
   }
+  startsFrom: {
+    price: 0
+    currency: string
+  }
   eventPermissions?: Pick<IEventRoles, 'role' | 'permissions' | 'endTime'>
   contractAddress: string
   collection: string
