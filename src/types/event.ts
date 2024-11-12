@@ -1,6 +1,85 @@
 import type { Owner } from './nft'
 import type { CreatorProfile } from './user'
 
+export enum IEventCategory {
+  FESTIVAL = 'festival',
+  CONFERENCE = 'conference',
+  NETWORKING = 'networking',
+  MEETUP = 'meetup',
+  WEB3 = 'web3',
+  ENTERTAINMENT = 'entertainment',
+}
+
+export const eventCategories = Object.values(IEventCategory)
+
+enum FestivalCategory {
+  MUSIC = 'music',
+  ARTS_AND_CULTURE = 'arts-and-culture',
+  FOOD_AND_DRINK = 'food-and-drink',
+  LIFESTYLE_AND_WELLNESS = 'lifestyle-and-wellness',
+  LOCAL_AND_COMMUNITY = 'local-and-community',
+}
+
+enum ConferenceCategory {
+  TECHNOLOGY_AND_INNOVATION = 'technology-and-innovation',
+  BUSINESS_AND_FINANCE = 'business-and-finance',
+  HEALTHCARE_AND_SCIENCE = 'healthcare-and-science',
+  EDUCATION_AND_LEARNING = 'education-and-learning',
+  MARKETING_AND_MEDIA = 'marketing-and-media',
+}
+
+enum NetworkingCategory {
+  INDUSTRY_SPECIFIC = 'industry-specific',
+  CAREER_DEVELOPMENT = 'career-development',
+  INVESTOR_AND_STARTUPS = 'investor-and-startups',
+  SOCIAL_IMPACT = 'social-impact',
+  PERSONAL_DEVELOPMENT = 'personal-development',
+}
+
+enum MeetupCategory {
+  HOBBIES_AND_INTERESTS = 'hobbies-and-interests',
+  PROFESSIONAL_GROUPS = 'professional-groups',
+  SOCIAL_GATHERING = 'social-gathering',
+  EDUCATION_AND_SKILLS = 'education-and-skills',
+  FAMILY_AND_KIDS = 'family-and-kids',
+}
+
+enum Web3Category {
+  BLOCKCHAIN_AND_CRYPTOCURRENCY = 'blockchain-and-cryptocurrency',
+  METAVERSE_AND_VR = 'metaverse-and-vr',
+  DEFI_AND_FINANCE = 'defi-and-finance',
+  DAO_AND_GOVERNANCE = 'dao-and-governance',
+  WEB3_STARTUPS = 'web3-startups',
+}
+
+enum EntertainmentCategory {
+  LIVE_MUSIC = 'live-music',
+  COMEDY_SHOWS = 'comedy-shows',
+  THEATRE_AND_PERFORMANCE = 'theatre-and-performance',
+  MOVIES = 'movies',
+  NIGHTLIFE_AND_CLUBBING = 'nightlife-and-clubbing',
+}
+
+export const eventSubCategories = {
+  festival: Object.values(FestivalCategory),
+  conference: Object.values(ConferenceCategory),
+  networking: Object.values(NetworkingCategory),
+  meetup: Object.values(MeetupCategory),
+  web3: Object.values(Web3Category),
+  entertainment: Object.values(EntertainmentCategory),
+} as const satisfies Record<IEventCategory, string[]>
+
+export type IEventSubCategory =
+  (typeof eventSubCategories)[keyof typeof eventSubCategories][number]
+
+export async function getEventCategories() {
+  return eventCategories
+}
+
+export async function getEventSubCategories(category: IEventCategory) {
+  return eventSubCategories[category]
+}
+
 export interface IEventDoc {
   dataType: 'event-profile'
   descriptionUrl: string
@@ -59,6 +138,8 @@ export interface IEventDoc {
   eventPermissions?: Pick<IEventRoles, 'role' | 'permissions' | 'endTime'>
   contractAddress: string
   collection: string
+  category: IEventCategory
+  subCategory?: IEventSubCategory
 }
 
 export interface ITicketDoc {
