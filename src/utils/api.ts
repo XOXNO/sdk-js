@@ -142,7 +142,7 @@ export class XOXNOClient {
         message = text
       }
 
-      throw new Error(message.message)
+      throw new Error(`${path}: ${message.message}`)
     }
 
     return res.json() as T
