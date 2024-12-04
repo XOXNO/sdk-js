@@ -139,10 +139,12 @@ export class XOXNOClient {
       try {
         message = JSON.parse(text)
       } catch (_error) {
-        message = text
+        message = { message: text }
       }
 
-      throw new Error(`${path}: ${message.message}`)
+      throw new Error(
+        `${path}: ${res.status};${res.statusText};${message.message}`
+      )
     }
 
     return res.json() as T
