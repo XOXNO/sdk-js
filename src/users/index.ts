@@ -448,10 +448,12 @@ export class UserModule {
     top,
     skip,
     orderBy,
+    orderDirection,
   }: {
     top: number
     skip: number
     orderBy: string
+    orderDirection?: string
   }): Promise<UserStats[]> => {
     if (top && top > 35) {
       throw new Error('Top cannot be greater than 100')
@@ -461,7 +463,8 @@ export class UserModule {
       params: {
         top: top,
         skip: skip,
-        orderBy: orderBy ?? 'totalVolume',
+        orderBy: orderBy,
+        orderDirection: orderDirection ?? 'desc',
       },
       next: {
         tags: ['/user/stats'],
