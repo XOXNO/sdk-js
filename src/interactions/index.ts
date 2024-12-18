@@ -869,7 +869,7 @@ export class SCInteraction {
       auctionID,
       auction?.auctioned_token_type ?? collection,
       auction?.auctioned_token_nonce ?? nonce,
-      quantity ?? 1,
+      quantity,
     ])
 
     if (sender.nonce) {
@@ -879,12 +879,8 @@ export class SCInteraction {
     if (token === 'EGLD') {
       interaction.withValue(
         bigNumber
-          ? TokenTransfer.egldFromBigInteger(
-              new BigNumber(amount).multipliedBy(quantity)
-            )
-          : TokenTransfer.egldFromAmount(
-              new BigNumber(amount).multipliedBy(quantity)
-            )
+          ? TokenTransfer.egldFromBigInteger(amount)
+          : TokenTransfer.egldFromAmount(amount)
       )
     } else {
       if (!bigNumber) {
