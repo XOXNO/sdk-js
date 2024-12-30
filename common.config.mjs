@@ -14,6 +14,12 @@ export default {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    fallback: {
+      fs: false,
+      crypto: false,
+      stream: false,
+      path: false,
+    },
   },
   optimization: {
     minimize: true,
