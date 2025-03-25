@@ -127,7 +127,7 @@ export interface IEventDoc {
     alternativeTitle?: string
   }
   creatorProfile: CreatorProfile
-  guestSummary: {
+  guestSummary?: {
     count: number
     guests: Owner[]
   }
