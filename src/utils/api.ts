@@ -101,6 +101,12 @@ export class XOXNOClient {
     path: string,
     options: Record<string, any> = {}
   ): Promise<T> => {
+    const authHeader = (options?.headers as { Authorization?: string })
+      .Authorization
+
+    const Authorization =
+      authHeader === 'Bearer undefined' ? undefined : authHeader
+
     const headers = {
       'Accept-Encoding': 'gzip,deflate,br',
       Referer: 'https://xoxno.sdk',
@@ -108,7 +114,8 @@ export class XOXNOClient {
       ...(options.method === 'POST'
         ? { 'Content-Type': 'application/json' }
         : {}),
-      ...((options.headers as object) ?? {}),
+      // ...((options.headers as object) ?? {}),
+      ...(Authorization ? { Authorization } : {}),
     }
     const shouldInsertOrigin = typeof path === 'string' && path.startsWith('/')
     const url = `${shouldInsertOrigin ? `${this.apiUrl}${path}` : path}${
