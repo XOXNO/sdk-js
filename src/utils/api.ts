@@ -102,7 +102,7 @@ export class XOXNOClient {
     options: Record<string, any> = {}
   ): Promise<T> => {
     const authHeader = (options?.headers as { Authorization?: string })
-      .Authorization
+      ?.Authorization
 
     const Authorization =
       authHeader === 'Bearer undefined' ? undefined : authHeader
