@@ -66,6 +66,7 @@ export interface StakingSummaryPools {
   hasUnboundPeriod: boolean
   unBoundPeriod: number
   stakingEnabled: boolean
+  owner: string
 }
 
 export enum StakingStatus {
