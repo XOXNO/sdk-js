@@ -473,6 +473,7 @@ export type ShortCollectionInfo = Pick<
 > & { collectionSize: number; holderCount: number; followCount: number }
 
 export type TradingActivity = {
+  id: string
   txHash: string
   eventIdentifier: string
   timestamp: number
