@@ -1,22 +1,34 @@
 import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction'
 import type { TypedOutcomeBundle } from '@multiversx/sdk-core/out/smartcontracts/interface'
-import { ResultsParser } from '@multiversx/sdk-core/out/smartcontracts/resultsParser'
+import type { ResultsParser } from '@multiversx/sdk-core/out/smartcontracts/resultsParser'
 import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract'
 import type { ContractQueryResponse } from '@multiversx/sdk-network-providers/out/contractQueryResponse'
 import type { INetworkProvider } from '@multiversx/sdk-network-providers/out/interface'
-import { ProxyNetworkProvider } from '@multiversx/sdk-network-providers/out/proxyNetworkProvider'
 
 import { XOXNOClient } from '..'
 
 export class ContractQueryRunner {
   private readonly proxy: INetworkProvider
-  private readonly parser: ResultsParser = new ResultsParser()
+  private readonly parser: ResultsParser
 
-  constructor() {
+  private constructor(proxy: INetworkProvider, parser: ResultsParser) {
+    this.proxy = proxy
+    this.parser = parser
+  }
+
+  static async init() {
+    const { ProxyNetworkProvider } = await import(
+      '@multiversx/sdk-network-providers/out/proxyNetworkProvider'
+    )
+    const { ResultsParser } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/resultsParser'
+    )
     const api = XOXNOClient.getInstance().config.gatewayUrl
-    this.proxy = new ProxyNetworkProvider(api, {
+    const proxy = new ProxyNetworkProvider(api, {
       timeout: 10000,
     })
+
+    return new ContractQueryRunner(proxy, new ResultsParser())
   }
 
   async runQuery(

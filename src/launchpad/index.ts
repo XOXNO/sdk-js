@@ -11,14 +11,13 @@ import { getSmartContract } from '../utils/SmartContractService'
  */
 export class LaunchpadModule {
   private minter: SmartContract
-  private call: ContractQueryRunner
+
   /**
    * @constructor
    * @param {SmartContract} minterAbiXOXNO - The minter smart contract instance.
    */
   constructor(minterAbiXOXNO: SmartContract) {
     this.minter = minterAbiXOXNO
-    this.call = new ContractQueryRunner()
   }
 
   /**
@@ -28,7 +27,8 @@ export class LaunchpadModule {
    * @returns {Promise<any>} The result of the interaction.
    */
   private async getResult(interaction: Interaction) {
-    return await this.call.runQuery(this.minter, interaction)
+    const call = await ContractQueryRunner.init()
+    return await call.runQuery(this.minter, interaction)
   }
 
   /**
@@ -39,7 +39,7 @@ export class LaunchpadModule {
    */
   static async init(minterSC: string) {
     const minterAbiXOXNO = await SmartContractAbis.getMinter()
-    const minter_abi = getSmartContract(minterAbiXOXNO, minterSC)
+    const minter_abi = await getSmartContract(minterAbiXOXNO, minterSC)
     return new LaunchpadModule(minter_abi)
   }
 

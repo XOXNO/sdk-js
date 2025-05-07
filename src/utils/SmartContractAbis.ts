@@ -1,4 +1,4 @@
-import { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+import type { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
 
 import * as marketplace from '../abis/marketplace-xoxno.json'
 import * as minter from '../abis/minter.json'
@@ -22,6 +22,9 @@ export class SmartContractAbis {
       //     },
       //   }
       // );
+      const { AbiRegistry } = await import(
+        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+      )
       const abiRegistry = AbiRegistry.create(marketplace)
       SmartContractAbis.market = abiRegistry
     }
@@ -38,6 +41,9 @@ export class SmartContractAbis {
             tags: ['getManager'],
           },
         }
+      )
+      const { AbiRegistry } = await import(
+        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(data)
       SmartContractAbis.manager = abiRegistry
@@ -56,6 +62,9 @@ export class SmartContractAbis {
       //     },
       //   }
       // );
+      const { AbiRegistry } = await import(
+        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+      )
       const abiRegistry = AbiRegistry.create(minter)
       SmartContractAbis.minter = abiRegistry
     }
@@ -72,6 +81,9 @@ export class SmartContractAbis {
             tags: ['getStaking'],
           },
         }
+      )
+      const { AbiRegistry } = await import(
+        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(data)
       SmartContractAbis.staking = abiRegistry
@@ -90,6 +102,9 @@ export class SmartContractAbis {
           },
         }
       )
+      const { AbiRegistry } = await import(
+        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+      )
       const abiRegistry = AbiRegistry.create(data)
       SmartContractAbis.exchange = abiRegistry
     }
@@ -107,6 +122,9 @@ export class SmartContractAbis {
             /* revalidate: 500, */
           },
         }
+      )
+      const { AbiRegistry } = await import(
+        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(data)
       SmartContractAbis.p2p = abiRegistry

@@ -1,34 +1,8 @@
 import type { Interaction } from '@multiversx/sdk-core/out'
-import { BytesValue, VariadicValue } from '@multiversx/sdk-core/out'
-import { Address } from '@multiversx/sdk-core/out/address'
 import type { IPlainTransactionObject } from '@multiversx/sdk-core/out/interface'
 import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract'
-import type { AbiRegistry } from '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
-import {
-  BooleanType,
-  BooleanValue,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem/boolean'
-import {
-  Field,
-  FieldDefinition,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem/fields'
-import {
-  BigUIntType,
-  BigUIntValue,
-  U64Type,
-  U64Value,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical'
-import {
-  Struct,
-  StructType,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem/struct'
-import {
-  TokenIdentifierType,
-  TokenIdentifierValue,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem/tokenIdentifier'
-import { Token, TokenTransfer } from '@multiversx/sdk-core/out/tokens'
-import { SmartContractTransactionsFactory } from '@multiversx/sdk-core/out/transactionsFactories/smartContractTransactionsFactory'
-import { TransactionsFactoryConfig } from '@multiversx/sdk-core/out/transactionsFactories/transactionsFactoryConfig'
+import type { Struct } from '@multiversx/sdk-core/out/smartcontracts/typesystem/struct'
+import type { SmartContractTransactionsFactory } from '@multiversx/sdk-core/out/transactionsFactories/smartContractTransactionsFactory'
 import BigNumber from 'bignumber.js'
 
 import type { NftData } from '..'
@@ -52,7 +26,6 @@ import { getSmartContract } from '../utils/SmartContractService'
 
 export class SCInteraction {
   private xo: SmartContract
-  private call: ContractQueryRunner
   private api: XOXNOClient
   private config: {
     mediaUrl: string
@@ -65,30 +38,46 @@ export class SCInteraction {
     P2P_SC: string
   }
   private factory: SmartContractTransactionsFactory
-  private constructor(abi: AbiRegistry) {
-    this.config = XOXNOClient.getInstance().config
-    const xo_abi = getSmartContract(abi, this.config.XO_SC)
-    this.xo = xo_abi
-    this.call = new ContractQueryRunner()
-    this.api = XOXNOClient.getInstance()
-    const factoryConfig = new TransactionsFactoryConfig({
-      chainID: this.api.chain.valueOf(),
-    })
-
-    this.factory = new SmartContractTransactionsFactory({
-      config: factoryConfig,
-      abi,
-    })
+  private constructor(
+    client: XOXNOClient,
+    sc: SmartContract,
+    factory: SmartContractTransactionsFactory
+  ) {
+    this.config = client.config
+    this.xo = sc
+    this.api = client
+    this.factory = factory
   }
 
   static async init() {
     const marketAbiXOXNO = await SmartContractAbis.getMarket()
 
-    return new SCInteraction(marketAbiXOXNO)
+    const client = XOXNOClient.getInstance()
+
+    const xo_abi = await getSmartContract(marketAbiXOXNO, client.config.XO_SC)
+
+    const { SmartContractTransactionsFactory } = await import(
+      '@multiversx/sdk-core/out/transactionsFactories/smartContractTransactionsFactory'
+    )
+    const { TransactionsFactoryConfig } = await import(
+      '@multiversx/sdk-core/out/transactionsFactories/transactionsFactoryConfig'
+    )
+
+    const factoryConfig = new TransactionsFactoryConfig({
+      chainID: client.chain.valueOf(),
+    })
+
+    const factory = new SmartContractTransactionsFactory({
+      config: factoryConfig,
+      abi: marketAbiXOXNO,
+    })
+
+    return new SCInteraction(client, xo_abi, factory)
   }
 
   private async getResult(interaction: Interaction) {
-    return await this.call.runQuery(this.xo, interaction)
+    const call = await ContractQueryRunner.init()
+    return await call.runQuery(this.xo, interaction)
   }
 
   /**
@@ -143,6 +132,9 @@ export class SCInteraction {
     if (!result?.firstValue) {
       return 0
     }
+    const { BigUIntValue } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical'
+    )
     return new BigUIntValue(result.firstValue.valueOf().amount)
       .valueOf()
       .shiftedBy(-18)
@@ -171,6 +163,9 @@ export class SCInteraction {
     const body = result.firstValue?.valueOf()
     body.offer_id = parseInt(body.offer_id.valueOf())
     body.marketplace = 'xoxno'
+    const { BigUIntValue } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical'
+    )
     body.short_price = parseFloat(
       new BigUIntValue(body.price).valueOf().shiftedBy(-18).toString()
     )
@@ -326,7 +321,7 @@ export class SCInteraction {
    * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
-  public withdrawAuctions({
+  public async withdrawAuctions({
     auctionIDs,
     sender,
     market = 'xoxno',
@@ -336,7 +331,14 @@ export class SCInteraction {
     sender: WithSenderAndNonce
     signature?: string
     market?: string
-  }): IPlainTransactionObject[] {
+  }): Promise<IPlainTransactionObject[]> {
+    const { BytesValue } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes'
+    )
+    const { U64Value } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical'
+    )
+    const { Address } = await import('@multiversx/sdk-core/out/address')
     if (market === 'xoxno') {
       const interaction = this.xo.methodsExplicit.withdraw([
         BytesValue.fromHex(signature!),
@@ -400,11 +402,12 @@ export class SCInteraction {
    * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
-  public withdrawGlobalOffer(
+  public async withdrawGlobalOffer(
     offerID: number,
     market = 'xoxno',
     senderNonce: WithSenderAndNonce
-  ): IPlainTransactionObject {
+  ): Promise<IPlainTransactionObject> {
+    const { Address } = await import('@multiversx/sdk-core/out/address')
     if (market != 'xoxno') {
       throw Error('Marketplace not supported')
     }
@@ -429,7 +432,7 @@ export class SCInteraction {
    * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
-  public acceptGlobalOffer({
+  public async acceptGlobalOffer({
     signature,
     offer_id,
     auction_ids_opt,
@@ -437,7 +440,9 @@ export class SCInteraction {
     nfts,
     address,
     nonce,
-  }: AcceptGlobalOffer & WithSenderAndNonce): IPlainTransactionObject {
+  }: AcceptGlobalOffer & WithSenderAndNonce): Promise<IPlainTransactionObject> {
+    const { Address } = await import('@multiversx/sdk-core/out/address')
+    const { TokenTransfer } = await import('@multiversx/sdk-core/out')
     if (market != 'xoxno') {
       throw Error('Marketplace not supported')
     }
@@ -483,7 +488,7 @@ export class SCInteraction {
    * @param depositAmount The deposit amount
    * @returns {IPlainTransactionObject} The interaction object of the smart contract
    * */
-  public sendGlobalOffer({
+  public async sendGlobalOffer({
     payment_token,
     payment_nonce,
     price,
@@ -493,7 +498,9 @@ export class SCInteraction {
     depositAmount,
     address,
     nonce,
-  }: SendGlobalOffer & WithSenderAndNonce): IPlainTransactionObject {
+  }: SendGlobalOffer & WithSenderAndNonce): Promise<IPlainTransactionObject> {
+    const { Address } = await import('@multiversx/sdk-core/out/address')
+    const { TokenTransfer } = await import('@multiversx/sdk-core/out')
     const interaction = this.xo.methods.sendGlobalOffer([
       payment_token,
       payment_nonce,
@@ -527,7 +534,7 @@ export class SCInteraction {
    * @param depositAmount The deposit amount
    * @returns {IPlainTransactionObject} The interaction object of the smart contract
    * */
-  public sendCustomOffer({
+  public async sendCustomOffer({
     payment_token,
     payment_nonce,
     price,
@@ -536,7 +543,9 @@ export class SCInteraction {
     depositAmount,
     address,
     nonce,
-  }: SendCustomOffer & WithSenderAndNonce): IPlainTransactionObject {
+  }: SendCustomOffer & WithSenderAndNonce): Promise<IPlainTransactionObject> {
+    const { Address } = await import('@multiversx/sdk-core/out/address')
+    const { TokenTransfer } = await import('@multiversx/sdk-core/out')
     const interaction = this.xo.methods.sendOffer([
       payment_token,
       payment_nonce,
@@ -567,11 +576,12 @@ export class SCInteraction {
    * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
-  public withdrawCustomOffer(
+  public async withdrawCustomOffer(
     offerID: number,
     senderNonce: WithSenderAndNonce,
     market: string
-  ): IPlainTransactionObject {
+  ): Promise<IPlainTransactionObject> {
+    const { Address } = await import('@multiversx/sdk-core/out/address')
     if (market === 'xoxno') {
       const interaction = this.xo.methods.withdrawOffer([offerID])
       if (senderNonce.nonce) {
@@ -595,12 +605,14 @@ export class SCInteraction {
    * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
-  public declineCustomOffer(
+  public async declineCustomOffer(
     offerID: number,
     sender: WithSenderAndNonce,
     nft: NftData,
     market: string
-  ): IPlainTransactionObject {
+  ): Promise<IPlainTransactionObject> {
+    const { Address } = await import('@multiversx/sdk-core/out/address')
+    const { TokenTransfer } = await import('@multiversx/sdk-core/out')
     if (market == 'xoxno') {
       const interaction = nft.onSale
         ? this.xo.methods.declineOffer([offerID, nft.saleInfo?.auctionId])
@@ -631,12 +643,14 @@ export class SCInteraction {
    * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
-  public acceptCustomOffer(
+  public async acceptCustomOffer(
     offerID: number,
     sender: WithSenderAndNonce,
     nft: NftData,
     market: string
-  ): IPlainTransactionObject {
+  ): Promise<IPlainTransactionObject> {
+    const { Address } = await import('@multiversx/sdk-core/out/address')
+    const { TokenTransfer } = await import('@multiversx/sdk-core/out')
     if (market == 'xoxno') {
       const interaction = nft.onSale
         ? this.xo.methods.acceptOffer([offerID, nft.saleInfo?.auctionId])
@@ -675,11 +689,12 @@ export class SCInteraction {
    * Finally, it returns the resulting interaction with the specified chainID and gas limit.
    */
 
-  public endAuction(
+  public async endAuction(
     auctionID: number,
     sender: WithSenderAndNonce,
     market = 'xoxno'
-  ): IPlainTransactionObject {
+  ): Promise<IPlainTransactionObject> {
+    const { Address } = await import('@multiversx/sdk-core/out/address')
     if (market == 'xoxno') {
       const interaction = this.xo.methods.endAuction([auctionID])
 
@@ -707,13 +722,16 @@ export class SCInteraction {
    * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
-  public bidOnAuctionId(
+  public async bidOnAuctionId(
     auctionID: number,
     collection: string,
     nonce: number,
     payment: Payment,
     sender: WithSenderAndNonce
-  ): IPlainTransactionObject {
+  ): Promise<IPlainTransactionObject> {
+    const { Address } = await import('@multiversx/sdk-core/out/address')
+    const { TokenTransfer } = await import('@multiversx/sdk-core/out')
+    const { Token } = await import('@multiversx/sdk-core/out/tokens')
     const isEgld = payment.collection == 'EGLD'
     const tx = this.factory.createTransactionForExecute({
       sender: new Address(sender.address),
@@ -750,11 +768,14 @@ export class SCInteraction {
    * @returns {IPlainTransactionObject} The interaction object of the smart contract
    */
 
-  public bulkBuy(
+  public async bulkBuy(
     auctionIDs: number[],
     payment: Payment,
     sender: WithSenderAndNonce
-  ): IPlainTransactionObject {
+  ): Promise<IPlainTransactionObject> {
+    const { Address } = await import('@multiversx/sdk-core/out/address')
+    const { TokenTransfer } = await import('@multiversx/sdk-core/out')
+
     const interaction = this.xo.methods.bulkBuy(auctionIDs)
 
     if (sender.nonce) {
@@ -837,6 +858,8 @@ export class SCInteraction {
     decimals?: number
     sender: WithSenderAndNonce
   }): Promise<IPlainTransactionObject> {
+    const { Address } = await import('@multiversx/sdk-core/out/address')
+    const { TokenTransfer } = await import('@multiversx/sdk-core/out')
     if (market !== 'xoxno') {
       throw new Error('Market not supported')
     }
@@ -925,6 +948,22 @@ export class SCInteraction {
     sender: WithSenderAndNonce,
     marketplace: string
   ): Promise<IPlainTransactionObject> {
+    const { BigUIntType, U64Type, U64Value, BigUIntValue } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical'
+    )
+    const { Field, FieldDefinition } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/fields'
+    )
+    const { Struct, StructType } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/struct'
+    )
+    const { TokenIdentifierType, TokenIdentifierValue } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/tokenIdentifier'
+    )
+    const { VariadicValue } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/variadic'
+    )
+    const { Address } = await import('@multiversx/sdk-core/out/address')
     if (!marketplace) {
       throw Error('Market is required')
     }
@@ -969,6 +1008,23 @@ export class SCInteraction {
     listings: NewListingArgs[],
     sender: WithSenderAndNonce
   ): Promise<IPlainTransactionObject> {
+    const { BigUIntType, U64Type, U64Value, BigUIntValue } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical'
+    )
+    const { Field, FieldDefinition } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/fields'
+    )
+    const { Struct, StructType } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/struct'
+    )
+    const { TokenIdentifierType, TokenIdentifierValue } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/tokenIdentifier'
+    )
+    const { BooleanType, BooleanValue } = await import(
+      '@multiversx/sdk-core/out/smartcontracts/typesystem/boolean'
+    )
+    const { TokenTransfer } = await import('@multiversx/sdk-core/out')
+    const { Address } = await import('@multiversx/sdk-core/out/address')
     const fooType = new StructType('BulkListing', [
       new FieldDefinition('min_bid', '', new BigUIntType()),
       new FieldDefinition('max_bid', '', new BigUIntType()),
