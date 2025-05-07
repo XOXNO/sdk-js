@@ -24,4 +24,8 @@ export default {
   optimization: {
     minimize: true,
   },
+  externals: {
+    '@multiversx/sdk-core': '@multiversx/sdk-core',
+    '@multiversx/sdk-network-providers': '@multiversx/sdk-network-providers',
+  },
 }
