@@ -27,6 +27,7 @@ import { getSmartContract } from '../utils/SmartContractService'
 export class SCInteraction {
   private xo: SmartContract
   private api: XOXNOClient
+  private runner: ContractQueryRunner
   private config: {
     mediaUrl: string
     XO_SC: string
@@ -41,12 +42,14 @@ export class SCInteraction {
   private constructor(
     client: XOXNOClient,
     sc: SmartContract,
-    factory: SmartContractTransactionsFactory
+    factory: SmartContractTransactionsFactory,
+    runner: ContractQueryRunner
   ) {
     this.config = client.config
     this.xo = sc
     this.api = client
     this.factory = factory
+    this.runner = runner
   }
 
   static async init() {
@@ -72,12 +75,13 @@ export class SCInteraction {
       abi: marketAbiXOXNO,
     })
 
-    return new SCInteraction(client, xo_abi, factory)
+    const call = await ContractQueryRunner.init()
+
+    return new SCInteraction(client, xo_abi, factory, call)
   }
 
   private async getResult(interaction: Interaction) {
-    const call = await ContractQueryRunner.init()
-    return await call.runQuery(this.xo, interaction)
+    return await this.runner.runQuery(this.xo, interaction)
   }
 
   /**
