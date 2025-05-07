@@ -17,7 +17,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "declaration": true, // Set to false if not developing a library
-    "declarationMap": true
+    "declarationMap": false
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "**/*.test.d.ts", "**/*.test.ts"]
