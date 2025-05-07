@@ -23,6 +23,7 @@ export class SmartContractAbis {
       //   }
       // );
       const { AbiRegistry } = await import(
+        /*webpackIgnore: true*/
         '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(marketplace)
@@ -43,6 +44,7 @@ export class SmartContractAbis {
         }
       )
       const { AbiRegistry } = await import(
+        /*webpackIgnore: true*/
         '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(data)
@@ -63,6 +65,7 @@ export class SmartContractAbis {
       //   }
       // );
       const { AbiRegistry } = await import(
+        /*webpackIgnore: true*/
         '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(minter)
@@ -83,6 +86,7 @@ export class SmartContractAbis {
         }
       )
       const { AbiRegistry } = await import(
+        /*webpackIgnore: true*/
         '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(data)
@@ -103,6 +107,7 @@ export class SmartContractAbis {
         }
       )
       const { AbiRegistry } = await import(
+        /*webpackIgnore: true*/
         '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(data)
@@ -124,6 +129,7 @@ export class SmartContractAbis {
         }
       )
       const { AbiRegistry } = await import(
+        /*webpackIgnore: true*/
         '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(data)
