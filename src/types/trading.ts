@@ -39,6 +39,7 @@ export interface TradingActivityQueryFilter {
     activityAddress?: string[]
     source?: Marketplace[]
     activityType?: NftActivityType[]
+    eventIdentifier?: string[]
     from?: string[]
     to?: string[]
     activityData?: {
@@ -66,6 +67,7 @@ export interface TradincActivityArgs {
   /** The marketplaces to fetch the trading activity from */
   source?: Marketplace[]
   activityType?: NftActivityType[]
+  eventIdentifier?: string[]
   /** The tokens to fetch the trading activity from */
   placedInToken?: string[]
   /** The price range to fetch the trading activity from */

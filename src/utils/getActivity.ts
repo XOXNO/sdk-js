@@ -48,6 +48,7 @@ export const getActivity = async (
       activityAddress: args.wallets || undefined,
       source: args.source || undefined,
       activityType: args.activityType || undefined,
+      eventIdentifier: args.eventIdentifier || undefined,
       range: ranges,
     },
     strictSelect: args.strictSelect,
