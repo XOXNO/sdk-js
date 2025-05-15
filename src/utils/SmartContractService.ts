@@ -9,7 +9,8 @@ export const getSmartContract = async (
     '@multiversx/sdk-core/out/smartcontracts/smartContract'
   )
   const { Address } = await import(
-    /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+    /*webpackIgnore: true*/
+    '@multiversx/sdk-core/out/address'
   )
   return new SmartContract({
     address: new Address(address),

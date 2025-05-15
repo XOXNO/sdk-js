@@ -349,7 +349,8 @@ export class SCInteraction {
       '@multiversx/sdk-core/out/smartcontracts/typesystem/numerical'
     )
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     if (market === 'xoxno') {
       const interaction = this.xo.methodsExplicit.withdraw([
@@ -420,7 +421,8 @@ export class SCInteraction {
     senderNonce: WithSenderAndNonce
   ): Promise<IPlainTransactionObject> {
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     if (market != 'xoxno') {
       throw Error('Marketplace not supported')
@@ -456,10 +458,12 @@ export class SCInteraction {
     nonce,
   }: AcceptGlobalOffer & WithSenderAndNonce): Promise<IPlainTransactionObject> {
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     const { TokenTransfer } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out'
     )
     if (market != 'xoxno') {
       throw Error('Marketplace not supported')
@@ -518,10 +522,12 @@ export class SCInteraction {
     nonce,
   }: SendGlobalOffer & WithSenderAndNonce): Promise<IPlainTransactionObject> {
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     const { TokenTransfer } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out'
     )
     const interaction = this.xo.methods.sendGlobalOffer([
       payment_token,
@@ -567,10 +573,12 @@ export class SCInteraction {
     nonce,
   }: SendCustomOffer & WithSenderAndNonce): Promise<IPlainTransactionObject> {
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     const { TokenTransfer } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out'
     )
     const interaction = this.xo.methods.sendOffer([
       payment_token,
@@ -608,7 +616,8 @@ export class SCInteraction {
     market: string
   ): Promise<IPlainTransactionObject> {
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     if (market === 'xoxno') {
       const interaction = this.xo.methods.withdrawOffer([offerID])
@@ -640,10 +649,12 @@ export class SCInteraction {
     market: string
   ): Promise<IPlainTransactionObject> {
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     const { TokenTransfer } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out'
     )
     if (market == 'xoxno') {
       const interaction = nft.onSale
@@ -682,10 +693,12 @@ export class SCInteraction {
     market: string
   ): Promise<IPlainTransactionObject> {
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     const { TokenTransfer } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out'
     )
     if (market == 'xoxno') {
       const interaction = nft.onSale
@@ -731,7 +744,8 @@ export class SCInteraction {
     market = 'xoxno'
   ): Promise<IPlainTransactionObject> {
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     if (market == 'xoxno') {
       const interaction = this.xo.methods.endAuction([auctionID])
@@ -768,10 +782,12 @@ export class SCInteraction {
     sender: WithSenderAndNonce
   ): Promise<IPlainTransactionObject> {
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     const { Token, TokenTransfer } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/tokens'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/tokens'
     )
     const isEgld = payment.collection == 'EGLD'
     const tx = this.factory.createTransactionForExecute({
@@ -815,10 +831,12 @@ export class SCInteraction {
     sender: WithSenderAndNonce
   ): Promise<IPlainTransactionObject> {
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     const { TokenTransfer } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out'
     )
 
     const interaction = this.xo.methods.bulkBuy(auctionIDs)
@@ -904,10 +922,12 @@ export class SCInteraction {
     sender: WithSenderAndNonce
   }): Promise<IPlainTransactionObject> {
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     const { TokenTransfer } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out'
     )
     if (market !== 'xoxno') {
       throw new Error('Market not supported')
@@ -1018,7 +1038,8 @@ export class SCInteraction {
       '@multiversx/sdk-core/out/smartcontracts/typesystem/variadic'
     )
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     if (!marketplace) {
       throw Error('Market is required')
@@ -1085,10 +1106,12 @@ export class SCInteraction {
       '@multiversx/sdk-core/out/smartcontracts/typesystem/boolean'
     )
     const { TokenTransfer } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out'
     )
     const { Address } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
+      /*webpackIgnore: true*/
+      '@multiversx/sdk-core/out/address'
     )
     const fooType = new StructType('BulkListing', [
       new FieldDefinition('min_bid', '', new BigUIntType()),
