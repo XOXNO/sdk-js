@@ -1,4 +1,4 @@
-import type { BytesValue } from '@multiversx/sdk-core/out'
+import type { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes'
 
 export type Offer = {
   offer_id: number
