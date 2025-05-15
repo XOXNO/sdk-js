@@ -18,12 +18,10 @@ export class ContractQueryRunner {
 
   static async init() {
     const { ProxyNetworkProvider } = await import(
-      /*webpackIgnore: true*/
-      '@multiversx/sdk-network-providers/out/proxyNetworkProvider'
+      /*webpackIgnore: true*/ '@multiversx/sdk-network-providers/out/proxyNetworkProvider'
     )
     const { ResultsParser } = await import(
-      /*webpackIgnore: true*/
-      '@multiversx/sdk-core/out/smartcontracts/resultsParser'
+      /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/resultsParser'
     )
     const api = XOXNOClient.getInstance().config.gatewayUrl
     const proxy = new ProxyNetworkProvider(api, {

@@ -23,8 +23,7 @@ export class SmartContractAbis {
       //   }
       // );
       const { AbiRegistry } = await import(
-        /*webpackIgnore: true*/
-        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+        /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(marketplace)
       SmartContractAbis.market = abiRegistry
@@ -44,8 +43,7 @@ export class SmartContractAbis {
         }
       )
       const { AbiRegistry } = await import(
-        /*webpackIgnore: true*/
-        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+        /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(data)
       SmartContractAbis.manager = abiRegistry
@@ -65,8 +63,7 @@ export class SmartContractAbis {
       //   }
       // );
       const { AbiRegistry } = await import(
-        /*webpackIgnore: true*/
-        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+        /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(minter)
       SmartContractAbis.minter = abiRegistry
@@ -86,8 +83,7 @@ export class SmartContractAbis {
         }
       )
       const { AbiRegistry } = await import(
-        /*webpackIgnore: true*/
-        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+        /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(data)
       SmartContractAbis.staking = abiRegistry
@@ -107,8 +103,7 @@ export class SmartContractAbis {
         }
       )
       const { AbiRegistry } = await import(
-        /*webpackIgnore: true*/
-        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+        /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(data)
       SmartContractAbis.exchange = abiRegistry
@@ -129,8 +124,7 @@ export class SmartContractAbis {
         }
       )
       const { AbiRegistry } = await import(
-        /*webpackIgnore: true*/
-        '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
+        /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
       )
       const abiRegistry = AbiRegistry.create(data)
       SmartContractAbis.p2p = abiRegistry
