@@ -1,5 +1,5 @@
-import type { Interaction } from '@multiversx/sdk-core/out'
 import type { IPlainTransactionObject } from '@multiversx/sdk-core/out/interface'
+import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction'
 import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract'
 import type { Struct } from '@multiversx/sdk-core/out/smartcontracts/typesystem/struct'
 import type { SmartContractTransactionsFactory } from '@multiversx/sdk-core/out/transactionsFactories/smartContractTransactionsFactory'
@@ -770,10 +770,7 @@ export class SCInteraction {
     const { Address } = await import(
       /*webpackIgnore: true*/ '@multiversx/sdk-core/out/address'
     )
-    const { TokenTransfer } = await import(
-      /*webpackIgnore: true*/ '@multiversx/sdk-core/out'
-    )
-    const { Token } = await import(
+    const { Token, TokenTransfer } = await import(
       /*webpackIgnore: true*/ '@multiversx/sdk-core/out/tokens'
     )
     const isEgld = payment.collection == 'EGLD'
