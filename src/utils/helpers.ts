@@ -13,6 +13,9 @@ export const getIdentifierFromColAndNonce = (
   return [collection, nonceToHex(nonce)].join('-')
 }
 
-export const isAddressValid = (address: string | Buffer): boolean => {
-  return address.includes('erd1') && address?.length === 62
+export const isAddressValid = (address: string): boolean => {
+  return (
+    (address.includes('erd1') && address?.length === 62) ||
+    /^0x[a-fA-F0-9]{64}$/.test(address)
+  )
 }
