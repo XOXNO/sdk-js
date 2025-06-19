@@ -1,9 +1,15 @@
 export const isValidCollectionTicker = (ticker: string): boolean => {
-  return /^[A-Z0-9]{3,10}-[a-z0-9]{6}$/.test(ticker)
+  const isSuiCollection =
+    /^0x[a-fA-F0-9]{1,64}::[a-zA-Z0-9_]+::[a-zA-Z0-9_]+(<.+>)?$/.test(ticker)
+  const isXoxnoCollection = /^[A-Z0-9]{3,10}-[a-z0-9]{6}$/.test(ticker)
+  return isSuiCollection || isXoxnoCollection
 }
 
 export const isValidNftIdentifier = (identifier: string): boolean => {
-  return /^[A-Za-z0-9]{3,10}-[A-Za-z0-9]{6}-[A-Za-z0-9]{2,7}(?:-\d+(?:-[A-Za-z0-9]+)?)?$/.test(
-    identifier
-  )
+  const isSuiNft = /^0x[a-fA-F0-9]{1,64}$/.test(identifier)
+  const isXoxnoNft =
+    /^[A-Za-z0-9]{3,10}-[A-Za-z0-9]{6}-[A-Za-z0-9]{2,7}(?:-\d+(?:-[A-Za-z0-9]+)?)?$/.test(
+      identifier
+    )
+  return isSuiNft || isXoxnoNft
 }

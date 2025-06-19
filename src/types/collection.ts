@@ -1,5 +1,6 @@
 import type { IEventDoc } from './event'
 import type {
+  Chain,
   CollectionInfo,
   Media,
   NftData,
@@ -66,7 +67,18 @@ export interface CollectionStatisticsProfile {
   mintData: MintStatistics
   other: OtherStatistics
 }
+export interface Rule {
+  type: 'kiosk_lock_rule' | 'royalty_rule'
+  amount_bp?: number
+  min_amount?: string
+}
 
+export interface TransferPolicy {
+  id: string
+  type: string
+  rules: Rule[]
+  is_origin_byte: boolean
+}
 export interface ICollectionProfile {
   dataType: 'collectionProfile'
   collection: string
@@ -84,6 +96,10 @@ export interface ICollectionProfile {
   id: string
   socials: ISocials
   type: string
+  chain: Chain
+  transferPolicies: TransferPolicy[]
+  royalty?: number
+  minSalePrice?: string
   lastVerifiedTimestamp: number
   lastVerifiedBy: string
   customConfig?: {
