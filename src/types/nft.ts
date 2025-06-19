@@ -69,7 +69,7 @@ export interface GameData {
   value: number
 }
 
-export enum Chain {
+export enum ChainID {
   MVX = 'MVX',
   SUI = 'SUI',
 }
@@ -89,7 +89,7 @@ export interface NftData {
   onSale: boolean
   metadata: NFTMetadata
   media: Media
-  chain?: Chain
+  chain?: ChainID
   attributes?: string
   creator?: Owner
   hasOffers?: boolean
