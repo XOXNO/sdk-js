@@ -14,8 +14,8 @@ export const getIdentifierFromColAndNonce = (
 }
 
 export const isAddressValid = (address: string): boolean => {
-  return (
-    (address.includes('erd1') && address?.length === 62) ||
-    /^0x[a-fA-F0-9]{64}$/.test(address)
-  )
+  return address
+    ? (address.includes('erd1') && address.length === 62) ||
+        /^0x[a-fA-F0-9]{64}$/.test(address)
+    : false
 }
