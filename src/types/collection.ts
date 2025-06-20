@@ -767,6 +767,7 @@ export type GlobalOffers = {
   isActive: boolean
   floorPrice: number
   floorPriceMargin: number | null
+  chain?: ActivityChain
 }
 
 export type GlobalOfferOwner = {
