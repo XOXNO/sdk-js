@@ -89,6 +89,7 @@ export interface UserInventory {
   profile: string
   banner: string
   value: number
+  chain?: ActivityChain
 }
 
 export interface UserOffers {
