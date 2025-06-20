@@ -214,7 +214,6 @@ export type CreatorProfile = {
   followCount: number
   creatorTag: string
   _ts: number
-  chain?: ActivityChain
 }
 
 export interface RewardStakinSummary {

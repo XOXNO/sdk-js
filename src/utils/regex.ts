@@ -1,6 +1,8 @@
 export const isValidCollectionTicker = (ticker: string): boolean => {
   const isSuiCollection =
-    /^0x[a-fA-F0-9]{1,64}::[a-zA-Z0-9_]+::[a-zA-Z0-9_]+(<.+>)?$/.test(ticker)
+    /^0x[a-fA-F0-9]{1,64}::[a-zA-Z0-9_]+::[a-zA-Z0-9_]+(<.+>)?$/.test(
+      decodeURIComponent(ticker)
+    )
   const isXoxnoCollection = /^[A-Z0-9]{3,10}-[a-z0-9]{6}$/.test(ticker)
   return isSuiCollection || isXoxnoCollection
 }
