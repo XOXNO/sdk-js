@@ -1,6 +1,6 @@
 import type { IEventDoc } from './event'
 import type {
-  ChainID,
+  ActivityChain,
   CollectionInfo,
   Media,
   NftData,
@@ -96,7 +96,7 @@ export interface ICollectionProfile {
   id: string
   socials: ISocials
   type: string
-  chain: ChainID
+  chain: ActivityChain
   transferPolicies: TransferPolicy[]
   royalty?: number
   minSalePrice?: string

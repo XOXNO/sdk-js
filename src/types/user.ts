@@ -1,5 +1,5 @@
 import type { ISocials } from './collection'
-import type { NftData, Owner } from './nft'
+import type { ActivityChain, NftData, Owner } from './nft'
 import type { StakingSummaryPools } from './staking'
 
 export interface BulkAccount {
@@ -211,6 +211,7 @@ export type CreatorProfile = {
   followCount: number
   creatorTag: string
   _ts: number
+  chain?: ActivityChain
 }
 
 export interface RewardStakinSummary {

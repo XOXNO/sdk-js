@@ -5,6 +5,11 @@ import type {
   MetadataAttribute,
 } from './collection'
 
+export enum ActivityChain {
+  MVX = 'MVX',
+  SUI = 'SUI',
+}
+
 export interface NFTAttribute extends MetadataAttribute {
   occurance: number
   frequency: number
@@ -69,11 +74,6 @@ export interface GameData {
   value: number
 }
 
-export enum ChainID {
-  MVX = 'MVX',
-  SUI = 'SUI',
-}
-
 export interface NftData {
   id: string
   name: string
@@ -89,7 +89,7 @@ export interface NftData {
   onSale: boolean
   metadata: NFTMetadata
   media: Media
-  chain?: ChainID
+  chain?: ActivityChain
   attributes?: string
   creator?: Owner
   hasOffers?: boolean
