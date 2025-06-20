@@ -264,7 +264,7 @@ export interface Max {
 }
 
 export interface UserStats {
-  wallet: Wallet
+  wallet: Wallet & { owned: number; listed: number; followCount: number }
   totalVolume: number
   totalTrades: number
   totalCollections: number
