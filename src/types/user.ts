@@ -304,17 +304,6 @@ export interface PriceData {
   >
 }
 
-export interface Wallet {
-  address: string
-  profile: string
-  username: string
-  isVerified: boolean
-  isCreator: boolean
-  owned: number
-  listed: number
-  followCount: number
-}
-
 export interface StakingCreatorInfo {
   address: string
   ownedPools: number[]
@@ -336,6 +325,7 @@ export interface Wallet {
   profile: string
   username: string
   isVerified: boolean
+  chain?: ActivityChain
 }
 
 export interface IOwnerInfo {

@@ -96,7 +96,7 @@ export interface ICollectionProfile {
   id: string
   socials: ISocials
   type: string
-  chain: ActivityChain
+  chain?: ActivityChain
   transferPolicies: TransferPolicy[]
   royalty?: number
   minSalePrice?: string
@@ -498,6 +498,7 @@ export type TradingActivity = {
   from: Owner
   to: Owner
   activityData: ActivityData
+  chain?: ActivityChain
 }
 
 export interface GetCollectionsArgs {
@@ -693,55 +694,6 @@ export type HoldedDetails = {
 
 export interface AvgHolder extends HoldedDetails {
   avgPerHodler: number
-}
-
-export type CollectionsSummary = {
-  data: CollectionsSummaryItem[]
-  count: number
-}
-
-export type CollectionsSummaryItem = {
-  Collection: string
-  TotalVolume: number
-  TotalTrades: number
-  DailyVolume: number | null
-  Last2DaysVolume: number | null
-  DailyTrades: number | null
-  Last2DaysTrades: number | null
-  WeekTrades: number
-  LastWeekTrades: number | null
-  WeekVolume: number
-  LastWeekVolume: number | null
-  WeeklyTradesMargin: number | null
-  DailyTradesMargin: number | null
-  WeeklyVolumeMargin: number | null
-  DailyVolumeEgldMargin: number | null
-  CollectionAthTrade: number
-  CollectionAthTxHash: string
-  Name: string
-  AthHash: string
-  Profile: string
-  Banner: string
-  isVerified: boolean
-  FloorPrice: number
-}
-
-export enum CollectionsSummaryFilter {
-  TotalVolume = 'TotalVolume',
-  TotalTrades = 'TotalTrades',
-  DailyVolume = 'DailyVolume',
-  Last2DaysVolume = 'Last2DaysVolume',
-  DailyTrades = 'DailyTrades',
-  Last2DaysTrades = 'Last2DaysTrades',
-  WeekTrades = 'WeekTrades',
-  LastWeekTrades = 'LastWeekTrades',
-  WeekVolume = 'WeekVolume',
-  LastWeekVolume = 'LastWeekVolume',
-  WeeklyTradesMargin = 'WeeklyTradesMargin',
-  DailyTradesMargin = 'DailyTradesMargin',
-  WeeklyVolumeMargin = 'WeeklyVolumeMargin',
-  DailyVolumeEgldMargin = 'DailyVolumeEgldMargin',
-  CollectionAthTrade = 'CollectionAthTrade',
 }
 
 export type GlobalOffersResult = {

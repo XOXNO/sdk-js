@@ -134,6 +134,7 @@ export interface CollectionInfo {
   holdersCount?: number
   volume?: number
   owner?: string
+  chain?: ActivityChain
   customConfig?: ICollectionProfile['customConfig']
 }
 
