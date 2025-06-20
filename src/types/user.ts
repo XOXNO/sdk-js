@@ -67,6 +67,7 @@ export interface IUserProfile {
   shard: number
   followCount: number
   userSettings?: IUserSettings
+  chain?: ActivityChain
 }
 
 export interface UserDeposit {
