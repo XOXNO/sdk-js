@@ -151,6 +151,7 @@ export type UserTokenInventory = {
   esdts: TokenWorth
   stables: TokenWorth
   wallet: TokenWorth
+  chain?: ActivityChain
 }
 
 export type TokenWorth = {
