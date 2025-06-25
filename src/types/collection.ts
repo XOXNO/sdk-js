@@ -265,6 +265,7 @@ export enum GlobalOfferFieldsToSelect {
 export interface Filter {
   dataType?: string[]
   identifier?: string[]
+  chain?: ActivityChain[]
   collection?: string[]
   mintToken?: string[]
   type?: string[]
@@ -322,6 +323,7 @@ export interface GetNFTsArgs {
   auctionType: AuctionTypes
   /** If set, will return only NFTs from the specified collections */
   collections?: string[]
+  chain?: ActivityChain[]
   /** If set, will return only NFTs from verified collections */
   onlyVerified?: boolean
   /** If true, will return only NFTs that are on sale */
@@ -379,6 +381,7 @@ export interface GETDropsArgs {
   name?: string
   /** If set, will return only NFTs from the specified collections */
   collections?: string[]
+  chain?: ActivityChain[]
   /** If set, will return only NFTs from verified collections */
   onlyVerified?: boolean
   /** If set, will return only NFTs listed in the specified tokens */
@@ -504,6 +507,7 @@ export type TradingActivity = {
 export interface GetCollectionsArgs {
   /**  The collections to fetch the profile */
   collections?: string[]
+  chain?: ActivityChain[]
   /** If true, will return only NFTs that are mintable */
   onlyMintable?: boolean
   /** The number of results to return */

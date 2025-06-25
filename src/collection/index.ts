@@ -208,6 +208,7 @@ export class CollectionModule {
         activeAuction: args.activeAuctions,
         identifier: args.identifiers,
         collection: args.collections ?? [],
+        chain: args.chain ?? [],
         onSale: args.onlyOnSale,
         saleInfo: {
           seller: args.listedBy || [],
@@ -301,6 +302,7 @@ export class CollectionModule {
         // @borispoehland Has to be false only if we want to show the expired auctions, undefined to show all, and true only actives
         activeAuction: args.activeAuctions,
         collection: args.collections ?? [],
+        chain: args.chain ?? [],
         onSale: args.onlyOnSale,
         saleInfo: {
           seller: args.listedBy || [],
@@ -468,6 +470,10 @@ export class CollectionModule {
         ...(args?.collections &&
           args.collections.length > 0 && {
             collection: args.collections,
+          }),
+        ...(args?.chain &&
+          args.chain.length > 0 && {
+            chain: args.chain,
           }),
       },
       orderBy: [args?.orderBy || 'statistics.tradeData.weekEgldVolume desc'],
@@ -962,6 +968,7 @@ export class CollectionModule {
         verifiedOnly: args.onlyVerified || false,
         mintToken: args.listedInToken || undefined,
         range: ranges,
+        chain: args.chain ?? [],
       },
       orderBy: args.orderBy || [],
       select: args.onlySelectFields || [],

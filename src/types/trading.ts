@@ -4,6 +4,7 @@ import type {
   RangeFilter,
   TradingActivity,
 } from './collection'
+import type { ActivityChain } from './nft'
 
 export enum NftActivityType {
   // MVX Built-in
@@ -45,6 +46,7 @@ export interface TradingActivityQueryFilter {
     activityData?: {
       collection?: string[]
       identifier?: string[]
+      chain?: ActivityChain[]
     }
     range?: RangeFilter[]
   }
@@ -58,6 +60,7 @@ export interface TradingActivityQueryFilter {
 export interface TradincActivityArgs {
   /** The collections to fetch the trading activity from */
   collections?: string[]
+  chain?: ActivityChain[]
   /** The identifier of the NFTs to fetch the trading activity from */
   identifiers?: string[]
   /** The wallets for which to fetch the trading activity */
