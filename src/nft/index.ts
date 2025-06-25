@@ -1,5 +1,5 @@
 import { XOXNOClient } from '..'
-import type { NftData } from '../types/nft'
+import type { ActivityChain, NftData } from '../types/nft'
 import type {
   TradincActivityArgs,
   TradingActivityResponse,
@@ -104,6 +104,25 @@ export class NFTModule {
 
     const response = await this.api.fetchWithTimeout<NftData>(
       `/${getIdentifierFromColAndNonce(collection, nonce)}`
+    )
+    return response
+  }
+
+  /**
+   * @public
+   * @async
+   * @function getPinnedNFTs
+   * @returns {Promise<NftData[]>} A promise that resolves to the fetched pinned collections.
+   */
+  public getPinnedNFTs = async (chain?: ActivityChain): Promise<NftData[]> => {
+    const response = await this.api.fetchWithTimeout<NftData[]>(
+      `/nft/pinned${chain ? `?chain=${chain}` : ''}`,
+      {
+        next: {
+          tags: [`/nft/pinned`],
+          /* revalidate: 60, */
+        },
+      }
     )
     return response
   }

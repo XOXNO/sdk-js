@@ -1,5 +1,10 @@
 import { XOXNOClient } from '..'
-import type { AnalyticsGraphs, NftData, StakingSummaryPools } from '../types'
+import type {
+  ActivityChain,
+  AnalyticsGraphs,
+  NftData,
+  StakingSummaryPools,
+} from '../types'
 import type {
   CollectionListings,
   CollectionRanksExport,
@@ -888,12 +893,35 @@ export class CollectionModule {
    * @function getPinnedCollections
    * @returns {Promise<ICollectionProfile[]>} A promise that resolves to the fetched pinned collections.
    */
-  public getPinnedCollections = async (): Promise<ICollectionProfile[]> => {
+  public getPinnedCollections = async (
+    chain?: ActivityChain
+  ): Promise<ICollectionProfile[]> => {
     const response = await this.api.fetchWithTimeout<ICollectionProfile[]>(
-      `/collection/pinned`,
+      `/collection/pinned${chain ? `?chain=${chain}` : ''}`,
       {
         next: {
           tags: [`/collection/pinned`],
+          /* revalidate: 60, */
+        },
+      }
+    )
+    return response
+  }
+
+  /**
+   * @public
+   * @async
+   * @function getPinnedDrops
+   * @returns {Promise<GetCollectionMintInfo[]>} A promise that resolves to the fetched pinned collections.
+   */
+  public getPinnedDrops = async (
+    chain?: ActivityChain
+  ): Promise<GetCollectionMintInfo[]> => {
+    const response = await this.api.fetchWithTimeout<GetCollectionMintInfo[]>(
+      `/collection/pinned-drops${chain ? `?chain=${chain}` : ''}`,
+      {
+        next: {
+          tags: [`/collection/pinned-drops`],
           /* revalidate: 60, */
         },
       }

@@ -788,6 +788,7 @@ export type CollectionStatsResults = {
 
 export type GetCollectionStatsArgs = {
   filters?: {
+    chain?: ActivityChain
     collection?: string[]
     verifiedOnly?: boolean
     range?: RangeFilter[]
