@@ -43,10 +43,10 @@ export interface TradingActivityQueryFilter {
     eventIdentifier?: string[]
     from?: string[]
     to?: string[]
+    chain?: ActivityChain[]
     activityData?: {
       collection?: string[]
       identifier?: string[]
-      chain?: ActivityChain[]
     }
     range?: RangeFilter[]
   }

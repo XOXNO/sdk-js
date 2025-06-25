@@ -40,10 +40,10 @@ export const getActivity = async (
         args.from == null && args.to == null
           ? {
               collection: args.collections,
-              chain: args.chain,
               identifier: args.identifiers || undefined,
             }
           : undefined,
+      chain: args.chain,
       from: args.from,
       to: args.to,
       activityAddress: args.wallets || undefined,
