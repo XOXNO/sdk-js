@@ -16,6 +16,7 @@ export interface IUserProfileSearch {
   profile: string
   herotag: string
   addressTrimmed: string
+  chain?: ActivityChain
 }
 
 export interface IUserSettings {
