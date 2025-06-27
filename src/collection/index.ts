@@ -380,6 +380,7 @@ export class CollectionModule {
       name: args.name,
       top: args.top || 35,
       skip: args.skip || 0,
+      chain: args.chain,
     }
 
     return await this.api.fetchWithTimeout<SuggestResults>(
