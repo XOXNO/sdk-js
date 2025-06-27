@@ -411,7 +411,6 @@ export interface SuggestNFTsArgs {
   skip?: number
   /** The order of the results based on a field */
   orderBy?: SuggestOrderBy[]
-  chain?: ActivityChain[]
 }
 
 export interface SearchNFTsResponse {
