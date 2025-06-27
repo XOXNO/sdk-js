@@ -370,16 +370,17 @@ export class CollectionModule {
    * Finally, it returns a promise that resolves to the fetched collections results.
    */
   public suggestCollections = async (
-    args: SuggestNFTsArgs
+    args: SuggestNFTsArgs & { chain?: ActivityChain[] }
   ): Promise<SuggestResults> => {
     if (args.top && args.top > 100) {
       throw new Error('Top cannot be greater than 100')
     }
 
-    const payloadBody: SuggestNFTsArgs = {
+    const payloadBody: SuggestNFTsArgs & { chain?: ActivityChain[] } = {
       name: args.name,
       top: args.top || 35,
       skip: args.skip || 0,
+      chain: args.chain,
     }
 
     return await this.api.fetchWithTimeout<SuggestResults>(
