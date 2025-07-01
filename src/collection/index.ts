@@ -621,10 +621,18 @@ export class CollectionModule {
     after: string,
     before: string,
     bin: string,
-    chain?: ActivityChain
+    chain?: ActivityChain[]
   ): Promise<CollectionVolume[]> => {
     const response = await this.api.fetchWithTimeout<CollectionVolume[]>(
-      `/analytics/volume?startTime=${after}&endTime=${before}&bin=${bin}${chain ? `&chain=${chain}` : ''}`,
+      `/analytics/volume?startTime=${after}&endTime=${before}&bin=${bin}${
+        chain?.length
+          ? chain
+              .map((item) => {
+                return `&chain=${item}`
+              })
+              .join('')
+          : ''
+      }`,
       {
         next: {
           tags: ['getMarketplaceVolume'],

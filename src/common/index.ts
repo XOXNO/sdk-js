@@ -1,3 +1,4 @@
+import type { ActivityChain } from '../types'
 import type {
   FungibleAssetsMap,
   SuggestNFTsArgs,
@@ -5,7 +6,6 @@ import type {
 } from '../types/collection'
 import { AssetCategory } from '../types/collection'
 import type {
-  AnalyticsGraphs,
   AshSwapPaymentData,
   StakingExplore,
   StatisticsSummary,
@@ -90,43 +90,23 @@ export class CommonModule {
   /**
    * @public
    * @async
-   * @function getGlobalGraphData
-   * @param category - The ticker of the collection.
-   * @returns {Promise<AnalyticsGraphs>} A promise the required analytics data
-   * This function gets the global graph data
-   */
-  public getGlobalGraphData = async (
-    startTime: string,
-    endTime: string,
-    bin: string
-  ): Promise<AnalyticsGraphs> => {
-    const response = await this.api.fetchWithTimeout<AnalyticsGraphs>(
-      `/analytics/volume`,
-      {
-        params: {
-          startTime: startTime,
-          endTime: endTime,
-          bin: bin,
-        },
-        next: {
-          tags: ['/analytics/volume'],
-          /* revalidate: 60, */
-        },
-      }
-    )
-    return response
-  }
-
-  /**
-   * @public
-   * @async
    * @function getAnalyticsOverview
    * @returns {Promise<StatisticsSummary>} A promise the required analytics data
    * This function gets the global graph data
    */
-  public getAnalyticsOverview = async (): Promise<StatisticsSummary> => {
+  public getAnalyticsOverview = async (
+    chain?: ActivityChain[]
+  ): Promise<StatisticsSummary> => {
     const response = await this.api.fetchWithTimeout<StatisticsSummary>(
-      `/analytics/overview`,
+      `/analytics/overview${
+        chain?.length
+          ? chain
+              .map((item, index) => {
+                return `${index ? '&' : '?'}chain=${item}`
+              })
+              .join('')
+          : ''
+      }`,
       {
         next: {
           tags: ['/analytics/overview'],
