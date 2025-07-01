@@ -620,10 +620,11 @@ export class CollectionModule {
   public getMarketplaceVolume = async (
     after: string,
     before: string,
-    bin: string
+    bin: string,
+    chain?: ActivityChain
   ): Promise<CollectionVolume[]> => {
     const response = await this.api.fetchWithTimeout<CollectionVolume[]>(
-      `/analytics/volume?startTime=${after}&endTime=${before}&bin=${bin}`,
+      `/analytics/volume?startTime=${after}&endTime=${before}&bin=${bin}${chain ? `&chain=${chain}` : ''}`,
       {
         next: {
           tags: ['getMarketplaceVolume'],
