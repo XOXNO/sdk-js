@@ -132,6 +132,7 @@ export interface OfferBody {
   usdValue: number
   floorPriceMargin: number
   floorPrice: number
+  chain?: ActivityChain
 }
 
 export type Nfts = {
