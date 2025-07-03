@@ -182,6 +182,13 @@ export type ActiveGuardian = {
   serviceUID: string
 }
 
+export interface SuiCoinObject {
+  objectId: string
+  balance: string
+  digest: string
+  version: string
+}
+
 export type EsdtToken = {
   nonce: number
   identifier: string
@@ -196,6 +203,7 @@ export type EsdtToken = {
   assets: Assets
   isAshSupported: boolean
   weight: number
+  objects?: SuiCoinObject[]
 }
 
 export type Assets = {
