@@ -62,7 +62,8 @@ export class CommonModule {
    */
   public getFungibleTokens = async (
     categories: AssetCategory[] = [AssetCategory.ALL],
-    identifiers?: string[]
+    identifiers?: string[],
+    chain?: ActivityChain[]
   ): Promise<FungibleAssetsMap> => {
     let params = {}
 
@@ -78,6 +79,13 @@ export class CommonModule {
         category: categories.join(','),
       }
     }
+    if (chain) {
+      params = {
+        ...params,
+        chain: chain.join(','),
+      }
+    }
+
     const response = await this.api.fetchWithTimeout<FungibleAssetsMap>(
       `/tokens`,
       {

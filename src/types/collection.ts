@@ -660,6 +660,7 @@ export type FungibleAssets = {
   usdPrice?: number
   isAshSupported: boolean
   _ts?: number
+  chain?: ActivityChain
 }
 
 export type FungibleAssetsMap = {
