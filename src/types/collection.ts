@@ -489,6 +489,7 @@ export type ActivityData = {
   originalTokenAmountShort?: number
   originalTokenEgldValue?: number
   originalTokenUsdValue?: number
+  originalTokenIdentifier?: string
 }
 
 export type ShortCollectionInfo = Pick<
