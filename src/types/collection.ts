@@ -485,6 +485,10 @@ export type ActivityData = {
     | 'media'
   >
   collectionInfo: ShortCollectionInfo
+  originalTokenAmount?: string
+  originalTokenAmountShort?: number
+  originalTokenEgldValue?: number
+  originalTokenUsdValue?: number
 }
 
 export type ShortCollectionInfo = Pick<
