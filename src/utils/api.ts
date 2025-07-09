@@ -99,7 +99,7 @@ export class XOXNOClient {
 
   public fetchWithTimeout = async <T>(
     path: string,
-    options: Record<string, any> = {}
+    options: RequestInit & { params?: Record<string, any> } = {}
   ): Promise<T> => {
     const authHeader = (options?.headers as { Authorization?: string })
       ?.Authorization
@@ -121,11 +121,13 @@ export class XOXNOClient {
     const url = `${shouldInsertOrigin ? `${this.apiUrl}${path}` : path}${
       options.params
         ? '?' +
-          Object.keys(options.params as any)
-            .map((key) => {
-              return `${key}=${encodeURIComponent(
-                (options.params as any)[key]
-              )}`
+          Object.entries(options.params)
+            .flatMap(([key, value]) => {
+              if (Array.isArray(value)) {
+                return value.map((v) => `${key}=${encodeURIComponent(v)}`)
+              } else {
+                return `${key}=${encodeURIComponent(value)}`
+              }
             })
             .join('&')
         : ''
@@ -145,7 +147,7 @@ export class XOXNOClient {
 
       try {
         message = JSON.parse(text)
-      } catch (_error) {
+      } catch (_) {
         message = { message: text }
       }
 

@@ -1,10 +1,12 @@
-import { XOXNOClient } from '..'
-import type { ActivityChain, NftData } from '../types/nft'
+import type { NftDoc } from '@xoxno/types'
+
+import type { ActivityChain } from '../types/nft'
 import type {
   TradincActivityArgs,
   TradingActivityResponse,
 } from '../types/trading'
 import type { UserOffers } from '../types/user'
+import { XOXNOClient } from '../utils/api'
 import { getActivity } from '../utils/getActivity'
 import { getIdentifierFromColAndNonce } from '../utils/helpers'
 import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex'
@@ -28,7 +30,7 @@ export class NFTModule {
    * @async
    * @function getNFTByIdentifier
    * @param {string} identifier - The identifier of the NFT to fetch data for.
-   * @returns {Promise<NftData>} A promise that resolves to the fetched NFT data.
+   * @returns {Promise<NftDoc>} A promise that resolves to the fetched NFT data.
    *
    * This function fetches data for a given NFT by its identifier. It takes the following parameter:
    * - identifier (string): The identifier of the NFT to fetch data for.
@@ -40,11 +42,11 @@ export class NFTModule {
   public getNFTByIdentifier = async (
     identifier: string,
     extra?: RequestInit
-  ): Promise<NftData> => {
+  ): Promise<NftDoc> => {
     if (!isValidNftIdentifier(identifier)) {
       throw new Error('Invalid identifier: ' + identifier)
     }
-    const response = await this.api.fetchWithTimeout<NftData>(
+    const response = await this.api.fetchWithTimeout<NftDoc>(
       `/nft/${identifier}`,
       {
         ...extra,
@@ -58,7 +60,7 @@ export class NFTModule {
    * @async
    * @function getNFTByIdentifier
    * @param {string} identifier - The identifier of the NFT to fetch data for.
-   * @returns {Promise<NftData>} A promise that resolves to the fetched NFT data.
+   * @returns {Promise<NftDoc>} A promise that resolves to the fetched NFT data.
    *
    * This function fetches data for a given NFT by its identifier. It takes the following parameter:
    * - identifier (string): The identifier of the NFT to fetch data for.
@@ -76,13 +78,7 @@ export class NFTModule {
       throw new Error('Invalid identifier: ' + identifier)
     }
     const response = await this.api.fetchWithTimeout<UserOffers>(
-      `/nft/${identifier}/offers?skip=${skip}&top=${top}`,
-      {
-        next: {
-          tags: ['getNFTsOffers'],
-          /* revalidate: 12, */
-        },
-      }
+      `/nft/${identifier}/offers?skip=${skip}&top=${top}`
     )
     return response
   }
@@ -91,18 +87,18 @@ export class NFTModule {
    * Gets an NFT by collection and nonce.
    * @param collection The collection ticker.
    * @param nonce The nonce of the NFT.
-   * @returns {Promise<NftData>} The NFT data.
+   * @returns {Promise<NftDoc>} The NFT data.
    * @throws Throws an error when the collection ticker is invalid.
    */
   public getNFTByCollectionAndNonce = async (
     collection: string,
     nonce: number
-  ): Promise<NftData> => {
+  ): Promise<NftDoc> => {
     if (!isValidCollectionTicker(collection)) {
       throw new Error('Invalid collection ticker: ' + collection)
     }
 
-    const response = await this.api.fetchWithTimeout<NftData>(
+    const response = await this.api.fetchWithTimeout<NftDoc>(
       `/${getIdentifierFromColAndNonce(collection, nonce)}`
     )
     return response
@@ -111,18 +107,26 @@ export class NFTModule {
   /**
    * @public
    * @async
-   * @function getPinnedNFTs
-   * @returns {Promise<NftData[]>} A promise that resolves to the fetched pinned collections.
+   * @function getDailyTrending
+   * @returns {Promise<NftDoc[]>} A promise that resolves to the array of trending NFTs.
+   * This function fetches the top NFTs that are trending today based on their floor and volumes
    */
-  public getPinnedNFTs = async (chain?: ActivityChain): Promise<NftData[]> => {
-    const response = await this.api.fetchWithTimeout<NftData[]>(
-      `/nft/pinned${chain ? `?chain=${chain}` : ''}`,
-      {
-        next: {
-          tags: [`/nft/pinned`],
-          /* revalidate: 60, */
-        },
-      }
+  public getDailyTrending = async (): Promise<NftDoc[]> => {
+    const response = await this.api.fetchWithTimeout<NftDoc[]>(
+      '/nfts/getDailyTrending'
+    )
+    return response
+  }
+
+  /**
+   * @public
+   * @async
+   * @function getPinnedNFTs
+   * @returns {Promise<NftDoc[]>} A promise that resolves to the fetched pinned collections.
+   */
+  public getPinnedNFTs = async (chain?: ActivityChain): Promise<NftDoc[]> => {
+    const response = await this.api.fetchWithTimeout<NftDoc[]>(
+      `/nft/pinned${chain ? `?chain=${chain}` : ''}`
     )
     return response
   }
@@ -132,13 +136,13 @@ export class NFTModule {
    *
    * @param collection - collection ticker
    * @param nonceHex - nonce hex
-   * @return {Promise<NftData>} NFT data
+   * @return {Promise<NftDoc>} NFT data
    */
 
   public getNFTByCollectionAndNonceHex = async (
     collection: string,
     nonceHex: string
-  ): Promise<NftData> => {
+  ): Promise<NftDoc> => {
     // check that collection is valid
     if (!isValidCollectionTicker(collection)) {
       throw new Error('Invalid collection ticker: ' + collection)
@@ -148,7 +152,7 @@ export class NFTModule {
       nonceHex = '0' + nonceHex
     }
     // fetch the NFT data
-    const response = await this.api.fetchWithTimeout<NftData>(
+    const response = await this.api.fetchWithTimeout<NftDoc>(
       `/${[collection, nonceHex].join('-')}`
     )
     return response

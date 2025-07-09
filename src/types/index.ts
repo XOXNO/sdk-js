@@ -6,3 +6,8 @@ export * from './staking'
 export * from './user'
 export * from './common'
 export * from './event'
+
+export type PublicOnly<T> = {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  [K in keyof T as T[K] extends Function ? never : K]: T[K]
+}

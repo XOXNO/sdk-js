@@ -1,9 +1,9 @@
-import type { XOXNOClient } from '..'
 import type {
   TradincActivityArgs,
   TradingActivityQueryFilter,
   TradingActivityResponse,
 } from '../types/trading'
+import type { XOXNOClient } from './api'
 
 /**
  * Fetches the trading activity of the given collections
@@ -66,19 +66,10 @@ export const getActivity = async (
       params: {
         filter: JSON.stringify(payloadBody),
       },
-      next: {
-        tags: ['getActivity'],
-        /* revalidate: 180, */
-      },
     }
   )
 
   return {
     ...response,
-    getNextPagePayload: {
-      ...args,
-      skip: (args.skip ?? 0) + (args.top ?? 35),
-    },
-    empty: response.resources.length === 0,
   }
 }

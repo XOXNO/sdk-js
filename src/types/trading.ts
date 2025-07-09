@@ -127,6 +127,5 @@ export interface TradingActivityResponse {
   /** The total count of the results for the specific query */
   count?: number
   resources: TradingActivity[]
-  getNextPagePayload: TradincActivityArgs
   empty: boolean
 }

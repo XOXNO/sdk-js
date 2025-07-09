@@ -3,10 +3,9 @@ import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/intera
 import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract'
 import type { Struct } from '@multiversx/sdk-core/out/smartcontracts/typesystem/struct'
 import type { SmartContractTransactionsFactory } from '@multiversx/sdk-core/out/transactionsFactories/smartContractTransactionsFactory'
+import type { NftDoc } from '@xoxno/types'
 import BigNumber from 'bignumber.js'
 
-import type { NftData } from '..'
-import { XOXNOClient } from '..'
 import type { GlobalOffer } from '../types/collection'
 import type {
   AcceptGlobalOffer,
@@ -19,6 +18,7 @@ import type {
   WithSenderAndNonce,
 } from '../types/interactions'
 import { AuctionType } from '../types/interactions'
+import { XOXNOClient } from '../utils/api'
 import { isAddressValid } from '../utils/helpers'
 import { ContractQueryRunner } from '../utils/scCalls'
 import { SmartContractAbis } from '../utils/SmartContractAbis'
@@ -630,7 +630,7 @@ export class SCInteraction {
   public async declineCustomOffer(
     offerID: number,
     sender: WithSenderAndNonce,
-    nft: NftData,
+    nft: NftDoc,
     market: string
   ): Promise<IPlainTransactionObject> {
     const { Address } = await import(
@@ -672,7 +672,7 @@ export class SCInteraction {
   public async acceptCustomOffer(
     offerID: number,
     sender: WithSenderAndNonce,
-    nft: NftData,
+    nft: NftDoc,
     market: string
   ): Promise<IPlainTransactionObject> {
     const { Address } = await import(

@@ -5,7 +5,7 @@ import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smar
 import type { ContractQueryResponse } from '@multiversx/sdk-network-providers/out/contractQueryResponse'
 import type { INetworkProvider } from '@multiversx/sdk-network-providers/out/interface'
 
-import { XOXNOClient } from '..'
+import { XOXNOClient } from './api'
 
 export class ContractQueryRunner {
   private readonly proxy: INetworkProvider

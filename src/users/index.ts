@@ -1,9 +1,12 @@
-import { CollectionModule, XOXNOClient } from '..'
+import type { NftDocFilter } from '@xoxno/types'
+
+import { CollectionModule } from '../collection'
 import type {
   CollectionCreatorInfo,
   CreatorInfo,
   EventCreatorInfo,
   GetNFTsArgs,
+  PublicOnly,
   SearchNFTsResponse,
   StakingStatus,
   StakingSummaryPools,
@@ -31,6 +34,7 @@ import type {
   UserTokenInventory,
   UserXOXNODrop,
 } from '../types/user'
+import { XOXNOClient } from '../utils/api'
 import { getActivity } from '../utils/getActivity'
 import { isAddressValid } from '../utils/helpers'
 import { isValidCollectionTicker } from '../utils/regex'
@@ -131,9 +135,7 @@ export class UserModule {
    * @param address - The user's address
    * @returns {UserInventory} - A list of token ids and the price
    */
-  public getUserNFTs = async (
-    args: GetNFTsArgs
-  ): Promise<SearchNFTsResponse> => {
+  public getUserNFTs = async (args: PublicOnly<NftDocFilter>) => {
     return await this.collection.getNFTs(args)
   }
 
@@ -190,10 +192,6 @@ export class UserModule {
     return await this.api.fetchWithTimeout<SuggestResults>(`/user/search`, {
       params: {
         filter: JSON.stringify(payloadBody),
-      },
-      next: {
-        tags: ['/search/global'],
-        /* revalidate: 180, */
       },
     })
   }
@@ -388,7 +386,7 @@ export class UserModule {
    * @param {String} address - User's address
    * @param {number} top - Top
    * @param {number} skip - Skip
-   * @returns {NftData[]} Array of NFTs
+   * @returns {NftDoc[]} Array of NFTs
    * @throws {Error} Throws an error if the address is invalid
    *  */
   public getUserFavoriteNFTs = async (
@@ -467,10 +465,6 @@ export class UserModule {
         orderBy: orderBy,
         orderDirection: orderDirection ?? 'desc',
       },
-      next: {
-        tags: ['/user/stats'],
-        /* revalidate: 180, */
-      },
     })
   }
 
@@ -486,13 +480,7 @@ export class UserModule {
   ): Promise<StakingCreatorInfo> => {
     if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
     return await this.api.fetchWithTimeout<StakingCreatorInfo>(
-      `/user/${address}/staking/creator`,
-      {
-        next: {
-          tags: [`/user/${address}/staking/creator`],
-          /* revalidate: 30, */
-        },
-      }
+      `/user/${address}/staking/creator`
     )
   }
 
@@ -527,10 +515,6 @@ export class UserModule {
           top: top,
           skip: skip,
           ...(address ? { address } : {}),
-        },
-        next: {
-          tags: ['/user/xoxno-drop'],
-          /* revalidate: 30, */
         },
       }
     )

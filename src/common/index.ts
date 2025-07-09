@@ -114,13 +114,7 @@ export class CommonModule {
               })
               .join('')
           : ''
-      }`,
-      {
-        next: {
-          tags: ['/analytics/overview'],
-          /* revalidate: 60, */
-        },
-      }
+      }`
     )
     return response
   }
@@ -160,10 +154,6 @@ export class CommonModule {
       params: {
         filter: JSON.stringify(payloadBody),
       },
-      next: {
-        tags: ['/search/global'],
-        /* revalidate: 180, */
-      },
     })
   }
 
@@ -176,13 +166,7 @@ export class CommonModule {
    */
   public getExploreStaking = async (): Promise<StakingExplore[]> => {
     const response = await this.api.fetchWithTimeout<StakingExplore[]>(
-      `/collection/staking/explore`,
-      {
-        next: {
-          tags: ['/collection/staking/explore'],
-          /* revalidate: 60, */
-        },
-      }
+      `/collection/staking/explore`
     )
     return response
   }

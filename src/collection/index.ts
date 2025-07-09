@@ -1,11 +1,15 @@
-import { XOXNOClient } from '..'
+import {
+  NftDoc,
+  type CollectionProfileDoc,
+  type CollectionTraitMap,
+  type NftCosmosResponse,
+  type NftDocFilter,
+} from '@xoxno/types'
+
+import { XOXNOClient } from '../interactor'
 import type {
   ActivityChain,
   AnalyticsGraphs,
-  NftData,
-  StakingSummaryPools,
-} from '../types'
-import type {
   CollectionListings,
   CollectionRanksExport,
   CollectionsNFTsResponse,
@@ -22,21 +26,25 @@ import type {
   GetOffersArgs,
   GetOffersResponse,
   GlobalOffersResult,
-  ICollectionAttributes,
-  ICollectionProfile,
   IOwners,
   ISingleHolder,
+  PublicOnly,
   SearchNFTs,
   SearchNFTsResponse,
+  StakingSummaryPools,
   SuggestNFTsArgs,
   SuggestResults,
-} from '../types/collection'
-import { AuctionTypes, GlobalOfferOrderBy } from '../types/collection'
-import type {
   TradincActivityArgs,
   TradingActivityResponse,
-} from '../types/trading'
+} from '../types'
+import { AuctionTypes, GlobalOfferOrderBy } from '../types/collection'
+import { CollectionNotFoundError } from '../utils/errors'
 import { getActivity } from '../utils/getActivity'
+import {
+  collectionGuard,
+  collectionGuardOnly,
+  paginatedGuard,
+} from '../utils/guards'
 import { isValidCollectionTicker } from '../utils/regex'
 
 /**
@@ -58,7 +66,7 @@ export class CollectionModule {
    * @async
    * @function getCollectionProfile
    * @param {string} collection - The ticker of the collection to fetch the profile for.
-   * @returns {Promise<ICollectionProfile>} A promise that resolves to the fetched collection profile.
+   * @returns {Promise<CollectionProfileDoc>} A promise that resolves to the fetched collection profile.
    *
    * This function fetches the profile of a given collection. It takes the following parameter:
    * - collection (string): The ticker of the collection to fetch the profile for.
@@ -67,42 +75,13 @@ export class CollectionModule {
    * If it is valid, the function fetches the collection profile using the API.
    * Finally, it returns a promise that resolves to the fetched collection profile.
    */
-  public getCollectionProfile = async (
-    collection: string
-  ): Promise<ICollectionProfile> => {
-    if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection)
-    }
-    const response = await this.api.fetchWithTimeout<ICollectionProfile>(
-      `/collection/${collection}/profile`,
-      {
-        next: {
-          tags: ['getCollectionProfile'],
-          /* revalidate: 30, */
-        },
-      }
+  public getCollectionProfile = async (collection: string) => {
+    return collectionGuard(
+      collection,
+      this.api.fetchWithTimeout<CollectionProfileDoc>(
+        `/collection/${collection}/profile`
+      )
     )
-    return response
-  }
-
-  /**
-   * @public
-   * @async
-   * @function getDailyTrending
-   * @returns {Promise<NftData[]>} A promise that resolves to the array of trending NFTs.
-   * This function fetches the top NFTs that are trending today based on their floor and volumes
-   */
-  public getDailyTrending = async (): Promise<NftData[]> => {
-    const response = await this.api.fetchWithTimeout<NftData[]>(
-      '/nfts/getDailyTrending',
-      {
-        next: {
-          tags: ['getDailyTrending'],
-          /* revalidate: 180, */
-        },
-      }
-    )
-    return response
   }
 
   /**
@@ -115,25 +94,18 @@ export class CollectionModule {
   public getCollectionFloorPrice = async (
     collection: string,
     token = 'EGLD'
-  ): Promise<{
-    price: number
-    usdPrice: number
-  }> => {
-    if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection)
-    }
-    const response = await this.api.fetchWithTimeout<{
-      price: number
-      usdPrice: number
-    }>(`/collection/${collection}/floor-price`, {
-      next: {
-        tags: ['getCollectionFloorPrice'],
-      },
-      params: {
-        token,
-      },
-    })
-    return response
+  ) => {
+    return collectionGuard(
+      collection,
+      this.api.fetchWithTimeout<{
+        price: number
+        usdPrice: number
+      }>(`/collection/${collection}/floor-price`, {
+        params: {
+          token,
+        },
+      })
+    )
   }
 
   /**
@@ -141,7 +113,7 @@ export class CollectionModule {
    * @async
    * @function getCollectionAttributes
    * @param {string} collection - The ticker of the collection to fetch the attributes for.
-   * @returns {Promise<ICollectionAttributes>} A promise that resolves to the fetched collection attributes.
+   * @returns {Promise<CollectionTraitMap>} A promise that resolves to the fetched collection attributes.
    *
    * This function fetches the attributes of a given collection. It takes the following parameter:
    * - collection (string): The ticker of the collection to fetch the attributes for.
@@ -152,207 +124,53 @@ export class CollectionModule {
    */
   public getCollectionAttributes = async (
     collection: string
-  ): Promise<ICollectionAttributes> => {
-    if (!isValidCollectionTicker(collection)) {
-      throw new Error('Invalid collection ticker: ' + collection)
-    }
-    const response = await this.api.fetchWithTimeout<ICollectionAttributes>(
-      `/collection/${collection}/attributes`,
-      {
-        next: {
-          tags: ['getCollectionAttributes'],
-          /* revalidate: 180, */
-        },
-      }
+  ): Promise<CollectionTraitMap> => {
+    return collectionGuard(
+      collection,
+      this.api.fetchWithTimeout<CollectionTraitMap>(
+        `/collection/${collection}/attributes`
+      )
     )
-    return response
   }
 
   /**
    * Searches for NFTs based on the provided arguments.
-   * @param {SearchNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
-   * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
+   * @param {NftDocFilter} args - The SearchNFTsArgs object containing the search parameters.
+   * @returns {Promise<NftCosmosResponse>} A Promise that resolves to the SearchNFTsResponse object.
    * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 100.
    */
-  public getNFTs = async (args: GetNFTsArgs): Promise<SearchNFTsResponse> => {
-    args?.collections?.forEach((element) => {
-      if (!isValidCollectionTicker(element)) {
-        throw new Error('Invalid collection ticker: ' + element)
-      }
+  public getNFTs = async (args: PublicOnly<NftDocFilter>) => {
+    args.filters.collection?.forEach((collection) => {
+      collectionGuardOnly(collection)
     })
 
-    if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100')
-    }
-    const ranges = []
-    if (args.priceRange) {
-      ranges.push({
-        ...args.priceRange,
-        field:
-          args.auctionType == AuctionTypes.Auctions
-            ? 'saleInfo.currentBidShort'
-            : 'saleInfo.minBidShort',
-      })
-    }
-    if (args.rankRange) {
-      ranges.push({
-        ...args.rankRange,
-        field: 'metadata.rarity.rank',
-      })
-    }
-    const payloadBody: SearchNFTs = {
-      name: args.name,
-      filters: {
-        dataType: args.dataType ?? ['nft'],
-        // @borispoehland Has to be false only if we want to show the expired auctions, undefined to show all, and true only actives
-        activeAuction: args.activeAuctions,
-        identifier: args.identifiers,
-        collection: args.collections ?? [],
-        chain: args.chain ?? [],
-        onSale: args.onlyOnSale,
-        saleInfo: {
-          seller: args.listedBy || [],
-          marketplace: args.listedOnlyOn || undefined,
-          paymentToken: args.listedInToken || [],
-          auctionType:
-            args.auctionType == AuctionTypes.Auctions
-              ? ['NftBid', 'SftAll']
-              : args.auctionType == AuctionTypes.FixedPrice
-                ? ['Nft', 'SftOnePerPayment']
-                : args.auctionType == AuctionTypes.AllListed
-                  ? ['NftBid', 'SftAll', 'Nft', 'SftOnePerPayment']
-                  : undefined,
-        },
-        owner: args.ownedBy || [],
-        verifiedOnly: args.onlyVerified || false,
-        metadata: {
-          attributes: args.attributes || undefined,
-        },
-        range: ranges,
-        nonce: args.nonces || undefined,
-        cp_staked: args.isStaked ?? undefined,
-      },
-      applyNftExtraDetails: args.applyNftExtraDetails,
-      orderBy: args.orderBy || [],
-      select: args.onlySelectFields || [],
-      strictSelect: args.strictSelect || false,
-      includeCount: args.includeCount || false,
-      top: args.top || 35,
-      skip: args.skip || 0,
-    }
-
-    const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
-      `/nft/query`,
-      {
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<NftCosmosResponse>('/nft/query', {
         params: {
-          filter: JSON.stringify(payloadBody),
+          filter,
         },
-        next: {
-          tags: ['getCollectionNFTs'],
-        },
-      }
-    )
-    return {
-      ...response,
-      getNextPagePayload: {
-        ...args,
-        skip: (args.skip ?? 0) + (args.top ?? 35),
-      },
-    }
+      })
+    })
   }
 
   /**
    * Searches for NFTs based on the provided arguments.
-   * @param {SearchNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
-   * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
+   * @param {NftDocFilter} args - The SearchNFTsArgs object containing the search parameters.
+   * @returns {Promise<NftCosmosResponse>} A Promise that resolves to the SearchNFTsResponse object.
    * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 100.
    */
-  public getSearchNFTs = async (
-    args: GetNFTsArgs
-  ): Promise<SearchNFTsResponse> => {
-    args?.collections?.forEach((element) => {
-      if (!isValidCollectionTicker(element)) {
-        throw new Error('Invalid collection ticker: ' + element)
-      }
+  public getSearchNFTs = async (args: PublicOnly<NftDocFilter>) => {
+    args.filters.collection?.forEach((collection) => {
+      collectionGuardOnly(collection)
     })
 
-    if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100')
-    }
-    const ranges = []
-    if (args.priceRange) {
-      ranges.push({
-        ...args.priceRange,
-        field:
-          args.auctionType == AuctionTypes.Auctions
-            ? 'saleInfo.currentBidShort'
-            : 'saleInfo.minBidShort',
-      })
-    }
-    if (args.rankRange) {
-      ranges.push({
-        ...args.rankRange,
-        field: 'metadata.rarity.rank',
-      })
-    }
-    const payloadBody: SearchNFTs = {
-      name: args.name,
-      filters: {
-        dataType: args.dataType ?? ['nft'],
-        // @borispoehland Has to be false only if we want to show the expired auctions, undefined to show all, and true only actives
-        activeAuction: args.activeAuctions,
-        collection: args.collections ?? [],
-        chain: args.chain ?? [],
-        onSale: args.onlyOnSale,
-        saleInfo: {
-          seller: args.listedBy || [],
-          marketplace: args.listedOnlyOn || undefined,
-          paymentToken: args.listedInToken || [],
-          auctionType:
-            args.auctionType == AuctionTypes.Auctions
-              ? ['NftBid', 'SftAll']
-              : args.auctionType == AuctionTypes.FixedPrice
-                ? ['Nft', 'SftOnePerPayment']
-                : args.auctionType == AuctionTypes.AllListed
-                  ? ['NftBid', 'SftAll', 'Nft', 'SftOnePerPayment']
-                  : undefined,
-        },
-        owner: args.ownedBy || [],
-        verifiedOnly: args.onlyVerified || false,
-        metadata: {
-          attributes: args.attributes || undefined,
-        },
-        range: ranges,
-        nonce: args.nonces || undefined,
-        cp_staked: args.isStaked ?? undefined,
-      },
-      applyNftExtraDetails: args.applyNftExtraDetails,
-      orderBy: args.orderBy || [],
-      select: args.onlySelectFields || [],
-      strictSelect: args.strictSelect || false,
-      includeCount: args.includeCount || false,
-      top: args.top || 35,
-      skip: args.skip || 0,
-    }
-
-    const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
-      `/nft/search/query`,
-      {
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<NftCosmosResponse>('/nft/search/query', {
         params: {
-          filter: JSON.stringify(payloadBody),
+          filter,
         },
-        next: {
-          tags: ['getCollectionNFTs'],
-        },
-      }
-    )
-    return {
-      ...response,
-      getNextPagePayload: {
-        ...args,
-        skip: (args.skip ?? 0) + (args.top ?? 35),
-      },
-    }
+      })
+    })
   }
 
   /**
@@ -389,10 +207,6 @@ export class CollectionModule {
         params: {
           filter: JSON.stringify(payloadBody),
         },
-        next: {
-          tags: ['/collection/search'],
-          /* revalidate: 180, */
-        },
       }
     )
   }
@@ -408,13 +222,7 @@ export class CollectionModule {
     ticker: string
   ): Promise<CollectionListings> => {
     return await this.api.fetchWithTimeout<CollectionListings>(
-      `/collection/${ticker}/listings`,
-      {
-        next: {
-          tags: ['collection/${ticker}/listings'],
-          /* revalidate: 500, */
-        },
-      }
+      `/collection/${ticker}/listings`
     )
   }
 
@@ -440,10 +248,6 @@ export class CollectionModule {
         params: {
           filter: JSON.stringify(args),
         },
-        next: {
-          tags: ['/nft/offer/query'],
-          /* revalidate: 500, */
-        },
       }
     )
   }
@@ -454,9 +258,7 @@ export class CollectionModule {
    * @returns {Promise<CollectionsNFTsResponse>} A Promise that resolves to the CollectionsNFTsResponse object.
    * @throws An error if the 'top' value is greater than 100.
    */
-  public getCollections = async (
-    args?: GetCollectionsArgs
-  ): Promise<CollectionsNFTsResponse> => {
+  public getCollections = async (args?: GetCollectionsArgs) => {
     if (args?.top && args.top > 100) {
       throw new Error('Top cannot be greater than 100')
     }
@@ -480,26 +282,17 @@ export class CollectionModule {
       orderBy: [args?.orderBy || 'statistics.tradeData.weekEgldVolume desc'],
     }
 
-    const response = await this.api.fetchWithTimeout<ICollectionProfile[]>(
+    const response = await this.api.fetchWithTimeout<CollectionProfileDoc[]>(
       `/collection/query`,
       {
         params: {
           filter: JSON.stringify(payloadBody),
         },
-        next: {
-          tags: ['getCollections'],
-          /* revalidate: 180, */
-        },
       }
     )
     return {
       results: response,
-      resultsCount: response.length,
-      empty: response.length === 0,
-      getNextPagePayload: {
-        ...args,
-        skip: (args?.skip || 0) + (args?.top || 25),
-      },
+      count: response.length,
       hasMoreResults: response.length >= (args?.top || 25),
     }
   }
@@ -542,18 +335,10 @@ export class CollectionModule {
         params: {
           filter: JSON.stringify(payloadBody),
         },
-        next: {
-          tags: ['getGlobalOffers'],
-          /* revalidate: 12, */
-        },
       }
     )
     return {
       ...response,
-      getNextPagePayload: {
-        ...args,
-        skip: (args?.top || 25) + response.lastSkip,
-      },
     }
   }
 
@@ -587,13 +372,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<CollectionVolume[]>(
-      `/collection/${collection}/analytics/volume?startTime=${after}&endTime=${before}&bin=${bin}`,
-      {
-        next: {
-          tags: ['getCollectionVolume'],
-          /* revalidate: 180, */
-        },
-      }
+      `/collection/${collection}/analytics/volume?startTime=${after}&endTime=${before}&bin=${bin}`
     )
     return response
   }
@@ -632,13 +411,7 @@ export class CollectionModule {
               })
               .join('')
           : ''
-      }`,
-      {
-        next: {
-          tags: ['getMarketplaceVolume'],
-          /* revalidate: 180, */
-        },
-      }
+      }`
     )
     return response
   }
@@ -662,14 +435,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<IOwners>(
-      `/collection/${collection}/holders`,
-
-      {
-        next: {
-          tags: ['getCollectionOwners'],
-          /* revalidate: 500, */
-        },
-      }
+      `/collection/${collection}/holders`
     )
     return response
   }
@@ -695,13 +461,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + collection)
     }
     const response = await this.api.fetchWithTimeout<ISingleHolder[]>(
-      `/collection/${collection}/holders?exportHolders=true`,
-
-      {
-        next: {
-          tags: ['getExportOwners'],
-        },
-      }
+      `/collection/${collection}/holders?exportHolders=true`
     )
     return response
   }
@@ -727,18 +487,10 @@ export class CollectionModule {
         params: {
           filter: JSON.stringify(args),
         },
-        next: {
-          tags: ['collectionStatistics'],
-          /* revalidate: 12, */
-        },
       }
     )
     return {
       ...response,
-      getNextPagePayload: {
-        ...args,
-        skip: args.skip + args.top,
-      },
     }
   }
 
@@ -758,13 +510,7 @@ export class CollectionModule {
     }
 
     return await this.api.fetchWithTimeout<CollectionStatsDoc>(
-      `/collection/${ticker}/stats`,
-      {
-        next: {
-          tags: ['collectionStatistics'],
-          /* revalidate: 12, */
-        },
-      }
+      `/collection/${ticker}/stats`
     )
   }
 
@@ -796,13 +542,7 @@ export class CollectionModule {
     }
     const response = await this.api.fetchWithTimeout<GetCollectionMintInfo>(
       `/collection/${ticker}/drop-info`,
-      {
-        next: {
-          tags: [`/collection/${ticker}/drop-info`],
-          /* revalidate: 12, */
-        },
-        ...extra,
-      }
+      extra
     )
     return response
   }
@@ -827,13 +567,7 @@ export class CollectionModule {
     }
     const response = await this.api.fetchWithTimeout<CollectionRanksExport[]>(
       `/collection/${ticker}/ranks`,
-      {
-        next: {
-          tags: [`/collection/${ticker}/ranks`],
-          /* revalidate: 60, */
-        },
-        ...extra,
-      }
+      extra
     )
     return response
   }
@@ -858,13 +592,7 @@ export class CollectionModule {
   }): Promise<GetCollectionMintInfo> => {
     const response = await this.api.fetchWithTimeout<GetCollectionMintInfo>(
       `/collection/${creatorTag}/${collectionTag}/drop-info`,
-      {
-        next: {
-          tags: [`/collection/${creatorTag}/${collectionTag}/drop-info`],
-          /* revalidate: 12, */
-        },
-        ...extra,
-      }
+      extra
     )
     return response
   }
@@ -894,10 +622,6 @@ export class CollectionModule {
           endTime: endTime,
           bin: bin,
         },
-        next: {
-          tags: [`/collection/${collection}/analytics/volume`],
-          /* revalidate: 60, */
-        },
       }
     )
     return response
@@ -907,19 +631,13 @@ export class CollectionModule {
    * @public
    * @async
    * @function getPinnedCollections
-   * @returns {Promise<ICollectionProfile[]>} A promise that resolves to the fetched pinned collections.
+   * @returns {Promise<CollectionProfileDoc[]>} A promise that resolves to the fetched pinned collections.
    */
   public getPinnedCollections = async (
     chain?: ActivityChain
-  ): Promise<ICollectionProfile[]> => {
-    const response = await this.api.fetchWithTimeout<ICollectionProfile[]>(
-      `/collection/pinned${chain ? `?chain=${chain}` : ''}`,
-      {
-        next: {
-          tags: [`/collection/pinned`],
-          /* revalidate: 60, */
-        },
-      }
+  ): Promise<CollectionProfileDoc[]> => {
+    const response = await this.api.fetchWithTimeout<CollectionProfileDoc[]>(
+      `/collection/pinned${chain ? `?chain=${chain}` : ''}`
     )
     return response
   }
@@ -934,13 +652,7 @@ export class CollectionModule {
     chain?: ActivityChain
   ): Promise<GetCollectionMintInfo[]> => {
     const response = await this.api.fetchWithTimeout<GetCollectionMintInfo[]>(
-      `/collection/pinned-drops${chain ? `?chain=${chain}` : ''}`,
-      {
-        next: {
-          tags: [`/collection/pinned-drops`],
-          /* revalidate: 60, */
-        },
-      }
+      `/collection/pinned-drops${chain ? `?chain=${chain}` : ''}`
     )
     return response
   }
@@ -993,17 +705,10 @@ export class CollectionModule {
         params: {
           filter: JSON.stringify(payloadBody),
         },
-        next: {
-          tags: ['/collection/drops/search'],
-        },
       }
     )
     return {
       ...response,
-      getNextPagePayload: {
-        ...args,
-        skip: (args.skip ?? 0) + (args.top ?? 35),
-      },
     }
   }
 
@@ -1052,17 +757,10 @@ export class CollectionModule {
         params: {
           filter: JSON.stringify(payloadBody),
         },
-        next: {
-          tags: ['/collection/drops/query'],
-        },
       }
     )
     return {
       ...response,
-      getNextPagePayload: {
-        ...args,
-        skip: (args.skip ?? 0) + (args.top ?? 35),
-      },
     }
   }
 
@@ -1084,9 +782,7 @@ export class CollectionModule {
 
     const response = await this.api.fetchWithTimeout<StakingSummaryPools[]>(
       `/collection/${collection}/staking/summary`,
-      {
-        ...extra,
-      }
+      extra
     )
     return response
   }
