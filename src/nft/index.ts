@@ -1,13 +1,9 @@
-import type { NftDoc } from '@xoxno/types'
+import type { GetSingleNftOfferResponseDto, NftDoc } from '@xoxno/types'
 
+import type { ArgsQueryTop } from '../types'
 import type { ActivityChain } from '../types/nft'
-import type {
-  TradincActivityArgs,
-  TradingActivityResponse,
-} from '../types/trading'
-import type { UserOffers } from '../types/user'
 import { XOXNOClient } from '../utils/api'
-import { getActivity } from '../utils/getActivity'
+import { nftGuard, paginatedGuard } from '../utils/guards'
 import { getIdentifierFromColAndNonce } from '../utils/helpers'
 import { isValidCollectionTicker, isValidNftIdentifier } from '../utils/regex'
 
@@ -69,18 +65,18 @@ export class NFTModule {
    * If it is valid, the function fetches the NFT data using the API.
    * Finally, it returns a promise that resolves to the fetched NFT data.
    */
-  public getNFTsOffers = async (
-    identifier: string,
-    skip: number = 0,
-    top: number = 25
-  ): Promise<UserOffers> => {
-    if (!isValidNftIdentifier(identifier)) {
-      throw new Error('Invalid identifier: ' + identifier)
-    }
-    const response = await this.api.fetchWithTimeout<UserOffers>(
-      `/nft/${identifier}/offers?skip=${skip}&top=${top}`
+  public getNFTsOffers = async ({ identifier, ...args }: ArgsQueryTop) => {
+    return nftGuard(
+      identifier,
+      paginatedGuard(args, () => {
+        return this.api.fetchWithTimeout<GetSingleNftOfferResponseDto>(
+          `/nft/${identifier}/offers`,
+          {
+            params: args,
+          }
+        )
+      })
     )
-    return response
   }
 
   /**
@@ -156,18 +152,5 @@ export class NFTModule {
       `/${[collection, nonceHex].join('-')}`
     )
     return response
-  }
-
-  /**
-   * Retrieves trading history based on the provided arguments.
-   *
-   * @param {TradincActivityArgs} args - The arguments for filtering the trading activity.
-   * @returns {Promise<TradingActivityResponse>} A promise resolving to a TradingActivityResponse object containing the activity.
-   * @throws {Error} Throws an error if the 'top' argument is greater than 100.
-   */
-  public getTradingActivity = async (
-    args: TradincActivityArgs
-  ): Promise<TradingActivityResponse> => {
-    return await getActivity(args, this.api)
   }
 }

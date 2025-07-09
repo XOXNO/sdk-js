@@ -3,6 +3,16 @@ export class CollectionNotFoundError extends Error {
     super(`Invalid collection ticker: ${item}`)
   }
 }
+export class AddressNotFoundError extends Error {
+  constructor(item: string) {
+    super(`Invalid address: ${item}`)
+  }
+}
+export class NFTNotFoundError extends Error {
+  constructor(item: string) {
+    super(`Invalid NFT identifier: ${item}`)
+  }
+}
 
 export class PaginatedTopError extends Error {
   constructor(top: number) {

@@ -93,24 +93,6 @@ export interface UserInventory {
   chain?: ActivityChain
 }
 
-export interface UserOffers {
-  hasMoreResults: boolean
-  count: number
-  resources: OfferBody[]
-}
-
-export interface ArgsUserOffers {
-  address: string
-  type: OfferType
-  skip: number
-  top: number
-}
-
-export enum OfferType {
-  Received = 'received',
-  Placed = 'placed',
-}
-
 export interface OfferBody {
   dataType: string
   identifier: string
@@ -133,13 +115,6 @@ export interface OfferBody {
   floorPriceMargin: number
   floorPrice: number
   chain?: ActivityChain
-}
-
-export type Nfts = {
-  count: number
-  resultsCount: number
-  results: NftData[]
-  empty: boolean
 }
 
 export enum Type {

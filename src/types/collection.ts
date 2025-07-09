@@ -314,69 +314,6 @@ export enum AuctionTypes {
   AllListed = 'AllListed',
 }
 
-export interface GetNFTsArgs {
-  /** Listed by different users */
-  listedBy?: string[]
-  /** Owned by different users */
-  ownedBy?: string[]
-  identifiers?: string[]
-  auctionType: AuctionTypes
-  /** If set, will return only NFTs from the specified collections */
-  collections?: string[]
-  chain?: ActivityChain[]
-  /** If set, will return only NFTs from verified collections */
-  onlyVerified?: boolean
-  /** If true, will return only NFTs that are on sale */
-  onlyOnSale?: boolean
-  /** If true, will return only NFTs that are active, deadline not expired */
-  activeAuctions?: boolean
-  /** If true the extra details of an NFT will be appended to each NFT, such as collection size and owners name */
-  applyNftExtraDetails?: boolean
-  /** If set, will return only NFTs with a price in the specified range */
-  priceRange?: {
-    min: number
-    max: number
-  }
-  /** If set, will return only NFTs listed in the specified tokens */
-  listedInToken?: string[]
-  /** If set, will return only NFTs with a rank in the specified range */
-  rankRange?: {
-    min: number
-    max: number
-  }
-  /** If set, will return only NFTs with a cantina level in the specified range */
-  cantinaLevelRange?: {
-    min: number
-    max: number
-  }
-  /** If set, will return the total count of the NFTs, recommended to be set true only for the first call, then false for the next pages */
-  includeCount?: boolean
-  /** If set, will apply the extra manual filters on top of the main payload */
-  extraSearch?: string[]
-  /** If set, will return only NFTs with a name that contains the specified string */
-  searchName?: string
-  /** The number of results to return */
-  top?: number
-  /** The order by to use */
-  skip?: number
-  /** Document type */
-  dataType?: string[]
-  /** The nonces of the NFTs */
-  nonces?: number[]
-  /** If set, will return only NFTs that are staked */
-  isStaked?: boolean
-  /** The order of the results based on a field */
-  orderBy?: SearchOrderBy[]
-  /** If set, will return only the specified fields */
-  onlySelectFields?: FieldsToSelect[]
-  /** If set, will return only NFTs listed in the specified marketplaces */
-  listedOnlyOn?: Marketplace[]
-  /** If set, will return only NFTs with the specified attributes */
-  attributes?: MetadataAttribute[]
-  /** If set, will return only the selected fields */
-  strictSelect?: boolean
-  name?: string
-}
 export interface GETDropsArgs {
   name?: string
   /** If set, will return only NFTs from the specified collections */
@@ -414,28 +351,6 @@ export interface SuggestNFTsArgs {
   chain?: ActivityChain[]
 }
 
-export interface SearchNFTsResponse {
-  /** The total count of the results for the specific query */
-  count?: number
-  /** The results for the current page */
-  resources: NftData[]
-  /** The payload to use to get the next page */
-  getNextPagePayload: GetNFTsArgs
-  /** If there are more results to fetch */
-  hasMoreResults: boolean
-}
-
-export interface GetDropsResponse {
-  /** The total count of the results for the specific query */
-  count?: number
-  /** The results for the current page */
-  resources: GetCollectionMintInfo[]
-  /** The payload to use to get the next page */
-  getNextPagePayload: GETDropsArgs
-  /** If there are more results to fetch */
-  hasMoreResults: boolean
-}
-
 export interface OfferFilters {
   isActive?: boolean[]
   identifier?: string[]
@@ -458,12 +373,6 @@ export interface GetOffersArgs {
   skip?: number
   includeCount?: boolean
   filters?: OfferFilters
-}
-
-export interface GetOffersResponse {
-  count?: number
-  resources: OfferBody[]
-  hasMoreResults: boolean
 }
 
 export type ActivityData = {
@@ -554,17 +463,9 @@ export interface CollectionsNFTsResponse {
   /** The results for the current page */
   results: ICollectionProfile[]
   /** If the results are empty */
-  empty: boolean
   /** The payload to use to get the next page */
-  getNextPagePayload: GetCollectionsArgs
   /** If there are more results to fetch */
   hasMoreResults: boolean
-}
-
-export interface SuggestResults {
-  count: number
-  hasMoreResults: boolean
-  resources: ResultsBody
 }
 
 export interface ResultsBody {
@@ -707,13 +608,6 @@ export interface AvgHolder extends HoldedDetails {
   avgPerHodler: number
 }
 
-export type GlobalOffersResult = {
-  resources: GlobalOffers[]
-  hasMoreResults: boolean
-  lastSkip: number
-  getNextPagePayload?: GetGlobalOffersArgs
-}
-
 export type GlobalOffers = {
   offerId: number
   collection: string
@@ -789,12 +683,6 @@ export type StagePrice = {
   amountShort: number
   usdValue: number
   decimals: number
-}
-
-export type CollectionStatsResults = {
-  resources: CollectionStatsDoc[]
-  hasMoreResults: boolean
-  getNextPagePayload?: GetCollectionStatsArgs
 }
 
 export type GetCollectionStatsArgs = {

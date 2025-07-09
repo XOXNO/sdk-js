@@ -1,9 +1,20 @@
-import {
-  NftDoc,
-  type CollectionProfileDoc,
-  type CollectionTraitMap,
-  type NftCosmosResponse,
-  type NftDocFilter,
+import type {
+  ActivityHistoryDto,
+  CollectionMintProfileFilter,
+  CollectionOffersFilter,
+  CollectionProfileDoc,
+  CollectionStatsFilter,
+  CollectionTraitMap,
+  DropsQueryDto,
+  ExploreCollectionsStatisticsDto,
+  FilterQueryDto,
+  GetUserOffersResponseDto,
+  GlobalOffersDto,
+  GlobalSearchResponseDto,
+  NftActivityFilter,
+  NftCosmosResponse,
+  NftDocFilter,
+  NftOfferDocFilter,
 } from '@xoxno/types'
 
 import { XOXNOClient } from '../interactor'
@@ -12,34 +23,15 @@ import type {
   AnalyticsGraphs,
   CollectionListings,
   CollectionRanksExport,
-  CollectionsNFTsResponse,
   CollectionStatsDoc,
-  CollectionStatsResults,
   CollectionVolume,
   GetCollectionMintInfo,
   GetCollectionsArgs,
-  GetCollectionStatsArgs,
-  GETDropsArgs,
-  GetDropsResponse,
-  GetGlobalOffersArgs,
-  GetNFTsArgs,
-  GetOffersArgs,
-  GetOffersResponse,
-  GlobalOffersResult,
   IOwners,
   ISingleHolder,
   PublicOnly,
-  SearchNFTs,
-  SearchNFTsResponse,
   StakingSummaryPools,
-  SuggestNFTsArgs,
-  SuggestResults,
-  TradincActivityArgs,
-  TradingActivityResponse,
 } from '../types'
-import { AuctionTypes, GlobalOfferOrderBy } from '../types/collection'
-import { CollectionNotFoundError } from '../utils/errors'
-import { getActivity } from '../utils/getActivity'
 import {
   collectionGuard,
   collectionGuardOnly,
@@ -177,8 +169,8 @@ export class CollectionModule {
    * @public
    * @async
    * @function suggestCollections
-   * @param {SuggestNFTsArgs} args - An object containing the necessary parameters to fetch suggested collections results.
-   * @returns {Promise<SuggestResults>} A promise that resolves to the fetched collections results.
+   * @param {FilterQueryDto} args - An object containing the necessary parameters to fetch suggested collections results.
+   * @returns {Promise<GlobalSearchResponseDto>} A promise that resolves to the fetched collections results.
    *
    * This function fetches suggested collections results based on the provided arguments. It takes an object with the following properties:
    * - name (string): The name to search for (required).
@@ -187,28 +179,17 @@ export class CollectionModule {
    *
    * Finally, it returns a promise that resolves to the fetched collections results.
    */
-  public suggestCollections = async (
-    args: SuggestNFTsArgs
-  ): Promise<SuggestResults> => {
-    if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100')
-    }
-
-    const payloadBody: SuggestNFTsArgs = {
-      name: args.name,
-      top: args.top || 35,
-      skip: args.skip || 0,
-      chain: args.chain,
-    }
-
-    return await this.api.fetchWithTimeout<SuggestResults>(
-      `/collection/search`,
-      {
-        params: {
-          filter: JSON.stringify(payloadBody),
-        },
-      }
-    )
+  public suggestCollections = async (args: PublicOnly<FilterQueryDto>) => {
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<GlobalSearchResponseDto>(
+        '/collection/search',
+        {
+          params: {
+            filter,
+          },
+        }
+      )
+    })
   }
 
   /**
@@ -226,30 +207,17 @@ export class CollectionModule {
     )
   }
 
-  /**
-   * Retrieves trading history based on the provided arguments.
-   *
-   * @param {TradincActivityArgs} args - The arguments for filtering the trading activity.
-   * @returns {Promise<TradingActivityResponse>} A promise resolving to a TradingActivityResponse object containing the activity.
-   * @throws {Error} Throws an error if the 'top' argument is greater than 100.
-   */
-  public getTradingActivity = async (
-    args: TradincActivityArgs
-  ): Promise<TradingActivityResponse> => {
-    return await getActivity(args, this.api)
-  }
-
-  public getOffers = async (
-    args: GetOffersArgs
-  ): Promise<GetOffersResponse> => {
-    return await this.api.fetchWithTimeout<GetOffersResponse>(
-      '/nft/offer/query',
-      {
-        params: {
-          filter: JSON.stringify(args),
-        },
-      }
-    )
+  public getOffers = async (args: PublicOnly<NftOfferDocFilter>) => {
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<GetUserOffersResponseDto>(
+        '/nft/offer/query',
+        {
+          params: {
+            filter,
+          },
+        }
+      )
+    })
   }
 
   /**
@@ -299,47 +267,21 @@ export class CollectionModule {
 
   /**
    * Fetch global offers based on the provided arguments.
-   * @param {GetGlobalOffersArgs} args - The GetCollectionsArgs object containing the search parameters.
-   * @returns {Promise<GlobalOffersResult>} A Promise that resolves to the GlobalOffersResult object.
+   * @param {CollectionOffersFilter} args - The GetCollectionsArgs object containing the search parameters.
+   * @returns {Promise<GlobalOffersDto>} A Promise that resolves to the GlobalOffersResult object.
    * @throws An error if the 'top' value is greater than 100.
    */
-  public getGlobalOffers = async (
-    args?: GetGlobalOffersArgs
-  ): Promise<GlobalOffersResult> => {
-    if (args?.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100')
-    }
-
-    const payloadBody = {
-      skip: args?.skip || 0,
-      top: args?.top || 25,
-      select: args?.onlySelectFields || [],
-      filters: {
-        collection: args?.collections || [],
-        withAttributes: args?.withAttributes,
-        isActive: args?.onlyActive,
-        offerId: args?.offerIds,
-        owner: args?.ownedBy,
-        marketplace: args?.listedOnlyOn,
-        range: args?.priceRange
-          ? { ...args.priceRange, type: 'priceShort' }
-          : undefined,
-        attributes: args?.attributes,
-      },
-      orderBy: args?.orderBy || [GlobalOfferOrderBy.PriceHighToLow],
-    }
-
-    const response = await this.api.fetchWithTimeout<GlobalOffersResult>(
-      `/collection/global-offer/query`,
-      {
-        params: {
-          filter: JSON.stringify(payloadBody),
-        },
-      }
-    )
-    return {
-      ...response,
-    }
+  public getGlobalOffers = async (args: PublicOnly<CollectionOffersFilter>) => {
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<GlobalOffersDto>(
+        '/collection/global-offer/query',
+        {
+          params: {
+            filter,
+          },
+        }
+      )
+    })
   }
 
   /**
@@ -470,28 +412,23 @@ export class CollectionModule {
    * @public
    * @async
    * @function getCollectionsStatistics
-   * @param {GetCollectionStatsArgs} args - The filter payload for the collection statsitics
-   * @returns {Promise<CollectionStatsResults>} A promise that resolves to a struct with information
+   * @param {CollectionStatsFilter} args - The filter payload for the collection statsitics
+   * @returns {Promise<ExploreCollectionsStatisticsDto>} A promise that resolves to a struct with information
    * Finally, it returns a promise that resolves a struct with information
    */
   public getCollectionsStatistics = async (
-    args: GetCollectionStatsArgs
-  ): Promise<CollectionStatsResults> => {
-    if (args?.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100')
-    }
-
-    const response = await this.api.fetchWithTimeout<CollectionStatsResults>(
-      `/collection/stats/query`,
-      {
-        params: {
-          filter: JSON.stringify(args),
-        },
-      }
-    )
-    return {
-      ...response,
-    }
+    args: PublicOnly<CollectionStatsFilter>
+  ) => {
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<ExploreCollectionsStatisticsDto>(
+        '/collection/stats/query',
+        {
+          params: {
+            filter,
+          },
+        }
+      )
+    })
   }
 
   /**
@@ -659,109 +596,44 @@ export class CollectionModule {
 
   /**
    * Get drops based on the provided arguments.
-   * @param {SearchNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
-   * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
+   * @param {FilterQueryDto} args - The SearchNFTsArgs object containing the search parameters.
+   * @returns {Promise<GlobalSearchResponseDto>} A Promise that resolves to the SearchNFTsResponse object.
    * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 100.
    */
-  public getSearchDrops = async (
-    args: GETDropsArgs
-  ): Promise<GetDropsResponse> => {
-    args?.collections?.forEach((element) => {
-      if (!isValidCollectionTicker(element)) {
-        throw new Error('Invalid collection ticker: ' + element)
-      }
+  public getSearchDrops = async (args: FilterQueryDto) => {
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<GlobalSearchResponseDto>(
+        '/collection/drops/search',
+        {
+          params: {
+            filter,
+          },
+        }
+      )
     })
-
-    if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100')
-    }
-    const ranges = []
-
-    if (args.timeRange) {
-      ranges.push({
-        ...args.timeRange,
-        field: 'startTime',
-      })
-    }
-    const payloadBody = {
-      name: args.name,
-      filters: {
-        collection: args.collections ?? [],
-        verifiedOnly: args.onlyVerified || false,
-        mintToken: args.listedInToken || undefined,
-        range: ranges,
-        chain: args.chain ?? [],
-      },
-      orderBy: args.orderBy || [],
-      select: args.onlySelectFields || [],
-      includeCount: args.includeCount || false,
-      top: args.top || 35,
-      skip: args.skip || 0,
-    }
-
-    const response = await this.api.fetchWithTimeout<GetDropsResponse>(
-      `/collection/drops/search`,
-      {
-        params: {
-          filter: JSON.stringify(payloadBody),
-        },
-      }
-    )
-    return {
-      ...response,
-    }
   }
 
   /**
    * Get drops based on the provided arguments.
-   * @param {SearchNFTsArgs} args - The SearchNFTsArgs object containing the search parameters.
-   * @returns {Promise<SearchNFTsResponse>} A Promise that resolves to the SearchNFTsResponse object.
+   * @param {CollectionMintProfileFilter} args - The SearchNFTsArgs object containing the search parameters.
+   * @returns {Promise<DropsQueryDto>} A Promise that resolves to the SearchNFTsResponse object.
    * @throws An error if the provided collection ticker is invalid or if the 'top' value is greater than 100.
    */
-  public getDrops = async (args: GETDropsArgs): Promise<GetDropsResponse> => {
-    args?.collections?.forEach((element) => {
-      if (!isValidCollectionTicker(element)) {
-        throw new Error('Invalid collection ticker: ' + element)
-      }
+  public getDrops = async (args: PublicOnly<CollectionMintProfileFilter>) => {
+    args.filters.collection?.forEach((collection) => {
+      collectionGuardOnly(collection)
     })
 
-    if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100')
-    }
-    const ranges = []
-
-    if (args.timeRange) {
-      ranges.push({
-        ...args.timeRange,
-        field: 'startTime',
-      })
-    }
-    const payloadBody = {
-      name: args.name,
-      filters: {
-        collection: args.collections ?? [],
-        verifiedOnly: args.onlyVerified || false,
-        mintToken: args.listedInToken || undefined,
-        range: ranges,
-      },
-      orderBy: args.orderBy || [],
-      select: args.onlySelectFields || [],
-      includeCount: args.includeCount || false,
-      top: args.top || 35,
-      skip: args.skip || 0,
-    }
-
-    const response = await this.api.fetchWithTimeout<GetDropsResponse>(
-      `/collection/drops/query`,
-      {
-        params: {
-          filter: JSON.stringify(payloadBody),
-        },
-      }
-    )
-    return {
-      ...response,
-    }
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<DropsQueryDto>(
+        '/collection/drops/query',
+        {
+          params: {
+            filter,
+          },
+        }
+      )
+    })
   }
 
   /** Gets collection staking info

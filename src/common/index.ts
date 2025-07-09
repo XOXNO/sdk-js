@@ -1,9 +1,12 @@
-import type { ActivityChain } from '../types'
 import type {
-  FungibleAssetsMap,
-  SuggestNFTsArgs,
-  SuggestResults,
-} from '../types/collection'
+  ActivityHistoryDto,
+  FilterQueryDto,
+  GlobalSearchResponseDto,
+  NftActivityFilter,
+} from '@xoxno/types'
+
+import type { ActivityChain, PublicOnly } from '../types'
+import type { FungibleAssetsMap, SuggestNFTsArgs } from '../types/collection'
 import { AssetCategory } from '../types/collection'
 import type {
   AshSwapPaymentData,
@@ -12,6 +15,7 @@ import type {
   TokenUSDPrices,
 } from '../types/common'
 import { XOXNOClient } from '../utils/api'
+import { paginatedGuard } from '../utils/guards'
 
 export class CommonModule {
   private api: XOXNOClient
@@ -136,24 +140,13 @@ export class CommonModule {
    * Then, it converts the payload body into a base64 string and fetches the suggested results using the API.
    * Finally, it returns a promise that resolves to the fetched NFT results.
    */
-  public suggestResults = async (
-    args: SuggestNFTsArgs
-  ): Promise<SuggestResults> => {
-    if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100')
-    }
-
-    const payloadBody: SuggestNFTsArgs = {
-      name: args.name,
-      top: args.top || 35,
-      skip: args.skip || 0,
-      chain: args.chain,
-    }
-
-    return await this.api.fetchWithTimeout<SuggestResults>(`/search`, {
-      params: {
-        filter: JSON.stringify(payloadBody),
-      },
+  public suggestResults = async (args: PublicOnly<FilterQueryDto>) => {
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<GlobalSearchResponseDto>('/search', {
+        params: {
+          filter,
+        },
+      })
     })
   }
 
@@ -169,5 +162,22 @@ export class CommonModule {
       `/collection/staking/explore`
     )
     return response
+  }
+
+  /**
+   * Retrieves trading history based on the provided arguments.
+   *
+   * @param {NftActivityFilter} args - The arguments for filtering the trading activity.
+   * @returns {Promise<ActivityHistoryDto>} A promise resolving to a TradingActivityResponse object containing the activity.
+   * @throws {Error} Throws an error if the 'top' argument is greater than 100.
+   */
+  public getTradingActivity = async (args: PublicOnly<NftActivityFilter>) => {
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<ActivityHistoryDto>('/activity/query', {
+        params: {
+          filter,
+        },
+      })
+    })
   }
 }

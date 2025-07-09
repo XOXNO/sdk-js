@@ -121,11 +121,3 @@ export enum SelectFieldsTradingActivity {
   'marketplace',
   'payment_token',
 }
-
-export interface TradingActivityResponse {
-  hasMoreResults: boolean
-  /** The total count of the results for the specific query */
-  count?: number
-  resources: TradingActivity[]
-  empty: boolean
-}

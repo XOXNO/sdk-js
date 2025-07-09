@@ -8,7 +8,8 @@ import {
 } from '@xoxno/types'
 
 type IsLeaf<T> = [T] extends [object]
-  ? T extends Function | any[]
+  ? // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    T extends Function | any[]
     ? true
     : keyof T extends never
       ? true

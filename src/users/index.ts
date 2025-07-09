@@ -1,24 +1,25 @@
-import type { NftDocFilter } from '@xoxno/types'
+import type {
+  FilterQueryDto,
+  GetUserOffersResponseDto,
+  GlobalSearchResponseDto,
+  NftCosmosResponse,
+  NftDocFilter,
+} from '@xoxno/types'
 
 import { CollectionModule } from '../collection'
 import type {
+  ArgsQueryTop,
+  ArgsUserOffers,
   CollectionCreatorInfo,
   CreatorInfo,
   EventCreatorInfo,
-  GetNFTsArgs,
   PublicOnly,
-  SearchNFTsResponse,
   StakingStatus,
   StakingSummaryPools,
   StakingSummaryPoolsSlim,
   StatusResponse,
-  SuggestNFTsArgs,
-  SuggestResults,
-  TradincActivityArgs,
-  TradingActivityResponse,
 } from '../types'
 import type {
-  ArgsUserOffers,
   BulkAccount,
   CreatorProfile,
   IApiShareholder,
@@ -28,14 +29,13 @@ import type {
   UserAnalyticSummary,
   UserInventory,
   UserNetworkAccount,
-  UserOffers,
   UserPoolStakingInfo,
   UserStats,
   UserTokenInventory,
   UserXOXNODrop,
 } from '../types/user'
 import { XOXNOClient } from '../utils/api'
-import { getActivity } from '../utils/getActivity'
+import { addressGuard, paginatedGuard } from '../utils/guards'
 import { isAddressValid } from '../utils/helpers'
 import { isValidCollectionTicker } from '../utils/regex'
 
@@ -142,23 +142,24 @@ export class UserModule {
   /**
    * @name getUserOffers
    * @description Fetches all offers sent or received associated with a user address
-   * @param {String} address - The user's wallet address
+   * @param {ArgsUserOffers} address - The user's wallet address
    * @returns {UserOffers} - The user's listings
    */
-  public getUserOffers = async (args: ArgsUserOffers): Promise<UserOffers> => {
-    if (!isAddressValid(args.address))
-      throw new Error('Invalid address:' + args.address)
-    const response = await this.api.fetchWithTimeout<UserOffers>(
-      `/user/${args.address}/offers`,
-      {
-        params: {
-          type: args.type,
-          skip: args.skip,
-          top: args.top,
-        },
-      }
+  public getUserOffers = async ({
+    identifier: address,
+    ...args
+  }: ArgsUserOffers) => {
+    return addressGuard(
+      address,
+      paginatedGuard(args, () => {
+        return this.api.fetchWithTimeout<GetUserOffersResponseDto>(
+          `/user/${address}/offers`,
+          {
+            params: args,
+          }
+        )
+      })
     )
-    return response
   }
 
   /**
@@ -175,38 +176,17 @@ export class UserModule {
    *
    * Finally, it returns a promise that resolves to the fetched users results.
    */
-  public suggestUsers = async (
-    args: SuggestNFTsArgs
-  ): Promise<SuggestResults> => {
-    if (args.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100')
-    }
-
-    const payloadBody: SuggestNFTsArgs = {
-      name: args.name,
-      top: args.top || 35,
-      skip: args.skip || 0,
-      chain: args.chain,
-    }
-
-    return await this.api.fetchWithTimeout<SuggestResults>(`/user/search`, {
-      params: {
-        filter: JSON.stringify(payloadBody),
-      },
+  public suggestUsers = async (args: PublicOnly<FilterQueryDto>) => {
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<GlobalSearchResponseDto>(
+        '/user/search',
+        {
+          params: {
+            filter,
+          },
+        }
+      )
     })
-  }
-
-  /**
-   * Retrieves trading history based on the provided arguments.
-   *
-   * @param {TradincActivityArgs} args - The arguments for filtering the trading activity.
-   * @returns {Promise<TradingActivityResponse>} A promise resolving to a TradingActivityResponse object containing the activity.
-   * @throws {Error} Throws an error if the 'top' argument is greater than 100.
-   */
-  public getTradingActivity = async (
-    args: TradincActivityArgs
-  ): Promise<TradingActivityResponse> => {
-    return await getActivity(args, this.api)
   }
 
   /** Gets user's creator profile
@@ -389,23 +369,21 @@ export class UserModule {
    * @returns {NftDoc[]} Array of NFTs
    * @throws {Error} Throws an error if the address is invalid
    *  */
-  public getUserFavoriteNFTs = async (
-    address: string,
-    top: number,
-    skip: number
-  ): Promise<SearchNFTsResponse> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
-
-    const response = await this.api.fetchWithTimeout<SearchNFTsResponse>(
-      `/user/${address}/favorite/nfts`,
-      {
-        params: {
-          top,
-          skip,
-        },
-      }
+  public getUserFavoriteNFTs = async ({
+    identifier: address,
+    ...args
+  }: ArgsQueryTop) => {
+    return addressGuard(
+      address,
+      paginatedGuard(args, () => {
+        return this.api.fetchWithTimeout<NftCosmosResponse>(
+          `/user/${address}/favorite/nfts`,
+          {
+            params: args,
+          }
+        )
+      })
     )
-    return response
   }
 
   /** Gets user's favorite collection tickers
