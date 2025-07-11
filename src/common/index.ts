@@ -1,16 +1,17 @@
 import type {
+  ActivityChain,
   ActivityHistoryDto,
   FilterQueryDto,
   GlobalSearchResponseDto,
   NftActivityFilter,
+  PublicOnly,
+  StakingExploreDto,
 } from '@xoxno/types'
+import { TokenCategory } from '@xoxno/types'
 
-import type { ActivityChain, PublicOnly } from '../types'
-import type { FungibleAssetsMap, SuggestNFTsArgs } from '../types/collection'
-import { AssetCategory } from '../types/collection'
+import type { FungibleAssetsMap } from '../types/collection'
 import type {
   AshSwapPaymentData,
-  StakingExplore,
   StatisticsSummary,
   TokenUSDPrices,
 } from '../types/common'
@@ -65,7 +66,7 @@ export class CommonModule {
    * This function fetches all branded fungible assets and their info
    */
   public getFungibleTokens = async (
-    categories: AssetCategory[] = [AssetCategory.ALL],
+    categories: TokenCategory[] = [TokenCategory.ALL],
     identifiers?: string[],
     chain?: ActivityChain[]
   ): Promise<FungibleAssetsMap> => {
@@ -127,8 +128,8 @@ export class CommonModule {
    * @public
    * @async
    * @function suggestResults
-   * @param {SuggestNFTsArgs} args - An object containing the necessary parameters to fetch suggested NFT results.
-   * @returns {Promise<SuggestResults>} A promise that resolves to the fetched NFT results.
+   * @param {FilterQueryDto} args - An object containing the necessary parameters to fetch suggested NFT results.
+   * @returns {Promise<GlobalSearchResponseDto>} A promise that resolves to the fetched NFT results.
    *
    * This function fetches suggested NFT results based on the provided arguments. It takes an object with the following properties:
    * - name (string): The name to search for (required).
@@ -154,14 +155,13 @@ export class CommonModule {
    * @public
    * @async
    * @function getExploreStaking
-   * @returns {Promise<StakingExplore[]>} A promise that resolves to the fetched staking explore data.
+   * @returns {Promise<StakingExploreDto[]>} A promise that resolves to the fetched staking explore data.
    * This function fetches the staking explore data.
    */
-  public getExploreStaking = async (): Promise<StakingExplore[]> => {
-    const response = await this.api.fetchWithTimeout<StakingExplore[]>(
+  public getExploreStaking = async () => {
+    return this.api.fetchWithTimeout<StakingExploreDto[]>(
       `/collection/staking/explore`
     )
-    return response
   }
 
   /**

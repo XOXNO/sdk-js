@@ -1,7 +1,10 @@
-import type { GetSingleNftOfferResponseDto, NftDoc } from '@xoxno/types'
+import type {
+  ActivityChain,
+  GetSingleNftOfferResponseDto,
+  NftDoc,
+} from '@xoxno/types'
 
-import type { ArgsQueryTop } from '../types'
-import type { ActivityChain } from '../types/nft'
+import type { ArgsIdentifier } from '../types'
 import { XOXNOClient } from '../utils/api'
 import { nftGuard, paginatedGuard } from '../utils/guards'
 import { getIdentifierFromColAndNonce } from '../utils/helpers'
@@ -65,7 +68,7 @@ export class NFTModule {
    * If it is valid, the function fetches the NFT data using the API.
    * Finally, it returns a promise that resolves to the fetched NFT data.
    */
-  public getNFTsOffers = async ({ identifier, ...args }: ArgsQueryTop) => {
+  public getNFTsOffers = async ({ identifier, ...args }: ArgsIdentifier) => {
     return nftGuard(
       identifier,
       paginatedGuard(args, () => {

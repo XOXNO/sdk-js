@@ -1,14 +1,6 @@
-import type {
-  GlobalOffers,
-  ICollectionProfile,
-  ISocials,
-  MetadataAttribute,
-} from './collection'
+import type { ActivityChain, CollectionProfileDto } from '@xoxno/types'
 
-export enum ActivityChain {
-  MVX = 'MVX',
-  SUI = 'SUI',
-}
+import type { GlobalOffers, ISocials, MetadataAttribute } from './collection'
 
 export interface NFTAttribute extends MetadataAttribute {
   occurance: number
@@ -135,7 +127,7 @@ export interface CollectionInfo {
   volume?: number
   owner?: string
   chain?: ActivityChain
-  customConfig?: ICollectionProfile['customConfig']
+  customConfig?: CollectionProfileDto['customConfig']
 }
 
 export interface Owner {

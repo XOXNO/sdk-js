@@ -1,20 +1,21 @@
 import type {
+  AirdropDto,
+  CreatorDetailsDto,
   FilterQueryDto,
   GetUserOffersResponseDto,
   GlobalSearchResponseDto,
   NftCosmosResponse,
   NftDocFilter,
+  PublicOnly,
+  StakingStatus,
+  UserStatsDto,
 } from '@xoxno/types'
 
 import { CollectionModule } from '../collection'
 import type {
-  ArgsQueryTop,
+  ArgsAddress,
   ArgsUserOffers,
-  CollectionCreatorInfo,
-  CreatorInfo,
-  EventCreatorInfo,
-  PublicOnly,
-  StakingStatus,
+  ArgsUserStats,
   StakingSummaryPools,
   StakingSummaryPoolsSlim,
   StatusResponse,
@@ -30,9 +31,7 @@ import type {
   UserInventory,
   UserNetworkAccount,
   UserPoolStakingInfo,
-  UserStats,
   UserTokenInventory,
-  UserXOXNODrop,
 } from '../types/user'
 import { XOXNOClient } from '../utils/api'
 import { addressGuard, paginatedGuard } from '../utils/guards'
@@ -136,7 +135,7 @@ export class UserModule {
    * @returns {UserInventory} - A list of token ids and the price
    */
   public getUserNFTs = async (args: PublicOnly<NftDocFilter>) => {
-    return await this.collection.getNFTs(args)
+    return this.collection.getNFTs(args)
   }
 
   /**
@@ -145,10 +144,7 @@ export class UserModule {
    * @param {ArgsUserOffers} address - The user's wallet address
    * @returns {UserOffers} - The user's listings
    */
-  public getUserOffers = async ({
-    identifier: address,
-    ...args
-  }: ArgsUserOffers) => {
+  public getUserOffers = async ({ address, ...args }: ArgsUserOffers) => {
     return addressGuard(
       address,
       paginatedGuard(args, () => {
@@ -166,8 +162,8 @@ export class UserModule {
    * @public
    * @async
    * @function suggestUsers
-   * @param {SuggestNFTsArgs} args - An object containing the necessary parameters to fetch suggested users results.
-   * @returns {Promise<SuggestResults>} A promise that resolves to the fetched users results.
+   * @param {FilterQueryDto} args - An object containing the necessary parameters to fetch suggested users results.
+   * @returns {Promise<GlobalSearchResponseDto>} A promise that resolves to the fetched users results.
    *
    * This function fetches suggested users results based on the provided arguments. It takes an object with the following properties:
    * - name (string): The name to search for (required).
@@ -207,18 +203,16 @@ export class UserModule {
 
   /** Gets user's creator profile
    * @param {String} address - User's address
-   * @returns {IMintInfo[]} User's creator profile struct
+   * @returns {CreatorDetailsDto} User's creator profile struct
    * @throws {Error} Throws an error if the address is invalid
    *  */
-  public getCreatorListings = async (
-    address: string
-  ): Promise<CollectionCreatorInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
-
-    const response = await this.api.fetchWithTimeout<CollectionCreatorInfo>(
-      `/user/${address}/creator/listing`
+  public getCreatorListings = async (address: string) => {
+    return addressGuard(
+      address,
+      this.api.fetchWithTimeout<CreatorDetailsDto>(
+        `/user/${address}/creator/listing`
+      )
     )
-    return response
   }
 
   /** Gets user's creator info
@@ -226,19 +220,16 @@ export class UserModule {
    * @returns {EventCreatorInfo} User's creator info
    * @throws {Error} Throws an error if the address is invalid
    *  */
-  public getCreatorEvents = async (
-    address: string,
-    extra?: RequestInit
-  ): Promise<EventCreatorInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
-
-    const response = await this.api.fetchWithTimeout<EventCreatorInfo>(
-      `/user/${address}/creator/events`,
-      {
-        ...extra,
-      }
+  public getCreatorEvents = async (address: string, extra?: RequestInit) => {
+    return addressGuard(
+      address,
+      this.api.fetchWithTimeout<CreatorDetailsDto>(
+        `/user/${address}/creator/events`,
+        {
+          ...extra,
+        }
+      )
     )
-    return response
   }
 
   /** Gets user's staking info
@@ -275,22 +266,19 @@ export class UserModule {
 
   /** Gets user's creator info
    * @param {String} address - User's address
-   * @returns {CreatorInfo} User's creator info
+   * @returns {CreatorDetailsDto} User's creator info
    * @throws {Error} Throws an error if the address is invalid
    *  */
-  public getUserCreatorInfo = async (
-    address: string,
-    extra?: RequestInit
-  ): Promise<CreatorInfo> => {
-    if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
-
-    const response = await this.api.fetchWithTimeout<CreatorInfo>(
-      `/user/${address}/creator/details`,
-      {
-        ...extra,
-      }
+  public getUserCreatorInfo = async (address: string, extra?: RequestInit) => {
+    return addressGuard(
+      address,
+      this.api.fetchWithTimeout<CreatorDetailsDto>(
+        `/user/${address}/creator/details`,
+        {
+          ...extra,
+        }
+      )
     )
-    return response
   }
 
   /** Gets pool details
@@ -363,16 +351,11 @@ export class UserModule {
   }
 
   /** Gets user's favorite NFTs
-   * @param {String} address - User's address
-   * @param {number} top - Top
-   * @param {number} skip - Skip
+   * @param {ArgsAddress} address - User's address
    * @returns {NftDoc[]} Array of NFTs
    * @throws {Error} Throws an error if the address is invalid
    *  */
-  public getUserFavoriteNFTs = async ({
-    identifier: address,
-    ...args
-  }: ArgsQueryTop) => {
+  public getUserFavoriteNFTs = async ({ address, ...args }: ArgsAddress) => {
     return addressGuard(
       address,
       paginatedGuard(args, () => {
@@ -417,32 +400,15 @@ export class UserModule {
 
   /**
    * @public
-   * @async
+   * @param {ArgsUserStats} address - The creator tag that needs to be checked
    * @function getUsersStats
-   * @returns {Promise<UserStats[]>} A promise that resolves to the fetched users results.
+   * @returns {Promise<UserStatsDto[]>} A promise that resolves to the fetched users results.
    */
-  public getUsersStats = async ({
-    top,
-    skip,
-    orderBy,
-    orderDirection,
-  }: {
-    top: number
-    skip: number
-    orderBy: string
-    orderDirection?: string
-  }): Promise<UserStats[]> => {
-    if (top && top > 35) {
-      throw new Error('Top cannot be greater than 100')
-    }
-
-    return await this.api.fetchWithTimeout<UserStats[]>(`/user/stats`, {
-      params: {
-        top: top,
-        skip: skip,
-        orderBy: orderBy,
-        orderDirection: orderDirection ?? 'desc',
-      },
+  public getUsersStats = async (args: ArgsUserStats) => {
+    return paginatedGuard(args, () => {
+      return this.api.fetchWithTimeout<UserStatsDto[]>('/user/stats', {
+        params: args,
+      })
     })
   }
 
@@ -457,7 +423,7 @@ export class UserModule {
     address: string
   ): Promise<StakingCreatorInfo> => {
     if (!isAddressValid(address)) throw new Error('Invalid address:' + address)
-    return await this.api.fetchWithTimeout<StakingCreatorInfo>(
+    return this.api.fetchWithTimeout<StakingCreatorInfo>(
       `/user/${address}/staking/creator`
     )
   }
@@ -466,35 +432,20 @@ export class UserModule {
    * @public
    * @async
    * @function getUsersDrop
-   * @returns {Promise<UserXOXNODrop[]>} A promise that resolves to the fetched users results.
+   * @param {ArgsAddress} address - The user's address.
+   * @returns {Promise<AirdropDto[]>} A promise that resolves to the fetched users results.
    */
-  public getUsersDrop = async ({
-    top,
-    skip,
-    address,
-  }: {
-    top: number
-    skip: number
-    address?: string
-  }): Promise<UserXOXNODrop[]> => {
-    if (top && top > 35) {
-      throw new Error('Top cannot be greater than 100')
-    }
-
-    if (address) {
-      if (!isAddressValid(address))
-        throw new Error('Invalid address:' + address)
-    }
-
-    return await this.api.fetchWithTimeout<UserXOXNODrop[]>(
-      `/user/xoxno-drop`,
-      {
-        params: {
-          top: top,
-          skip: skip,
-          ...(address ? { address } : {}),
-        },
-      }
+  public getUsersDrop = async ({ address, ...args }: ArgsAddress) => {
+    return addressGuard(
+      address,
+      paginatedGuard(args, () => {
+        return this.api.fetchWithTimeout<AirdropDto[]>('/user/xoxno-drop', {
+          params: {
+            ...args,
+            ...(address ? { address } : {}),
+          },
+        })
+      })
     )
   }
 

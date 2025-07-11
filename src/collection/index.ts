@@ -1,8 +1,10 @@
 import type {
-  ActivityHistoryDto,
+  ActivityChain,
+  CollectionCosmosResponse,
   CollectionMintProfileFilter,
   CollectionOffersFilter,
   CollectionProfileDoc,
+  CollectionProfileFilter,
   CollectionStatsFilter,
   CollectionTraitMap,
   DropsQueryDto,
@@ -11,25 +13,22 @@ import type {
   GetUserOffersResponseDto,
   GlobalOffersDto,
   GlobalSearchResponseDto,
-  NftActivityFilter,
   NftCosmosResponse,
   NftDocFilter,
   NftOfferDocFilter,
+  PublicOnly,
 } from '@xoxno/types'
 
 import { XOXNOClient } from '../interactor'
 import type {
-  ActivityChain,
   AnalyticsGraphs,
   CollectionListings,
   CollectionRanksExport,
   CollectionStatsDoc,
   CollectionVolume,
   GetCollectionMintInfo,
-  GetCollectionsArgs,
   IOwners,
   ISingleHolder,
-  PublicOnly,
   StakingSummaryPools,
 } from '../types'
 import {
@@ -202,7 +201,7 @@ export class CollectionModule {
   public collectionListingsAnalytics = async (
     ticker: string
   ): Promise<CollectionListings> => {
-    return await this.api.fetchWithTimeout<CollectionListings>(
+    return this.api.fetchWithTimeout<CollectionListings>(
       `/collection/${ticker}/listings`
     )
   }
@@ -222,47 +221,21 @@ export class CollectionModule {
 
   /**
    * Fetch collections profiles based on the provided arguments.
-   * @param {GetCollectionsArgs} args - The GetCollectionsArgs object containing the search parameters.
-   * @returns {Promise<CollectionsNFTsResponse>} A Promise that resolves to the CollectionsNFTsResponse object.
+   * @param {CollectionProfileFilter} args - The GetCollectionsArgs object containing the search parameters.
+   * @returns {Promise<CollectionCosmosResponse>} A Promise that resolves to the CollectionsNFTsResponse object.
    * @throws An error if the 'top' value is greater than 100.
    */
-  public getCollections = async (args?: GetCollectionsArgs) => {
-    if (args?.top && args.top > 100) {
-      throw new Error('Top cannot be greater than 100')
-    }
-
-    const payloadBody = {
-      skip: args?.skip || 0,
-      top: args?.top || 25,
-      select: args?.onlySelectFields || [],
-      filters: {
-        dataType: 'collectionProfile',
-        isMintable: args?.onlyMintable || undefined,
-        ...(args?.collections &&
-          args.collections.length > 0 && {
-            collection: args.collections,
-          }),
-        ...(args?.chain &&
-          args.chain.length > 0 && {
-            chain: args.chain,
-          }),
-      },
-      orderBy: [args?.orderBy || 'statistics.tradeData.weekEgldVolume desc'],
-    }
-
-    const response = await this.api.fetchWithTimeout<CollectionProfileDoc[]>(
-      `/collection/query`,
-      {
-        params: {
-          filter: JSON.stringify(payloadBody),
-        },
-      }
-    )
-    return {
-      results: response,
-      count: response.length,
-      hasMoreResults: response.length >= (args?.top || 25),
-    }
+  public getCollections = async (args: CollectionProfileFilter) => {
+    return paginatedGuard(args, (filter) => {
+      return this.api.fetchWithTimeout<CollectionCosmosResponse>(
+        '/collection/query',
+        {
+          params: {
+            filter,
+          },
+        }
+      )
+    })
   }
 
   /**
@@ -446,7 +419,7 @@ export class CollectionModule {
       throw new Error('Invalid collection ticker: ' + ticker)
     }
 
-    return await this.api.fetchWithTimeout<CollectionStatsDoc>(
+    return this.api.fetchWithTimeout<CollectionStatsDoc>(
       `/collection/${ticker}/stats`
     )
   }
@@ -686,3 +659,5 @@ export class CollectionModule {
     return response
   }
 }
+
+new CollectionModule().getOffers({ filters: {} })

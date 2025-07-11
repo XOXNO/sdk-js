@@ -1,5 +1,7 @@
+import type { ActivityChain } from '@xoxno/types'
+
 import type { ISocials } from './collection'
-import type { ActivityChain, NftData, Owner } from './nft'
+import type { NftData, Owner } from './nft'
 import type { StakingSummaryPools } from './staking'
 
 export interface BulkAccount {
@@ -117,9 +119,6 @@ export interface OfferBody {
   chain?: ActivityChain
 }
 
-export enum Type {
-  NonFungibleESDT = 'NonFungibleESDT',
-}
 export type TickerElement = {
   ticker: string
   name: string

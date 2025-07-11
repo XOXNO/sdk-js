@@ -1,28 +1,34 @@
+import type {
+  KustoOrderDirection,
+  OfferType,
+  UserStatsOrderByColumn,
+} from '@xoxno/types'
+
 export * from './collection'
 export * from './nft'
-export * from './trading'
 export * from './interactions'
 export * from './staking'
 export * from './user'
 export * from './common'
-export * from './event'
 
-export type PublicOnly<T> = {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  [K in keyof T as T[K] extends Function ? never : K]: T[K]
-}
-
-export interface ArgsQueryTop {
-  identifier: string
+export interface WithSkipAndTop {
   skip: number
   top: number
 }
 
-export interface ArgsUserOffers extends ArgsQueryTop {
-  type: OfferType
+export interface ArgsAddress extends WithSkipAndTop {
+  address: string
 }
 
-export enum OfferType {
-  Received = 'received',
-  Placed = 'placed',
+export interface ArgsIdentifier extends WithSkipAndTop {
+  identifier: string
+}
+
+export interface ArgsUserStats extends WithSkipAndTop {
+  orderBy: UserStatsOrderByColumn
+  orderDirection: KustoOrderDirection
+}
+
+export interface ArgsUserOffers extends ArgsAddress {
+  type: OfferType
 }

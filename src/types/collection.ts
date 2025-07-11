@@ -1,6 +1,6 @@
-import type { IEventDoc } from './event'
+import type { ActivityChain, NftActivityType } from '@xoxno/types'
+
 import type {
-  ActivityChain,
   CollectionInfo,
   Media,
   NftData,
@@ -8,7 +8,6 @@ import type {
   Owner,
   SaleInfo,
 } from './nft'
-import type { NftActivityType } from './trading'
 import type { CreatorProfile, IUserProfileSearch, OfferBody } from './user'
 
 export interface ISocials {
@@ -52,21 +51,6 @@ export interface IMintInfoExtended extends IMintInfo {
   collectionInfo: CollectionInfo
 }
 
-export interface CollectionCreatorInfo extends CreatorProfile {
-  listing: IMintInfoExtended[]
-}
-
-export interface EventCreatorInfo extends CreatorProfile {
-  events: IEventDoc[]
-}
-
-export interface CreatorInfo extends CollectionCreatorInfo, EventCreatorInfo {}
-
-export interface CollectionStatisticsProfile {
-  tradeData: TradeData
-  mintData: MintStatistics
-  other: OtherStatistics
-}
 export interface Rule {
   type: 'kiosk_lock_rule' | 'royalty_rule'
   amount_bp?: number
@@ -78,43 +62,6 @@ export interface TransferPolicy {
   type: string
   rules: Rule[]
   is_origin_byte: boolean
-}
-export interface ICollectionProfile {
-  dataType: 'collectionProfile'
-  collection: string
-  name: string
-  description: string
-  isVisible: boolean
-  isVerified: boolean
-  profile: string
-  banner: string
-  statistics: CollectionStatisticsProfile
-  owner: string
-  creator: string
-  isMintable: boolean
-  hasStaking: boolean
-  id: string
-  socials: ISocials
-  type: string
-  chain?: ActivityChain
-  transferPolicies: TransferPolicy[]
-  royalty?: number
-  minSalePrice?: string
-  lastVerifiedTimestamp: number
-  lastVerifiedBy: string
-  customConfig?: {
-    collection: string
-    reversedCutFees: boolean
-    reversedRoyalties: boolean
-    customRoyalties: boolean
-    minRoyalties: number
-    maxRoyalties: number
-    extraFees: {
-      amount: number
-      address: string
-    }
-  }
-  _ts: number
 }
 
 export interface AttributeData {
@@ -137,13 +84,6 @@ export interface ICollectionAttributes {
   [traitType: string]: TraitValues
 }
 
-export enum Marketplace {
-  XO = 'xoxno',
-  FM = 'frameit',
-  DR = 'deadrare',
-  KG = 'krogan',
-}
-
 export interface GlobalOffer {
   attributes: MetadataAttribute[]
   collection: string
@@ -159,107 +99,6 @@ export interface GlobalOffer {
   quantity: number
   short_price: number
   timestamp: number
-}
-
-export enum FieldsToSelect {
-  Rank = 'metadata.rarity.rank',
-  Attributes = 'metadata.attributes',
-  Description = 'metadata.description',
-  Name = 'name',
-  OnSale = 'onSale',
-  SaleInfo = 'saleInfo',
-  Royalties = 'royalties',
-  Identifier = 'identifier',
-  Collection = 'collection',
-  OriginalURL = 'url',
-  Nonce = 'nonce',
-  ContentType = 'originalMedia.contentType',
-  WasProcessed = 'wasProcessed',
-  AvifURL = 'avifUrl',
-  WebpURL = 'webpUrl',
-  Type = 'type',
-}
-
-export enum SearchOrderBy {
-  PriceHighToLow = 'saleInfo.minBidShort desc',
-  PriceLowToHigh = 'saleInfo.minBidShort asc',
-  MaxPriceHighToLow = 'saleInfo.maxBidShort desc',
-  MaxPriceLowToHigh = 'saleInfo.maxBidShort asc',
-  BidPriceHighToLow = 'saleInfo.currentBidShort desc',
-  BidPriceLowToHigh = 'saleInfo.currentBidShort asc',
-  RarityHighToLow = 'metadata.rarity.rank desc',
-  RarityLowToHigh = 'metadata.rarity.rank asc',
-  NonceHighToLow = 'nonce desc',
-  NonceLowToHigh = 'nonce asc',
-  RecentListed = 'saleInfo.timestamp desc',
-  OldestListed = 'saleInfo.timestamp asc',
-  EndingLate = 'saleInfo.deadline desc',
-  EndingSoon = 'saleInfo.deadline asc',
-}
-
-export enum DropsOderBy {
-  EndingLate = 'startTime desc',
-  EndingSoon = 'startTime asc',
-}
-
-export enum SuggestOrderBy {
-  TotalVolumeHighToLow = 'statistics/tradeData/totalEgldVolume desc',
-  FollowersHighToLow = 'statistics/other/followCount desc',
-  IsVerifiedTrueToFalse = 'isVerified desc',
-  HasImageTrueToFalse = 'profile desc',
-  HasBannerTrueToFalse = 'banner desc',
-}
-
-export enum CollectionsOrderBy {
-  WeekVolumeHighToLow = 'statistics.tradeData.weekEgldVolume desc',
-  WeekVolumeLowToHigh = 'statistics.tradeData.weekEgldVolume asc',
-  DailyVolumeHighToLow = 'statistics.tradeData.dayEgldVolume desc',
-  DailyVolumeLowToHigh = 'statistics.tradeData.dayEgldVolume asc',
-  TotalVolumeHighToLow = 'statistics.tradeData.totalEgldVolume desc',
-  TotalVolumeLowToHigh = 'statistics.tradeData.totalEgldVolume asc',
-  AvgVolumePriceHighToLow = 'statistics.tradeData.averageEgldPrice desc',
-  AvgVolumePriceLowToHigh = 'statistics.tradeData.averageEgldPrice asc',
-  ATHHighToLow = 'statistics.tradeData.athEgldPrice desc',
-  ATHLowToHigh = 'statistics.tradeData.athEgldPrice asc',
-  TotalTradesHighToLow = 'statistics.tradeData.totalTrades desc',
-  TotalTradesLowToHigh = 'statistics.tradeData.totalTrades asc',
-  SupplyHighToLow = 'statistics.other.nftCount desc',
-  SupplyLowToHigh = 'statistics.other.nftCount asc',
-  FollowersHighToLow = 'statistics.other.followCount desc',
-  FollowersLowToHigh = 'statistics.other.followCount asc',
-}
-
-export enum GlobalOfferOrderBy {
-  PriceHighToLow = 'priceShort desc',
-  PriceLowToHigh = 'priceShort asc',
-  OfferIdHighToLow = 'offerIddesc',
-  OfferIdLowToHigh = 'offerId asc',
-  RecentListed = 'timestamp desc',
-  OldestListed = 'timestamp asc',
-}
-
-export enum CollectionsFieldsToSelect {
-  Profile = 'profile',
-  Description = 'description',
-  Creator = 'creator',
-  Owner = 'owner',
-  Socials = 'socials',
-  Type = 'type',
-  HasStaking = 'hasStaking',
-  Name = 'name',
-  Banner = 'banner',
-  IsVerified = 'isVerified',
-  IsMintable = 'isMintable',
-  Statistics = 'statistics',
-  Collection = 'collection',
-}
-export enum GlobalOfferFieldsToSelect {
-  Attributes = 'attributes',
-  Collection = 'collection',
-  Marketplace = 'marketplace',
-  PaymentToken = 'paymentToken',
-  LongPrice = 'price',
-  ShortPrice = 'priceShort',
 }
 
 export interface Filter {
@@ -305,195 +144,6 @@ export interface SearchNFTs {
   top?: number
   skip?: number
   includeCount?: boolean
-}
-
-export enum AuctionTypes {
-  FixedPrice = 'FixedPrice',
-  Auctions = 'Auctions',
-  All = 'All',
-  AllListed = 'AllListed',
-}
-
-export interface GETDropsArgs {
-  name?: string
-  /** If set, will return only NFTs from the specified collections */
-  collections?: string[]
-  chain?: ActivityChain[]
-  /** If set, will return only NFTs from verified collections */
-  onlyVerified?: boolean
-  /** If set, will return only NFTs listed in the specified tokens */
-  listedInToken?: string[]
-  /** If set, will return only NFTs with a cantina level in the specified range */
-  timeRange?: {
-    min: number
-    max: number
-  }
-  /** If set, will return the total count of the NFTs, recommended to be set true only for the first call, then false for the next pages */
-  includeCount?: boolean
-  /** The number of results to return */
-  top?: number
-  /** The order by to use */
-  skip?: number
-  /** The order of the results based on a field */
-  orderBy?: DropsOderBy[]
-  /** If set, will return only the specified fields */
-  onlySelectFields?: FieldsToSelect[]
-}
-export interface SuggestNFTsArgs {
-  /** If set, will return only collections or users with a name that contains the specified string */
-  name: string
-  /** The number of results to return */
-  top?: number
-  /** The order by to use */
-  skip?: number
-  /** The order of the results based on a field */
-  orderBy?: SuggestOrderBy[]
-  chain?: ActivityChain[]
-}
-
-export interface OfferFilters {
-  isActive?: boolean[]
-  identifier?: string[]
-  collection?: string[]
-  owner?: string[]
-  nftOwner?: string[]
-  marketplace?: Marketplace[]
-  range?: {
-    min: number
-    max: number
-    field: string
-  }[]
-}
-
-export interface GetOffersArgs {
-  select?: string[]
-  strictSelect?: boolean
-  orderBy?: string[]
-  top?: number
-  skip?: number
-  includeCount?: boolean
-  filters?: OfferFilters
-}
-
-export type ActivityData = {
-  collection: string
-  identifier: string
-  price: number
-  paymentToken: string
-  scId: number
-  usdValue: number
-  egldValue: number
-  nftInfo: Pick<
-    NftData,
-    | 'identifier'
-    | 'collection'
-    | 'name'
-    | 'metadata'
-    | 'url'
-    | 'wasProcessed'
-    | 'media'
-  >
-  collectionInfo: ShortCollectionInfo
-  originalTokenAmount?: string
-  originalTokenAmountShort?: number
-  originalTokenEgldValue?: number
-  originalTokenUsdValue?: number
-  originalTokenIdentifier?: string
-}
-
-export type ShortCollectionInfo = Pick<
-  ICollectionProfile,
-  'name' | 'isVerified' | 'isVisible' | 'profile' | 'description'
-> & { collectionSize: number; holderCount: number; followCount: number }
-
-export type TradingActivity = {
-  id: string
-  txHash: string
-  eventIdentifier: string
-  timestamp: number
-  activityType: NftActivityType
-  source: string
-  from: Owner
-  to: Owner
-  activityData: ActivityData
-  chain?: ActivityChain
-}
-
-export interface GetCollectionsArgs {
-  /**  The collections to fetch the profile */
-  collections?: string[]
-  chain?: ActivityChain[]
-  /** If true, will return only NFTs that are mintable */
-  onlyMintable?: boolean
-  /** The number of results to return */
-  top?: number
-  /** The order by to use */
-  skip?: number
-  /** The order of the results based on a field */
-  orderBy?: CollectionsOrderBy
-  /** If set, will return only the specified fields */
-  onlySelectFields?: CollectionsFieldsToSelect[]
-}
-
-export interface GetGlobalOffersArgs {
-  /**  The collections to fetch the profile */
-  collections?: string[]
-  /** The number of results to return */
-  top?: number
-  /** The order by to use */
-  skip?: number
-  /** The order of the results based on a field */
-  orderBy?: GlobalOfferOrderBy[]
-  /** If set, will return only the offers with required attributes */
-  withAttributes?: boolean
-  /** If set, will return only the specified fields */
-  onlySelectFields?: GlobalOfferFieldsToSelect[]
-  //** If set, will return only the offers that have deposit balance*/
-  onlyActive?: boolean
-  offerIds?: number[]
-  ownedBy?: string[]
-  listedOnlyOn?: Marketplace[]
-  priceRange?: RangeFilter
-  attributes?: MetadataAttribute[]
-}
-
-export interface CollectionsNFTsResponse {
-  /** The results count for the current page */
-  resultsCount: number
-  /** The results for the current page */
-  results: ICollectionProfile[]
-  /** If the results are empty */
-  /** The payload to use to get the next page */
-  /** If there are more results to fetch */
-  hasMoreResults: boolean
-}
-
-export interface ResultsBody {
-  collections: (ICollectionProfile & { floorPrice: number })[]
-  users: IUserProfileSearch[]
-  nft: NftData[]
-}
-
-export interface OtherStatistics {
-  nftCount: number
-  followCount: number
-  holdersCount?: number
-}
-
-export interface TradeData {
-  dayEgldVolume: number
-  weekEgldVolume: number
-  totalEgldVolume: number
-  averageEgldPrice: number
-  athEgldPrice: number
-  athTxHash: string
-  totalTrades: number
-}
-
-export interface MintStatistics {
-  totalMintEgldVolume: number
-  weekMintEgldVolume: number
-  dayMintEgldVolume: number
 }
 
 export interface CollectionVolume {
@@ -571,14 +221,6 @@ export type FungibleAssets = {
 
 export type FungibleAssetsMap = {
   [key: string]: FungibleAssets
-}
-
-export enum AssetCategory {
-  ALL = 'all',
-  Trade = 'trade',
-  P2P = 'p2p',
-  Staking = 'staking',
-  Minting = 'minting',
 }
 
 export type ISingleHolder = {
@@ -685,79 +327,10 @@ export type StagePrice = {
   decimals: number
 }
 
-export type GetCollectionStatsArgs = {
-  filters?: {
-    chain?: ActivityChain[]
-    collection?: string[]
-    verifiedOnly?: boolean
-    range?: RangeFilter[]
-  }
-  orderBy?: CollectionStatsOrderBy[]
-  select?: CollectionStatsSelectFields[]
-  top: number
-  skip: number
-}
-
-export enum CollectionStatsSelectFields {
-  TradingStats = 'tradingStats',
-}
-
 export interface RangeFilter {
   min?: number
   max?: number
   field?: string
-}
-
-export enum CollectionStatsOrderBy {
-  ListedCountDesc = 'tradingStats.listedCount DESC',
-  ListedCountAsc = 'tradingStats.listedCount ASC',
-  FloorPriceDesc = 'tradingStats.floorPrice DESC',
-  FloorPriceAsc = 'tradingStats.floorPrice ASC',
-
-  TotalVolumeDesc = 'tradingStats.totalVolume DESC',
-  TotalVolumeAsc = 'tradingStats.totalVolume ASC',
-
-  TotalTradesDesc = 'tradingStats.totalTrades DESC',
-  TotalTradesAsc = 'tradingStats.totalTrades ASC',
-
-  AllTimeHighDesc = 'tradingStats.allTimeHigh.price DESC',
-  AllTimeHighAsc = 'tradingStats.allTimeHigh.price ASC',
-
-  DayVolumeDesc = 'tradingStats.day.volume DESC',
-  DayVolumeAsc = 'tradingStats.day.volume ASC',
-  DayVolumeMarginDesc = 'tradingStats.day.volumeMargin DESC',
-  DayVolumeMarginAsc = 'tradingStats.day.volumeMargin ASC',
-  DayTradesDesc = 'tradingStats.day.trades DESC',
-  DayTradesAsc = 'tradingStats.day.trades ASC',
-  DayTradesMarginDesc = 'tradingStats.day.tradesMargin DESC',
-  DayTradesMarginAsc = 'tradingStats.day.tradesMargin ASC',
-
-  WeekVolumeDesc = 'tradingStats.week.volume DESC',
-  WeekVolumeAsc = 'tradingStats.week.volume ASC',
-  WeekVolumeMarginDesc = 'tradingStats.week.volumeMargin DESC',
-  WeekVolumeMarginAsc = 'tradingStats.week.volumeMargin ASC',
-  WeekTradesDesc = 'tradingStats.week.trades DESC',
-  WeekTradesAsc = 'tradingStats.week.trades ASC',
-  WeekTradesMarginDesc = 'tradingStats.week.tradesMargin DESC',
-  WeekTradesMarginAsc = 'tradingStats.week.tradesMargin ASC',
-
-  MonthVolumeDesc = 'tradingStats.month.volume DESC',
-  MonthVolumeAsc = 'tradingStats.month.volume ASC',
-  MonthVolumeMarginDesc = 'tradingStats.month.volumeMargin DESC',
-  MonthVolumeMarginAsc = 'tradingStats.month.volumeMargin ASC',
-  MonthTradesDesc = 'tradingStats.month.trades DESC',
-  MonthTradesAsc = 'tradingStats.month.trades ASC',
-  MonthTradesMarginDesc = 'tradingStats.month.tradesMargin DESC',
-  MonthTradesMarginAsc = 'tradingStats.month.tradesMargin ASC',
-
-  YearVolumeDesc = 'tradingStats.year.volume DESC',
-  YearVolumeAsc = 'tradingStats.year.volume ASC',
-  YearVolumeMarginDesc = 'tradingStats.year.volumeMargin DESC',
-  YearVolumeMarginAsc = 'tradingStats.year.volumeMargin ASC',
-  YearTradesDesc = 'tradingStats.year.trades DESC',
-  YearTradesAsc = 'tradingStats.year.trades ASC',
-  YearTradesMarginDesc = 'tradingStats.year.tradesMargin DESC',
-  YearTradesMarginAsc = 'tradingStats.year.tradesMargin ASC',
 }
 
 export type CollectionStatsDoc = {

@@ -9,7 +9,6 @@ import BigNumber from 'bignumber.js'
 import type { GlobalOffer } from '../types/collection'
 import type {
   AcceptGlobalOffer,
-  Auction,
   ChangeListing,
   NewListingArgs,
   Payment,
@@ -17,13 +16,35 @@ import type {
   SendGlobalOffer,
   WithSenderAndNonce,
 } from '../types/interactions'
-import { AuctionType } from '../types/interactions'
 import { XOXNOClient } from '../utils/api'
 import { isAddressValid } from '../utils/helpers'
 import { ContractQueryRunner } from '../utils/scCalls'
 import { SmartContractAbis } from '../utils/SmartContractAbis'
 import { getSmartContract } from '../utils/SmartContractService'
 
+enum AuctionType {
+  NftBid,
+  Nft,
+  SftAll,
+  SftOnePerPayment,
+}
+interface Auction {
+  auctioned_token_type: string
+  auctioned_token_nonce: number
+  nr_auctioned_tokens: number
+  auction_type: AuctionType
+  payment_token_type: string
+  payment_token_nonce: number
+  min_bid: string
+  max_bid: string
+  start_time: number
+  deadline: number
+  original_owner: string
+  current_bid: string
+  current_winner: string
+  marketplace_cut_percentage: string
+  creator_royalties_percentage: string
+}
 export class SCInteraction {
   private xo: SmartContract
   private api: XOXNOClient
@@ -81,7 +102,7 @@ export class SCInteraction {
   }
 
   private async getResult(interaction: Interaction) {
-    return await this.runner.runQuery(this.xo, interaction)
+    return this.runner.runQuery(this.xo, interaction)
   }
 
   /**

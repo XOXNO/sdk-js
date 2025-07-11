@@ -45,7 +45,7 @@ export class LaunchpadModule {
    * @returns {Promise<any>} The result of the interaction.
    */
   private async getResult(interaction: Interaction) {
-    return await this.runner.runQuery(this.minter, interaction)
+    return this.runner.runQuery(this.minter, interaction)
   }
 
   /**

@@ -5,17 +5,6 @@ export type Reward = {
   ticker: string
 }
 
-export enum IssuingType {
-  Dynamic = 'Dynamic',
-  Fixed = 'Fixed',
-}
-
-export enum PoolType {
-  Duo = 'Duo',
-  Single = 'Single',
-  Perk = 'Perk',
-}
-
 export type Collection = {
   ticker: string
   name: string
@@ -67,10 +56,4 @@ export interface StakingSummaryPools {
   unBoundPeriod: number
   stakingEnabled: boolean
   owner: string
-}
-
-export enum StakingStatus {
-  Staked = 'staked',
-  Unbounding = 'unstaked',
-  Available = 'available',
 }
