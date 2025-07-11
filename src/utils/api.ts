@@ -99,7 +99,7 @@ export class XOXNOClient {
 
   public fetchWithTimeout = async <T>(
     path: string,
-    options: RequestInit & { params?: Record<string, any> } = {}
+    { params, ...options }: RequestInit & { params?: Record<string, any> } = {}
   ): Promise<T> => {
     const authHeader = (options?.headers as { Authorization?: string })
       ?.Authorization
@@ -108,20 +108,21 @@ export class XOXNOClient {
       authHeader === 'Bearer undefined' ? undefined : authHeader
 
     const headers = {
-      'Accept-Encoding': 'gzip,deflate,br',
+      ...options.headers,
       Referer: 'https://xoxno.sdk',
       'User-Agent': 'XOXNO/1.0/SDK',
-      ...(options.method === 'POST'
+      ...(options.method !== 'GET'
         ? { 'Content-Type': 'application/json' }
         : {}),
-      // ...((options.headers as object) ?? {}),
       ...(Authorization ? { Authorization } : {}),
     }
+
     const shouldInsertOrigin = typeof path === 'string' && path.startsWith('/')
+
     const url = `${shouldInsertOrigin ? `${this.apiUrl}${path}` : path}${
-      options.params
+      params
         ? '?' +
-          Object.entries(options.params)
+          Object.entries(params)
             .flatMap(([key, value]) => {
               if (Array.isArray(value)) {
                 return value.map((v) => `${key}=${encodeURIComponent(v)}`)
@@ -133,12 +134,15 @@ export class XOXNOClient {
         : ''
     }`
 
-    const res = await fetch(url, {
+    const allHeaders = {
       ...options,
-      cache: 'no-store',
       ...(Object.keys(headers).length ? { headers } : {}),
-      method: (options.method as any) ?? 'GET',
-    })
+      method: options.method ?? 'GET',
+    }
+
+    // console.log(url)
+
+    const res = await fetch(url, allHeaders)
 
     if (!res.ok) {
       const text = await res.text()
