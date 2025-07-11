@@ -6,26 +6,23 @@ import { isAddressValid } from '../utils/helpers'
 import { isValidCollectionTicker } from '../utils/regex'
 import { routes } from './endpoints'
 
-type SegKey<S extends string> = S extends `:${infer P}` ? never : S
-type SegParam<S extends string> = S extends `:${infer P}` ? P : never
-
+// ──────────────────────────────────────────────────────────────
+//  ORIGINAL HELPERS  (unchanged)
+// ──────────────────────────────────────────────────────────────
 type RemoveColon<S extends string> = S extends `:${infer R}` ? R : S
-
 type CamelCase<S extends string> =
   S extends `${infer H}-${infer T}${infer Rest}`
     ? `${H}${Capitalize<`${T}${Rest}`>}`
     : S
 
 type IsEmptyObj<T> = keyof T extends never ? true : false
-
 type NeedsDefault<I, O> =
   IsEmptyObj<I> extends true
     ? IsEmptyObj<O> extends true
-      ? false // both empty → skip default
+      ? false
       : true
     : true
 
-/** "/a/:x/b/:y" → { x: string, y: string } */
 type CollectParams<S extends string> =
   S extends `${string}:${infer P}/${infer R}`
     ? { [K in P]: string } & CollectParams<`/${R}`>
@@ -33,54 +30,88 @@ type CollectParams<S extends string> =
       ? { [K in P]: string }
       : object
 
-type VerbExtras<Full, _unused = {}> = {
+type VerbExtras<Full, PBag> = {
   [M in keyof Full as M extends 'input' | 'output' | 'joinArrays'
     ? never
     : M]: Full[M] extends { input: infer VI; output: infer VO }
-    ? (args: VI & { body?: string }, init?: RequestInit) => Promise<VO>
+    ? (args: (VI & PBag) & { body?: string }, init?: RequestInit) => Promise<VO>
     : never
 }
 
-type PathToTree<P extends string, I, O, Full> =
-  /* ── more segments ahead ── */
-  P extends `/${infer Head}/${infer Rest}`
-    ? SegParam<Head> extends never
-      ? /* normal segment → object property */
-        { [K in CamelCase<Head>]: PathToTree<`/${Rest}`, I, O, Full> }
-      : /* param segment  → curried function */
-        (val: string) => PathToTree<`/${Rest}`, I, O, Full>
-    : /* ── leaf ── */
-      P extends `/${infer Leaf}`
-      ? SegParam<Leaf> extends never
-        ? { [K in CamelCase<Leaf>]: DefaultAndVerbs<I, O, Full> }
-        : (val: string) => DefaultAndVerbs<I, O, Full>
-      : never
+// ──────────────────────────────────────────────────────────────
+//  CURRIED PATH  →  TREE
+// ──────────────────────────────────────────────────────────────
+type DropKey<T, K extends PropertyKey> = { [P in Exclude<keyof T, K>]: T[P] }
 
-/* helper to attach default GET (if needed) + verbs */
-type DefaultAndVerbs<I, O, Full> = (NeedsDefault<I, O> extends true
-  ? (input: I, init?: RequestInit) => Promise<O>
-  : {}) &
-  VerbExtras<Full, {}>
+type RequiredKeys<T> = {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  [K in keyof T]-?: {} extends Pick<T, K> ? never : K
+}[keyof T]
 
-type SDKUnion = {
-  [P in keyof typeof routes]: PathToTree<
-    P,
-    (typeof routes)[P]['input'],
-    (typeof routes)[P]['output'],
-    (typeof routes)[P]
-  >
-}[keyof typeof routes]
+// “true” if there's at least one required key
+type HasRequiredKeys<T> = [RequiredKeys<T>] extends [never] ? false : true
 
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
-) => void
+type PathToTree<
+  P extends string,
+  I,
+  O,
+  Full = { input: I; output: O },
+  Root extends string = P,
+  Bag extends object = CollectParams<Root>,
+> = P extends `/${infer Head}/${infer Rest}`
+  ? Head extends `:${infer Param}`
+    ? {
+        [K in CamelCase<Param>]: (
+          value: string
+        ) => PathToTree<`/${Rest}`, I, O, Full, Root, DropKey<Bag, Param>>
+      }
+    : { [K in CamelCase<Head>]: PathToTree<`/${Rest}`, I, O, Full, Root, Bag> }
+  : P extends `/${infer Leaf}`
+    ? {
+        [K in CamelCase<RemoveColon<Leaf>>]: (NeedsDefault<I, O> extends true
+          ? HasRequiredKeys<I & Bag> extends true
+            ? (args: I & Bag, init?: RequestInit) => Promise<O>
+            : (args?: I & Bag, init?: RequestInit) => Promise<O>
+          : object) &
+          VerbExtras<Full, Bag>
+      }
+    : never
+
+// ──────────────────────────────────────────────────────────────
+//  ★  THE TWO KEY UTILITIES  ★
+// ──────────────────────────────────────────────────────────────
+type AnyFn = (...a: any[]) => any
+type IsFn<T> = T extends AnyFn ? true : false
+
+/* union → intersection helper */
+type U2I<U> = (U extends any ? (k: U) => 0 : never) extends (k: infer I) => 0
   ? I
   : never
 
-type SDKIntersection = UnionToIntersection<SDKUnion>
+type UnionKeys<U> = U extends any ? keyof U : never
 
-type IsFn<T> = T extends (...args: any[]) => any ? true : false
+/* ①  merge duplicate keys; if the value is /becomes/ a union of
+      functions, immediately fuse it into one function               */
+type CollapseFnUnion<F> = (
+  ...a: Parameters<Extract<F, AnyFn>>
+) => U2I<F extends AnyFn ? ReturnType<F> : never>
 
+// grab the values for key K *only* from the objects that actually have it
+type ValuesForKey<U, K extends PropertyKey> = Exclude<
+  U extends any ? (K extends keyof U ? U[K] : never) : never,
+  never
+>
+
+type MergeRec<U> = [U] extends [object]
+  ? IsFn<U> extends true
+    ? CollapseFnUnion<U>
+    : {
+        // ▼── use ValuesForKey here
+        [K in UnionKeys<U>]: MergeRec<ValuesForKey<U, K>>
+      }
+  : U
+
+/* ②  prettify */
 type SimplifyDeep<T> =
   IsFn<T> extends true
     ? T
@@ -88,111 +119,201 @@ type SimplifyDeep<T> =
       ? { [K in keyof T]: SimplifyDeep<T[K]> }
       : T
 
-export type SDK = SimplifyDeep<SDKIntersection>
+// ──────────────────────────────────────────────────────────────
+//  BUILD THE SDK
+// ──────────────────────────────────────────────────────────────
+type SDKUnion = {
+  [R in keyof typeof routes]: PathToTree<
+    R,
+    (typeof routes)[R]['input'],
+    (typeof routes)[R]['output'],
+    (typeof routes)[R]
+  >
+}[keyof typeof routes]
 
-const kebabToCamel = (seg: string) =>
-  seg.replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+export type SDK = SimplifyDeep<MergeRec<SDKUnion>>
 
+/* ------------------------------------------------------------- */
+/* helpers you already had                                       */
+/* ------------------------------------------------------------- */
+const kebabToCamel = (s: string) =>
+  s.replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+
+/* ---------- template-tree types ---------- */
+type RouteDef = (typeof routes)[keyof typeof routes]
+interface LeafTpl {
+  rawPath: string
+  def: RouteDef
+}
+interface NodeTpl {
+  static: Record<string, NodeTpl>
+  params: Record<string, NodeTpl>
+  leaves: LeafTpl[]
+}
+const makeNode = (): NodeTpl => ({ static: {}, params: {}, leaves: [] })
+
+/* ---------- step 1: template tree ---------- */
+function buildTemplate(): NodeTpl {
+  const root = makeNode()
+  for (const [rawPath, def] of Object.entries(routes)) {
+    const segs = rawPath.split('/').filter(Boolean)
+    let node = root
+    for (const seg of segs) {
+      if (seg.startsWith(':')) {
+        const p = kebabToCamel(seg.slice(1))
+        node = node.params[p] ||= makeNode()
+      } else {
+        const k = kebabToCamel(seg)
+        node = node.static[k] ||= makeNode()
+      }
+    }
+    node.leaves.push({ rawPath, def })
+  }
+  return root
+}
+
+/* ---------- step 2: runtime instantiation ---------- */
 export function buildSdk(client: XOXNOClient): SDK {
-  const tree: any = {}
+  const tplRoot = buildTemplate()
 
-  for (const rawPath in routes) {
-    const { input, output, ...rest } = routes[rawPath as keyof typeof routes]
+  const instantiate = (tpl: NodeTpl, bound: Record<string, any>): any => {
+    const obj: any = {}
 
-    const fn = (args: typeof input, init: RequestInit = {}) => {
-      const paramNames = [...rawPath.matchAll(/:([a-zA-Z_]+)/g)].map(
-        (m) => m[1]
-      )
-      const url = rawPath.replace(/:([a-zA-Z_]+)/g, (_m, p) => (args as any)[p])
-      const extraArgs = Object.fromEntries(
-        Object.entries(args).filter(([k]) => !paramNames.includes(k))
-      )
-      const hasAddress = rawPath.includes(':address') || 'address' in extraArgs
-      const hasCollection =
-        rawPath.includes(':collection') || 'collection' in extraArgs
-      const addressMatch = (args as { address: string }).address
-      const collectionMatch = (args as { collection: string }).collection
-      if (hasAddress && !isAddressValid(addressMatch)) {
-        throw new AddressNotFoundError(addressMatch)
-      }
-      if (
-        hasCollection &&
-        (Array.isArray(collectionMatch)
-          ? collectionMatch.some((item) => !isValidCollectionTicker(item))
-          : !isValidCollectionTicker(collectionMatch))
-      ) {
-        throw new CollectionNotFoundError(collectionMatch)
-      }
-      const extraArgsConverted =
-        'filters' in extraArgs
-          ? { filter: JSON.stringify(extraArgs) }
-          : Object.fromEntries(
-              Object.entries(extraArgs).map(([key, value]) => {
-                const converted =
-                  'joinArrays' in rest &&
-                  rest.joinArrays &&
-                  Array.isArray(value)
-                    ? value.join(',')
-                    : value
-                return [key, converted]
-              })
-            )
-      const { body, ...params } = extraArgsConverted
-      return client.fetchWithTimeout(url, {
-        ...init,
-        params,
-        body: Array.isArray(body) ? body[0] : body,
-      }) as Promise<typeof output>
+    /* ---- 1. leaves FIRST (create callable) ---- */
+    for (const { rawPath, def } of tpl.leaves) {
+      const leafKey = kebabToCamel(rawPath.split('/').pop()!.replace(/^:/, ''))
+      const handler = makeLeafHandler(rawPath, def, bound, client)
+      obj[leafKey] = handler // cannot exist yet
     }
 
-    rawPath
-      .split('/')
-      .filter(Boolean)
-      .reduce((acc, seg, i, arr) => {
-        const key = kebabToCamel(seg).replace(/^:/, '')
+    /* ---- 2. static children ---- */
+    for (const [key, childTpl] of Object.entries(tpl.static)) {
+      const result = instantiate(childTpl, bound)
 
-        const nextReal = arr.slice(i + 1).find((s) => !s.startsWith(':'))
-        const isLeaf = !nextReal
-
-        if (isLeaf) {
-          const leafHandler: any = (args: any) => fn(args)
-
-          for (const verb of Object.keys(rest)) {
-            if (['input', 'output', 'joinArrays'].includes(verb)) continue
-
-            leafHandler[verb] = (verbArgs: any, init: RequestInit = {}) =>
-              fn(verbArgs, {
-                method: init.method ?? verb.toUpperCase(),
-                ...init,
-              })
-          }
-
-          acc[key] = leafHandler
+      if (!obj[key]) {
+        // flatten single-key wrappers:
+        if (
+          typeof result === 'object' &&
+          Object.keys(result).length === 1 &&
+          // eslint-disable-next-line no-prototype-builtins
+          result.hasOwnProperty(key)
+        ) {
+          obj[key] = (result as any)[key]
         } else {
-          acc = acc[key] ??= {}
+          obj[key] = result
         }
-        return acc
-      }, tree)
+      } else if (typeof obj[key] === 'function') {
+        // existing merge-for-overloads logic
+        Object.assign(obj[key], result)
+      } else {
+        obj[key] = result
+      }
+    }
+
+    /* ---- 3. parameter children ---- */
+    for (const [paramKey, childTpl] of Object.entries(tpl.params)) {
+      const paramFn = (value: string) =>
+        instantiate(childTpl, { ...bound, [paramKey]: value })
+
+      if (obj[paramKey]) {
+        const prev = obj[paramKey] as (v: string) => any
+        obj[paramKey] = (v: string) => ({
+          ...prev(v),
+          ...paramFn(v),
+        })
+      } else {
+        obj[paramKey] = paramFn
+      }
+    }
+
+    return obj
   }
 
-  return tree as SDK
+  return instantiate(tplRoot, {}) as SDK
+}
+
+/* ---------- step 3: leaf handler (unchanged logic) ---------- */
+function makeLeafHandler(
+  rawPath: string,
+  def: RouteDef,
+  bound: Record<string, any>,
+  client: XOXNOClient
+) {
+  const { input, output, ...rest } = def
+
+  const core = (args: typeof input = {}, init: RequestInit = {}) => {
+    const fullArgs = { ...bound, ...args }
+    const url = rawPath.replace(
+      /:([a-zA-Z_]+)/g,
+      (_, p) => fullArgs[p as keyof typeof fullArgs]
+    )
+
+    const paramNames = [...rawPath.matchAll(/:([a-zA-Z_]+)/g)].map((m) => m[1])
+    const extraArgs = Object.fromEntries(
+      Object.entries(fullArgs).filter(([k]) => !paramNames.includes(k))
+    )
+
+    const hasAddress = /:address[^A-Z]/.test(rawPath) || 'address' in extraArgs
+    const hasCollection =
+      /:collection[^A-Z]/.test(rawPath) || 'collection' in extraArgs
+
+    if (hasAddress) {
+      const addr = (fullArgs as any).address
+      if (!isAddressValid(addr)) throw new AddressNotFoundError(addr)
+    }
+    if (hasCollection) {
+      const col = (fullArgs as any).collection
+      const bad = Array.isArray(col)
+        ? col.some((x: string) => !isValidCollectionTicker(x))
+        : !isValidCollectionTicker(col)
+      if (bad) throw new CollectionNotFoundError(col)
+    }
+
+    const extraArgsConv =
+      'filters' in extraArgs
+        ? { filter: JSON.stringify(extraArgs) }
+        : Object.fromEntries(
+            Object.entries(extraArgs).map(([k, v]) => [
+              k,
+              'joinArrays' in rest && rest.joinArrays && Array.isArray(v)
+                ? v.join(',')
+                : v,
+            ])
+          )
+
+    const { body, ...params } = extraArgsConv
+    return client.fetchWithTimeout(url, {
+      ...init,
+      params,
+      body: Array.isArray(body) ? body[0] : body,
+    }) as Promise<typeof output>
+  }
+
+  const leaf: any = (args = {}, init: RequestInit = {}) => core(args, init)
+  for (const verb of Object.keys(rest)) {
+    if (['input', 'output', 'joinArrays'].includes(verb)) continue
+    leaf[verb] = (va: any, init: RequestInit = {}) =>
+      core(va, { method: init.method ?? verb.toUpperCase(), ...init })
+  }
+  return leaf
 }
 
 async function fn() {
   XOXNOClient.init()
   const sdk = buildSdk(XOXNOClient.getInstance())
+
   const result = await Promise.all([
-    sdk.collection('EAPES-8f3c1f').profile({}),
-    sdk.collection('EAPES-8f3c1f').floorPrice({}),
+    sdk.collection.collection('EAPES-8f3c1f').profile(),
+    sdk.collection.collection('EAPES-8f3c1f').floorPrice({}),
     sdk.collection.floorPrice({
       collection: ['MICE-a0c447', 'EAPES-8f3c1f'],
       token: 'EGLD',
     }),
     sdk.collection.pinned({ chain: [ActivityChain.SUI] }),
     sdk.collection.pinnedDrops({ chain: [ActivityChain.SUI] }),
-    sdk.collection('EAPES-8f3c1f').pinnedDrops({}),
-    sdk.collection('EAPES-8f3c1f').pinned({}),
-    sdk
+    sdk.collection.collection('EAPES-8f3c1f').pinnedDrops({}),
+    sdk.collection.collection('EAPES-8f3c1f').pinned({}),
+    sdk.collection
       .collection('EAPES-8f3c1f')
       .profile.PATCH(
         {},
@@ -204,7 +325,7 @@ async function fn() {
         }
       )
       .catch(() => null),
-    sdk
+    sdk.collection
       .collection('EAPES-8f3c1f')
       .follow.POST(
         {},
@@ -221,6 +342,10 @@ async function fn() {
         collection: ['EAPES-8f3c1f'],
       },
     }),
+    sdk.collection
+      .creatorTag('MiceCityClub')
+      .collectionTag('MiceCity')
+      .dropInfo({}),
   ])
   console.log(result)
 }
