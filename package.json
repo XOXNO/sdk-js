@@ -93,12 +93,13 @@
     "typescript": "^5.7.2",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1",
-    "webpack-merge": "^6.0.1"
+    "webpack-merge": "^6.0.1",
+    "yaml": "^2.8.0"
   },
   "dependencies": {
     "@multiversx/sdk-core": "^13.17.2",
     "@multiversx/sdk-network-providers": "^2.9.3",
-    "@xoxno/types": "^1.0.53",
+    "@xoxno/types": "^1.0.72",
     "axios": "^1.7.9",
     "protobufjs": "^7.4.0",
     "webpack-bundle-analyzer": "^4.10.2"

@@ -1,14 +1,10 @@
-import { ActivityChain } from '@xoxno/types/dist/common/enums'
-
 import { XOXNOClient } from '../utils/api'
 import { AddressNotFoundError, CollectionNotFoundError } from '../utils/errors'
 import { isAddressValid } from '../utils/helpers'
 import { isValidCollectionTicker } from '../utils/regex'
-import { routes } from './endpoints'
+import { endpoints as routes } from './swagger'
+import { coveredMethods, type ICoveredMethods } from './utils'
 
-// ──────────────────────────────────────────────────────────────
-//  ORIGINAL HELPERS  (unchanged)
-// ──────────────────────────────────────────────────────────────
 type RemoveColon<S extends string> = S extends `:${infer R}` ? R : S
 type CamelCase<S extends string> =
   S extends `${infer H}-${infer T}${infer Rest}`
@@ -36,30 +32,40 @@ type NonEmptyObject<T, K extends keyof T = keyof T> = K extends unknown
 
 type BodyBag<VB, Defined extends boolean> = Defined extends true
   ? IsEmptyObj<VB> extends true
-    ? { body: never }
-    : { body: NonEmptyObject<VB> } // required
-  : { body?: NonEmptyObject<VB> } // optional
+    ? { body?: never }
+    : { body: NonEmptyObject<VB> }
+  : { body?: NonEmptyObject<VB> }
 
-/* updated VerbExtras ---------------------------------------- */
+type SecurityModeOf<T> = T extends { securityMode: infer S } ? S : undefined
+
+type AuthBag<M> = M extends 'optionalAny'
+  ? { auth?: string }
+  : M extends 'requiredAny' | 'requiredWeb2' | 'requiredJwt'
+    ? { auth: string }
+    : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+      { auth: never }
+
 type VerbExtras<Full, PBag> = {
-  [M in keyof Full as M extends 'input' | 'body' | 'output'
+  [Verb in keyof Full as Verb extends
+    | 'input'
+    | 'body'
+    | 'output'
+    | 'securityMode'
     ? never
-    : M]: Full[M] extends { input: infer VI; output: infer VO }
+    : Verb]: Full[Verb] extends { input: infer VI; output: infer VO }
     ? (
         args: VI &
           PBag &
           BodyBag<
-            Full[M] extends { body: infer VB } ? VB : never,
-            'body' extends keyof Full[M] ? true : false
-          >,
+            Full[Verb] extends { body: infer VB } ? VB : never,
+            'body' extends keyof Full[Verb] ? true : false
+          > &
+          AuthBag<SecurityModeOf<Full[Verb]>>,
         init?: RequestInit
       ) => Promise<VO>
     : never
 }
 
-// ──────────────────────────────────────────────────────────────
-//  CURRIED PATH  →  TREE
-// ──────────────────────────────────────────────────────────────
 type DropKey<T, K extends PropertyKey> = { [P in Exclude<keyof T, K>]: T[P] }
 
 type RequiredKeys<T> = {
@@ -67,7 +73,6 @@ type RequiredKeys<T> = {
   [K in keyof T]-?: {} extends Pick<T, K> ? never : K
 }[keyof T]
 
-// “true” if there's at least one required key
 type HasRequiredKeys<T> = [RequiredKeys<T>] extends [never] ? false : true
 
 type PathToTree<
@@ -89,20 +94,23 @@ type PathToTree<
     ? {
         [K in CamelCase<RemoveColon<Leaf>>]: (NeedsDefault<I, O> extends true
           ? HasRequiredKeys<I & Bag> extends true
-            ? (args: I & Bag, init?: RequestInit) => Promise<O>
-            : (args?: I & Bag, init?: RequestInit) => Promise<O>
-          : object) &
+            ? (
+                args: I & Bag & AuthBag<SecurityModeOf<Full>>,
+                init?: RequestInit
+              ) => Promise<O>
+            : (
+                args?: I & Bag & AuthBag<SecurityModeOf<Full>>,
+                init?: RequestInit
+              ) => Promise<O>
+          : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+            {}) &
           VerbExtras<Full, Bag>
       }
     : never
 
-// ──────────────────────────────────────────────────────────────
-//  ★  THE TWO KEY UTILITIES  ★
-// ──────────────────────────────────────────────────────────────
 type AnyFn = (...a: any[]) => any
 type IsFn<T> = T extends AnyFn ? true : false
 
-/* union → intersection helper */
 type U2I<U> = (U extends any ? (k: U) => 0 : never) extends (k: infer I) => 0
   ? I
   : never
@@ -118,12 +126,18 @@ type ValuesForKey<U, K extends PropertyKey> = Exclude<
   never
 >
 
+type FnUnion<U> = Extract<U, AnyFn>
+type ObjUnion<U> = Exclude<U, AnyFn>
+
+type CollapseFnUnionOrNever<U> = [FnUnion<U>] extends [never]
+  ? // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    {}
+  : CollapseFnUnion<FnUnion<U>>
+
 type MergeRec<U> = [U] extends [object]
-  ? IsFn<U> extends true
-    ? CollapseFnUnion<U>
-    : {
-        [K in UnionKeys<U>]: MergeRec<ValuesForKey<U, K>>
-      }
+  ? {
+      [K in UnionKeys<ObjUnion<U>>]: MergeRec<ValuesForKey<ObjUnion<U>, K>>
+    } & CollapseFnUnionOrNever<U>
   : U
 
 type SimplifyDeep<T> =
@@ -191,23 +205,37 @@ export function buildSdk(client: XOXNOClient): SDK {
     }
 
     for (const [key, childTpl] of Object.entries(tpl.static)) {
-      const result = instantiate(childTpl, bound)
+      const produced = instantiate(childTpl, bound)
 
-      if (!obj[key]) {
-        if (
-          typeof result === 'object' &&
-          Object.keys(result).length === 1 &&
-          // eslint-disable-next-line no-prototype-builtins
-          result.hasOwnProperty(key)
-        ) {
-          obj[key] = (result as any)[key]
-        } else {
-          obj[key] = result
+      let flat: any = produced
+      if (
+        produced &&
+        typeof produced === 'object' &&
+        key in produced &&
+        typeof (produced as any)[key] === 'function'
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+        const fn = (produced as any)[key] as Function
+        const rest = Object.fromEntries(
+          Object.entries(produced).filter(([k]) => k !== key)
+        )
+
+        const isParamHandler = fn.length === 1
+        if (!isParamHandler) {
+          Object.assign(fn, rest)
+          flat = fn
         }
+      }
+
+      if (obj[key] === undefined) {
+        obj[key] = flat
       } else if (typeof obj[key] === 'function') {
-        Object.assign(obj[key], result)
+        Object.assign(obj[key], flat)
+      } else if (typeof flat === 'function') {
+        Object.assign(flat, obj[key])
+        obj[key] = flat
       } else {
-        obj[key] = result
+        Object.assign(obj[key], flat)
       }
     }
 
@@ -244,7 +272,7 @@ function makeLeafHandler(
     const fullArgs = { ...bound, ...args }
     const url = rawPath.replace(
       /:([a-zA-Z_]+)/g,
-      (_, p) => fullArgs[p as keyof typeof fullArgs]
+      (_, p) => `${fullArgs[p as keyof typeof fullArgs]}`
     )
 
     const paramNames = [...rawPath.matchAll(/:([a-zA-Z_]+)/g)].map((m) => m[1])
@@ -288,7 +316,7 @@ function makeLeafHandler(
 
   const leaf: any = (args = {}, init: RequestInit = {}) => core(args, init)
   for (const verb of Object.keys(rest)) {
-    if (['input', 'output', 'body'].includes(verb)) continue
+    if (!coveredMethods.includes(verb as ICoveredMethods)) continue
     leaf[verb] = (va: any, init: RequestInit = {}) =>
       core(va, { method: init.method ?? verb.toUpperCase(), ...init })
   }
@@ -300,61 +328,16 @@ async function fn() {
   const sdk = buildSdk(XOXNOClient.getInstance())
 
   const result = await Promise.all([
-    /* sdk.collection.collection('EAPES-8f3c1f').profile(),
-    sdk.collection.collection('EAPES-8f3c1f').floorPrice(),
-    sdk.collection.floorPrice({
-      collection: ['MICE-a0c447', 'EAPES-8f3c1f'],
-      token: 'EGLD',
-    }),
-    sdk.collection.pinned({ chain: [ActivityChain.SUI] }),
-    sdk.collection.pinnedDrops({ chain: [ActivityChain.SUI] }),
-    sdk.collection.collection('EAPES-8f3c1f').pinnedDrops(),
-    sdk.collection.collection('EAPES-8f3c1f').pinned(),
-    sdk.collection
-      .collection('EAPES-8f3c1f')
-      .profile.PATCH(
-        {
-          body: { collection: '' },
-        },
-        {
-          body: JSON.stringify({}),
-          headers: { Authorization: 'Bearer 123' },
-        }
-      )
-      .catch(() => null),
-    sdk.collection
-      .collection('EAPES-8f3c1f')
-      .follow.POST(
-        {},
-        {
-          headers: { Authorization: 'Bearer 123' },
-          body: JSON.stringify({
-            foo: 'bar',
-          }),
-        }
-      )
-      .catch(() => null),
-    sdk.collection.query({
-      filter: {
-        filters: {
-          collection: ['EAPES-8f3c1f'],
-        },
-      },
-    }),
-    sdk.collection.drops.query({
-      filter: {
-        filters: {
-          collection: ['EAPES-8f3c1f'],
-        },
-        orderBy: ['startTime desc'],
-      },
-    }),
+    sdk.user.me.event.badge({ auth: '' }).catch(() => null),
+    sdk.user.me.event({ extended: true, auth: '' }).catch(() => null),
     sdk.collection
       .creatorTag('MiceCityClub')
       .collectionTag('MiceCity')
-      .dropInfo(), */
-    sdk.user.me.event.badge(),
+      .dropInfo(),
+    sdk.collection.collection('EAPES-8f3c1f').profile(),
+    sdk.notify.globalBroadcast.POST({ body: { eventId: '' }, auth: '' }),
   ])
+
   console.log(result)
 }
 

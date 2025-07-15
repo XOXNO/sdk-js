@@ -1,23 +1,24 @@
 import type {
   ActivityChain,
-  CollectionCosmosResponse,
   CollectionMintProfileDocWithStages,
   CollectionMintProfileFilter,
+  CollectionMintProfilePaginated,
   CollectionProfileDoc,
-  CollectionProfileDto,
   CollectionProfileFilter,
-  DropsQueryDto,
+  CollectionProfilePaginated,
+  EventProfile,
 } from '@xoxno/types'
 
 export type WithChains = { chain?: ActivityChain[] }
 
 export const routes = {
-  '/collection/:collection/profile': {
+  /* '/collection/:collection/profile': {
     input: {},
-    output: {} as CollectionProfileDto,
+    output: {} as CollectionProfileDoc,
     PATCH: {
-      input: {} as Partial<CollectionProfileDto>,
-      output: {} as CollectionProfileDto,
+      input: {},
+      body: {} as Partial<CollectionProfileDoc>,
+      output: {} as CollectionProfileDoc,
     },
   },
   '/collection/:collection/floor-price': {
@@ -27,7 +28,6 @@ export const routes = {
   '/collection/floor-price': {
     input: {} as { collection: string[]; token?: string },
     output: {} as Record<string, number>,
-    joinArrays: true,
   },
   '/collection/pinned': {
     input: {} as WithChains,
@@ -60,12 +60,12 @@ export const routes = {
     },
   },
   '/collection/query': {
-    input: {} as CollectionProfileFilter,
-    output: {} as CollectionCosmosResponse,
+    input: {} as { filter: CollectionProfileFilter },
+    output: {} as CollectionProfilePaginated,
   },
   '/collection/drops/query': {
-    input: {} as CollectionMintProfileFilter,
-    output: {} as DropsQueryDto,
+    input: {} as { filter: CollectionMintProfileFilter },
+    output: {} as CollectionMintProfilePaginated,
   },
   '/collection/:collection/drop-info': {
     input: {},
@@ -74,5 +74,19 @@ export const routes = {
   '/collection/:creatorTag/:collectionTag/drop-info': {
     input: {},
     output: {} as CollectionMintProfileDocWithStages,
+  }, */
+  '/collection/:creatorTag/:collectionTag/drop-info': {
+    input: {},
+    output: {} as CollectionMintProfileDocWithStages,
+  },
+  '/user/me/event': {
+    input: {} as { extended: boolean },
+    output: {} as EventProfile[],
+    securityMode: 'requiredAny',
+  },
+  '/user/me/event/badge': {
+    input: {},
+    output: {} as string,
+    securityMode: 'requiredAny',
   },
 } as const
