@@ -1,0 +1,1763 @@
+import type {
+  ActivityChain,
+  AirdropDto,
+  AnalyticsMarketplaceUniqueUsers,
+  AnalyticsVolumeDto,
+  AnalyticsVolumeResponseDto,
+  AnsweredQuestionWithDetails,
+  BageQRData,
+  BatchTransactionResponse,
+  ChatMessageDocHydrated,
+  ChatMessagePaginated,
+  CheckLikeStatusResponseDto,
+  CollectionHoldersDto,
+  CollectionMintProfileDocHydrated,
+  CollectionMintProfileDocWithStages,
+  CollectionMintProfileFilter,
+  CollectionMintProfilePaginated,
+  CollectionOffersFilter,
+  CollectionOwnerDto,
+  CollectionPinnedStatusDto,
+  CollectionProfileDoc,
+  CollectionProfileFilter,
+  CollectionProfilePaginated,
+  CollectionRanksDTO,
+  CollectionStatsDto,
+  CollectionStatsFilter,
+  CollectionStatsPaginated,
+  CreatorDetailsDto,
+  CreatorMarketingNotificationDto,
+  CreatorProfileDto,
+  DiscountCodeValidationResponse,
+  DropInfoDto,
+  EditUserCreatorProfileDto,
+  EditUserProfileDto,
+  EventCheckInQR,
+  EventCountGroupedByCountry,
+  EventGuestApproveDto,
+  EventGuestExport,
+  EventGuestFilter,
+  EventGuestProfile,
+  EventGuestProfileQuery,
+  EventGuestRegistrationDto,
+  EventInvitation,
+  EventInvitationCreateDto,
+  EventInvitationDoc,
+  EventInvitationFilter,
+  EventInvitationQuery,
+  EventNotificationDto,
+  EventProfile,
+  EventProfileCreateDto,
+  EventProfileEditDto,
+  EventProfileFilter,
+  EventProfileQuery,
+  EventQuestionCreateDto,
+  EventQuestionDoc,
+  EventQuestionEditDto,
+  EventReferralConfigCreateDto,
+  EventReferralConfigDoc,
+  EventReferralConfigEditDto,
+  EventReferralConfigFilter,
+  EventReferralConfigPaginated,
+  EventReferralCreateDto,
+  EventReferralDoc,
+  EventReferralEditDto,
+  EventReferralFilter,
+  EventReferralPaginated,
+  EventRegistrationResponseDto,
+  EventStageProfileCreateDto,
+  EventStageProfileDoc,
+  EventStageProfileEditDto,
+  EventTicketProfileCreateDto,
+  EventTicketProfileDoc,
+  EventTicketProfileEditDto,
+  EventUserRole,
+  EventUserRoleCreateDto,
+  EventUserRoleDoc,
+  EventVoucherCreateDto,
+  EventVoucherDoc,
+  EventVoucherEditDto,
+  EventVoucherFilter,
+  EventVoucherQuery,
+  FetchSwapRoutesResponseDto,
+  FilterQueryDto,
+  FloorPriceDto,
+  FollowCollectionDto,
+  GlobalAnalyticsOverviewResponseDto,
+  GlobalConversationSummaryDto,
+  GlobalOfferPaginated,
+  GlobalSearchResourcesPaginated,
+  IMetrics,
+  InventorySummaryDto,
+  KustoOrderDirection,
+  LendingAccountProfile,
+  LendingEModeCategoryProfile,
+  LendingIndexesDto,
+  LendingMarketAnalyticsGraph,
+  LendingMarketProfile,
+  LendingMarketProfileFilter,
+  LendingMarketProfileQuery,
+  LendingOverallStats,
+  LendingPositionOrderByColumn,
+  LendingPositionStatus,
+  LendingTokenPriceDto,
+  LikeNftDto,
+  ListingsResponseDto,
+  LoginAccessDto,
+  LoginRequestDto,
+  ManualCheckInDto,
+  MobileDeviceDoc,
+  MobileDeviceRegistrationDto,
+  NativeWalletDto,
+  NftActivityDocHydrated,
+  NftActivityFilter,
+  NftActivityPaginated,
+  NftDoc,
+  NftDocFilter,
+  NftHydrated,
+  NftOfferDoc,
+  NftOfferDocFilter,
+  NftOfferPaginated,
+  NftPaginated,
+  NotificationDoc,
+  NotificationPaginated,
+  NotificationPreferencesPostDto,
+  NotificationSuccessResponseDto,
+  OwnedCollectionsDto,
+  OwnedServicesDto,
+  PinnedCollectionDto,
+  ProtocolAprType,
+  ProviderDto,
+  PushNotificationCountResponse,
+  PushNotificationDoc,
+  PushNotificationResponse,
+  RateType,
+  SendChatMessageDto,
+  SetEmailDto,
+  SetPhoneDto,
+  SignAcceptGlobalOfferDto,
+  SignDataDto,
+  SignMintDto,
+  SignWithdrawDto,
+  StakingCreatorDoc,
+  StakingExploreDto,
+  StakingPostDTO,
+  StakingSummary,
+  StakingUserPoolNfts,
+  SuccessDto,
+  SuccessWithMessageDto,
+  SwitchWalletDto,
+  TicketCalculationRequestDto,
+  TicketPricesResponse,
+  TicketValidationResult,
+  TokenCategory,
+  TokenDocDto,
+  TradesilvaniaSignature,
+  TraitInfo,
+  TransactionCreate,
+  TransactionProcessStatus,
+  TransactionSendResult,
+  UserAnalyticsDto,
+  UserBillingDetails,
+  UserBlockPaginated,
+  UserConversationPaginated,
+  UserFavoriteResponseDto,
+  UserNetworkInfoDto,
+  UserProfileDto,
+  UserSettingsDoc,
+  UserStakingSummaryDto,
+  UserStatsDto,
+  UserStatsOrderByColumn,
+  UserTokenInventoryResponseDto,
+  ValueFp,
+  VerifyEmailDto,
+  Web2UserDoc,
+  Web2UserShardsDto,
+  Web2WalletDto,
+  WebSocketTokenDto,
+  XoxnoInfo,
+  XoxnoLiquidStatsDto,
+} from '@xoxno/types'
+
+export const endpoints = {
+  '/user/login': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as LoginAccessDto,
+      body: {} as LoginRequestDto,
+    },
+  },
+  '/user/:address/network-account': {
+    input: {},
+    output: {} as UserNetworkInfoDto,
+  },
+  '/user/:address/token-inventory': {
+    input: {},
+    output: {} as UserTokenInventoryResponseDto,
+  },
+  '/user/network-account': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as UserNetworkInfoDto,
+      body: {} as string[],
+    },
+  },
+  '/user/me/profile': {
+    input: {},
+    output: {} as UserProfileDto,
+    securityMode: 'requiredAny',
+  },
+  '/user/:address/profile': {
+    input: {},
+    output: {} as UserProfileDto,
+    PATCH: {
+      input: {},
+      output: {} as UserProfileDto,
+      body: {} as EditUserProfileDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/me': {
+    input: {},
+    output: {} as UserProfileDto,
+    securityMode: 'requiredAny',
+  },
+  '/user/me/settings': {
+    input: {},
+    output: {} as UserSettingsDoc,
+    securityMode: 'requiredAny',
+  },
+  '/user/me/settings/notification-preferences': {
+    input: {},
+    output: {},
+    PATCH: {
+      input: {} as { unsubscribeToken: string },
+      output: {} as UserSettingsDoc,
+      body: {} as NotificationPreferencesPostDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/me/settings/email': {
+    input: {},
+    output: {},
+    PATCH: {
+      input: {},
+      output: {} as UserSettingsDoc,
+      body: {} as SetEmailDto,
+      securityMode: 'requiredAny',
+    },
+    DELETE: {
+      input: {},
+      output: {} as UserSettingsDoc,
+      body: {},
+      securityMode: 'requiredJwt',
+    },
+  },
+  '/user/me/settings/phone': {
+    input: {},
+    output: {},
+    PATCH: {
+      input: {},
+      output: {} as UserSettingsDoc,
+      body: {} as SetPhoneDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/me/settings/billing': {
+    input: {},
+    output: {},
+    PATCH: {
+      input: {},
+      output: {} as UserSettingsDoc,
+      body: {} as UserBillingDetails,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/me/settings/verify-email': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as UserSettingsDoc,
+      body: {} as VerifyEmailDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/buy/signature': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as TradesilvaniaSignature,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/upload-picture': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {} as { referer: string },
+      output: {} as UserProfileDto,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/upload-banner': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as UserProfileDto,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/reset-picture': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as UserProfileDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/reset-banner': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as UserProfileDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:tag/creator/is-registered': {
+    input: {},
+    output: {} as SuccessDto,
+  },
+  '/user/:address/creator/profile': {
+    input: {},
+    output: {} as CreatorProfileDto,
+    PATCH: {
+      input: {},
+      output: {} as CreatorProfileDto,
+      body: {} as EditUserCreatorProfileDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/creator/upload-picture': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as CreatorProfileDto,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/creator/upload-banner': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as CreatorProfileDto,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/creator/reset-picture': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as CreatorProfileDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/creator/reset-banner': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as CreatorProfileDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/favorite/collections': {
+    input: {} as { filter: CollectionStatsFilter },
+    output: {} as CollectionStatsPaginated,
+  },
+  '/user/favorite/:favoriteId': {
+    input: {},
+    output: {} as CheckLikeStatusResponseDto,
+    securityMode: 'requiredAny',
+  },
+  '/user/:address/follow': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as UserFavoriteResponseDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/favorite/users': {
+    input: {},
+    output: {} as string[],
+  },
+  '/tokens': {
+    input: {} as {
+      identifier?: string[]
+      category?: TokenCategory
+      chain?: ActivityChain[]
+    },
+    output: {} as TokenDocDto[],
+  },
+  '/tokens/swap': {
+    input: {},
+    output: {} as TokenDocDto[],
+  },
+  '/tokens/usd-price': {
+    input: {} as { identifier?: string; cache?: boolean },
+    output: {} as Record<string, number>,
+  },
+  '/tokens/egld/fiat-price': {
+    input: {} as { value?: number; fiatCurrencies?: string },
+    output: {} as Record<string, number>,
+  },
+  '/tokens/xoxno': {
+    input: {},
+    output: {} as IMetrics,
+  },
+  '/tokens/egld': {
+    input: {},
+    output: {} as IMetrics,
+  },
+  '/tokens/sui': {
+    input: {},
+    output: {} as IMetrics,
+  },
+  '/tokens/xoxno/info': {
+    input: {},
+    output: {} as XoxnoInfo,
+  },
+  '/tokens/xoxno/liquid': {
+    input: {},
+    output: {} as XoxnoInfo,
+  },
+  '/liquid/xoxno/stats': {
+    input: {},
+    output: {} as XoxnoLiquidStatsDto[],
+  },
+  '/liquid/egld/stats': {
+    input: {},
+    output: {} as XoxnoLiquidStatsDto[],
+  },
+  '/liquid/xoxno/rate': {
+    input: {},
+    output: {} as RateType,
+  },
+  '/liquid/xoxno/liquid-supply': {
+    input: {},
+    output: {} as string,
+  },
+  '/liquid/xoxno/staked': {
+    input: {},
+    output: {} as string,
+  },
+  '/analytics/marketplace-unique-users': {
+    input: {} as { before: string; after: string; bin: string },
+    output: {} as AnalyticsMarketplaceUniqueUsers[],
+  },
+  '/liquid/egld/rate': {
+    input: {},
+    output: {} as RateType,
+  },
+  '/liquid/egld/liquid-supply': {
+    input: {},
+    output: {} as string,
+  },
+  '/liquid/egld/staked': {
+    input: {},
+    output: {} as string,
+  },
+  '/liquid/egld/pending-fees': {
+    input: {},
+    output: {} as string,
+  },
+  '/liquid/egld/pending-undelegate': {
+    input: {},
+    output: {} as string,
+  },
+  '/liquid/egld/pending-delegate': {
+    input: {},
+    output: {} as string,
+  },
+  '/liquid/egld/execute-delegate': {
+    input: {},
+    output: {} as string,
+  },
+  '/liquid/egld/execute-undelegate': {
+    input: {},
+    output: {} as string,
+  },
+  '/liquid/egld/protocol-apr': {
+    input: {},
+    output: {} as ProtocolAprType,
+  },
+  '/liquid/egld/providers': {
+    input: {},
+    output: {} as ProviderDto[],
+  },
+  '/ash/min-token-quantity': {
+    input: {} as {
+      originalToken: string
+      originalTokenValue: string
+      paymentToken: string
+    },
+    output: {} as FetchSwapRoutesResponseDto,
+  },
+  '/ash/max-token-quantity': {
+    input: {} as {
+      paymentTokenValue: string
+      paymentToken: string
+      wantedToken: string
+      slippage: number
+    },
+    output: {} as FetchSwapRoutesResponseDto,
+  },
+  '/arda/max-token-quantity': {
+    input: {} as {
+      paymentTokenValue: string
+      paymentToken: string
+      wantedToken: string
+      slippage: number
+    },
+    output: {} as FetchSwapRoutesResponseDto,
+  },
+  '/arda/min-token-quantity': {
+    input: {} as {
+      originalToken: string
+      originalTokenValue: string
+      paymentToken: string
+    },
+    output: {} as FetchSwapRoutesResponseDto,
+  },
+  '/lending/market/:token/profile': {
+    input: {},
+    output: {} as LendingMarketProfile,
+  },
+  '/lending/market/query': {
+    input: {} as { filter: LendingMarketProfileFilter },
+    output: {} as LendingMarketProfileQuery,
+  },
+  '/user/lending/:address': {
+    input: {} as { token?: string },
+    output: {} as LendingAccountProfile[],
+  },
+  '/lending/market/indexes': {
+    input: {},
+    output: {} as Record<string, LendingIndexesDto>,
+  },
+  '/user/lending/position/:identifier': {
+    input: {},
+    output: {} as LendingAccountProfile,
+  },
+  '/user/lending/image/:nonce': {
+    input: {},
+    output: {} as string,
+  },
+  '/lending/market/emode-categories': {
+    input: {} as { categoryIds: string },
+    output: {} as LendingEModeCategoryProfile[],
+  },
+  '/lending/market/:token/emode-categories': {
+    input: {},
+    output: {} as LendingEModeCategoryProfile[],
+  },
+  '/lending/market/:token/analytics': {
+    input: {} as { startTime?: string; endTime?: string; bin?: string },
+    output: {} as LendingMarketAnalyticsGraph[],
+  },
+  '/lending/leaderboard': {
+    input: {} as {
+      skip?: number
+      top?: number
+      orderBy?: LendingPositionOrderByColumn
+      orderDirection?: KustoOrderDirection
+      token?: string
+    },
+    output: {} as LendingPositionStatus[],
+  },
+  '/lending/stats': {
+    input: {},
+    output: {} as LendingOverallStats,
+  },
+  '/lending/market/prices': {
+    input: {} as { returnAsUsd?: boolean },
+    output: {} as Record<string, string>,
+  },
+  '/nft/query': {
+    input: {} as { filter: NftDocFilter },
+    output: {} as NftPaginated,
+  },
+  '/nft/:identifier/like': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as LikeNftDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/inventory-summary': {
+    input: {} as { activeAuction?: boolean },
+    output: {} as InventorySummaryDto[],
+  },
+  '/user/:address/offers': {
+    input: {} as { type?: string; top?: number; skip?: number },
+    output: {} as NftOfferPaginated,
+  },
+  '/nft/offer/query': {
+    input: {} as { filter: NftOfferDocFilter },
+    output: {} as NftOfferPaginated,
+  },
+  '/nft/offer/:identifier': {
+    input: {},
+    output: {} as NftOfferDoc,
+  },
+  '/user/:address/favorite/nfts': {
+    input: {} as { top?: number; skip?: number },
+    output: {} as NftPaginated,
+  },
+  '/collection/:collection/attributes': {
+    input: {},
+    output: {} as Record<string, ValueFp & Record<string, TraitInfo>>,
+  },
+  '/nft/:identifier/offers': {
+    input: {} as { skip: number; top: number },
+    output: {} as NftOfferPaginated,
+  },
+  '/collection/:collection/ranks': {
+    input: {},
+    output: {} as CollectionRanksDTO[],
+  },
+  '/collection/:collection/listings': {
+    input: {},
+    output: {} as ListingsResponseDto,
+  },
+  '/nft/pinned': {
+    input: {} as { chain: ActivityChain[] },
+    output: {} as NftHydrated[],
+  },
+  '/nft/sign-withdraw': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SignDataDto,
+      body: {} as SignWithdrawDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/collection/:collection/sign-offer': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SignDataDto,
+      body: {} as SignAcceptGlobalOfferDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/collection/:collection/sign-mint': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SignDataDto,
+      body: {} as SignMintDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/nft/:identifier': {
+    input: {},
+    output: {} as NftHydrated,
+  },
+  '/collection/:collection/profile': {
+    input: {},
+    output: {} as CollectionProfileDoc,
+    PATCH: {
+      input: {},
+      output: {} as CollectionProfileDoc,
+      body: {} as CollectionProfileDoc,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/collection/:collection/floor-price': {
+    input: {} as { token?: string },
+    output: {} as FloorPriceDto,
+  },
+  '/collection/floor-price': {
+    input: {} as { collection?: string[] },
+    output: {} as Record<string, number>,
+  },
+  '/collection/pinned': {
+    input: {} as { chain: ActivityChain[] },
+    output: {} as PinnedCollectionDto[],
+  },
+  '/collection/pinned-drops': {
+    input: {} as { chain: ActivityChain[] },
+    output: {} as CollectionMintProfileDocHydrated[],
+  },
+  '/collection/:collection/pinned-drops': {
+    input: {},
+    output: {} as CollectionPinnedStatusDto,
+  },
+  '/collection/:collection/pinned': {
+    input: {},
+    output: {} as CollectionPinnedStatusDto,
+  },
+  '/collection/:collection/follow': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as FollowCollectionDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/collection/query': {
+    input: {} as { filter?: CollectionProfileFilter },
+    output: {} as CollectionProfilePaginated,
+  },
+  '/collection/drops/query': {
+    input: {} as { filter?: CollectionMintProfileFilter },
+    output: {} as CollectionMintProfilePaginated,
+  },
+  '/collection/:collection/drop-info': {
+    input: {},
+    output: {} as CollectionMintProfileDocWithStages,
+    securityMode: 'optionalAny',
+  },
+  '/collection/:creatorTag/:collectionTag/drop-info': {
+    input: {},
+    output: {} as DropInfoDto,
+    securityMode: 'optionalAny',
+  },
+  '/collection/:collection/upload-picture': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as CollectionProfileDoc,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/collection/:collection/upload-banner': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as CollectionProfileDoc,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/collection/:collection/reset-picture': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as CollectionProfileDoc,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/collection/:collection/reset-banner': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as CollectionProfileDoc,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/collection/:collection/holders': {
+    input: {},
+    output: {} as CollectionHoldersDto,
+  },
+  '/collection/:collection/owner': {
+    input: {},
+    output: {} as CollectionOwnerDto,
+  },
+  '/collection/:collection/stats': {
+    input: {},
+    output: {} as CollectionStatsDto,
+  },
+  '/collection/stats/query': {
+    input: {} as { filter: CollectionStatsFilter },
+    output: {} as CollectionStatsPaginated,
+  },
+  '/collection/global-offer/query': {
+    input: {} as { filter: CollectionOffersFilter },
+    output: {} as GlobalOfferPaginated,
+  },
+  '/user/:address/creator/listing': {
+    input: {},
+    output: {} as CreatorDetailsDto,
+  },
+  '/user/:address/creator/details': {
+    input: {},
+    output: {} as CreatorDetailsDto,
+  },
+  '/pool/:poolId/profile': {
+    input: {},
+    output: {} as StakingSummary,
+    PATCH: {
+      input: {},
+      output: {} as StakingSummary,
+      body: {} as StakingPostDTO,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/pool/:poolId/whitelist': {
+    input: {},
+    output: {} as NftDoc[],
+  },
+  '/pool/:poolId/upload-picture': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as StakingSummary,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/:address/staking/available-pools': {
+    input: {},
+    output: {} as StakingSummary[],
+  },
+  '/user/:address/staking/owned-collections': {
+    input: {},
+    output: {} as OwnedCollectionsDto,
+  },
+  '/user/:address/staking/owned-pools': {
+    input: {},
+    output: {} as StakingSummary[],
+  },
+  '/user/:address/staking/summary': {
+    input: {},
+    output: {} as UserStakingSummaryDto[],
+  },
+  '/user/:address/staking/creator': {
+    input: {},
+    output: {} as StakingCreatorDoc,
+  },
+  '/user/:address/staking/collection/:collection': {
+    input: {},
+    output: {} as StakingSummary[],
+  },
+  '/user/:address/staking/pool/:poolId/nfts': {
+    input: {} as { status?: string },
+    output: {} as StakingUserPoolNfts,
+  },
+  '/collection/:collection/staking/summary': {
+    input: {},
+    output: {} as StakingSummary[],
+    securityMode: 'optionalAny',
+  },
+  '/collection/:collection/staking/delegators': {
+    input: {},
+    output: {} as string[],
+  },
+  '/collection/staking/explore': {
+    input: {},
+    output: {} as StakingExploreDto[],
+  },
+  '/user/:creatorTag/owned-services': {
+    input: {},
+    output: {} as OwnedServicesDto,
+  },
+  '/search': {
+    input: {} as { filter: FilterQueryDto },
+    output: {} as GlobalSearchResourcesPaginated,
+  },
+  '/user/search': {
+    input: {} as { filter: FilterQueryDto },
+    output: {} as GlobalSearchResourcesPaginated,
+  },
+  '/collection/search': {
+    input: {} as { filter: FilterQueryDto },
+    output: {} as GlobalSearchResourcesPaginated,
+  },
+  '/collection/drops/search': {
+    input: {} as { filter: FilterQueryDto },
+    output: {} as CollectionMintProfilePaginated,
+  },
+  '/nft/search/query': {
+    input: {} as { filter: NftDocFilter },
+    output: {} as NftPaginated,
+  },
+  '/user/notifications': {
+    input: {} as { top?: number; skip?: number },
+    output: {} as NotificationPaginated,
+    securityMode: 'requiredAny',
+  },
+  '/user/notifications/unread-count': {
+    input: {},
+    output: {} as NotificationPaginated,
+    securityMode: 'requiredAny',
+  },
+  '/user/notifications/clear': {
+    input: {},
+    output: {},
+    DELETE: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/notifications/read': {
+    input: {},
+    output: {},
+    PATCH: {
+      input: {} as { id?: string },
+      output: {} as NotificationDoc,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/mobile/device/register': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as MobileDeviceDoc,
+      body: {} as MobileDeviceRegistrationDto,
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/mobile/device/:deviceId': {
+    input: {},
+    output: {} as MobileDeviceDoc,
+    securityMode: 'requiredWeb2',
+    DELETE: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/mobile/history': {
+    input: {} as { top?: number; skip?: number },
+    output: {} as PushNotificationResponse,
+    securityMode: 'requiredAny',
+  },
+  '/mobile/history/unread-count': {
+    input: {},
+    output: {} as PushNotificationCountResponse,
+    securityMode: 'requiredAny',
+  },
+  '/mobile/history/:notificationId/read': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as PushNotificationDoc,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/mobile/history/read-all': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as NotificationSuccessResponseDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/mobile/history/clear-all': {
+    input: {},
+    output: {},
+    DELETE: {
+      input: {},
+      output: {} as NotificationSuccessResponseDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/eventNotifications/event/:eventId/update': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as NotificationSuccessResponseDto,
+      body: {} as EventNotificationDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/eventNotifications/event/:eventId/reminder': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as NotificationSuccessResponseDto,
+      body: {} as EventNotificationDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/eventNotifications/creator/marketing': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as NotificationSuccessResponseDto,
+      body: {} as CreatorMarketingNotificationDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/eventNotifications/user/:userId/direct': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as NotificationSuccessResponseDto,
+      body: {} as EventNotificationDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/native-token': {
+    input: {} as { originalUrl?: string; extraInfo?: string },
+    output: {} as string,
+  },
+  '/user/web2': {
+    input: {},
+    output: {} as Web2UserDoc,
+    securityMode: 'requiredWeb2',
+  },
+  '/user/web2/session-cookie': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SuccessWithMessageDto,
+      body: {},
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/wallet': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {} as NativeWalletDto,
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/wallet-switch': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {} as SwitchWalletDto,
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/wallet-link': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {} as Web2WalletDto,
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/:index/wallet-link': {
+    input: {},
+    output: {},
+    DELETE: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {},
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/shards': {
+    input: {},
+    output: {} as Web2UserShardsDto,
+    securityMode: 'requiredWeb2',
+  },
+  '/lending/market-sc': {
+    input: {},
+    output: {} as string[],
+  },
+  '/lending/market/:token/price/egld': {
+    input: {},
+    output: {} as LendingTokenPriceDto,
+  },
+  '/faucet': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/activity/query': {
+    input: {} as { filter: NftActivityFilter },
+    output: {} as NftActivityPaginated,
+  },
+  '/activity/:identifier': {
+    input: {},
+    output: {} as NftActivityDocHydrated,
+  },
+  '/analytics/volume': {
+    input: {} as {
+      startTime?: string
+      endTime?: string
+      bin?: string
+      chain: ActivityChain[]
+    },
+    output: {} as AnalyticsVolumeResponseDto,
+  },
+  '/collection/:collection/analytics/volume': {
+    input: {} as { startTime?: string; endTime?: string; bin?: string },
+    output: {} as AnalyticsVolumeDto[],
+  },
+  '/user/:address/analytics/volume': {
+    input: {},
+    output: {} as UserAnalyticsDto,
+  },
+  '/analytics/overview': {
+    input: {} as { chain: ActivityChain[] },
+    output: {} as GlobalAnalyticsOverviewResponseDto,
+  },
+  '/user/stats': {
+    input: {} as {
+      skip?: number
+      top?: number
+      orderBy?: UserStatsOrderByColumn
+      orderDirection?: KustoOrderDirection
+    },
+    output: {} as UserStatsDto[],
+  },
+  '/user/xoxno-drop': {
+    input: {} as { skip?: number; top?: number; address?: string },
+    output: {} as AirdropDto[],
+  },
+  '/user/me/xoxno-drop': {
+    input: {},
+    output: {} as AirdropDto[],
+    securityMode: 'requiredAny',
+  },
+  '/transactions/:txHash/status': {
+    input: {},
+    output: {} as TransactionProcessStatus,
+  },
+  '/transactions': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as TransactionSendResult,
+      body: {} as TransactionCreate,
+    },
+  },
+  '/transactions/batch': {
+    input: {},
+    output: {},
+    POST: {
+      input: {} as { isRelay?: boolean },
+      output: {} as BatchTransactionResponse[],
+      body: {} as TransactionCreate[],
+    },
+  },
+  '/user/chat/message': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as ChatMessageDocHydrated,
+      body: {} as SendChatMessageDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/chat/conversation': {
+    input: {} as { isGroupChat?: boolean; top?: number; skip?: number },
+    output: {} as UserConversationPaginated,
+    securityMode: 'requiredAny',
+  },
+  '/user/chat/conversation/:conversationId': {
+    input: {} as { receiver: string; top?: number; skip?: number },
+    output: {} as ChatMessagePaginated,
+    securityMode: 'requiredAny',
+    DELETE: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/chat/conversation-summary': {
+    input: {},
+    output: {} as GlobalConversationSummaryDto,
+    securityMode: 'requiredAny',
+  },
+  '/user/chat/conversation/:conversationId/message/:messageId': {
+    input: {},
+    output: {},
+    DELETE: {
+      input: {} as { deleteForAll?: boolean },
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/chat/block': {
+    input: {},
+    output: {} as UserBlockPaginated,
+    securityMode: 'requiredAny',
+  },
+  '/user/chat/block/:address': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/user/chat/token': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as WebSocketTokenDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/countries': {
+    input: {},
+    output: {} as string[],
+  },
+  '/event': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as EventProfile,
+      body: {} as EventProfileCreateDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId': {
+    input: {},
+    output: {} as EventProfile,
+    securityMode: 'optionalAny',
+    PATCH: {
+      input: {},
+      output: {} as EventProfile,
+      body: {} as EventProfileEditDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/profile/query': {
+    input: {} as { filter: EventProfileFilter },
+    output: {} as EventProfileQuery,
+  },
+  '/event/:eventId/profile': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as EventProfile,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/background': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as EventProfile,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/description': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as EventProfile,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/description/image': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as string,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/description/image/:imageId': {
+    input: {},
+    output: {},
+    DELETE: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/register': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as EventRegistrationResponseDto,
+      body: {} as EventGuestRegistrationDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/ticket': {
+    input: {},
+    output: {} as EventTicketProfileDoc[],
+    POST: {
+      input: {},
+      output: {} as EventTicketProfileDoc,
+      body: {} as EventTicketProfileCreateDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/ticket/:ticketId': {
+    input: {},
+    output: {} as EventTicketProfileDoc,
+    PATCH: {
+      input: {},
+      output: {} as EventTicketProfileDoc,
+      body: {} as EventTicketProfileEditDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/ticket/:ticketId/profile': {
+    input: {},
+    output: {},
+    PUT: {
+      input: {},
+      output: {} as EventTicketProfileDoc,
+      body: {} as FormData,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/stage': {
+    input: {} as { isEnabled?: boolean },
+    output: {} as EventStageProfileDoc[],
+    POST: {
+      input: {},
+      output: {} as EventStageProfileDoc,
+      body: {} as EventStageProfileCreateDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/stage/:stageId': {
+    input: {},
+    output: {} as EventStageProfileDoc,
+    PATCH: {
+      input: {},
+      output: {} as EventStageProfileDoc,
+      body: {} as EventStageProfileEditDto,
+      securityMode: 'requiredAny',
+    },
+    DELETE: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/calculate-prices': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as TicketPricesResponse,
+      body: {} as TicketCalculationRequestDto,
+    },
+  },
+  '/event/:eventId/validate-discount': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as DiscountCodeValidationResponse,
+      body: {},
+    },
+  },
+  '/user/:address/creator/events': {
+    input: {},
+    output: {} as CreatorDetailsDto,
+    securityMode: 'optionalAny',
+  },
+  '/event/:eventId/invite': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as EventInvitationDoc[],
+      body: {} as EventInvitationCreateDto[],
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/invite/query': {
+    input: {} as { filter: EventInvitationFilter },
+    output: {} as EventInvitationQuery,
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/invite/:inviteId': {
+    input: {},
+    output: {} as EventInvitation,
+  },
+  '/event/:eventId/voucher/query': {
+    input: {} as { filter: EventVoucherFilter },
+    output: {} as EventVoucherQuery,
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/questions': {
+    input: {},
+    output: {} as EventQuestionDoc[],
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/question': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as EventQuestionDoc,
+      body: {} as EventQuestionCreateDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/question/:questionId': {
+    input: {},
+    output: {},
+    PATCH: {
+      input: {},
+      output: {} as EventQuestionDoc,
+      body: {} as EventQuestionEditDto,
+      securityMode: 'requiredAny',
+    },
+    DELETE: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/invite/:inviteId/claim': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as EventInvitation,
+      body: {} as EventGuestRegistrationDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/invite/:inviteId/cancel': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as EventInvitationDoc,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/guest/query': {
+    input: {} as { filter: EventGuestFilter },
+    output: {} as EventGuestProfileQuery,
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/guest/:address': {
+    input: {},
+    output: {} as EventGuestProfile,
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/guest-export': {
+    input: {},
+    output: {} as EventGuestExport[],
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/role': {
+    input: {},
+    output: {} as EventUserRole[],
+    POST: {
+      input: {},
+      output: {} as EventUserRole[],
+      body: {} as EventUserRoleCreateDto,
+      securityMode: 'requiredAny',
+    },
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/role/:address': {
+    input: {},
+    output: {} as EventUserRoleDoc,
+    DELETE: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/guest': {
+    input: {},
+    output: {},
+    DELETE: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/role/:roleId/accept': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as EventUserRoleDoc,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/roleId/:roleId': {
+    input: {},
+    output: {} as EventUserRoleDoc,
+  },
+  '/user/me/event': {
+    input: {} as { extended: boolean },
+    output: {} as EventProfile[],
+    securityMode: 'requiredAny',
+  },
+  '/user/me/events/past': {
+    input: {},
+    output: {} as EventProfile[],
+    securityMode: 'requiredAny',
+  },
+  '/user/me/events/hosted': {
+    input: {},
+    output: {} as EventProfile[],
+    securityMode: 'requiredAny',
+  },
+  '/user/me/events/upcoming': {
+    input: {},
+    output: {} as EventProfile[],
+    securityMode: 'requiredAny',
+  },
+  '/user/me/event/badge': {
+    input: {},
+    output: {} as string,
+    securityMode: 'requiredAny',
+  },
+  '/user/me/event/badge/payload': {
+    input: {},
+    output: {} as BageQRData,
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/scan': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as TicketValidationResult,
+      body: {} as EventCheckInQR,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/voucher': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as EventVoucherDoc,
+      body: {} as EventVoucherCreateDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/voucher/:voucherCode': {
+    input: {},
+    output: {},
+    PATCH: {
+      input: {},
+      output: {} as EventVoucherDoc,
+      body: {} as EventVoucherEditDto,
+      securityMode: 'requiredAny',
+    },
+    DELETE: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/manual-check-in': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as TicketValidationResult,
+      body: {} as ManualCheckInDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/guest/:guestId/answered-questions': {
+    input: {},
+    output: {} as AnsweredQuestionWithDetails[],
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/guest/approve': {
+    input: {},
+    output: {},
+    PATCH: {
+      input: {},
+      output: {} as EventGuestProfile[],
+      body: {} as EventGuestApproveDto[],
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/ticket/:ticketId/google/class': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+    },
+  },
+  '/event/:eventId/guest/:address/google/pass': {
+    input: {},
+    output: {} as string[],
+  },
+  '/event/profile/location': {
+    input: {},
+    output: {} as EventCountGroupedByCountry[],
+  },
+  '/event/:eventId/referral-config': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as EventReferralConfigDoc,
+      body: {} as EventReferralConfigCreateDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/referral-config/:configId': {
+    input: {},
+    output: {},
+    PATCH: {
+      input: {},
+      output: {} as EventReferralConfigDoc,
+      body: {} as EventReferralConfigEditDto,
+      securityMode: 'requiredAny',
+    },
+    DELETE: {
+      input: {},
+      output: {} as EventReferralConfigDoc,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/referral-configs': {
+    input: {} as { filter?: EventReferralConfigFilter },
+    output: {} as EventReferralConfigPaginated,
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/referral': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as EventReferralDoc,
+      body: {} as EventReferralCreateDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/referral/:referralCode': {
+    input: {},
+    output: {},
+    PATCH: {
+      input: {},
+      output: {} as EventReferralDoc,
+      body: {} as EventReferralEditDto,
+      securityMode: 'requiredAny',
+    },
+    DELETE: {
+      input: {},
+      output: {} as EventReferralDoc,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
+  '/event/:eventId/referrals': {
+    input: {} as { filter?: EventReferralFilter },
+    output: {} as EventReferralPaginated,
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/referrals/self-serviced': {
+    input: {},
+    output: {} as EventReferralDoc[],
+    securityMode: 'requiredAny',
+  },
+  '/event/:eventId/notify-attendees': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SuccessWithMessageDto,
+      body: {} as EventNotificationDto,
+      securityMode: 'requiredAny',
+    },
+  },
+  '/notify/global-broadcast': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SuccessWithMessageDto,
+      body: {} as EventNotificationDto,
+      securityMode: 'requiredAny',
+    },
+  },
+} as const
