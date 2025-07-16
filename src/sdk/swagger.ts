@@ -128,6 +128,7 @@ import type {
   PinnedCollectionDto,
   ProtocolAprType,
   ProviderDto,
+  PublicOnly,
   PushNotificationCountResponse,
   PushNotificationDoc,
   PushNotificationResponse,
@@ -392,7 +393,7 @@ export const endpoints = {
     },
   },
   '/user/:address/favorite/collections': {
-    input: {} as { filter: CollectionStatsFilter },
+    input: {} as { filter: PublicOnly<CollectionStatsFilter> },
     output: {} as CollectionStatsPaginated,
   },
   '/user/favorite/:favoriteId': {
@@ -557,7 +558,7 @@ export const endpoints = {
     output: {} as LendingMarketProfile,
   },
   '/lending/market/query': {
-    input: {} as { filter: LendingMarketProfileFilter },
+    input: {} as { filter: PublicOnly<LendingMarketProfileFilter> },
     output: {} as LendingMarketProfileQuery,
   },
   '/user/lending/:address': {
@@ -607,7 +608,7 @@ export const endpoints = {
     output: {} as Record<string, string>,
   },
   '/nft/query': {
-    input: {} as { filter: NftDocFilter },
+    input: {} as { filter: PublicOnly<NftDocFilter> },
     output: {} as NftPaginated,
   },
   '/nft/:identifier/like': {
@@ -629,7 +630,7 @@ export const endpoints = {
     output: {} as NftOfferPaginated,
   },
   '/nft/offer/query': {
-    input: {} as { filter: NftOfferDocFilter },
+    input: {} as { filter: PublicOnly<NftOfferDocFilter> },
     output: {} as NftOfferPaginated,
   },
   '/nft/offer/:identifier': {
@@ -739,11 +740,11 @@ export const endpoints = {
     },
   },
   '/collection/query': {
-    input: {} as { filter?: CollectionProfileFilter },
+    input: {} as { filter?: PublicOnly<CollectionProfileFilter> },
     output: {} as CollectionProfilePaginated,
   },
   '/collection/drops/query': {
-    input: {} as { filter?: CollectionMintProfileFilter },
+    input: {} as { filter?: PublicOnly<CollectionMintProfileFilter> },
     output: {} as CollectionMintProfilePaginated,
   },
   '/collection/:collection/drop-info': {
@@ -809,11 +810,11 @@ export const endpoints = {
     output: {} as CollectionStatsDto,
   },
   '/collection/stats/query': {
-    input: {} as { filter: CollectionStatsFilter },
+    input: {} as { filter: PublicOnly<CollectionStatsFilter> },
     output: {} as CollectionStatsPaginated,
   },
   '/collection/global-offer/query': {
-    input: {} as { filter: CollectionOffersFilter },
+    input: {} as { filter: PublicOnly<CollectionOffersFilter> },
     output: {} as GlobalOfferPaginated,
   },
   '/user/:address/creator/listing': {
@@ -894,23 +895,23 @@ export const endpoints = {
     output: {} as OwnedServicesDto,
   },
   '/search': {
-    input: {} as { filter: FilterQueryDto },
+    input: {} as { filter: PublicOnly<FilterQueryDto> },
     output: {} as GlobalSearchResourcesPaginated,
   },
   '/user/search': {
-    input: {} as { filter: FilterQueryDto },
+    input: {} as { filter: PublicOnly<FilterQueryDto> },
     output: {} as GlobalSearchResourcesPaginated,
   },
   '/collection/search': {
-    input: {} as { filter: FilterQueryDto },
+    input: {} as { filter: PublicOnly<FilterQueryDto> },
     output: {} as GlobalSearchResourcesPaginated,
   },
   '/collection/drops/search': {
-    input: {} as { filter: FilterQueryDto },
+    input: {} as { filter: PublicOnly<FilterQueryDto> },
     output: {} as CollectionMintProfilePaginated,
   },
   '/nft/search/query': {
-    input: {} as { filter: NftDocFilter },
+    input: {} as { filter: PublicOnly<NftDocFilter> },
     output: {} as NftPaginated,
   },
   '/user/notifications': {
@@ -1127,7 +1128,7 @@ export const endpoints = {
     },
   },
   '/activity/query': {
-    input: {} as { filter: NftActivityFilter },
+    input: {} as { filter: PublicOnly<NftActivityFilter> },
     output: {} as NftActivityPaginated,
   },
   '/activity/:identifier': {
@@ -1287,7 +1288,7 @@ export const endpoints = {
     },
   },
   '/event/profile/query': {
-    input: {} as { filter: EventProfileFilter },
+    input: {} as { filter: PublicOnly<EventProfileFilter> },
     output: {} as EventProfileQuery,
   },
   '/event/:eventId/profile': {
@@ -1440,7 +1441,7 @@ export const endpoints = {
     },
   },
   '/event/:eventId/invite/query': {
-    input: {} as { filter: EventInvitationFilter },
+    input: {} as { filter: PublicOnly<EventInvitationFilter> },
     output: {} as EventInvitationQuery,
     securityMode: 'requiredAny',
   },
@@ -1449,7 +1450,7 @@ export const endpoints = {
     output: {} as EventInvitation,
   },
   '/event/:eventId/voucher/query': {
-    input: {} as { filter: EventVoucherFilter },
+    input: {} as { filter: PublicOnly<EventVoucherFilter> },
     output: {} as EventVoucherQuery,
     securityMode: 'requiredAny',
   },
@@ -1505,7 +1506,7 @@ export const endpoints = {
     },
   },
   '/event/:eventId/guest/query': {
-    input: {} as { filter: EventGuestFilter },
+    input: {} as { filter: PublicOnly<EventGuestFilter> },
     output: {} as EventGuestProfileQuery,
     securityMode: 'requiredAny',
   },
@@ -1700,7 +1701,7 @@ export const endpoints = {
     },
   },
   '/event/:eventId/referral-configs': {
-    input: {} as { filter?: EventReferralConfigFilter },
+    input: {} as { filter?: PublicOnly<EventReferralConfigFilter> },
     output: {} as EventReferralConfigPaginated,
     securityMode: 'requiredAny',
   },
@@ -1731,7 +1732,7 @@ export const endpoints = {
     },
   },
   '/event/:eventId/referrals': {
-    input: {} as { filter?: EventReferralFilter },
+    input: {} as { filter?: PublicOnly<EventReferralFilter> },
     output: {} as EventReferralPaginated,
     securityMode: 'requiredAny',
   },

@@ -41,7 +41,7 @@ type INestNested = Record<
   }
 >
 
-const sdkImports: string[] = ['ActivityChain']
+const sdkImports: string[] = ['ActivityChain', 'PublicOnly']
 
 type FieldMeta = { type: string; required: boolean }
 
@@ -162,7 +162,12 @@ async function parseSwagger() {
         ? queryParameters.reduce((acc: Record<string, unknown>, curr) => {
             const parsed = parseSchema(curr.schema, transformedKey)
             acc[curr.name] = {
-              type: curr.name === 'chain' ? 'ActivityChain[]' : parsed,
+              type:
+                curr.name === 'chain'
+                  ? 'ActivityChain[]'
+                  : curr.name === 'filter'
+                    ? `PublicOnly<${parsed}>`
+                    : parsed,
               required: curr.required,
             }
             return acc

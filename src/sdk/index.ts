@@ -402,9 +402,20 @@ async function _fn() {
       .catch(() => null),
     sdk.user.lending.image.nonce('123')(),
     sdk.liquid.egld.staked(),
+    sdk.activity.query({
+      filter: {
+        filters: {
+          activityData: {
+            collection: ['test'],
+          },
+        },
+        orderBy: ['activityData.price asc'],
+        top: 35,
+      },
+    }),
   ])
 
   console.log(result)
 }
 
-// _fn()
+_fn()
