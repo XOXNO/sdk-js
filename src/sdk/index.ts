@@ -1,3 +1,5 @@
+import { EventUserRole, EventUserRoles } from '@xoxno/types'
+
 import { XOXNOClient } from '../utils/api'
 import { AddressNotFoundError, CollectionNotFoundError } from '../utils/errors'
 import { isAddressValid } from '../utils/helpers'
@@ -27,8 +29,9 @@ type CollectParams<S extends string> =
       : object
 
 type RequireAtLeastOne<T> = {
-  [K in keyof T]: Required<Pick<T, K>> & Partial<Omit<T, K>>
-}[keyof T]
+  [K in keyof T]-?: { [P in K]-?: T[P] } & Omit<T, K>
+}[keyof T] &
+  T
 
 type BodyBag<VB, Defined extends boolean> = Defined extends true
   ? IsEmptyObj<VB> extends true
@@ -396,6 +399,10 @@ async function _fn() {
       .POST({
         body: {
           eventId: '',
+          metadata: {},
+          targetAddresses: [],
+          title: '',
+          message: '',
         },
         auth: '',
       })
@@ -413,9 +420,18 @@ async function _fn() {
         top: 35,
       },
     }),
+    sdk.event.eventId('').role.POST({
+      body: {
+        permissions: [],
+        endTime: 0,
+        role: [EventUserRoles.CHECK_IN_MANAGER],
+        name: '',
+      },
+      auth: '',
+    }),
   ])
 
   console.log(result)
 }
 
-// _fn()
+_fn()
