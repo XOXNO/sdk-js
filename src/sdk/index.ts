@@ -418,4 +418,4 @@ async function _fn() {
   console.log(result)
 }
 
-_fn()
+// _fn()
