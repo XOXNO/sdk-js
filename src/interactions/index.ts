@@ -3,10 +3,14 @@ import type { Interaction } from '@multiversx/sdk-core/out/smartcontracts/intera
 import type { SmartContract } from '@multiversx/sdk-core/out/smartcontracts/smartContract'
 import type { Struct } from '@multiversx/sdk-core/out/smartcontracts/typesystem/struct'
 import type { SmartContractTransactionsFactory } from '@multiversx/sdk-core/out/transactionsFactories/smartContractTransactionsFactory'
-import type { NftDoc } from '@xoxno/types'
+import type { GlobalOfferDoc, NftDoc } from '@xoxno/types'
 import BigNumber from 'bignumber.js'
 
-import type { GlobalOffer } from '../types/collection'
+import { XOXNOClient } from '../utils/api'
+import { isAddressValid } from '../utils/helpers'
+import { ContractQueryRunner } from '../utils/scCalls'
+import { SmartContractAbis } from '../utils/SmartContractAbis'
+import { getSmartContract } from '../utils/SmartContractService'
 import type {
   AcceptGlobalOffer,
   ChangeListing,
@@ -15,12 +19,7 @@ import type {
   SendCustomOffer,
   SendGlobalOffer,
   WithSenderAndNonce,
-} from '../types/interactions'
-import { XOXNOClient } from '../utils/api'
-import { isAddressValid } from '../utils/helpers'
-import { ContractQueryRunner } from '../utils/scCalls'
-import { SmartContractAbis } from '../utils/SmartContractAbis'
-import { getSmartContract } from '../utils/SmartContractService'
+} from './types'
 
 enum AuctionType {
   NftBid,
@@ -45,6 +44,7 @@ interface Auction {
   marketplace_cut_percentage: string
   creator_royalties_percentage: string
 }
+
 export class SCInteraction {
   private xo: SmartContract
   private api: XOXNOClient
@@ -182,7 +182,7 @@ export class SCInteraction {
 
   public getGlobalOfferData = async (
     global_offer_id: number
-  ): Promise<GlobalOffer> => {
+  ): Promise<GlobalOfferDoc> => {
     const interaction = this.xo.methods.getGlobalOffer([global_offer_id])
     const result = await this.getResult(interaction)
     const body = result.firstValue?.valueOf()
@@ -220,7 +220,7 @@ export class SCInteraction {
         )
       )
     }
-    return body as GlobalOffer
+    return body as GlobalOfferDoc
   }
 
   /**

@@ -111,9 +111,9 @@ export class XOXNOClient {
       ...options.headers,
       Referer: 'https://xoxno.sdk',
       'User-Agent': 'XOXNO/1.0/SDK',
-      ...(options.method !== 'GET'
-        ? { 'Content-Type': 'application/json' }
-        : {}),
+      ...(options.method === 'PUT'
+        ? {}
+        : { 'Content-Type': 'application/json' }),
       ...(Authorization ? { Authorization } : {}),
     }
 
@@ -140,8 +140,6 @@ export class XOXNOClient {
       method: options.method ?? 'GET',
     }
 
-    // console.log(url)
-
     const res = await fetch(url, allHeaders)
 
     if (!res.ok) {
@@ -160,6 +158,10 @@ export class XOXNOClient {
       )
     }
 
-    return res.json() as T
+    if (res.headers.get('Content-Type') === 'application/json') {
+      return res.json() as T
+    } else {
+      return res.text() as T
+    }
   }
 }

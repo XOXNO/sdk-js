@@ -24,10 +24,11 @@
   "sideEffects": false,
   "scripts": {
     "test": "jest",
+    "build:sdk": "npx bun run src/sdk/parseSwagger.ts && eslint 'src/sdk/swagger.ts' --fix",
     "build:types": "tsc --emitDeclarationOnly",
     "build:esm": "webpack --config webpack-esm.config.mjs",
     "build:cjs": "webpack --config webpack-cjs.config.mjs",
-    "build": "npm run build:types && npm run build:esm && npm run build:cjs",
+    "build": "npm run build:sdk && npm run build:types && npm run build:esm && npm run build:cjs",
     "lint": "eslint 'src/**/*.{ts,tsx}' --fix",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "commit": "git-cz",
@@ -75,6 +76,7 @@
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.19.0",
+    "bun": "^1.2.18",
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8",
@@ -99,9 +101,6 @@
   "dependencies": {
     "@multiversx/sdk-core": "^13.17.2",
     "@multiversx/sdk-network-providers": "^2.9.3",
-    "@xoxno/types": "^1.0.72",
-    "axios": "^1.7.9",
-    "protobufjs": "^7.4.0",
-    "webpack-bundle-analyzer": "^4.10.2"
+    "@xoxno/types": "^1.0.72"
   }
 }
