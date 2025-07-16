@@ -1,4 +1,4 @@
-import { EventUserRole, EventUserRoles } from '@xoxno/types'
+import { EventUserRoles } from '@xoxno/types/dist/enums/event-user-roles.enum'
 
 import { XOXNOClient } from '../utils/api'
 import { AddressNotFoundError, CollectionNotFoundError } from '../utils/errors'

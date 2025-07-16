@@ -74,9 +74,7 @@ import type {
   EventUserRole,
   EventUserRoleCreateDto,
   EventUserRoleDoc,
-  EventVoucherCreateDto,
   EventVoucherDoc,
-  EventVoucherEditDto,
   EventVoucherFilter,
   EventVoucherQuery,
   FetchSwapRoutesResponseDto,
@@ -114,7 +112,7 @@ import type {
   NftActivityPaginated,
   NftDoc,
   NftDocFilter,
-  NftHydrated,
+  NftDocHydrated,
   NftOfferDoc,
   NftOfferDocFilter,
   NftOfferPaginated,
@@ -659,7 +657,7 @@ export const endpoints = {
   },
   '/nft/pinned': {
     input: {} as { chain: ActivityChain[] },
-    output: {} as NftHydrated[],
+    output: {} as NftDocHydrated[],
   },
   '/nft/sign-withdraw': {
     input: {},
@@ -693,7 +691,7 @@ export const endpoints = {
   },
   '/nft/:identifier': {
     input: {},
-    output: {} as NftHydrated,
+    output: {} as NftDocHydrated,
   },
   '/collection/:collection/profile': {
     input: {},
@@ -1525,7 +1523,7 @@ export const endpoints = {
     output: {} as EventUserRole[],
     POST: {
       input: {},
-      output: {} as EventUserRole[],
+      output: {} as EventUserRole,
       body: {} as EventUserRoleCreateDto,
       securityMode: 'requiredAny',
     },
@@ -1612,7 +1610,7 @@ export const endpoints = {
     POST: {
       input: {},
       output: {} as EventVoucherDoc,
-      body: {} as EventVoucherCreateDto,
+      body: {},
       securityMode: 'requiredAny',
     },
   },
@@ -1622,7 +1620,7 @@ export const endpoints = {
     PATCH: {
       input: {},
       output: {} as EventVoucherDoc,
-      body: {} as EventVoucherEditDto,
+      body: {},
       securityMode: 'requiredAny',
     },
     DELETE: {
