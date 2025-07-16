@@ -16,7 +16,7 @@ import {
   XOXNO_SC_DEV,
 } from './const'
 
-enum Chain {
+export enum Chain {
   MAINNET = '1',
   DEVNET = 'D',
 }
