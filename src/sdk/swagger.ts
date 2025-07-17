@@ -139,7 +139,7 @@ import type {
   SignMintDto,
   SignWithdrawDto,
   StakingCreatorDoc,
-  StakingExploreDto,
+  StakingExploreDtoHydrated,
   StakingPostDTO,
   StakingSummary,
   StakingUserPoolNfts,
@@ -895,7 +895,7 @@ export const endpoints = {
   },
   '/collection/staking/explore': {
     input: {},
-    output: {} as StakingExploreDto[],
+    output: {} as StakingExploreDtoHydrated[],
   },
   '/user/:creatorTag/owned-services': {
     input: {},
