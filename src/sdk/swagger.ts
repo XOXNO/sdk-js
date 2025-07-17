@@ -3,7 +3,6 @@ import type {
   AirdropDto,
   AnalyticsMarketplaceUniqueUsers,
   AnalyticsVolumeDto,
-  AnalyticsVolumeResponseDto,
   AnsweredQuestionWithDetails,
   BageQRData,
   BatchTransactionResponse,
@@ -22,7 +21,7 @@ import type {
   CollectionProfileFilter,
   CollectionProfilePaginated,
   CollectionRanksDTO,
-  CollectionStatsDto,
+  CollectionStatsDocHydrated,
   CollectionStatsFilter,
   CollectionStatsPaginated,
   CreatorDetailsDto,
@@ -134,6 +133,7 @@ import type {
   SendChatMessageDto,
   SetEmailDto,
   SetPhoneDto,
+  ShareholderDto,
   SignAcceptGlobalOfferDto,
   SignDataDto,
   SignMintDto,
@@ -170,6 +170,7 @@ import type {
   UserTokenInventoryResponseDto,
   ValueFp,
   VerifyEmailDto,
+  VolumeGraph,
   Web2UserDoc,
   Web2UserShardsDto,
   Web2WalletDto,
@@ -226,7 +227,7 @@ export const endpoints = {
     securityMode: 'requiredAny',
   },
   '/user/me/settings': {
-    input: {},
+    input: {} as { unsubscribeToken: string },
     output: {} as UserSettingsDoc,
     securityMode: 'requiredAny',
   },
@@ -234,7 +235,7 @@ export const endpoints = {
     input: {},
     output: {},
     PATCH: {
-      input: {} as { unsubscribeToken: string },
+      input: {} as { unsubscribeToken?: string },
       output: {} as UserSettingsDoc,
       body: {} as NotificationPreferencesPostDto,
       securityMode: 'requiredAny',
@@ -805,7 +806,7 @@ export const endpoints = {
   },
   '/collection/:collection/stats': {
     input: {},
-    output: {} as CollectionStatsDto,
+    output: {} as CollectionStatsDocHydrated,
   },
   '/collection/stats/query': {
     input: {} as { filter: PublicOnly<CollectionStatsFilter> },
@@ -822,6 +823,14 @@ export const endpoints = {
   '/user/:address/creator/details': {
     input: {},
     output: {} as CreatorDetailsDto,
+  },
+  '/launchpad/:scAddress/shareholders/royalties': {
+    input: {},
+    output: {} as ShareholderDto[],
+  },
+  '/launchpad/:scAddress/shareholders/collection/:collectionTag': {
+    input: {},
+    output: {} as ShareholderDto[],
   },
   '/pool/:poolId/profile': {
     input: {},
@@ -897,6 +906,10 @@ export const endpoints = {
     output: {} as GlobalSearchResourcesPaginated,
   },
   '/user/search': {
+    input: {} as { filter: PublicOnly<FilterQueryDto> },
+    output: {} as GlobalSearchResourcesPaginated,
+  },
+  '/bober/search': {
     input: {} as { filter: PublicOnly<FilterQueryDto> },
     output: {} as GlobalSearchResourcesPaginated,
   },
@@ -1107,24 +1120,6 @@ export const endpoints = {
     output: {} as Web2UserShardsDto,
     securityMode: 'requiredWeb2',
   },
-  '/lending/market-sc': {
-    input: {},
-    output: {} as string[],
-  },
-  '/lending/market/:token/price/egld': {
-    input: {},
-    output: {} as LendingTokenPriceDto,
-  },
-  '/faucet': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as SuccessDto,
-      body: {},
-      securityMode: 'requiredAny',
-    },
-  },
   '/activity/query': {
     input: {} as { filter: PublicOnly<NftActivityFilter> },
     output: {} as NftActivityPaginated,
@@ -1140,7 +1135,7 @@ export const endpoints = {
       bin?: string
       chain: ActivityChain[]
     },
-    output: {} as AnalyticsVolumeResponseDto,
+    output: {} as VolumeGraph[],
   },
   '/collection/:collection/analytics/volume': {
     input: {} as { startTime?: string; endTime?: string; bin?: string },
@@ -1171,6 +1166,24 @@ export const endpoints = {
     input: {},
     output: {} as AirdropDto[],
     securityMode: 'requiredAny',
+  },
+  '/lending/market-sc': {
+    input: {},
+    output: {} as string[],
+  },
+  '/lending/market/:token/price/egld': {
+    input: {},
+    output: {} as LendingTokenPriceDto,
+  },
+  '/faucet': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
   },
   '/transactions/:txHash/status': {
     input: {},
