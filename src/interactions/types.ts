@@ -1,10 +1,5 @@
 import type { BytesValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem/bytes'
 
-export interface WithSenderAndNonce {
-  address: string
-  nonce?: number
-}
-
 interface NFTBody {
   collection: string
   nonce: number
