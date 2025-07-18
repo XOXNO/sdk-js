@@ -1,6 +1,6 @@
 import type {
   ActivityChain,
-  AirdropDto,
+  AirdropDtoHydrated,
   AnalyticsMarketplaceUniqueUsers,
   AnalyticsVolumeDto,
   AnsweredQuestionWithDetails,
@@ -85,7 +85,7 @@ import type {
   GlobalOfferPaginated,
   GlobalSearchResourcesPaginated,
   IMetrics,
-  InventorySummaryDto,
+  InventorySummaryDtoHydrated,
   KustoOrderDirection,
   LendingAccountProfile,
   LendingEModeCategoryProfile,
@@ -622,7 +622,7 @@ export const endpoints = {
   },
   '/user/:address/inventory-summary': {
     input: {} as { activeAuction?: boolean },
-    output: {} as InventorySummaryDto[],
+    output: {} as InventorySummaryDtoHydrated[],
   },
   '/user/:address/offers': {
     input: {} as { type?: string; top?: number; skip?: number },
@@ -1016,6 +1016,16 @@ export const endpoints = {
       securityMode: 'requiredAny',
     },
   },
+  '/mobile/history/clear-id/:notificationId': {
+    input: {},
+    output: {},
+    DELETE: {
+      input: {},
+      output: {} as NotificationSuccessResponseDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
   '/eventNotifications/event/:eventId/update': {
     input: {},
     output: {},
@@ -1160,11 +1170,11 @@ export const endpoints = {
   },
   '/user/xoxno-drop': {
     input: {} as { skip?: number; top?: number; address?: string },
-    output: {} as AirdropDto[],
+    output: {} as AirdropDtoHydrated[],
   },
   '/user/me/xoxno-drop': {
     input: {},
-    output: {} as AirdropDto[],
+    output: {} as AirdropDtoHydrated[],
     securityMode: 'requiredAny',
   },
   '/lending/market-sc': {
