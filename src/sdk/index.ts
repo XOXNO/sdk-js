@@ -8,10 +8,9 @@ import { endpoints as routes } from './swagger'
 import { coveredMethods, type ICoveredMethods } from './utils'
 
 type RemoveColon<S extends string> = S extends `:${infer R}` ? R : S
-type CamelCase<S extends string> =
-  S extends `${infer H}-${infer T}${infer Rest}`
-    ? `${H}${Capitalize<`${T}${Rest}`>}`
-    : S
+type CamelCase<S extends string> = S extends `${infer Head}-${infer Tail}`
+  ? `${Head}${CamelCase<Capitalize<Tail>>}`
+  : S
 
 type IsEmptyObj<T> = keyof T extends never ? true : false
 type NeedsDefault<I, O> =
@@ -429,9 +428,10 @@ async function _fn() {
       },
       auth: '',
     }),
+    // sdk.ash.maxTokenQuantity({}),
   ])
 
   console.log(result)
 }
 
-// _fn()
+_fn()
