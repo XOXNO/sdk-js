@@ -1,4 +1,4 @@
-import { EventUserRoles } from '@xoxno/types/dist/enums/event-user-roles.enum'
+import { EventUserRoles } from '@xoxno/types/enums'
 
 import { XOXNOClient } from '../utils/api'
 import { AddressNotFoundError, CollectionNotFoundError } from '../utils/errors'
@@ -420,7 +420,7 @@ async function _fn() {
         top: 35,
       },
     }),
-    sdk.event.eventId('').role.POST({
+    sdk.event.eventId('123').role.POST({
       body: {
         permissions: [],
         endTime: 0,
@@ -434,4 +434,4 @@ async function _fn() {
   console.log(result)
 }
 
-_fn()
+// _fn()

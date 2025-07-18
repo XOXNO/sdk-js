@@ -41,7 +41,8 @@ type INestNested = Record<
   }
 >
 
-const sdkImports: string[] = ['ActivityChain', 'PublicOnly']
+const sdkImports: string[] = ['PublicOnly']
+const sdkEnumImports: string[] = ['ActivityChain']
 
 type FieldMeta = { type: string; required: boolean }
 
@@ -91,33 +92,41 @@ function groupBy<T>(list: T[], keyGetter: (item: T, index: number) => string) {
   return map
 }
 
-function parseSchema(curr: INestSchema, url: string): string {
+function parseSchema(curr: INestSchema, url: string, schemas: object): string {
   if (isComplexSchema(curr)) {
     const theType = curr.$ref.split('/').pop()!
-    sdkImports.push(theType)
+    const schemaRaw = schemas[theType as keyof typeof schemas]
+    const isEnum = schemaRaw && 'enum' in schemaRaw
+    if (isEnum) {
+      sdkEnumImports.push(theType)
+    } else {
+      sdkImports.push(theType)
+    }
     return theType
   } else {
     if (curr.type === 'object') {
       if (isNestSchema(curr.additionalProperties)) {
-        return `Record<string, ${parseSchema(curr.additionalProperties, url)}>`
+        return `Record<string, ${parseSchema(curr.additionalProperties, url, schemas)}>`
       } else {
         const allOf = curr.additionalProperties.allOf
         const grouped = groupBy(allOf, (item) => `${isComplexSchema(item)}`)
         const currentChild = (grouped.get('true') ?? [])[0]
         const nestedChild = (grouped.get('false') ?? [])[0]
-        return `Record<string, ${parseSchema(currentChild, url)} & ${parseSchema(nestedChild, url)}>`
+        return `Record<string, ${parseSchema(currentChild, url, schemas)} & ${parseSchema(nestedChild, url, schemas)}>`
       }
     }
     if (curr.type === 'array') {
-      return `${parseSchema(curr.items, url)}[]`
+      return `${parseSchema(curr.items, url, schemas)}[]`
     }
     return curr.type
   }
 }
 
 async function parseSwagger() {
-  const yml = await fetch('https://api.xoxno.com/swagger.yaml').then((res) =>
-    res.text()
+  const yml = await fetch('https://devnet-api.xoxno.com/swagger.yaml').then(
+    (res) => {
+      return res.text()
+    }
   )
 
   const result: IRawSdk = {}
@@ -158,9 +167,10 @@ async function parseSwagger() {
         return item.in === 'query'
       })
       const transformedKey = key.replace(/{([^}]+)}/g, ':$1')
+      const schemas = parsed.components.schemas
       const transformedInputs = queryParameters.length
         ? queryParameters.reduce((acc: Record<string, unknown>, curr) => {
-            const parsed = parseSchema(curr.schema, transformedKey)
+            const parsed = parseSchema(curr.schema, transformedKey, schemas)
             acc[curr.name] = {
               type:
                 curr.name === 'chain'
@@ -189,7 +199,8 @@ async function parseSwagger() {
           type: parseSchema(
             Object.values(endpoint.responses)[0].content['application/json']
               .schema,
-            transformedKey
+            transformedKey,
+            schemas
           ),
         },
       }
@@ -200,7 +211,8 @@ async function parseSwagger() {
               type: endpoint.requestBody.content['application/json']
                 ? parseSchema(
                     endpoint.requestBody.content['application/json'].schema,
-                    transformedKey
+                    transformedKey,
+                    schemas
                   )
                 : 'FormData',
               required: endpoint.requestBody.required,
@@ -291,7 +303,11 @@ async function parseSwagger() {
 
   await writeFile(
     path.join(process.cwd(), './src/sdk/swagger.ts'),
-    `import type { ${Array.from(new Set(sdkImports)).join(',')} } from '@xoxno/types'; export const endpoints = ${transformed} as const;`
+    [
+      `import type { ${Array.from(new Set(sdkImports)).join(',')} } from '@xoxno/types';`,
+      `import type { ${Array.from(new Set(sdkEnumImports)).join(',')} } from '@xoxno/types/enums';`,
+      `export const endpoints = ${transformed} as const;`,
+    ].join('\n')
   )
 
   /* await writeFile(

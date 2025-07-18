@@ -8,7 +8,7 @@
     "sourceMap": true,
     "allowJs": true,
     "strict": true,
-    "moduleResolution": "node", // Changed from nodenext
+    "moduleResolution": "bundler", // Changed from nodenext
     "strictPropertyInitialization": true,
     "strictNullChecks": true,
     "skipLibCheck": true,

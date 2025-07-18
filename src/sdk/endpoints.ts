@@ -1,11 +1,5 @@
 import type {
-  ActivityChain,
   CollectionMintProfileDocWithStages,
-  CollectionMintProfileFilter,
-  CollectionMintProfilePaginated,
-  CollectionProfileDoc,
-  CollectionProfileFilter,
-  CollectionProfilePaginated,
   EventProfile,
 } from '@xoxno/types'
 

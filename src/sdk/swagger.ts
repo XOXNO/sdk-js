@@ -1,5 +1,4 @@
 import type {
-  ActivityChain,
   AirdropDtoHydrated,
   AnalyticsMarketplaceUniqueUsers,
   AnalyticsVolumeDto,
@@ -86,7 +85,6 @@ import type {
   GlobalSearchResourcesPaginated,
   IMetrics,
   InventorySummaryDtoHydrated,
-  KustoOrderDirection,
   LendingAccountProfile,
   LendingEModeCategoryProfile,
   LendingIndexesDto,
@@ -95,7 +93,6 @@ import type {
   LendingMarketProfileFilter,
   LendingMarketProfileQuery,
   LendingOverallStats,
-  LendingPositionOrderByColumn,
   LendingPositionStatus,
   LendingTokenPriceDto,
   LikeNftDto,
@@ -149,8 +146,7 @@ import type {
   TicketCalculationRequestDto,
   TicketPricesResponse,
   TicketValidationResult,
-  TokenCategory,
-  TokenDocDto,
+  TokenDataDocHydrated,
   TradesilvaniaSignature,
   TraitInfo,
   TransactionCreate,
@@ -166,7 +162,6 @@ import type {
   UserSettingsDoc,
   UserStakingSummaryDto,
   UserStatsDto,
-  UserStatsOrderByColumn,
   UserTokenInventoryResponseDto,
   ValueFp,
   VerifyEmailDto,
@@ -178,6 +173,13 @@ import type {
   XoxnoInfo,
   XoxnoLiquidStatsDto,
 } from '@xoxno/types'
+import type {
+  ActivityChain,
+  KustoOrderDirection,
+  LendingPositionOrderByColumn,
+  TokenCategory,
+  UserStatsOrderByColumn,
+} from '@xoxno/types/enums'
 
 export const endpoints = {
   '/user/login': {
@@ -202,7 +204,7 @@ export const endpoints = {
     output: {},
     POST: {
       input: {},
-      output: {} as UserNetworkInfoDto,
+      output: {} as UserNetworkInfoDto[],
       body: {} as string[],
     },
   },
@@ -420,11 +422,11 @@ export const endpoints = {
       category?: TokenCategory
       chain?: ActivityChain[]
     },
-    output: {} as TokenDocDto[],
+    output: {} as TokenDataDocHydrated[],
   },
   '/tokens/swap': {
     input: {},
-    output: {} as TokenDocDto[],
+    output: {} as TokenDataDocHydrated[],
   },
   '/tokens/usd-price': {
     input: {} as { identifier?: string; cache?: boolean },
