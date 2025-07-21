@@ -106,7 +106,6 @@ import type {
   NftActivityDocHydrated,
   NftActivityFilter,
   NftActivityPaginated,
-  NftDoc,
   NftDocFilter,
   NftDocFull,
   NftDocHydrated,
@@ -890,7 +889,7 @@ export const endpoints = {
   },
   '/pool/:poolId/profile': {
     input: {},
-    output: {} as StakingPoolDoc,
+    output: {} as StakingSummary,
     PATCH: {
       input: {},
       output: {} as StakingPoolDoc,
@@ -900,7 +899,7 @@ export const endpoints = {
   },
   '/pool/:poolId/whitelist': {
     input: {},
-    output: {} as NftDoc[],
+    output: {} as NftDocHydrated[],
   },
   '/pool/:poolId/upload-picture': {
     input: {},
@@ -962,10 +961,6 @@ export const endpoints = {
     output: {} as GlobalSearchResourcesPaginated,
   },
   '/user/search': {
-    input: {} as { filter: PublicOnly<FilterQueryDto> },
-    output: {} as GlobalSearchResourcesPaginated,
-  },
-  '/bober/search': {
     input: {} as { filter: PublicOnly<FilterQueryDto> },
     output: {} as GlobalSearchResourcesPaginated,
   },
