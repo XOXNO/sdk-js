@@ -180,6 +180,8 @@ import type {
   ActivityChain,
   KustoOrderDirection,
   LendingPositionOrderByColumn,
+  OfferType,
+  StakingStatus,
   TokenCategory,
   UserStatsOrderByColumn,
 } from '@xoxno/types/enums'
@@ -408,7 +410,7 @@ export const endpoints = {
   '/tokens': {
     input: {} as {
       identifier?: string[]
-      category?: TokenCategory
+      category?: TokenCategory[]
       chain?: ActivityChain[]
     },
     output: {} as TokenDataDocHydrated[],
@@ -418,11 +420,11 @@ export const endpoints = {
     output: {} as TokenDataDocHydrated[],
   },
   '/tokens/usd-price': {
-    input: {} as { identifier?: string; cache?: boolean },
+    input: {} as { identifier?: string[]; cache?: boolean },
     output: {} as Record<string, number>,
   },
   '/tokens/egld/fiat-price': {
-    input: {} as { value?: number; fiatCurrencies?: string },
+    input: {} as { value?: number; fiatCurrencies?: string[] },
     output: {} as Record<string, number>,
   },
   '/tokens/xoxno': {
@@ -564,7 +566,7 @@ export const endpoints = {
     output: {} as string,
   },
   '/lending/market/emode-categories': {
-    input: {} as { categoryIds: string },
+    input: {} as { categoryIds?: string[] },
     output: {} as LendingEModeCategoryProfile[],
   },
   '/lending/market/:token/emode-categories': {
@@ -612,7 +614,7 @@ export const endpoints = {
     output: {} as InventorySummaryDtoHydrated[],
   },
   '/user/:address/offers': {
-    input: {} as { type?: string; top?: number; skip?: number },
+    input: {} as { type?: OfferType; top?: number; skip?: number },
     output: {} as NftOfferPaginated,
   },
   '/nft/offer/query': {
@@ -936,7 +938,7 @@ export const endpoints = {
     output: {} as StakingSummary[],
   },
   '/user/:address/staking/pool/:poolId/nfts': {
-    input: {} as { status?: string },
+    input: {} as { status?: StakingStatus },
     output: {} as StakingUserPoolNfts,
   },
   '/collection/:collection/staking/summary': {
