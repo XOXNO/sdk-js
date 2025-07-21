@@ -142,9 +142,9 @@ export class XOXNOClient {
 
     const res = await fetch(url, allHeaders)
 
-    if (!res.ok) {
-      const text = await res.text()
+    const text = await res.text()
 
+    if (!res.ok) {
       let message
 
       try {
@@ -158,10 +158,10 @@ export class XOXNOClient {
       )
     }
 
-    if (res.headers.get('Content-Type') === 'application/json') {
-      return res.json() as T
-    } else {
-      return res.text() as T
+    try {
+      return JSON.parse(text) as T
+    } catch (_) {
+      return text as T
     }
   }
 }

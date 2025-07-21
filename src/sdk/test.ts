@@ -41,19 +41,25 @@ async function _fn() {
         top: 35,
       },
     }),
-    sdk.event.eventId('123').role.POST({
-      body: {
-        permissions: [],
-        endTime: 0,
-        role: [EventUserRoles.CHECK_IN_MANAGER],
-        name: '',
-      },
-      auth: '',
-    }),
-    // sdk.ash.maxTokenQuantity({}),
+    sdk.event
+      .eventId('123')
+      .role.POST({
+        body: {
+          permissions: [],
+          endTime: 0,
+          role: [EventUserRoles.CHECK_IN_MANAGER],
+          name: '',
+        },
+        auth: '',
+      })
+      .catch(() => null),
   ])
 
-  console.log(result)
+  console.log(
+    await sdk.collection.stats.query({
+      filter: { skip: 0, top: 1, filters: {} },
+    })
+  )
 }
 
 _fn()
