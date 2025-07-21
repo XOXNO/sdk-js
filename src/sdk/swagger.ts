@@ -29,7 +29,6 @@ import type {
   DiscountCodeValidationResponse,
   DropInfoDto,
   EditUserCreatorProfileDto,
-  EditUserProfileDto,
   EventCheckInQR,
   EventCountGroupedByCountry,
   EventGuestApproveDto,
@@ -159,6 +158,7 @@ import type {
   UserFavoriteResponseDto,
   UserNetworkInfoDto,
   UserProfileDto,
+  UserProfileEditDto,
   UserSettingsDoc,
   UserStakingSummaryDto,
   UserStatsDto,
@@ -182,15 +182,6 @@ import type {
 } from '@xoxno/types/enums'
 
 export const endpoints = {
-  '/user/login': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as LoginAccessDto,
-      body: {} as LoginRequestDto,
-    },
-  },
   '/user/:address/network-account': {
     input: {},
     output: {} as UserNetworkInfoDto,
@@ -219,7 +210,7 @@ export const endpoints = {
     PATCH: {
       input: {},
       output: {} as UserProfileDto,
-      body: {} as EditUserProfileDto,
+      body: {} as UserProfileEditDto,
       securityMode: 'requiredAny',
     },
   },
@@ -834,6 +825,70 @@ export const endpoints = {
     input: {},
     output: {} as ShareholderDto[],
   },
+  '/user/native-token': {
+    input: {} as { originalUrl?: string; extraInfo?: string },
+    output: {} as string,
+  },
+  '/user/web2': {
+    input: {},
+    output: {} as Web2UserDoc,
+    securityMode: 'requiredWeb2',
+  },
+  '/user/web2/session-cookie': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SuccessWithMessageDto,
+      body: {},
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/wallet': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {} as NativeWalletDto,
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/wallet-switch': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {} as SwitchWalletDto,
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/wallet-link': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {} as Web2WalletDto,
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/:index/wallet-link': {
+    input: {},
+    output: {},
+    DELETE: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {},
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/shards': {
+    input: {},
+    output: {} as Web2UserShardsDto,
+    securityMode: 'requiredWeb2',
+  },
   '/pool/:poolId/profile': {
     input: {},
     output: {} as StakingSummary,
@@ -1068,70 +1123,6 @@ export const endpoints = {
       securityMode: 'requiredAny',
     },
   },
-  '/user/native-token': {
-    input: {} as { originalUrl?: string; extraInfo?: string },
-    output: {} as string,
-  },
-  '/user/web2': {
-    input: {},
-    output: {} as Web2UserDoc,
-    securityMode: 'requiredWeb2',
-  },
-  '/user/web2/session-cookie': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as SuccessWithMessageDto,
-      body: {},
-      securityMode: 'requiredWeb2',
-    },
-  },
-  '/user/web2/wallet': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as Web2UserDoc,
-      body: {} as NativeWalletDto,
-      securityMode: 'requiredWeb2',
-    },
-  },
-  '/user/web2/wallet-switch': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as Web2UserDoc,
-      body: {} as SwitchWalletDto,
-      securityMode: 'requiredWeb2',
-    },
-  },
-  '/user/web2/wallet-link': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as Web2UserDoc,
-      body: {} as Web2WalletDto,
-      securityMode: 'requiredWeb2',
-    },
-  },
-  '/user/web2/:index/wallet-link': {
-    input: {},
-    output: {},
-    DELETE: {
-      input: {},
-      output: {} as Web2UserDoc,
-      body: {},
-      securityMode: 'requiredWeb2',
-    },
-  },
-  '/user/web2/shards': {
-    input: {},
-    output: {} as Web2UserShardsDto,
-    securityMode: 'requiredWeb2',
-  },
   '/activity/query': {
     input: {} as { filter: PublicOnly<NftActivityFilter> },
     output: {} as NftActivityPaginated,
@@ -1195,6 +1186,15 @@ export const endpoints = {
       output: {} as SuccessDto,
       body: {},
       securityMode: 'requiredAny',
+    },
+  },
+  '/user/login': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as LoginAccessDto,
+      body: {} as LoginRequestDto,
     },
   },
   '/transactions/:txHash/status': {
