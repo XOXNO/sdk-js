@@ -220,7 +220,7 @@ export const endpoints = {
   '/user/me/settings': {
     input: {} as { unsubscribeToken: string },
     output: {} as UserSettingsDoc,
-    securityMode: 'requiredAny',
+    securityMode: 'optionalAny',
   },
   '/user/me/settings/notification-preferences': {
     input: {},
