@@ -23,12 +23,18 @@ type IEndpoint = {
 
 type IRawSdk = Record<string, IEndpoint & Record<ICoveredMethods, IEndpoint>>
 
+type IAllOf = { allOf: INestSchema[] }
+
+type IOneOf = { oneOf: INestSchema[] }
+
+type IAdditionalProperties = INestSchema | IAllOf | IOneOf
+
 type INestPrimitiveSchema =
   | { type: INestType }
   | { type: 'array'; items: INestSchema }
   | {
       type: 'object'
-      additionalProperties: INestSchema | { allOf: INestSchema[] }
+      additionalProperties: IAdditionalProperties
     }
 type INestComplexSchema = { $ref: `#/components/schemas/${string}` }
 
@@ -68,28 +74,12 @@ function isComplexSchema(schema: INestSchema): schema is INestComplexSchema {
   return '$ref' in schema
 }
 
-function isNestSchema(
-  schema: INestSchema | { allOf: INestSchema[] }
-): schema is INestSchema {
-  return !('allOf' in schema)
+function isAllOfSchema(schema: IAdditionalProperties): schema is IAllOf {
+  return 'allOf' in schema
 }
 
-function groupBy<T>(list: T[], keyGetter: (item: T, index: number) => string) {
-  const map = new Map<ReturnType<typeof keyGetter>, T[]>()
-
-  list.forEach((item, index) => {
-    const key = keyGetter(item, index)
-
-    const collection = map.get(key)
-
-    if (!collection) {
-      map.set(key, [item])
-    } else {
-      collection.push(item)
-    }
-  })
-
-  return map
+function isOneOfSchema(schema: IAdditionalProperties): schema is IOneOf {
+  return 'oneOf' in schema
 }
 
 function parseSchema(curr: INestSchema, url: string, schemas: object): string {
@@ -105,29 +95,51 @@ function parseSchema(curr: INestSchema, url: string, schemas: object): string {
     return theType
   } else {
     if (curr.type === 'object') {
-      if (isNestSchema(curr.additionalProperties)) {
-        return `Record<string, ${parseSchema(curr.additionalProperties, url, schemas)}>`
-      } else {
+      if (isAllOfSchema(curr.additionalProperties)) {
         const allOf = curr.additionalProperties.allOf
-        const grouped = groupBy(allOf, (item) => `${isComplexSchema(item)}`)
-        const currentChild = (grouped.get('true') ?? [])[0]
-        const nestedChild = (grouped.get('false') ?? [])[0]
-        return `Record<string, ${parseSchema(currentChild, url, schemas)} & ${parseSchema(nestedChild, url, schemas)}>`
+        return `Record<string, ${`${allOf
+          .map((item) => {
+            return parseSchema(item, url, schemas)
+          })
+          .join('&')}`}>`
+      } else if (isOneOfSchema(curr.additionalProperties)) {
+        const oneOf = curr.additionalProperties.oneOf
+        return `Record<string, ${`${oneOf
+          .map((item) => {
+            return parseSchema(item, url, schemas)
+          })
+          .join('|')}`}>`
+      } else {
+        return `Record<string, ${parseSchema(curr.additionalProperties, url, schemas)}>`
       }
     }
     if (curr.type === 'array') {
       return `${parseSchema(curr.items, url, schemas)}[]`
     }
-    return curr.type
+    if (isAllOfSchema(curr)) {
+      const allOf = curr.allOf
+      return `${allOf
+        .map((item) => {
+          return parseSchema(item, url, schemas)
+        })
+        .join('&')}`
+    } else if (isOneOfSchema(curr)) {
+      const oneOf = curr.oneOf
+      return `${oneOf
+        .map((item) => {
+          return parseSchema(item, url, schemas)
+        })
+        .join('|')}`
+    } else {
+      return curr.type
+    }
   }
 }
 
 async function parseSwagger() {
-  const yml = await fetch('https://devnet-api.xoxno.com/swagger.yaml').then(
-    (res) => {
-      return res.text()
-    }
-  )
+  const yml = await fetch('https://api.xoxno.com/swagger.yaml').then((res) => {
+    return res.text()
+  })
 
   const result: IRawSdk = {}
 

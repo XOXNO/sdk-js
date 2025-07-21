@@ -3,12 +3,13 @@ import type {
   AnalyticsMarketplaceUniqueUsers,
   AnalyticsVolumeDto,
   AnsweredQuestionWithDetails,
+  ArdaSwapResultDto,
   BageQRData,
-  BatchTransactionResponse,
   ChatMessageDocHydrated,
   ChatMessagePaginated,
   CheckLikeStatusResponseDto,
   CollectionHoldersDto,
+  CollectionHoldersExportDto,
   CollectionMintProfileDocHydrated,
   CollectionMintProfileDocWithStages,
   CollectionMintProfileFilter,
@@ -25,9 +26,9 @@ import type {
   CollectionStatsPaginated,
   CreatorDetailsDto,
   CreatorMarketingNotificationDto,
+  CreatorProfileDoc,
   CreatorProfileDto,
   DiscountCodeValidationResponse,
-  DropInfoDto,
   EditUserCreatorProfileDto,
   EventCheckInQR,
   EventCountGroupedByCountry,
@@ -107,9 +108,10 @@ import type {
   NftActivityPaginated,
   NftDoc,
   NftDocFilter,
+  NftDocFull,
   NftDocHydrated,
-  NftOfferDoc,
   NftOfferDocFilter,
+  NftOfferDocHydrated,
   NftOfferPaginated,
   NftPaginated,
   NotificationDoc,
@@ -136,6 +138,7 @@ import type {
   SignWithdrawDto,
   StakingCreatorDoc,
   StakingExploreDtoHydrated,
+  StakingPoolDoc,
   StakingPostDTO,
   StakingSummary,
   StakingUserPoolNfts,
@@ -157,6 +160,7 @@ import type {
   UserConversationPaginated,
   UserFavoriteResponseDto,
   UserNetworkInfoDto,
+  UserProfileDoc,
   UserProfileDto,
   UserProfileEditDto,
   UserSettingsDoc,
@@ -199,17 +203,12 @@ export const endpoints = {
       body: {} as string[],
     },
   },
-  '/user/me/profile': {
-    input: {},
-    output: {} as UserProfileDto,
-    securityMode: 'requiredAny',
-  },
   '/user/:address/profile': {
     input: {},
-    output: {} as UserProfileDto,
+    output: {} as UserProfileDoc,
     PATCH: {
       input: {},
-      output: {} as UserProfileDto,
+      output: {} as UserProfileDoc,
       body: {} as UserProfileEditDto,
       securityMode: 'requiredAny',
     },
@@ -295,7 +294,7 @@ export const endpoints = {
     output: {},
     PUT: {
       input: {} as { referer: string },
-      output: {} as UserProfileDto,
+      output: {} as UserProfileDoc,
       body: {} as FormData,
       securityMode: 'requiredAny',
     },
@@ -305,7 +304,7 @@ export const endpoints = {
     output: {},
     PUT: {
       input: {},
-      output: {} as UserProfileDto,
+      output: {} as UserProfileDoc,
       body: {} as FormData,
       securityMode: 'requiredAny',
     },
@@ -315,7 +314,7 @@ export const endpoints = {
     output: {},
     PUT: {
       input: {},
-      output: {} as UserProfileDto,
+      output: {} as UserProfileDoc,
       body: {},
       securityMode: 'requiredAny',
     },
@@ -325,7 +324,7 @@ export const endpoints = {
     output: {},
     PUT: {
       input: {},
-      output: {} as UserProfileDto,
+      output: {} as UserProfileDoc,
       body: {},
       securityMode: 'requiredAny',
     },
@@ -339,7 +338,7 @@ export const endpoints = {
     output: {} as CreatorProfileDto,
     PATCH: {
       input: {},
-      output: {} as CreatorProfileDto,
+      output: {} as CreatorProfileDoc,
       body: {} as EditUserCreatorProfileDto,
       securityMode: 'requiredAny',
     },
@@ -349,7 +348,7 @@ export const endpoints = {
     output: {},
     PUT: {
       input: {},
-      output: {} as CreatorProfileDto,
+      output: {} as CreatorProfileDoc,
       body: {} as FormData,
       securityMode: 'requiredAny',
     },
@@ -359,7 +358,7 @@ export const endpoints = {
     output: {},
     PUT: {
       input: {},
-      output: {} as CreatorProfileDto,
+      output: {} as CreatorProfileDoc,
       body: {} as FormData,
       securityMode: 'requiredAny',
     },
@@ -369,7 +368,7 @@ export const endpoints = {
     output: {},
     PUT: {
       input: {},
-      output: {} as CreatorProfileDto,
+      output: {} as CreatorProfileDoc,
       body: {},
       securityMode: 'requiredAny',
     },
@@ -379,7 +378,7 @@ export const endpoints = {
     output: {},
     PUT: {
       input: {},
-      output: {} as CreatorProfileDto,
+      output: {} as CreatorProfileDoc,
       body: {},
       securityMode: 'requiredAny',
     },
@@ -443,17 +442,13 @@ export const endpoints = {
     input: {},
     output: {} as XoxnoInfo,
   },
-  '/tokens/xoxno/liquid': {
-    input: {},
-    output: {} as XoxnoInfo,
-  },
   '/liquid/xoxno/stats': {
     input: {},
-    output: {} as XoxnoLiquidStatsDto[],
+    output: {} as XoxnoLiquidStatsDto,
   },
   '/liquid/egld/stats': {
     input: {},
-    output: {} as XoxnoLiquidStatsDto[],
+    output: {} as XoxnoLiquidStatsDto,
   },
   '/liquid/xoxno/rate': {
     input: {},
@@ -535,7 +530,7 @@ export const endpoints = {
       wantedToken: string
       slippage: number
     },
-    output: {} as FetchSwapRoutesResponseDto,
+    output: {} as ArdaSwapResultDto,
   },
   '/arda/min-token-quantity': {
     input: {} as {
@@ -543,7 +538,7 @@ export const endpoints = {
       originalTokenValue: string
       paymentToken: string
     },
-    output: {} as FetchSwapRoutesResponseDto,
+    output: {} as ArdaSwapResultDto,
   },
   '/lending/market/:token/profile': {
     input: {},
@@ -563,7 +558,7 @@ export const endpoints = {
   },
   '/user/lending/position/:identifier': {
     input: {},
-    output: {} as LendingAccountProfile,
+    output: {} as LendingAccountProfile[],
   },
   '/user/lending/image/:nonce': {
     input: {},
@@ -597,7 +592,7 @@ export const endpoints = {
   },
   '/lending/market/prices': {
     input: {} as { returnAsUsd?: boolean },
-    output: {} as Record<string, string>,
+    output: {} as Record<string, number>,
   },
   '/nft/query': {
     input: {} as { filter: PublicOnly<NftDocFilter> },
@@ -627,7 +622,7 @@ export const endpoints = {
   },
   '/nft/offer/:identifier': {
     input: {},
-    output: {} as NftOfferDoc,
+    output: {} as NftOfferDocHydrated[],
   },
   '/user/:address/favorite/nfts': {
     input: {} as { top?: number; skip?: number },
@@ -685,7 +680,7 @@ export const endpoints = {
   },
   '/nft/:identifier': {
     input: {},
-    output: {} as NftDocHydrated,
+    output: {} as NftDocFull,
   },
   '/collection/:collection/profile': {
     input: {},
@@ -746,7 +741,7 @@ export const endpoints = {
   },
   '/collection/:creatorTag/:collectionTag/drop-info': {
     input: {},
-    output: {} as DropInfoDto,
+    output: {} as CollectionMintProfileDocWithStages,
     securityMode: 'optionalAny',
   },
   '/collection/:collection/upload-picture': {
@@ -792,6 +787,10 @@ export const endpoints = {
   '/collection/:collection/holders': {
     input: {},
     output: {} as CollectionHoldersDto,
+  },
+  '/collection/:collection/holders/export': {
+    input: {},
+    output: {} as CollectionHoldersExportDto[],
   },
   '/collection/:collection/owner': {
     input: {},
@@ -891,10 +890,10 @@ export const endpoints = {
   },
   '/pool/:poolId/profile': {
     input: {},
-    output: {} as StakingSummary,
+    output: {} as StakingPoolDoc,
     PATCH: {
       input: {},
-      output: {} as StakingSummary,
+      output: {} as StakingPoolDoc,
       body: {} as StakingPostDTO,
       securityMode: 'requiredAny',
     },
@@ -908,7 +907,7 @@ export const endpoints = {
     output: {},
     PUT: {
       input: {},
-      output: {} as StakingSummary,
+      output: {} as StakingPoolDoc,
       body: {} as FormData,
       securityMode: 'requiredAny',
     },
@@ -989,7 +988,7 @@ export const endpoints = {
   },
   '/user/notifications/unread-count': {
     input: {},
-    output: {} as NotificationPaginated,
+    output: {} as PushNotificationCountResponse,
     securityMode: 'requiredAny',
   },
   '/user/notifications/clear': {
@@ -1007,7 +1006,7 @@ export const endpoints = {
     output: {},
     PATCH: {
       input: {} as { id?: string },
-      output: {} as NotificationDoc,
+      output: {} as NotificationDoc | SuccessDto,
       body: {},
       securityMode: 'requiredAny',
     },
@@ -1215,7 +1214,7 @@ export const endpoints = {
     output: {},
     POST: {
       input: {} as { isRelay?: boolean },
-      output: {} as BatchTransactionResponse[],
+      output: {} as TransactionSendResult[],
       body: {} as TransactionCreate[],
     },
   },
@@ -1650,7 +1649,7 @@ export const endpoints = {
     },
     DELETE: {
       input: {},
-      output: {} as SuccessDto,
+      output: {} as EventVoucherDoc,
       body: {},
       securityMode: 'requiredAny',
     },
