@@ -144,7 +144,7 @@ function makeLeafHandler(
 ) {
   const { input: _input, output: _output, ...rest } = def
 
-  const core = (
+  const core = async (
     args: typeof _input & OurRequestInit & { body?: object } = {}
   ) => {
     const fullArgs = { ...bound, ...args }
@@ -187,7 +187,7 @@ function makeLeafHandler(
 
     const Authorization = auth ? `Bearer ${auth}` : undefined
 
-    return client.fetchWithTimeout(url, {
+    return client.fetchWithTimeout<typeof _output>(url, {
       ...args,
       params,
       body: bodyData,
@@ -195,7 +195,7 @@ function makeLeafHandler(
         ...(args.headers as HeadersInit),
         ...(Authorization ? { Authorization } : {}),
       },
-    }) as Promise<typeof _output>
+    })
   }
 
   const leaf: any = (args = {}) => core(args)

@@ -64,7 +64,32 @@ async function _fn() {
     bar.claim({}),
     foo({}),
     foo.claim({}) */
-    sdk.event.eventId('123').guest.address('123')()
+    // sdk.event.eventId('123').guest.address('123'),
+    // sdk.event.eventId('123').guest.address('123').answeredQuestions(),
+    entries
+      .filter(([key, value]) => {
+        const splitted = key.split('/')
+        return (
+          splitted.filter((item) => item.startsWith(':')).length > 1 &&
+          !splitted.pop()?.startsWith(':')
+        )
+      })
+      .map(([key]) => key),
+    sdk.collection
+      .creatorTag('MiceCityClub')
+      .collectionTag('MiceCity')
+      .dropInfo(),
+    sdk.user
+      .address('123')
+      .staking.pool.poolId('123')
+      .nfts()
+      .catch(() => null),
+    sdk.event
+      .eventId('123')
+      .role.roleId('123')
+      .accept.POST({ auth: '' })
+      .catch(() => null)
+    // sdk.event.eventId('123').guest.address('123').google
     /* sdk.event.eventId('123')(),
     sdk.event.eventId('123').profile.PUT({}),
     sdk.event.eventId('123').background.PUT({}),
@@ -80,23 +105,7 @@ async function _fn() {
       .conversationId('123')
       .message.messageId('123')
       .DELETE({}) */
-    /* entries
-      .filter(([key, value]) => {
-        return key.split('/').pop()?.startsWith(':')
-      })
-      .flatMap(([key, value]) => {
-        const match = entries.filter(([key2, value2]) => {
-          return (
-            key !== key2 &&
-            key2.startsWith(key) &&
-            coveredMethods.some((method) => {
-              return method in value2
-            }) &&
-            endpoints[key2 as keyof typeof endpoints].output === null
-          )
-        })
-        return match.map((item) => item[0])
-      }) */
+    /*  */
     /* sdk.user.chat.conversation
       .conversationId('123')
       .message.messageId('123')

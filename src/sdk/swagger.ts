@@ -1656,7 +1656,7 @@ export const endpoints = {
       securityMode: 'requiredAny',
     },
   },
-  '/event/:eventId/guest/:guestId/answered-questions': {
+  '/event/:eventId/answered-questions/:address': {
     input: {},
     output: {} as AnsweredQuestionWithDetails[],
     securityMode: 'requiredAny',
@@ -1671,7 +1671,7 @@ export const endpoints = {
       securityMode: 'requiredAny',
     },
   },
-  '/event/:eventId/guest/:address/google/pass': {
+  '/event/:eventId/google-pass/:address': {
     input: {},
     output: {} as string[],
   },
