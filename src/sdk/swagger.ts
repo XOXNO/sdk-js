@@ -72,7 +72,9 @@ import type {
   EventUserRole,
   EventUserRoleCreateDto,
   EventUserRoleDoc,
+  EventVoucherCreateDto,
   EventVoucherDoc,
+  EventVoucherEditDto,
   EventVoucherFilter,
   EventVoucherQuery,
   FetchSwapRoutesResponseDto,
@@ -1389,15 +1391,16 @@ export const endpoints = {
       body: {} as EventTicketProfileEditDto,
       securityMode: 'requiredAny',
     },
-  },
-  '/event/:eventId/ticket/:ticketId/profile': {
-    input: {},
-    output: {},
     PUT: {
       input: {},
       output: {} as EventTicketProfileDoc,
       body: {} as FormData,
       securityMode: 'requiredAny',
+    },
+    POST: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
     },
   },
   '/event/:eventId/stage': {
@@ -1467,6 +1470,18 @@ export const endpoints = {
   '/event/:eventId/invite/:inviteId': {
     input: {},
     output: {} as EventInvitation,
+    POST: {
+      input: {},
+      output: {} as EventInvitation,
+      body: {} as EventGuestRegistrationDto,
+      securityMode: 'requiredAny',
+    },
+    DELETE: {
+      input: {},
+      output: {} as EventInvitationDoc,
+      body: {},
+      securityMode: 'requiredAny',
+    },
   },
   '/event/:eventId/voucher/query': {
     input: {} as { filter: PublicOnly<EventVoucherFilter> },
@@ -1500,26 +1515,6 @@ export const endpoints = {
     DELETE: {
       input: {},
       output: {} as SuccessDto,
-      body: {},
-      securityMode: 'requiredAny',
-    },
-  },
-  '/event/:eventId/invite/:inviteId/claim': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as EventInvitation,
-      body: {} as EventGuestRegistrationDto,
-      securityMode: 'requiredAny',
-    },
-  },
-  '/event/:eventId/invite/:inviteId/cancel': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as EventInvitationDoc,
       body: {},
       securityMode: 'requiredAny',
     },
@@ -1631,7 +1626,7 @@ export const endpoints = {
     POST: {
       input: {},
       output: {} as EventVoucherDoc,
-      body: {},
+      body: {} as EventVoucherCreateDto,
       securityMode: 'requiredAny',
     },
   },
@@ -1641,7 +1636,7 @@ export const endpoints = {
     PATCH: {
       input: {},
       output: {} as EventVoucherDoc,
-      body: {},
+      body: {} as EventVoucherEditDto,
       securityMode: 'requiredAny',
     },
     DELETE: {
@@ -1674,15 +1669,6 @@ export const endpoints = {
       output: {} as EventGuestProfile[],
       body: {} as EventGuestApproveDto[],
       securityMode: 'requiredAny',
-    },
-  },
-  '/event/:eventId/ticket/:ticketId/google/class': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as SuccessDto,
-      body: {},
     },
   },
   '/event/:eventId/guest/:address/google/pass': {
