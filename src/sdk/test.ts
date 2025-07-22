@@ -3,7 +3,6 @@ import { EventUserRoles } from '@xoxno/types/enums'
 import { buildSdk } from '.'
 import { XOXNOClient } from '../utils/api'
 import { endpoints } from './swagger'
-import { coveredMethods } from './utils'
 
 async function _fn() {
   XOXNOClient.init()
@@ -67,7 +66,7 @@ async function _fn() {
     // sdk.event.eventId('123').guest.address('123'),
     // sdk.event.eventId('123').guest.address('123').answeredQuestions(),
     entries
-      .filter(([key, value]) => {
+      .filter(([key]) => {
         const splitted = key.split('/')
         return (
           splitted.filter((item) => item.startsWith(':')).length > 1 &&
