@@ -3,6 +3,7 @@ import { EventUserRoles } from '@xoxno/types/enums'
 import { buildSdk } from '.'
 import { XOXNOClient } from '../utils/api'
 import { endpoints } from './swagger'
+import { coveredMethods } from './utils'
 
 async function _fn() {
   XOXNOClient.init()
@@ -66,15 +67,16 @@ async function _fn() {
     // sdk.event.eventId('123').guest.address('123'),
     // sdk.event.eventId('123').guest.address('123').answeredQuestions(),
     entries
-      .filter(([key]) => {
+      .filter(([key, value]) => {
         const splitted = key.split('/')
+        const cond1 = !splitted.at(-1)?.startsWith(':')
+        const cond2 = coveredMethods.some((method) => method in value)
         return (
-          splitted.filter((item) => item.startsWith(':')).length > 1 &&
-          !splitted.pop()?.startsWith(':')
+          splitted.filter((item) => item.startsWith(':')).length > 1 && cond2
         )
       })
-      .map(([key]) => key),
-    sdk.collection
+      .map(([key]) => key)
+    /* sdk.collection
       .creatorTag('MiceCityClub')
       .collectionTag('MiceCity')
       .dropInfo(),
@@ -87,7 +89,7 @@ async function _fn() {
       .eventId('123')
       .role.roleId('123')
       .accept.POST({ auth: '' })
-      .catch(() => null)
+      .catch(() => null) */
     // sdk.event.eventId('123').guest.address('123').google
     /* sdk.event.eventId('123')(),
     sdk.event.eventId('123').profile.PUT({}),

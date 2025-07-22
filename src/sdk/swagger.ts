@@ -18,6 +18,7 @@ import type {
   CollectionOwnerDto,
   CollectionPinnedStatusDto,
   CollectionProfileDoc,
+  CollectionProfileEditDto,
   CollectionProfileFilter,
   CollectionProfilePaginated,
   CollectionRanksDTO,
@@ -72,9 +73,7 @@ import type {
   EventUserRole,
   EventUserRoleCreateDto,
   EventUserRoleDoc,
-  EventVoucherCreateDto,
   EventVoucherDoc,
-  EventVoucherEditDto,
   EventVoucherFilter,
   EventVoucherQuery,
   FetchSwapRoutesResponseDto,
@@ -691,7 +690,7 @@ export const endpoints = {
     PATCH: {
       input: {},
       output: {} as CollectionProfileDoc,
-      body: {} as CollectionProfileDoc,
+      body: {} as CollectionProfileEditDto,
       securityMode: 'requiredAny',
     },
   },
@@ -1626,7 +1625,7 @@ export const endpoints = {
     POST: {
       input: {},
       output: {} as EventVoucherDoc,
-      body: {} as EventVoucherCreateDto,
+      body: {},
       securityMode: 'requiredAny',
     },
   },
@@ -1636,7 +1635,7 @@ export const endpoints = {
     PATCH: {
       input: {},
       output: {} as EventVoucherDoc,
-      body: {} as EventVoucherEditDto,
+      body: {},
       securityMode: 'requiredAny',
     },
     DELETE: {
