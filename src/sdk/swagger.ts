@@ -232,7 +232,7 @@ export const endpoints = {
       input: {} as { unsubscribeToken?: string },
       output: {} as UserSettingsDoc,
       body: {} as NotificationPreferencesPostDto,
-      securityMode: 'requiredAny',
+      securityMode: 'optionalAny',
     },
   },
   '/user/me/settings/email': {
