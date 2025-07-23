@@ -75,6 +75,7 @@ import type {
   EventUserRoleDoc,
   EventVoucherCreateDto,
   EventVoucherDoc,
+  EventVoucherEditDto,
   EventVoucherFilter,
   EventVoucherQuery,
   FetchSwapRoutesResponseDto,
@@ -1641,7 +1642,7 @@ export const endpoints = {
     PATCH: {
       input: {},
       output: {} as EventVoucherDoc,
-      body: {},
+      body: {} as EventVoucherEditDto,
       securityMode: 'requiredAny',
     },
     DELETE: {
