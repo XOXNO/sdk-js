@@ -1402,7 +1402,7 @@
     "POST": {
       "input": {},
       "output": {} as EventVoucherDoc,
-      "body": {},
+      "body": {} as EventVoucherCreateDto,
       "securityMode": "requiredAny"
     }
   },

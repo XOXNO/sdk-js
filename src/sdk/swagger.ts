@@ -73,6 +73,7 @@ import type {
   EventUserRole,
   EventUserRoleCreateDto,
   EventUserRoleDoc,
+  EventVoucherCreateDto,
   EventVoucherDoc,
   EventVoucherFilter,
   EventVoucherQuery,
@@ -1630,7 +1631,7 @@ export const endpoints = {
     POST: {
       input: {},
       output: {} as EventVoucherDoc,
-      body: {},
+      body: {} as EventVoucherCreateDto,
       securityMode: 'requiredAny',
     },
   },
