@@ -30,7 +30,7 @@ async function main() {
 
   console.log(collectionProfile.description) // string
 
-  // ... and many more! Just call sdk. and you will get type support
+  // ... and many more!
 }
 
 main()

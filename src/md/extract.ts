@@ -127,9 +127,9 @@ for (const ep of collectEndpoints(rawTxt)) {
   const key = `${ep[0]}|${ep[1]}`
   if (!unique.has(key)) unique.set(key, ep)
 }
-const entries = Array.from(unique.values()).sort((a, b) =>
-  (a[0] + a[1]).localeCompare(b[0] + b[1])
-)
+const entries = Array.from(unique.values()).sort((a, b) => {
+  return a[1].split('/')[1].localeCompare(b[1].split('/')[1])
+})
 
 const lines: string[] = []
 

@@ -36,7 +36,7 @@ async function main() {
 
   console.log(collectionProfile.description) // string
 
-  // ... and many more! Just call sdk. and you will get type support
+  // ... and many more!
 }
 
 main()
@@ -44,7 +44,7 @@ main()
 
 ## Calling restricted endpoints
 
-Apart from the public endpoints that anyone can call, The XOXNO SDK also exposes `POST`, `PUT`, `PATCH` and `DELETE` endpoints that can be called by the respective logged in user. Here's how a flow looks like that obtains a _XOXNO Auth Token_ when logging in with a MultiversX wallet, that can be used for 24h to make authenticated requests:
+Apart from the public endpoints that anyone can call, The XOXNO SDK also exposes `POST`, `PUT`, `PATCH` and `DELETE` endpoints that can be called by the respective logged in user. Here's how a flow looks like that obtains a **XOXNO Auth Token** when logging in with a MultiversX wallet, that can be used for 24h to make authenticated requests:
 
 ```typescript
 // native-auth.ts
@@ -103,11 +103,8 @@ async function main() {
     loginMethod,
   })
 
-  /* every time you login with a MultiversX provider, be it Extension, xPortal, Web Wallet or Ledger,
-     you have the possibility to pass a loginToken, and get back address and signature */
   const { address, signature } = await provider.login({ token })
 
-  // obtain the accessToken that is exchanged for a XOXNO Auth Token
   const { loginToken } = nativeAuthClient.getToken(address, token, signature!)
 
   const { access_token, expires } = await sdk.user.login.POST({
