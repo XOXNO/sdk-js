@@ -152,6 +152,7 @@ import type {
   TradesilvaniaSignature,
   TraitInfo,
   TransactionCreate,
+  TransactionDetailed,
   TransactionProcessStatus,
   TransactionSendResult,
   UserAnalyticsDto,
@@ -295,7 +296,7 @@ export const endpoints = {
     input: {},
     output: {},
     PUT: {
-      input: {} as { referer: string },
+      input: {} as { referer?: string },
       output: {} as UserProfileDoc,
       body: {} as FormData,
       securityMode: 'requiredAny',
@@ -1193,6 +1194,10 @@ export const endpoints = {
       output: {} as LoginAccessDto,
       body: {} as LoginRequestDto,
     },
+  },
+  '/transactions/:txHash': {
+    input: {} as { withResults?: boolean },
+    output: {} as TransactionDetailed,
   },
   '/transactions/:txHash/status': {
     input: {},

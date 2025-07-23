@@ -24,7 +24,7 @@
   "sideEffects": false,
   "scripts": {
     "test": "jest",
-    "build:sdk": "npx bun run src/sdk/parseSwagger.ts && eslint 'src/sdk/swagger.ts' --fix",
+    "build:sdk": "npx bun run src/sdk/parseSwagger.ts && eslint 'src/sdk/swagger.ts' --fix && npx bun run src/md/extract.ts",
     "build:types": "tsc --emitDeclarationOnly",
     "build:esm": "webpack --config webpack-esm.config.mjs",
     "build:cjs": "webpack --config webpack-cjs.config.mjs",
@@ -68,6 +68,7 @@
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
+    "@multiversx/sdk-extension-provider": "^5.0.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@swc/cli": "^0.5.2",
@@ -78,6 +79,7 @@
     "@typescript-eslint/parser": "^8.19.0",
     "bun": "^1.2.18",
     "commitizen": "^4.3.1",
+    "cookies-next": "^6.1.0",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8",
     "eslint-config-prettier": "^9.1.0",
@@ -101,6 +103,6 @@
   "dependencies": {
     "@multiversx/sdk-core": "^13.17.2",
     "@multiversx/sdk-network-providers": "^2.9.3",
-    "@xoxno/types": "^1.0.167"
+    "@xoxno/types": "^1.0.168"
   }
 }
