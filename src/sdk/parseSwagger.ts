@@ -89,7 +89,7 @@ function parseSchema(curr: INestSchema, url: string, schemas: object): string {
     const isEnum = schemaRaw && 'enum' in schemaRaw
     if (isEnum) {
       sdkEnumImports.push(theType)
-    } else {
+    } else if (theType !== 'Object') {
       sdkImports.push(theType)
     }
     return theType
