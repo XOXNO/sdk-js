@@ -98,7 +98,7 @@
     "POST": {
       "input": {},
       "output": {} as TradesilvaniaSignature,
-      "body": {} as Object,
+      "body": {} as Record<string, string>,
       "securityMode": "requiredAny"
     }
   },

@@ -291,7 +291,7 @@ export const endpoints = {
     POST: {
       input: {},
       output: {} as TradesilvaniaSignature,
-      body: {} as object,
+      body: {} as Record<string, string>,
       securityMode: 'requiredAny',
     },
   },
