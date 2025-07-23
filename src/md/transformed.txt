@@ -315,6 +315,10 @@
     "input": {},
     "output": {} as ProviderDto[]
   },
+  "/user/:address/delegation": {
+    "input": {},
+    "output": {} as DelegationDataOutput[]
+  },
   "/ash/min-token-quantity": {
     "input": {} as {originalToken: string, originalTokenValue: string, paymentToken: string},
     "output": {} as FetchSwapRoutesResponseDto

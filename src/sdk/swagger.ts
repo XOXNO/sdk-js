@@ -29,6 +29,7 @@ import type {
   CreatorMarketingNotificationDto,
   CreatorProfileDoc,
   CreatorProfileDto,
+  DelegationDataOutput,
   DiscountCodeValidationResponse,
   EditUserCreatorProfileDto,
   EventCheckInQR,
@@ -510,6 +511,10 @@ export const endpoints = {
   '/liquid/egld/providers': {
     input: {},
     output: {} as ProviderDto[],
+  },
+  '/user/:address/delegation': {
+    input: {},
+    output: {} as DelegationDataOutput[],
   },
   '/ash/min-token-quantity': {
     input: {} as {

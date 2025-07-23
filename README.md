@@ -766,6 +766,9 @@ sdk.user.address("...").follow.POST(...); // UserFavoriteResponseDto
 // GET /user/:address/favorite/users
 sdk.user.address("...").favorite.users(...); // string[]
 
+// GET /user/:address/delegation
+sdk.user.address("...").delegation(...); // DelegationDataOutput[]
+
 // GET /user/lending/:address
 sdk.user.lending.address("...")(...); // LendingAccountProfile[]
 
