@@ -103,7 +103,9 @@ type PathToTree<
         [K in CamelCase<Param>]: (
           value: string
         ) => (NeedsDefault<I, O, Full> extends true
-          ? HasRequiredKeys<DropKey<Bag, Param> & I> extends true
+          ? HasRequiredKeys<
+              DropKey<Bag, Param> & I & AuthBag<SecurityModeOf<Full>>
+            > extends true
             ? (
                 args: I &
                   DropKey<Bag, Param> &
@@ -126,7 +128,9 @@ type PathToTree<
             O,
             Full
           > extends true
-            ? HasRequiredKeys<I & Bag> extends true
+            ? HasRequiredKeys<
+                I & Bag & AuthBag<SecurityModeOf<Full>>
+              > extends true
               ? (
                   args: I & Bag & AuthBag<SecurityModeOf<Full>> & OurRequestInit
                 ) => Promise<O>

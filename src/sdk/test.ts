@@ -75,7 +75,8 @@ async function _fn() {
           splitted.filter((item) => item.startsWith(':')).length > 1 && cond2
         )
       })
-      .map(([key]) => key)
+      .map(([key]) => key),
+    sdk.event.eventId('123').guestExport({ auth: '' })
     /* sdk.collection
       .creatorTag('MiceCityClub')
       .collectionTag('MiceCity')
