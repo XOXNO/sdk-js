@@ -26,7 +26,9 @@ function hasTypedIO(block: string): boolean {
 
 /** Extract the output type used with `as SomeType` – returns null if none found. */
 function getReturnType(block: string): string | null {
-  const mOut = block.match(/"output"\s*:\s*{\s*}\s*as\s+([^,\n]+)/)
+  const mOut = block.match(
+    /"output"\s*:\s*{\s*}\s*as\s+([^<,\s\n]+(?:<[^>]*>[^,\n]*)?)/
+  )
   return mOut ? mOut[1].trim() : null
 }
 

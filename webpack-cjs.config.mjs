@@ -1,6 +1,8 @@
-import path from 'path';
-import { merge } from 'webpack-merge';
-import common from './common.config.mjs';
+import path from 'path'
+
+import { merge } from 'webpack-merge'
+
+import common from './common.config.mjs'
 
 export default merge(common, {
   mode: 'production',
@@ -11,4 +13,4 @@ export default merge(common, {
       type: 'commonjs2',
     },
   },
-});
+})

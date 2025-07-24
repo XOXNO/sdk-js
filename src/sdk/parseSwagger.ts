@@ -101,14 +101,14 @@ function parseSchema(curr: INestSchema, url: string, schemas: object): string {
           .map((item) => {
             return parseSchema(item, url, schemas)
           })
-          .join('&')}`}>`
+          .join(' & ')}`}>`
       } else if (isOneOfSchema(curr.additionalProperties)) {
         const oneOf = curr.additionalProperties.oneOf
         return `Record<string, ${`${oneOf
           .map((item) => {
             return parseSchema(item, url, schemas)
           })
-          .join('|')}`}>`
+          .join(' | ')}`}>`
       } else {
         return `Record<string, ${parseSchema(curr.additionalProperties, url, schemas)}>`
       }

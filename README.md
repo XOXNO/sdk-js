@@ -205,7 +205,7 @@ sdk.ash.minTokenQuantity(...); // FetchSwapRoutesResponseDto
 sdk.ash.maxTokenQuantity(...); // FetchSwapRoutesResponseDto
 
 // GET /collection/:collection/attributes
-sdk.collection.collection("...").attributes(...); // Record<string
+sdk.collection.collection("...").attributes(...); // Record<string, ValueFp & Record<string, TraitInfo>>
 
 // GET /collection/:collection/ranks
 sdk.collection.collection("...").ranks(...); // CollectionRanksDTO[]
@@ -229,7 +229,7 @@ sdk.collection.collection("...").profile.PATCH(...); // CollectionProfileDoc
 sdk.collection.collection("...").floorPrice(...); // FloorPriceDto
 
 // GET /collection/floor-price
-sdk.collection.floorPrice(...); // Record<string
+sdk.collection.floorPrice(...); // Record<string, number>
 
 // GET /collection/pinned
 sdk.collection.pinned(...); // PinnedCollectionDto[]
@@ -523,7 +523,7 @@ sdk.lending.market.token("...").profile(...); // LendingMarketProfile
 sdk.lending.market.query(...); // LendingMarketProfileQuery
 
 // GET /lending/market/indexes
-sdk.lending.market.indexes(...); // Record<string
+sdk.lending.market.indexes(...); // Record<string, LendingIndexesDto>
 
 // GET /lending/market/emode-categories
 sdk.lending.market.emodeCategories(...); // LendingEModeCategoryProfile[]
@@ -541,7 +541,7 @@ sdk.lending.leaderboard(...); // LendingPositionStatus[]
 sdk.lending.stats(...); // LendingOverallStats
 
 // GET /lending/market/prices
-sdk.lending.market.prices(...); // Record<string
+sdk.lending.market.prices(...); // Record<string, number>
 
 // GET /lending/market-sc
 sdk.lending.marketSc(...); // string[]
@@ -673,10 +673,10 @@ sdk.tokens(...); // TokenDataDocHydrated[]
 sdk.tokens.swap(...); // TokenDataDocHydrated[]
 
 // GET /tokens/usd-price
-sdk.tokens.usdPrice(...); // Record<string
+sdk.tokens.usdPrice(...); // Record<string, number>
 
 // GET /tokens/egld/fiat-price
-sdk.tokens.egld.fiatPrice(...); // Record<string
+sdk.tokens.egld.fiatPrice(...); // Record<string, number>
 
 // GET /tokens/xoxno
 sdk.tokens.xoxno(...); // IMetrics

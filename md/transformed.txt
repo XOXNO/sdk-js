@@ -419,7 +419,7 @@
   },
   "/collection/:collection/attributes": {
     "input": {},
-    "output": {} as Record<string, ValueFp&Record<string, TraitInfo>>
+    "output": {} as Record<string, ValueFp & Record<string, TraitInfo>>
   },
   "/nft/:identifier/offers": {
     "input": {} as {skip: number, top: number},
@@ -683,7 +683,7 @@
     "PATCH": {
       "input": {},
       "output": {} as StakingPoolDoc,
-      "body": {} as StakingPostDTO,
+      "body": {} as StakingEditDto,
       "securityMode": "requiredAny"
     }
   },
