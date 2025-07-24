@@ -185,20 +185,19 @@ function makeLeafHandler(
       ])
     )
 
-    const { body, auth, method, ...params } = extraArgsConv
-
-    const bodyData = body ? JSON.stringify(body) : undefined
+    const { body, auth, method, headers, ...params } = extraArgsConv
 
     const Authorization = auth ? `Bearer ${auth}` : undefined
+    const headersData = {
+      ...(headers as HeadersInit),
+      ...(Authorization ? { Authorization } : {}),
+    }
 
     return client.fetchWithTimeout<typeof _output>(url, {
       method,
       params,
-      body: bodyData,
-      headers: {
-        ...(args.headers as HeadersInit),
-        ...(Authorization ? { Authorization } : {}),
-      },
+      body,
+      headers: headersData,
     })
   }
 
