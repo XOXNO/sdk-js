@@ -1,7 +1,8 @@
 import { ExtensionProvider } from '@multiversx/sdk-extension-provider'
+import { WalletClientType } from '@xoxno/types/enums'
 import { setCookie } from 'cookies-next'
 
-import { getSdk } from './basic'
+import { getSdk } from './get-sdk'
 import { NativeAuthClient } from './native-auth'
 
 async function main() {
@@ -13,24 +14,25 @@ async function main() {
 
   const nativeAuthClient = new NativeAuthClient()
 
-  const loginMethod = 'extension'
+  const loginMethod = WalletClientType.EXTENSION
 
   const { token } = await nativeAuthClient.initialize({
     loginMethod,
   })
 
-  /* every time you login with a MultiversX provider, be it Extension, xPortal, Web Wallet or Ledger,
-     you have the possibility to pass a loginToken, and get back address and signature */
   const { address, signature } = await provider.login({ token })
 
-  // obtain the accessToken that is exchanged for a XOXNO Auth Token
-  const { loginToken } = nativeAuthClient.getToken(address, token, signature!)
+  const { loginToken } = nativeAuthClient.getToken({
+    address,
+    token,
+    signature,
+  })
 
   const { access_token, expires } = await sdk.user.login.POST({
     body: {
       loginToken,
-      signature: signature,
-      address: address,
+      signature,
+      address,
     },
   })
 

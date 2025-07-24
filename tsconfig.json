@@ -19,6 +19,6 @@
     "declaration": true, // Set to false if not developing a library
     "declarationMap": false
   },
-  "include": ["src"],
+  "include": ["src", "test.ts", "md"],
   "exclude": ["node_modules", "dist", "**/*.test.d.ts", "**/*.test.ts"]
 }

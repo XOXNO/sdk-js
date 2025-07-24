@@ -322,10 +322,7 @@ async function parseSwagger() {
     ].join('\n')
   )
 
-  await writeFile(
-    path.join(process.cwd(), './src/md/transformed.txt'),
-    transformed
-  )
+  await writeFile(path.join(process.cwd(), './md/transformed.txt'), transformed)
 
   /* await writeFile(
     path.join(process.cwd(), './src/test/swagger2.ts'),

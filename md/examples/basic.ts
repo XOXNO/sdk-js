@@ -1,11 +1,4 @@
-import { buildSdk, Chain, XOXNOClient } from '../src'
-
-// It's not expensive to build the sdk, so you can safely call `getSdk()` wherever you need it
-export function getSdk() {
-  XOXNOClient.init({ apiUrl: 'https://api.xoxno.com', chain: Chain.MAINNET })
-
-  return buildSdk(XOXNOClient.getInstance())
-}
+import { getSdk } from './get-sdk'
 
 async function main() {
   const sdk = getSdk()

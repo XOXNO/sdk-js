@@ -177,18 +177,22 @@ function makeLeafHandler(
     const extraArgsConv = Object.fromEntries(
       Object.entries(extraArgs).map(([k, v]) => [
         k,
-        k === 'filter' ? JSON.stringify(v) : Array.isArray(v) ? v.join(',') : v,
+        k === 'filter' || k === 'body'
+          ? JSON.stringify(v)
+          : Array.isArray(v)
+            ? v.join(',')
+            : v,
       ])
     )
 
-    const { body, auth, ...params } = extraArgsConv
+    const { body, auth, method, ...params } = extraArgsConv
 
     const bodyData = body ? JSON.stringify(body) : undefined
 
     const Authorization = auth ? `Bearer ${auth}` : undefined
 
     return client.fetchWithTimeout<typeof _output>(url, {
-      ...args,
+      method,
       params,
       body: bodyData,
       headers: {

@@ -1,17 +1,28 @@
 # XOXNO SDK
 
+## Installation
+
+```bash
+npm install @xoxno/sdk-js @xoxno/types
+```
+
 ## Basic usage
 
 ```typescript
-// sdk.ts
-import { buildSdk, Chain, XOXNOClient } from '../src'
+import { cache } from 'react'
 
-// It's not expensive to build the sdk, so you can safely call `getSdk()` wherever you need it
-export function getSdk() {
+import { buildSdk, Chain, XOXNOClient } from '@xoxno/sdk-js'
+
+// You can safely call `getSdk()` wherever you need it
+export const getSdk = cache(() => {
   XOXNOClient.init({ apiUrl: 'https://api.xoxno.com', chain: Chain.MAINNET })
 
   return buildSdk(XOXNOClient.getInstance())
-}
+})
+```
+
+```typescript
+import { getSdk } from './get-sdk'
 
 async function main() {
   const sdk = getSdk()
@@ -47,13 +58,12 @@ main()
 Apart from the public endpoints that anyone can call, The XOXNO SDK also exposes `POST`, `PUT`, `PATCH` and `DELETE` endpoints that can be called by the respective logged in user. Here's how a flow looks like that obtains a **XOXNO Auth Token** when logging in with a MultiversX wallet, that can be used for 24h to make authenticated requests:
 
 ```typescript
-// native-auth.ts
-import { getSdk } from './sdk'
+import { getSdk } from './get-sdk'
 
 export class NativeAuthClient {
   async initialize(extraInfo: object) {
     const token = await getSdk().user.nativeToken({
-      originalUrl: 'https://yourdomain.com',
+      originalUrl: 'https://your-domain.com',
       extraInfo: JSON.stringify({
         ...extraInfo,
         timestamp: Date.now(),
@@ -63,7 +73,15 @@ export class NativeAuthClient {
 
     return { token }
   }
-  getToken(address: string, token: string, signature: string) {
+  getToken({
+    address,
+    token,
+    signature,
+  }: {
+    address: string
+    token: string
+    signature: string | undefined
+  }) {
     const encodedAddress = this.encodeValue(address)
 
     const encodedToken = this.encodeValue(token)
@@ -83,10 +101,11 @@ export class NativeAuthClient {
 
 ```typescript
 import { ExtensionProvider } from '@multiversx/sdk-extension-provider'
+import { WalletClientType } from '@xoxno/types/enums'
 import { setCookie } from 'cookies-next'
 
+import { getSdk } from './get-sdk'
 import { NativeAuthClient } from './native-auth'
-import { getSdk } from './sdk'
 
 async function main() {
   const sdk = getSdk()
@@ -97,7 +116,7 @@ async function main() {
 
   const nativeAuthClient = new NativeAuthClient()
 
-  const loginMethod = 'extension'
+  const loginMethod = WalletClientType.EXTENSION
 
   const { token } = await nativeAuthClient.initialize({
     loginMethod,
@@ -105,13 +124,17 @@ async function main() {
 
   const { address, signature } = await provider.login({ token })
 
-  const { loginToken } = nativeAuthClient.getToken(address, token, signature!)
+  const { loginToken } = nativeAuthClient.getToken({
+    address,
+    token,
+    signature,
+  })
 
   const { access_token, expires } = await sdk.user.login.POST({
     body: {
       loginToken,
-      signature: signature,
-      address: address,
+      signature,
+      address,
     },
   })
 
@@ -918,5 +941,4 @@ sdk.user.me.event.badge(...); // string
 
 // GET /user/me/event/badge/payload
 sdk.user.me.event.badge.payload(...); // BageQRData
-
 ```

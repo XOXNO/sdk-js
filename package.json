@@ -24,7 +24,7 @@
   "sideEffects": false,
   "scripts": {
     "test": "jest",
-    "build:sdk": "npx bun run src/sdk/parseSwagger.ts && eslint 'src/sdk/swagger.ts' --fix && npx bun run src/md/extract.ts",
+    "build:sdk": "npx bun run src/sdk/parseSwagger.ts && eslint 'src/sdk/swagger.ts' --fix && npx bun run md/extract.ts",
     "build:types": "tsc --emitDeclarationOnly",
     "build:esm": "webpack --config webpack-esm.config.mjs",
     "build:cjs": "webpack --config webpack-cjs.config.mjs",
@@ -75,6 +75,7 @@
     "@swc/core": "^1.10.4",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.2",
+    "@types/react": "^19.1.8",
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.19.0",
     "bun": "^1.2.18",

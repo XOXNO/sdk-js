@@ -1,9 +1,9 @@
-import { getSdk } from './basic'
+import { getSdk } from './get-sdk'
 
 export class NativeAuthClient {
   async initialize(extraInfo: object) {
     const token = await getSdk().user.nativeToken({
-      originalUrl: 'https://yourdomain.com',
+      originalUrl: 'https://your-domain.com',
       extraInfo: JSON.stringify({
         ...extraInfo,
         timestamp: Date.now(),
@@ -13,7 +13,15 @@ export class NativeAuthClient {
 
     return { token }
   }
-  getToken(address: string, token: string, signature: string) {
+  getToken({
+    address,
+    token,
+    signature,
+  }: {
+    address: string
+    token: string
+    signature: string | undefined
+  }) {
     const encodedAddress = this.encodeValue(address)
 
     const encodedToken = this.encodeValue(token)

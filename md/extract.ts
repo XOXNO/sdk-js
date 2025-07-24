@@ -116,10 +116,7 @@ function buildSdkCall(
 /*                                   main                                     */
 /* -------------------------------------------------------------------------- */
 
-const rawTxt = readFileSync(
-  join(process.cwd(), './src/md/transformed.txt'),
-  'utf8'
-)
+const rawTxt = readFileSync(join(process.cwd(), './md/transformed.txt'), 'utf8')
 
 // dedupe by METHOD+PATH while keeping first returnType encountered
 const unique = new Map<string, Endpoint>()
@@ -139,11 +136,27 @@ for (const [method, path, returnType] of entries) {
   lines.push('') // empty line
 }
 
-writeFileSync(
-  join(process.cwd(), './README.md'),
-  `${readFileSync(join(process.cwd(), './src/md/template.md'), 'utf8')}
-\`\`\`typescript
-${lines.join('\n')}\n\`\`\``,
+const template = readFileSync(join(process.cwd(), './md/template.md'), 'utf8')
+const getSdk = readFileSync(
+  join(process.cwd(), './md/examples/get-sdk.ts'),
   'utf8'
 )
-console.log('transformed.md written ✓')
+const basic = readFileSync(
+  join(process.cwd(), './md/examples/basic.ts'),
+  'utf8'
+)
+const nativeAuth = readFileSync(
+  join(process.cwd(), './md/examples/native-auth.ts'),
+  'utf8'
+)
+const auth = readFileSync(join(process.cwd(), './md/examples/auth.ts'), 'utf8')
+
+writeFileSync(
+  join(process.cwd(), './README.md'),
+  template
+    .replace('$1', getSdk.replace(/\n$/, ''))
+    .replace('$2', basic.replace(/\n$/, ''))
+    .replace('$3', nativeAuth.replace(/\n$/, ''))
+    .replace('$4', auth.replace(/\n$/, ''))
+    .replace('$5', lines.join('\n').replace(/\n$/, ''))
+)
