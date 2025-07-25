@@ -19,7 +19,8 @@ type CollectParams<S extends string> =
     ? { [K in P]: string } & CollectParams<`/${R}`>
     : S extends `${string}:${infer P}`
       ? { [K in P]: string }
-      : object
+      : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        {}
 
 type RequireAtLeastOne<T> = {
   [K in keyof T]-?: { [P in K]-?: T[P] } & Omit<T, K>
@@ -100,9 +101,11 @@ type PathToTree<
       }
   : P extends `/:${infer Param}`
     ? {
-        [K in CamelCase<Param>]: (
-          value: string
-        ) => (NeedsDefault<I, O, Full> extends true
+        [K in CamelCase<Param>]: (value: string) => (NeedsDefault<
+          I,
+          O,
+          Full
+        > extends true
           ? HasRequiredKeys<
               DropKey<Bag, Param> & I & AuthBag<SecurityModeOf<Full>>
             > extends true
@@ -118,7 +121,8 @@ type PathToTree<
                   AuthBag<SecurityModeOf<Full>> &
                   OurRequestInit
               ) => Promise<O>
-          : object) &
+          : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+            {}) &
           VerbExtras<Full, DropKey<Bag, Param>>
       }
     : P extends `/${infer Leaf}`
@@ -140,7 +144,8 @@ type PathToTree<
                     AuthBag<SecurityModeOf<Full>> &
                     OurRequestInit
                 ) => Promise<O>
-            : object) &
+            : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+              {}) &
             VerbExtras<Full, Bag>
         }
       : never
