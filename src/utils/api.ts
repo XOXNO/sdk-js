@@ -125,7 +125,7 @@ export class XOXNOClient {
       }
 
       throw new Error(
-        `${path};${res.status};${res.statusText};${message.message}`
+        `${url};;${res.status};;${res.statusText};;${message.message}`
       )
     }
 
