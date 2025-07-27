@@ -14,8 +14,8 @@ export class SmartContractAbis {
 
   public static async getMarket(): Promise<AbiRegistry> {
     if (!SmartContractAbis.market) {
-      // const data = await XOXNOClient.getInstance().fetchWithTimeout<any>(
-      //   `${XOXNOClient.getInstance().config.mediaUrl}/smartcontractabi/marketplace-xoxno.json`,
+      // const data = await client.fetchWithTimeout<any>(
+      //   `${client.config.mediaUrl}/smartcontractabi/marketplace-xoxno.json`,
       //   {
       //     next: {
       //       tags: ['getMarket'],
@@ -34,8 +34,9 @@ export class SmartContractAbis {
 
   public static async getManager(): Promise<AbiRegistry> {
     if (!SmartContractAbis.manager) {
-      const data = await XOXNOClient.getInstance().fetchWithTimeout<any>(
-        `${XOXNOClient.getInstance().config.mediaUrl}/smartcontractabi/manage.json`
+      const client = new XOXNOClient()
+      const data = await client.fetchWithTimeout<any>(
+        `${client.config.mediaUrl}/smartcontractabi/manage.json`
       )
       const { AbiRegistry } = await import(
         /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
@@ -49,8 +50,8 @@ export class SmartContractAbis {
 
   public static async getMinter(): Promise<AbiRegistry> {
     if (!SmartContractAbis.minter) {
-      // const data = await XOXNOClient.getInstance().fetchWithTimeout<any>(
-      //   `${XOXNOClient.getInstance().config.mediaUrl}/smartcontractabi/minter.json`,
+      // const data = await client.fetchWithTimeout<any>(
+      //   `${client.config.mediaUrl}/smartcontractabi/minter.json`,
       //   {
       //     next: {
       //       tags: ['getMinter'],
@@ -69,8 +70,9 @@ export class SmartContractAbis {
 
   public static async getStaking(): Promise<AbiRegistry> {
     if (!SmartContractAbis.staking) {
-      const data = await XOXNOClient.getInstance().fetchWithTimeout<any>(
-        `${XOXNOClient.getInstance().config.mediaUrl}/smartcontractabi/staking-nfts.abi.json`
+      const client = new XOXNOClient()
+      const data = await client.fetchWithTimeout<any>(
+        `${client.config.mediaUrl}/smartcontractabi/staking-nfts.abi.json`
       )
       const { AbiRegistry } = await import(
         /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
@@ -84,8 +86,9 @@ export class SmartContractAbis {
 
   public static async getExchange(): Promise<AbiRegistry> {
     if (!SmartContractAbis.exchange) {
-      const data = await XOXNOClient.getInstance().fetchWithTimeout<any>(
-        `${XOXNOClient.getInstance().config.mediaUrl}/smartcontractabi/rs-exchange.abi.json`
+      const client = new XOXNOClient()
+      const data = await client.fetchWithTimeout<any>(
+        `${client.config.mediaUrl}/smartcontractabi/rs-exchange.abi.json`
       )
       const { AbiRegistry } = await import(
         /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'
@@ -99,8 +102,9 @@ export class SmartContractAbis {
 
   public static async getP2P(): Promise<AbiRegistry> {
     if (!SmartContractAbis.p2p) {
-      const data = await XOXNOClient.getInstance().fetchWithTimeout<any>(
-        `${XOXNOClient.getInstance().config.mediaUrl}/smartcontractabi/p2p.abi.json`
+      const client = new XOXNOClient()
+      const data = await client.fetchWithTimeout<any>(
+        `${client.config.mediaUrl}/smartcontractabi/p2p.abi.json`
       )
       const { AbiRegistry } = await import(
         /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/typesystem/abiRegistry'

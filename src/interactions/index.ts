@@ -76,7 +76,7 @@ export class SCInteraction {
   static async init() {
     const marketAbiXOXNO = await SmartContractAbis.getMarket()
 
-    const client = XOXNOClient.getInstance()
+    const client = new XOXNOClient()
 
     const xo_abi = await getSmartContract(marketAbiXOXNO, client.config.XO_SC)
 

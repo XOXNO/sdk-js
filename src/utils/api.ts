@@ -21,9 +21,7 @@ export enum Chain {
   DEVNET = 'D',
 }
 export class XOXNOClient {
-  private static instance: XOXNOClient
   public apiUrl: string
-  private apiKey: string
   public chain: IChainID
   public config: {
     mediaUrl: string
@@ -37,9 +35,12 @@ export class XOXNOClient {
     P2P_SC: string
   }
 
-  private constructor(apiUrl: string = API_URL, apiKey = '', chain: Chain) {
-    this.apiUrl = apiUrl
-    this.apiKey = apiKey
+  constructor({
+    chain = Chain.MAINNET,
+    apiUrl = API_URL,
+  }: { chain?: Chain; apiUrl?: string } = {}) {
+    this.apiUrl =
+      apiUrl ?? { [Chain.MAINNET]: API_URL, [Chain.DEVNET]: API_URL_DEV }[chain]
     this.chain = chain
     this.config =
       chain == Chain.MAINNET
@@ -65,36 +66,6 @@ export class XOXNOClient {
             Manager_SC: Manager_SC_DEV,
             P2P_SC: P2P_SC_DEV,
           }
-  }
-
-  public static init({
-    apiUrl = API_URL,
-    apiKey = '',
-    chain = Chain.MAINNET,
-  }: Partial<{
-    apiUrl?: string
-    apiKey?: string
-    chain?: Chain
-  }> = {}): XOXNOClient {
-    if (XOXNOClient.instance == null || XOXNOClient.instance == undefined) {
-      if (chain == Chain.DEVNET) {
-        XOXNOClient.instance = new XOXNOClient(
-          apiUrl ?? API_URL_DEV,
-          apiKey,
-          chain
-        )
-        return XOXNOClient.instance
-      }
-      XOXNOClient.instance = new XOXNOClient(apiUrl, apiKey, chain)
-    }
-    return XOXNOClient.instance
-  }
-
-  public static getInstance(): XOXNOClient {
-    if (XOXNOClient.instance == null || XOXNOClient.instance == undefined) {
-      throw new Error('XOXNOClient is not initialized')
-    }
-    return XOXNOClient.instance
   }
 
   public fetchWithTimeout = async <T>(
@@ -154,7 +125,7 @@ export class XOXNOClient {
       }
 
       throw new Error(
-        `${path}: ${res.status};${res.statusText};${message.message}`
+        `${path};${res.status};${res.statusText};${message.message}`
       )
     }
 

@@ -23,7 +23,7 @@ export class ContractQueryRunner {
     const { ResultsParser } = await import(
       /*webpackIgnore: true*/ '@multiversx/sdk-core/out/smartcontracts/resultsParser'
     )
-    const api = XOXNOClient.getInstance().config.gatewayUrl
+    const api = new XOXNOClient().config.gatewayUrl
     const proxy = new ProxyNetworkProvider(api, {
       timeout: 10000,
     })
