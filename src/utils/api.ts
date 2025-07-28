@@ -1,5 +1,6 @@
 import type { IChainID } from '@multiversx/sdk-core/out/interface'
 
+import type { OurRequestInit } from '../sdk/types'
 import {
   API_URL,
   API_URL_DEV,
@@ -23,6 +24,7 @@ export enum Chain {
 export class XOXNOClient {
   public apiUrl: string
   public chain: IChainID
+  public init: OurRequestInit
   public config: {
     mediaUrl: string
     gatewayUrl: string
@@ -38,10 +40,12 @@ export class XOXNOClient {
   constructor({
     chain = Chain.MAINNET,
     apiUrl = API_URL,
-  }: { chain?: Chain; apiUrl?: string } = {}) {
+    ...init
+  }: { chain?: Chain; apiUrl?: string } & OurRequestInit = {}) {
     this.apiUrl =
       apiUrl ?? { [Chain.MAINNET]: API_URL, [Chain.DEVNET]: API_URL_DEV }[chain]
     this.chain = chain
+    this.init = init
     this.config =
       chain == Chain.MAINNET
         ? {
@@ -109,6 +113,7 @@ export class XOXNOClient {
       ...options,
       ...(Object.keys(headers).length ? { headers } : {}),
       method: options.method ?? 'GET',
+      ...this.init,
     }
 
     const res = await fetch(url, allHeaders)

@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-npm install @xoxno/sdk-js @xoxno/types
+npm install @xoxno/sdk-js
 ```
 
 ## Basic usage
@@ -23,11 +23,9 @@ export const getSdk = cache(() => {
 import { getSdk } from './get-sdk'
 
 async function main() {
-  const sdk = getSdk()
-
   /* Calling public endpoints ✅ */
 
-  const trendingCollections = await sdk.collection.query({
+  const trendingCollections = await getSdk().collection.query({
     filter: {
       top: 10,
       orderBy: ['statistics.tradeData.weekEgldVolume desc'],
@@ -39,8 +37,8 @@ async function main() {
 
   console.log(trendingCollections.resources) // CollectionProfileDoc[]
 
-  const collectionProfile = await sdk.collection
-    .collection('BOOGAS-afc98d')
+  const collectionProfile = await getSdk()
+    .collection.collection('BOOGAS-afc98d')
     .profile()
 
   console.log(collectionProfile.description) // string
@@ -106,8 +104,6 @@ import { getSdk } from './get-sdk'
 import { NativeAuthClient } from './native-auth'
 
 async function main() {
-  const sdk = getSdk()
-
   const provider = ExtensionProvider.getInstance()
 
   await provider.init()
@@ -128,7 +124,7 @@ async function main() {
     signature,
   })
 
-  const { access_token, expires } = await sdk.user.login.POST({
+  const { access_token, expires } = await getSdk().user.login.POST({
     body: {
       loginToken,
       signature,
@@ -145,12 +141,14 @@ async function main() {
 
   // from now on you can call protected endpoints on behalf of `address`
 
-  const newUserProfile = await sdk.user.address(address).profile.PATCH({
-    body: {
-      description: 'XOXNO SDK rocks!',
-    },
-    auth: access_token,
-  })
+  const newUserProfile = await getSdk()
+    .user.address(address)
+    .profile.PATCH({
+      body: {
+        description: 'XOXNO SDK rocks!',
+      },
+      auth: access_token,
+    })
 
   console.log(newUserProfile.description) // XOXNO SDK rocks!
 }
@@ -420,6 +418,9 @@ sdk.event.eventId("...").role(...); // EventUserRole[]
 
 // POST /event/:eventId/role
 sdk.event.eventId("...").role.POST(...); // EventUserRole
+
+// PATCH /event/:eventId/role
+sdk.event.eventId("...").role.PATCH(...); // EventUserRole
 
 // GET /event/:eventId/role/:address
 sdk.event.eventId("...").role.address("...")(...); // EventUserRoleDoc

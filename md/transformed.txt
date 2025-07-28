@@ -1323,6 +1323,12 @@
       "body": {} as EventUserRoleCreateDto,
       "securityMode": "requiredAny"
     },
+    "PATCH": {
+      "input": {},
+      "output": {} as EventUserRole,
+      "body": {} as EventUserRoleEditDto,
+      "securityMode": "requiredAny"
+    },
     "securityMode": "requiredAny"
   },
   "/event/:eventId/role/:address": {
