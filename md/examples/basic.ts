@@ -1,11 +1,9 @@
 import { getSdk } from './get-sdk'
 
 async function main() {
-  const sdk = getSdk()
-
   /* Calling public endpoints ✅ */
 
-  const trendingCollections = await sdk.collection.query({
+  const trendingCollections = await getSdk().collection.query({
     filter: {
       top: 10,
       orderBy: ['statistics.tradeData.weekEgldVolume desc'],
@@ -17,8 +15,8 @@ async function main() {
 
   console.log(trendingCollections.resources) // CollectionProfileDoc[]
 
-  const collectionProfile = await sdk.collection
-    .collection('BOOGAS-afc98d')
+  const collectionProfile = await getSdk()
+    .collection.collection('BOOGAS-afc98d')
     .profile()
 
   console.log(collectionProfile.description) // string

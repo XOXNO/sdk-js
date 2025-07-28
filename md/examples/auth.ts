@@ -6,8 +6,6 @@ import { getSdk } from './get-sdk'
 import { NativeAuthClient } from './native-auth'
 
 async function main() {
-  const sdk = getSdk()
-
   const provider = ExtensionProvider.getInstance()
 
   await provider.init()
@@ -28,7 +26,7 @@ async function main() {
     signature,
   })
 
-  const { access_token, expires } = await sdk.user.login.POST({
+  const { access_token, expires } = await getSdk().user.login.POST({
     body: {
       loginToken,
       signature,
@@ -45,12 +43,14 @@ async function main() {
 
   // from now on you can call protected endpoints on behalf of `address`
 
-  const newUserProfile = await sdk.user.address(address).profile.PATCH({
-    body: {
-      description: 'XOXNO SDK rocks!',
-    },
-    auth: access_token,
-  })
+  const newUserProfile = await getSdk()
+    .user.address(address)
+    .profile.PATCH({
+      body: {
+        description: 'XOXNO SDK rocks!',
+      },
+      auth: access_token,
+    })
 
   console.log(newUserProfile.description) // XOXNO SDK rocks!
 }
