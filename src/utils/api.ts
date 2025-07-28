@@ -124,9 +124,16 @@ export class XOXNOClient {
         message = { message: text }
       }
 
-      throw new Error(
-        `${url};;${res.status};;${res.statusText};;${message.message}`
-      )
+      const errorMessage = [
+        url.split('xoxno.com').pop(),
+        res.status,
+        res.statusText,
+        message.message,
+      ]
+        .filter(Boolean)
+        .join(';;')
+
+      throw new Error(errorMessage)
     }
 
     try {

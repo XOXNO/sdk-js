@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-npm install @xoxno/sdk-js @xoxno/types
+npm install @xoxno/sdk-js
 ```
 
 ## Basic usage
