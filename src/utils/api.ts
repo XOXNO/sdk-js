@@ -1,6 +1,5 @@
 import type { IChainID } from '@multiversx/sdk-core/out/interface'
 
-import type { OurRequestInit } from '../sdk/types'
 import {
   API_URL,
   API_URL_DEV,
@@ -16,6 +15,16 @@ import {
   XOXNO_SC,
   XOXNO_SC_DEV,
 } from './const'
+
+// use the "auth" property when prompted
+type SafeHeaders = Record<string, string> & {
+  authorization?: never
+  Authorization?: never
+}
+
+export type OurRequestInit = Omit<RequestInit, 'body' | 'headers'> & {
+  headers?: SafeHeaders
+}
 
 export enum Chain {
   MAINNET = '1',
@@ -92,9 +101,7 @@ export class XOXNOClient {
       ...(Authorization ? { Authorization } : {}),
     }
 
-    const shouldInsertOrigin = typeof path === 'string' && path.startsWith('/')
-
-    const url = `${shouldInsertOrigin ? `${this.apiUrl}${path}` : path}${
+    const url = `${this.apiUrl}${path}${
       params
         ? '?' +
           Object.entries(params)
@@ -109,11 +116,25 @@ export class XOXNOClient {
         : ''
     }`
 
+    const { next, cache, ...rest } = this.init as {
+      cache: RequestCache
+      next?: { revalidate?: number }
+    }
+
+    const { revalidate, ...other } = next ?? {}
+
+    const method = options.method ?? 'GET'
+
     const allHeaders = {
       ...options,
+      method,
       ...(Object.keys(headers).length ? { headers } : {}),
-      method: options.method ?? 'GET',
-      ...this.init,
+      ...rest,
+      cache: method === 'GET' ? cache : undefined,
+      next: {
+        ...other,
+        revalidate: method === 'GET' ? revalidate : undefined,
+      },
     }
 
     const res = await fetch(url, allHeaders)

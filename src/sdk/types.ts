@@ -1,3 +1,4 @@
+import type { OurRequestInit } from '../utils/api'
 import type { endpoints as routes } from './swagger'
 
 type RemoveColon<S extends string> = S extends `:${infer R}` ? R : S
@@ -32,16 +33,6 @@ type BodyBag<VB, Defined extends boolean> = Defined extends true
     ? { body?: never }
     : { body: RequireAtLeastOne<VB> }
   : { body?: RequireAtLeastOne<VB> }
-
-// use the "auth" property when prompted
-type SafeHeaders = Record<string, string> & {
-  authorization?: never
-  Authorization?: never
-}
-
-export type OurRequestInit = Omit<RequestInit, 'body' | 'headers'> & {
-  headers?: SafeHeaders
-}
 
 type SecurityModeOf<T> = T extends { securityMode: infer S } ? S : undefined
 

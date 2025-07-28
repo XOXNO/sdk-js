@@ -1,9 +1,9 @@
-import type { XOXNOClient } from '../utils/api'
+import type { OurRequestInit, XOXNOClient } from '../utils/api'
 import { AddressNotFoundError, CollectionNotFoundError } from '../utils/errors'
 import { isAddressValid } from '../utils/helpers'
 import { isValidCollectionTicker } from '../utils/regex'
 import { endpoints as routes } from './swagger'
-import type { OurRequestInit, SDK } from './types'
+import type { SDK } from './types'
 import { coveredMethods, type ICoveredMethods } from './utils'
 
 const kebabToCamel = (s: string) =>
