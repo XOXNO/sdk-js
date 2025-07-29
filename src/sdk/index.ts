@@ -175,14 +175,19 @@ function makeLeafHandler(
     }
 
     const extraArgsConv = Object.fromEntries(
-      Object.entries(extraArgs).map(([k, v]) => [
-        k,
-        k === 'filter' || (k === 'body' && !(v instanceof FormData))
-          ? JSON.stringify(v)
-          : Array.isArray(v)
-            ? v.join(',')
-            : v,
-      ])
+      Object.entries(extraArgs).map(([k, v]) => {
+        if (k === 'body') {
+          console.debug(url, typeof v, !(v instanceof FormData))
+        }
+        return [
+          k,
+          k === 'filter' || (k === 'body' && !(v instanceof FormData))
+            ? JSON.stringify(v)
+            : Array.isArray(v)
+              ? v.join(',')
+              : v,
+        ]
+      })
     )
 
     const { body, auth, method, headers, ...params } = extraArgsConv
