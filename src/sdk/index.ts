@@ -176,18 +176,26 @@ function makeLeafHandler(
 
     const extraArgsConv = Object.fromEntries(
       Object.entries(extraArgs).map(([k, v]) => {
+        const method = extraArgs.method
+        const isFormData = v instanceof FormData
+        console.log(url, method, isFormData)
         return [
           k,
-          k === 'filter' || (k === 'body' && extraArgs.method !== 'PUT')
-            ? JSON.stringify(v)
-            : Array.isArray(v)
-              ? v.join(',')
-              : v,
+          method === 'PUT' || isFormData
+            ? v
+            : k === 'filter' || k === 'body'
+              ? JSON.stringify(v)
+              : Array.isArray(v)
+                ? v.join(',')
+                : v,
         ]
       })
     )
 
-    const { body, auth, method, headers, ...params } = extraArgsConv
+    const { body, auth, method, headers, cache, next, ...params } =
+      extraArgsConv
+
+    console.log(body)
 
     const Authorization = auth ? `Bearer ${auth}` : undefined
     const headersData = {
@@ -200,6 +208,8 @@ function makeLeafHandler(
       params,
       body,
       headers: headersData,
+      cache,
+      ...(next ? { next } : {}),
     })
   }
 
