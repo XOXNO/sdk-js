@@ -176,12 +176,9 @@ function makeLeafHandler(
 
     const extraArgsConv = Object.fromEntries(
       Object.entries(extraArgs).map(([k, v]) => {
-        if (k === 'body') {
-          console.debug(url, typeof v, !(v instanceof FormData))
-        }
         return [
           k,
-          k === 'filter' || (k === 'body' && !(v instanceof FormData))
+          k === 'filter' || (k === 'body' && extraArgs.method !== 'PUT')
             ? JSON.stringify(v)
             : Array.isArray(v)
               ? v.join(',')
