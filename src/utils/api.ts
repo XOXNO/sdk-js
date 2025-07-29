@@ -101,20 +101,17 @@ export class XOXNOClient {
       ...(Authorization ? { Authorization } : {}),
     }
 
-    const url = `${this.apiUrl}${path}${
-      params
-        ? '?' +
-          Object.entries(params)
-            .flatMap(([key, value]) => {
-              if (Array.isArray(value)) {
-                return value.map((v) => `${key}=${encodeURIComponent(v)}`)
-              } else {
-                return `${key}=${encodeURIComponent(value)}`
-              }
-            })
-            .join('&')
-        : ''
-    }`
+    const query = Object.entries(params ?? {})
+      .flatMap(([key, value]) => {
+        if (Array.isArray(value)) {
+          return value.map((v) => `${key}=${encodeURIComponent(v)}`)
+        } else {
+          return `${key}=${encodeURIComponent(value)}`
+        }
+      })
+      .join('&')
+
+    const url = `${this.apiUrl}${path}${query.length ? `?${query}` : ''}`
 
     const { next, cache, ...rest } = this.init as {
       cache: RequestCache
