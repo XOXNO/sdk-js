@@ -422,6 +422,9 @@ sdk.event.eventId("...").role.POST(...); // EventUserRole
 // PATCH /event/:eventId/role
 sdk.event.eventId("...").role.PATCH(...); // EventUserRole
 
+// GET /event/:eventId/role/:roleId
+sdk.event.eventId("...").role.roleId("...")(...); // EventUserRoleDoc
+
 // POST /event/:eventId/role/:roleId
 sdk.event.eventId("...").role.roleId("...").POST(...); // EventUserRoleDoc
 
@@ -433,9 +436,6 @@ sdk.event.eventId("...").guest.DELETE(...); // SuccessDto
 
 // GET /event/:eventId/role/:address
 sdk.event.eventId("...").role.address("...")(...); // EventUserRoleDoc
-
-// GET /event/:eventId/roleId/:roleId
-sdk.event.eventId("...").roleId.roleId("...")(...); // EventUserRoleDoc
 
 // POST /event/:eventId/scan
 sdk.event.eventId("...").scan.POST(...); // TicketValidationResult

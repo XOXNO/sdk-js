@@ -1570,7 +1570,7 @@ export const endpoints = {
   },
   '/event/:eventId/role/:roleId': {
     input: {},
-    output: {},
+    output: {} as EventUserRoleDoc,
     DELETE: {
       input: {},
       output: {} as SuccessDto,
@@ -1598,10 +1598,6 @@ export const endpoints = {
     input: {},
     output: {} as EventUserRoleDoc,
     securityMode: 'requiredAny',
-  },
-  '/event/:eventId/roleId/:roleId': {
-    input: {},
-    output: {} as EventUserRoleDoc,
   },
   '/user/me/event': {
     input: {} as { extended: boolean },
