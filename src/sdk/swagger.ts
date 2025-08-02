@@ -1577,6 +1577,12 @@ export const endpoints = {
       body: {},
       securityMode: 'requiredAny',
     },
+    POST: {
+      input: {},
+      output: {} as EventUserRoleDoc,
+      body: {},
+      securityMode: 'requiredAny',
+    },
   },
   '/event/:eventId/guest': {
     input: {},
@@ -1584,16 +1590,6 @@ export const endpoints = {
     DELETE: {
       input: {},
       output: {} as SuccessDto,
-      body: {},
-      securityMode: 'requiredAny',
-    },
-  },
-  '/event/:eventId/role/:roleId/accept': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as EventUserRoleDoc,
       body: {},
       securityMode: 'requiredAny',
     },

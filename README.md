@@ -422,14 +422,14 @@ sdk.event.eventId("...").role.POST(...); // EventUserRole
 // PATCH /event/:eventId/role
 sdk.event.eventId("...").role.PATCH(...); // EventUserRole
 
+// POST /event/:eventId/role/:roleId
+sdk.event.eventId("...").role.roleId("...").POST(...); // EventUserRoleDoc
+
 // DELETE /event/:eventId/role/:roleId
 sdk.event.eventId("...").role.roleId("...").DELETE(...); // SuccessDto
 
 // DELETE /event/:eventId/guest
 sdk.event.eventId("...").guest.DELETE(...); // SuccessDto
-
-// POST /event/:eventId/role/:roleId/accept
-sdk.event.eventId("...").role.roleId("...").accept.POST(...); // EventUserRoleDoc
 
 // GET /event/:eventId/role/:address
 sdk.event.eventId("...").role.address("...")(...); // EventUserRoleDoc
