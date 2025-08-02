@@ -422,17 +422,17 @@ sdk.event.eventId("...").role.POST(...); // EventUserRole
 // PATCH /event/:eventId/role
 sdk.event.eventId("...").role.PATCH(...); // EventUserRole
 
-// GET /event/:eventId/role/:address
-sdk.event.eventId("...").role.address("...")(...); // EventUserRoleDoc
-
-// DELETE /event/:eventId/role/:address
-sdk.event.eventId("...").role.address("...").DELETE(...); // SuccessDto
+// DELETE /event/:eventId/role/:roleId
+sdk.event.eventId("...").role.roleId("...").DELETE(...); // SuccessDto
 
 // DELETE /event/:eventId/guest
 sdk.event.eventId("...").guest.DELETE(...); // SuccessDto
 
 // POST /event/:eventId/role/:roleId/accept
 sdk.event.eventId("...").role.roleId("...").accept.POST(...); // EventUserRoleDoc
+
+// GET /event/:eventId/role/:address
+sdk.event.eventId("...").role.address("...")(...); // EventUserRoleDoc
 
 // GET /event/:eventId/roleId/:roleId
 sdk.event.eventId("...").roleId.roleId("...")(...); // EventUserRoleDoc
@@ -709,6 +709,9 @@ sdk.user.address("...").tokenInventory(...); // UserTokenInventoryResponseDto
 
 // POST /user/network-account
 sdk.user.networkAccount.POST(...); // UserNetworkInfoDto[]
+
+// GET /user/me/profile
+sdk.user.me.profile(...); // UserProfileDoc
 
 // GET /user/:address/profile
 sdk.user.address("...").profile(...); // UserProfileDoc

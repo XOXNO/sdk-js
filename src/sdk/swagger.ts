@@ -210,6 +210,11 @@ export const endpoints = {
       body: {} as string[],
     },
   },
+  '/user/me/profile': {
+    input: {},
+    output: {} as UserProfileDoc,
+    securityMode: 'requiredAny',
+  },
   '/user/:address/profile': {
     input: {},
     output: {} as UserProfileDoc,
@@ -1563,16 +1568,15 @@ export const endpoints = {
     },
     securityMode: 'requiredAny',
   },
-  '/event/:eventId/role/:address': {
+  '/event/:eventId/role/:roleId': {
     input: {},
-    output: {} as EventUserRoleDoc,
+    output: {},
     DELETE: {
       input: {},
       output: {} as SuccessDto,
       body: {},
       securityMode: 'requiredAny',
     },
-    securityMode: 'requiredAny',
   },
   '/event/:eventId/guest': {
     input: {},
@@ -1593,6 +1597,11 @@ export const endpoints = {
       body: {},
       securityMode: 'requiredAny',
     },
+  },
+  '/event/:eventId/role/:address': {
+    input: {},
+    output: {} as EventUserRoleDoc,
+    securityMode: 'requiredAny',
   },
   '/event/:eventId/roleId/:roleId': {
     input: {},
