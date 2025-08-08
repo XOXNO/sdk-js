@@ -157,7 +157,7 @@
     "PATCH": {
       "input": {},
       "output": {} as CreatorProfileDoc,
-      "body": {} as EditUserCreatorProfileDto,
+      "body": {} as CreatorProfileEditDto,
       "securityMode": "requiredAny"
     }
   },
@@ -361,7 +361,7 @@
     "output": {} as LendingAccountProfile[]
   },
   "/user/lending/image/:nonce": {
-    "input": {},
+    "input": {} as {isStatic: boolean},
     "output": {} as string
   },
   "/lending/market/emode-categories": {
@@ -1151,7 +1151,7 @@
     "input": {},
     "output": {},
     "POST": {
-      "input": {},
+      "input": {} as {invitationId?: string},
       "output": {} as EventRegistrationResponseDto,
       "body": {} as EventGuestRegistrationDto,
       "securityMode": "requiredAny"
@@ -1257,7 +1257,7 @@
     "output": {} as EventInvitation,
     "POST": {
       "input": {},
-      "output": {} as EventInvitation,
+      "output": {} as EventAcceptInvitation,
       "body": {} as EventGuestRegistrationDto,
       "securityMode": "requiredAny"
     },

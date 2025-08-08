@@ -384,7 +384,7 @@ sdk.event.eventId("...").invite.query(...); // EventInvitationQuery
 sdk.event.eventId("...").invite.inviteId("...")(...); // EventInvitation
 
 // POST /event/:eventId/invite/:inviteId
-sdk.event.eventId("...").invite.inviteId("...").POST(...); // EventInvitation
+sdk.event.eventId("...").invite.inviteId("...").POST(...); // EventAcceptInvitation
 
 // DELETE /event/:eventId/invite/:inviteId
 sdk.event.eventId("...").invite.inviteId("...").DELETE(...); // EventInvitationDoc

@@ -29,9 +29,10 @@ import type {
   CreatorMarketingNotificationDto,
   CreatorProfileDoc,
   CreatorProfileDto,
+  CreatorProfileEditDto,
   DelegationDataOutput,
   DiscountCodeValidationResponse,
-  EditUserCreatorProfileDto,
+  EventAcceptInvitation,
   EventCheckInQR,
   EventCountGroupedByCountry,
   EventGuestApproveDto,
@@ -351,7 +352,7 @@ export const endpoints = {
     PATCH: {
       input: {},
       output: {} as CreatorProfileDoc,
-      body: {} as EditUserCreatorProfileDto,
+      body: {} as CreatorProfileEditDto,
       securityMode: 'requiredAny',
     },
   },
@@ -577,7 +578,7 @@ export const endpoints = {
     output: {} as LendingAccountProfile[],
   },
   '/user/lending/image/:nonce': {
-    input: {},
+    input: {} as { isStatic: boolean },
     output: {} as string,
   },
   '/lending/market/emode-categories': {
@@ -1383,7 +1384,7 @@ export const endpoints = {
     input: {},
     output: {},
     POST: {
-      input: {},
+      input: {} as { invitationId?: string },
       output: {} as EventRegistrationResponseDto,
       body: {} as EventGuestRegistrationDto,
       securityMode: 'requiredAny',
@@ -1489,7 +1490,7 @@ export const endpoints = {
     output: {} as EventInvitation,
     POST: {
       input: {},
-      output: {} as EventInvitation,
+      output: {} as EventAcceptInvitation,
       body: {} as EventGuestRegistrationDto,
       securityMode: 'requiredAny',
     },
