@@ -545,6 +545,15 @@ sdk.lending.market.prices(...); // Record<string, number>
 // GET /lending/market-sc
 sdk.lending.marketSc(...); // string[]
 
+// GET /lending/active-accounts
+sdk.lending.activeAccounts(...); // number[]
+
+// GET /lending/account/:nonce/attributes
+sdk.lending.account.nonce("...").attributes(...); // LendingNftAttributes
+
+// GET /lending/account/:nonce/positions
+sdk.lending.account.nonce("...").positions(...); // LendingNftAttributes[]
+
 // GET /lending/market/:token/price/egld
 sdk.lending.market.token("...").price.egld(...); // LendingTokenPriceDto
 

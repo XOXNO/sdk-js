@@ -34,6 +34,7 @@ import type {
   DiscountCodeValidationResponse,
   EventAcceptInvitation,
   EventCheckInQR,
+  EventClaimInvitationDto,
   EventCountGroupedByCountry,
   EventGuestApproveDto,
   EventGuestExport,
@@ -98,6 +99,7 @@ import type {
   LendingMarketProfile,
   LendingMarketProfileFilter,
   LendingMarketProfileQuery,
+  LendingNftAttributes,
   LendingOverallStats,
   LendingPositionStatus,
   LendingTokenPriceDto,
@@ -1186,6 +1188,18 @@ export const endpoints = {
     input: {},
     output: {} as string[],
   },
+  '/lending/active-accounts': {
+    input: {},
+    output: {} as number[],
+  },
+  '/lending/account/:nonce/attributes': {
+    input: {},
+    output: {} as LendingNftAttributes,
+  },
+  '/lending/account/:nonce/positions': {
+    input: {},
+    output: {} as LendingNftAttributes[],
+  },
   '/lending/market/:token/price/egld': {
     input: {},
     output: {} as LendingTokenPriceDto,
@@ -1491,7 +1505,7 @@ export const endpoints = {
     POST: {
       input: {},
       output: {} as EventAcceptInvitation,
-      body: {} as EventGuestRegistrationDto,
+      body: {} as EventClaimInvitationDto,
       securityMode: 'requiredAny',
     },
     DELETE: {

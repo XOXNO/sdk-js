@@ -104,6 +104,6 @@
   "dependencies": {
     "@multiversx/sdk-core": "^13.17.2",
     "@multiversx/sdk-network-providers": "^2.9.3",
-    "@xoxno/types": "^1.0.221"
+    "@xoxno/types": "^1.0.232"
   }
 }

@@ -953,6 +953,18 @@
     "input": {},
     "output": {} as string[]
   },
+  "/lending/active-accounts": {
+    "input": {},
+    "output": {} as number[]
+  },
+  "/lending/account/:nonce/attributes": {
+    "input": {},
+    "output": {} as LendingNftAttributes
+  },
+  "/lending/account/:nonce/positions": {
+    "input": {},
+    "output": {} as LendingNftAttributes[]
+  },
   "/lending/market/:token/price/egld": {
     "input": {},
     "output": {} as LendingTokenPriceDto
@@ -1258,7 +1270,7 @@
     "POST": {
       "input": {},
       "output": {} as EventAcceptInvitation,
-      "body": {} as EventGuestRegistrationDto,
+      "body": {} as EventClaimInvitationDto,
       "securityMode": "requiredAny"
     },
     "DELETE": {
