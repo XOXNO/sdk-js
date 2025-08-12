@@ -24,6 +24,7 @@ type SafeHeaders = Record<string, string> & {
 
 export type OurRequestInit = Omit<RequestInit, 'body' | 'headers'> & {
   headers?: SafeHeaders
+  debug?: boolean
 }
 
 export enum Chain {
@@ -113,7 +114,7 @@ export class XOXNOClient {
 
     const url = `${this.apiUrl}${path}${query.length ? `?${query}` : ''}`
 
-    const { next, cache, ...rest } = this.init as {
+    const { next, cache, debug, ...rest } = this.init as OurRequestInit & {
       cache: RequestCache
       next?: { revalidate?: number }
     }
@@ -132,6 +133,10 @@ export class XOXNOClient {
         ...other,
         revalidate: method === 'GET' ? revalidate : undefined,
       },
+    }
+
+    if (debug) {
+      console.debug('SDK fetch: ', url)
     }
 
     const res = await fetch(url, allHeaders)
