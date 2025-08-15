@@ -96,10 +96,9 @@ export class XOXNOClient {
       ...options.headers,
       Referer: 'https://xoxno.sdk',
       Connection: 'keep-alive',
-      'Keep-Alive': 'timeout=120, max=100', // Keep connection for 2min, max 100 requests
       'User-Agent': 'XOXNO/1.0/SDK',
-      Accept: 'application/json, text/plain, */*', // Better content negotiation
-      'Accept-Encoding': 'gzip, deflate, br', // Enable compression
+      Accept: 'application/json, text/plain, */*',
+      'Accept-Encoding': 'gzip, deflate, br',
       ...(options.method === 'PUT'
         ? {}
         : { 'Content-Type': 'application/json' }),
