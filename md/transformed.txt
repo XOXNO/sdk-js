@@ -360,6 +360,10 @@
     "input": {},
     "output": {} as LendingAccountProfile[]
   },
+  "/user/lending/summary/:identifier": {
+    "input": {},
+    "output": {} as LendingAccountSummary
+  },
   "/user/lending/image/:nonce": {
     "input": {} as {isStatic: boolean},
     "output": {} as string

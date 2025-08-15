@@ -809,6 +809,9 @@ sdk.user.lending.address("...")(...); // LendingAccountProfile[]
 // GET /user/lending/position/:identifier
 sdk.user.lending.position.identifier("...")(...); // LendingAccountProfile[]
 
+// GET /user/lending/summary/:identifier
+sdk.user.lending.summary.identifier("...")(...); // LendingAccountSummary
+
 // GET /user/lending/image/:nonce
 sdk.user.lending.image.nonce("...")(...); // string
 

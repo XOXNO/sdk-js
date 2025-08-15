@@ -93,6 +93,7 @@ import type {
   IMetrics,
   InventorySummaryDtoHydrated,
   LendingAccountProfile,
+  LendingAccountSummary,
   LendingEModeCategoryProfile,
   LendingIndexesDto,
   LendingMarketAnalyticsGraph,
@@ -578,6 +579,10 @@ export const endpoints = {
   '/user/lending/position/:identifier': {
     input: {},
     output: {} as LendingAccountProfile[],
+  },
+  '/user/lending/summary/:identifier': {
+    input: {},
+    output: {} as LendingAccountSummary,
   },
   '/user/lending/image/:nonce': {
     input: {} as { isStatic: boolean },
