@@ -610,6 +610,14 @@ export const endpoints = {
     },
     output: {} as LendingPositionStatus[],
   },
+  '/lending/leaderboard/liquidate': {
+    input: {},
+    output: {} as LendingPositionStatus[],
+  },
+  '/lending/leaderboard/clean-bad-debt': {
+    input: {},
+    output: {} as LendingPositionStatus[],
+  },
   '/lending/stats': {
     input: {},
     output: {} as LendingOverallStats,

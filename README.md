@@ -536,6 +536,12 @@ sdk.lending.market.token("...").analytics(...); // LendingMarketAnalyticsGraph[]
 // GET /lending/leaderboard
 sdk.lending.leaderboard(...); // LendingPositionStatus[]
 
+// GET /lending/leaderboard/liquidate
+sdk.lending.leaderboard.liquidate(...); // LendingPositionStatus[]
+
+// GET /lending/leaderboard/clean-bad-debt
+sdk.lending.leaderboard.cleanBadDebt(...); // LendingPositionStatus[]
+
 // GET /lending/stats
 sdk.lending.stats(...); // LendingOverallStats
 
