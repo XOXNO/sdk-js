@@ -1008,6 +1008,15 @@
     "input": {},
     "output": {} as TransactionProcessStatus
   },
+  "/transaction/cost": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as TransactionCost,
+      "body": {} as TransactionCreate
+    }
+  },
   "/transactions": {
     "input": {},
     "output": {},

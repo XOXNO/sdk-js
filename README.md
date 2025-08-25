@@ -704,6 +704,9 @@ sdk.tokens.sui(...); // IMetrics
 // GET /tokens/xoxno/info
 sdk.tokens.xoxno.info(...); // XoxnoInfo
 
+// POST /transaction/cost
+sdk.transaction.cost.POST(...); // TransactionCost
+
 // GET /transactions/:txHash
 sdk.transactions.txHash("...")(...); // TransactionDetailed
 

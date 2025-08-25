@@ -159,6 +159,7 @@ import type {
   TokenDataDocHydrated,
   TradesilvaniaSignature,
   TraitInfo,
+  TransactionCost,
   TransactionCreate,
   TransactionDetailed,
   TransactionProcessStatus,
@@ -1243,6 +1244,15 @@ export const endpoints = {
   '/transactions/:txHash/status': {
     input: {},
     output: {} as TransactionProcessStatus,
+  },
+  '/transaction/cost': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as TransactionCost,
+      body: {} as TransactionCreate,
+    },
   },
   '/transactions': {
     input: {},
