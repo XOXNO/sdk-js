@@ -1,6 +1,6 @@
 export const isValidCollectionTicker = (ticker: string): boolean => {
   const isSuiCollection =
-    (ticker.length >= 4 && ticker.length <= 40) ||
+    /*  (ticker.length >= 4 && ticker.length <= 40) || */
     /^0x[a-fA-F0-9]{1,64}-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+(<.+>)?$/.test(
       decodeURIComponent(ticker)
     )

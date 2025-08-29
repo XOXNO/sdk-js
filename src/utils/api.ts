@@ -142,35 +142,37 @@ export class XOXNOClient {
       console.debug('SDK fetch: ', url)
     }
 
-    const res = await fetch(url, allHeaders)
+    try {
+      const res = await fetch(url, allHeaders)
 
-    const text = await res.text()
+      const text = await res.text()
 
-    if (!res.ok) {
-      let message
+      if (!res.ok) {
+        let message
 
-      try {
-        message = JSON.parse(text)
-      } catch (_) {
-        message = { message: text }
+        try {
+          message = JSON.parse(text)
+        } catch (_) {
+          message = { message: text }
+        }
+
+        const errorMessage = [url, res.status, res.statusText, message.message]
+          .filter(Boolean)
+          .join(';;')
+
+        throw new Error(errorMessage)
       }
 
-      const errorMessage = [
-        url.split('xoxno.com').pop(),
-        res.status,
-        res.statusText,
-        message.message,
-      ]
-        .filter(Boolean)
-        .join(';;')
-
-      throw new Error(errorMessage)
-    }
-
-    try {
-      return JSON.parse(text) as T
-    } catch (_) {
-      return text as T
+      try {
+        return JSON.parse(text) as T
+      } catch (_) {
+        return text as T
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        error.message = `${error.message} ${url}`
+      }
+      throw error
     }
   }
 }
