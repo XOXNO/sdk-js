@@ -92,6 +92,8 @@ export class XOXNOClient {
     const Authorization =
       authHeader === 'Bearer undefined' ? undefined : authHeader
 
+    const method = options.method ?? 'GET'
+
     const headers = {
       ...options.headers,
       Referer: 'https://xoxno.sdk',
@@ -99,9 +101,7 @@ export class XOXNOClient {
       'User-Agent': 'XOXNO/1.0/SDK',
       Accept: 'application/json, text/plain, */*',
       'Accept-Encoding': 'gzip, deflate, br',
-      ...(options.method === 'PUT'
-        ? {}
-        : { 'Content-Type': 'application/json' }),
+      ...(method === 'PUT' ? {} : { 'Content-Type': 'application/json' }),
       ...(Authorization ? { Authorization } : {}),
     }
 
@@ -124,9 +124,7 @@ export class XOXNOClient {
 
     const { revalidate, ...other } = next ?? {}
 
-    const method = options.method ?? 'GET'
-
-    const allHeaders = {
+    const init = {
       ...options,
       method,
       ...(Object.keys(headers).length ? { headers } : {}),
@@ -139,40 +137,38 @@ export class XOXNOClient {
     }
 
     if (debug) {
-      console.debug('SDK fetch: ', url)
+      console.debug('SDK fetch: ', url, init)
+    }
+
+    const res = await fetch(url, init).catch((error) => {
+      if (error instanceof Error) {
+        error.message = `${url}: ${error.message}`
+      }
+      throw error
+    })
+
+    const text = await res.text()
+
+    if (!res.ok) {
+      let message
+
+      try {
+        message = JSON.parse(text)
+      } catch (_) {
+        message = { message: text }
+      }
+
+      const errorMessage = [url, res.status, res.statusText, message.message]
+        .filter(Boolean)
+        .join(';;')
+
+      throw new Error(errorMessage)
     }
 
     try {
-      const res = await fetch(url, allHeaders)
-
-      const text = await res.text()
-
-      if (!res.ok) {
-        let message
-
-        try {
-          message = JSON.parse(text)
-        } catch (_) {
-          message = { message: text }
-        }
-
-        const errorMessage = [url, res.status, res.statusText, message.message]
-          .filter(Boolean)
-          .join(';;')
-
-        throw new Error(errorMessage)
-      }
-
-      try {
-        return JSON.parse(text) as T
-      } catch (_) {
-        return text as T
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        error.message = `${error.message} ${url}`
-      }
-      throw error
+      return JSON.parse(text) as T
+    } catch (_) {
+      return text as T
     }
   }
 }
