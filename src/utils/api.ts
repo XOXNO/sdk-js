@@ -141,7 +141,7 @@ export class XOXNOClient {
     }
 
     const res = await fetch(url, init).catch((error) => {
-      if (error instanceof Error) {
+      if (error instanceof Error && !error.message.match(/^http(s?):\/\//)) {
         error.message = `${url}: ${error.message}`
       }
       throw error
