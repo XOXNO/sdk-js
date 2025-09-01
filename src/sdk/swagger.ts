@@ -159,7 +159,7 @@ import type {
   TokenDataDocHydrated,
   TradesilvaniaSignature,
   TraitInfo,
-  TransactionCost,
+  TransactionCostData,
   TransactionCreate,
   TransactionDetailed,
   TransactionProcessStatus,
@@ -1010,6 +1010,36 @@ export const endpoints = {
     input: {} as { filter: PublicOnly<NftDocFilter> },
     output: {} as NftPaginated,
   },
+  '/lending/market-sc': {
+    input: {},
+    output: {} as string[],
+  },
+  '/lending/active-accounts': {
+    input: {},
+    output: {} as number[],
+  },
+  '/lending/account/:nonce/attributes': {
+    input: {},
+    output: {} as LendingNftAttributes,
+  },
+  '/lending/account/:nonce/positions': {
+    input: {},
+    output: {} as LendingNftAttributes[],
+  },
+  '/lending/market/:token/price/egld': {
+    input: {},
+    output: {} as LendingTokenPriceDto,
+  },
+  '/faucet': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
+      securityMode: 'requiredAny',
+    },
+  },
   '/user/notifications': {
     input: {} as { top?: number; skip?: number },
     output: {} as NotificationPaginated,
@@ -1198,36 +1228,6 @@ export const endpoints = {
     output: {} as AirdropDtoHydrated[],
     securityMode: 'requiredAny',
   },
-  '/lending/market-sc': {
-    input: {},
-    output: {} as string[],
-  },
-  '/lending/active-accounts': {
-    input: {},
-    output: {} as number[],
-  },
-  '/lending/account/:nonce/attributes': {
-    input: {},
-    output: {} as LendingNftAttributes,
-  },
-  '/lending/account/:nonce/positions': {
-    input: {},
-    output: {} as LendingNftAttributes[],
-  },
-  '/lending/market/:token/price/egld': {
-    input: {},
-    output: {} as LendingTokenPriceDto,
-  },
-  '/faucet': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as SuccessDto,
-      body: {},
-      securityMode: 'requiredAny',
-    },
-  },
   '/user/login': {
     input: {},
     output: {},
@@ -1250,7 +1250,7 @@ export const endpoints = {
     output: {},
     POST: {
       input: {},
-      output: {} as TransactionCost,
+      output: {} as TransactionCostData,
       body: {} as TransactionCreate,
     },
   },
