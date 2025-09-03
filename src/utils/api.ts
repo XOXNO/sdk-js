@@ -118,23 +118,38 @@ export class XOXNOClient {
     const url = `${this.apiUrl}${path}${query.length ? `?${query}` : ''}`
 
     const { next, cache, debug, ...rest } = this.init as OurRequestInit & {
-      cache: RequestCache
+      cache?: RequestCache
+      next?: { revalidate?: number }
+    }
+
+    const { next: overwriteNext, cache: overwriteCache } = options as {
+      cache?: RequestCache
       next?: { revalidate?: number }
     }
 
     const { revalidate, ...other } = next ?? {}
 
-    const fixedRevalidate = method === 'GET' ? revalidate : undefined
+    const { revalidate: overwriteRevalidate, ...overwriteOther } =
+      overwriteNext ?? {}
+
+    const finalRevalidate =
+      method === 'GET' ? (overwriteRevalidate ?? revalidate) : undefined
+
+    const finalCache =
+      method === 'GET' && !finalRevalidate
+        ? (overwriteCache ?? cache)
+        : undefined
 
     const init = {
+      ...rest,
       ...options,
       method,
       ...(Object.keys(headers).length ? { headers } : {}),
-      ...rest,
-      cache: method === 'GET' && !fixedRevalidate ? cache : undefined,
+      cache: finalCache,
       next: {
         ...other,
-        revalidate: fixedRevalidate,
+        ...overwriteOther,
+        revalidate: finalRevalidate,
       },
     }
 
