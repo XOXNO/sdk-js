@@ -533,6 +533,9 @@ sdk.lending.market.token("...").emodeCategories(...); // LendingEModeCategoryPro
 // GET /lending/market/:token/analytics
 sdk.lending.market.token("...").analytics(...); // LendingMarketAnalyticsGraph[]
 
+// GET /lending/market/:token/average
+sdk.lending.market.token("...").average(...); // LendingMarketAverageGraph[]
+
 // GET /lending/leaderboard
 sdk.lending.leaderboard(...); // LendingPositionStatus[]
 

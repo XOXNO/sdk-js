@@ -97,6 +97,7 @@ import type {
   LendingEModeCategoryProfile,
   LendingIndexesDto,
   LendingMarketAnalyticsGraph,
+  LendingMarketAverageGraph,
   LendingMarketProfile,
   LendingMarketProfileFilter,
   LendingMarketProfileQuery,
@@ -600,6 +601,10 @@ export const endpoints = {
   '/lending/market/:token/analytics': {
     input: {} as { startTime?: string; endTime?: string; bin?: string },
     output: {} as LendingMarketAnalyticsGraph[],
+  },
+  '/lending/market/:token/average': {
+    input: {},
+    output: {} as LendingMarketAverageGraph[],
   },
   '/lending/leaderboard': {
     input: {} as {
