@@ -27,6 +27,11 @@ export type OurRequestInit = Omit<RequestInit, 'body' | 'headers'> & {
   debug?: boolean
 }
 
+type IInit = OurRequestInit & {
+  cache?: RequestCache
+  next?: { revalidate?: number }
+}
+
 export enum Chain {
   MAINNET = '1',
   DEVNET = 'D',
@@ -86,16 +91,24 @@ export class XOXNOClient {
     path: string,
     { params, ...options }: RequestInit & { params?: Record<string, any> } = {}
   ): Promise<T> => {
-    const authHeader = (options?.headers as { Authorization?: string })
-      ?.Authorization
+    const { next, cache, debug, ...rest } = this.init as IInit
+
+    const {
+      next: overwriteNext,
+      cache: overwriteCache,
+      debug: overwriteDebug,
+      headers,
+      method = 'GET',
+      ...overwriteRest
+    } = options as IInit
+
+    const authHeader = (headers as { Authorization?: string })?.Authorization
 
     const Authorization =
       authHeader === 'Bearer undefined' ? undefined : authHeader
 
-    const method = options.method ?? 'GET'
-
-    const headers = {
-      ...options.headers,
+    const allHeaders = {
+      ...headers,
       Referer: 'https://xoxno.sdk',
       Connection: 'keep-alive',
       'User-Agent': 'XOXNO/1.0/SDK',
@@ -117,16 +130,6 @@ export class XOXNOClient {
 
     const url = `${this.apiUrl}${path}${query.length ? `?${query}` : ''}`
 
-    const { next, cache, debug, ...rest } = this.init as OurRequestInit & {
-      cache?: RequestCache
-      next?: { revalidate?: number }
-    }
-
-    const { next: overwriteNext, cache: overwriteCache } = options as {
-      cache?: RequestCache
-      next?: { revalidate?: number }
-    }
-
     const { revalidate, ...other } = next ?? {}
 
     const { revalidate: overwriteRevalidate, ...overwriteOther } =
@@ -142,9 +145,9 @@ export class XOXNOClient {
 
     const init = {
       ...rest,
-      ...options,
+      ...overwriteRest,
       method,
-      ...(Object.keys(headers).length ? { headers } : {}),
+      ...(Object.keys(allHeaders).length ? { headers: allHeaders } : {}),
       cache: finalCache,
       next: {
         ...other,
@@ -153,11 +156,11 @@ export class XOXNOClient {
       },
     }
 
-    if (debug) {
+    if (overwriteDebug ?? debug) {
       console.debug('SDK fetch: ', url, init)
     }
 
-    const res = await fetch(url, init).catch((error) => {
+    const res = await fetch(url, init as RequestInit).catch((error) => {
       if (error instanceof Error && !error.message.match(/^http(s?):\/\//)) {
         error.message = `${url}: ${error.message}`
       }
