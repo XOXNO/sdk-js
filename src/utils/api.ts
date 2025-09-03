@@ -124,15 +124,17 @@ export class XOXNOClient {
 
     const { revalidate, ...other } = next ?? {}
 
+    const fixedRevalidate = method === 'GET' ? revalidate : undefined
+
     const init = {
       ...options,
       method,
       ...(Object.keys(headers).length ? { headers } : {}),
       ...rest,
-      cache: method === 'GET' ? cache : undefined,
+      cache: method === 'GET' && !fixedRevalidate ? cache : undefined,
       next: {
         ...other,
-        revalidate: method === 'GET' ? revalidate : undefined,
+        revalidate: fixedRevalidate,
       },
     }
 
