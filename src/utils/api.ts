@@ -139,10 +139,12 @@ export class XOXNOClient {
       overwriteNext ?? {}
 
     const finalRevalidate =
-      method === 'GET' ? (overwriteRevalidate ?? revalidate) : undefined
+      method === 'GET' && !Authorization
+        ? (overwriteRevalidate ?? revalidate)
+        : undefined
 
     const finalCache =
-      method === 'GET' && !finalRevalidate
+      method === 'GET' && !Authorization && !finalRevalidate
         ? (overwriteCache ?? cache)
         : undefined
 
