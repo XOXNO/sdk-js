@@ -17,7 +17,7 @@ import {
 } from './const'
 
 // use the "auth" property when prompted
-type SafeHeaders = Record<string, string> & {
+export type SafeHeaders = Record<string, string> & {
   authorization?: never
   Authorization?: never
 }
@@ -89,7 +89,13 @@ export class XOXNOClient {
 
   public fetchWithTimeout = async <T>(
     path: string,
-    { params, ...options }: RequestInit & { params?: Record<string, any> } = {}
+    {
+      params,
+      ...options
+    }: RequestInit & {
+      debug?: boolean
+      params?: Record<string, any>
+    } = {}
   ): Promise<T> => {
     const { next, cache, debug, ...rest } = this.init as IInit
 
@@ -110,10 +116,7 @@ export class XOXNOClient {
     const allHeaders = {
       ...headers,
       Referer: 'https://xoxno.sdk',
-      Connection: 'keep-alive',
       'User-Agent': 'XOXNO/1.0/SDK',
-      Accept: 'application/json, text/plain, */*',
-      'Accept-Encoding': 'gzip, deflate, br',
       ...(method === 'PUT' ? {} : { 'Content-Type': 'application/json' }),
       ...(Authorization ? { Authorization } : {}),
     }

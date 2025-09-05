@@ -166,6 +166,7 @@ function makeLeafHandler(
       const addr = (fullArgs as any).address
       if (!isAddressValid(addr)) throw new AddressNotFoundError(addr)
     }
+
     if (hasCollection) {
       const col = (fullArgs as any).collection
       const bad = Array.isArray(col)
@@ -189,14 +190,17 @@ function makeLeafHandler(
       })
     )
 
-    const { body, auth, method, headers, cache, next, ...params } =
+    const { body, auth, method, headers, cache, next, debug, ...params } =
       extraArgsConv
 
     const Authorization = auth ? `Bearer ${auth}` : undefined
+
     const headersData = {
       ...(headers as HeadersInit),
       ...(Authorization ? { Authorization } : {}),
     }
+
+    const hydratedNext = { ...next, tags: [...(next?.tags ?? []), rawPath] }
 
     return client.fetchWithTimeout<typeof _output>(url, {
       method,
@@ -204,7 +208,8 @@ function makeLeafHandler(
       body,
       headers: headersData,
       cache,
-      ...(next ? { next } : {}),
+      debug,
+      ...(hydratedNext ? { next: hydratedNext } : {}),
     })
   }
 

@@ -1,5 +1,5 @@
 import type { OurRequestInit } from '../utils/api'
-import type { endpoints as routes } from './swagger'
+import type { endpoints, endpoints as routes } from './swagger'
 
 type RemoveColon<S extends string> = S extends `:${infer R}` ? R : S
 type CamelCase<S extends string> = S extends `${infer Head}-${infer Tail}`
@@ -190,3 +190,5 @@ type SDKUnion = {
 }[keyof typeof routes]
 
 export type SDK = SimplifyDeep<MergeRec<SDKUnion>>
+
+export type SDKTags = keyof typeof endpoints
