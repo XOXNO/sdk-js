@@ -200,7 +200,7 @@ function makeLeafHandler(
       ...(Authorization ? { Authorization } : {}),
     }
 
-    const hydratedNext = { ...next, tags: [...(next?.tags ?? []), rawPath] }
+    const hydratedNext = { ...next, tags: [...(next?.tags ?? []), url] }
 
     return client.fetchWithTimeout<typeof _output>(url, {
       method,
