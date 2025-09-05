@@ -170,6 +170,7 @@ import type {
   UserBlockPaginated,
   UserConversationPaginated,
   UserFavoriteResponseDto,
+  UserInfo,
   UserNetworkInfoDto,
   UserProfileDoc,
   UserProfileDto,
@@ -1342,6 +1343,10 @@ export const endpoints = {
       body: {},
       securityMode: 'requiredAny',
     },
+  },
+  '/hatom/user/:address': {
+    input: {},
+    output: {} as UserInfo,
   },
   '/countries': {
     input: {},

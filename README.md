@@ -509,6 +509,9 @@ sdk.eventNotifications.user.userId("...").direct.POST(...); // NotificationSucce
 // POST /faucet
 sdk.faucet.POST(...); // SuccessDto
 
+// GET /hatom/user/:address
+sdk.hatom.user.address("...")(...); // UserInfo
+
 // GET /launchpad/:scAddress/shareholders/royalties
 sdk.launchpad.scAddress("...").shareholders.royalties(...); // ShareholderDto[]
 

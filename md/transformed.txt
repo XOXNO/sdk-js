@@ -1105,6 +1105,10 @@
       "securityMode": "requiredAny"
     }
   },
+  "/hatom/user/:address": {
+    "input": {},
+    "output": {} as UserInfo
+  },
   "/countries": {
     "input": {},
     "output": {} as string[]

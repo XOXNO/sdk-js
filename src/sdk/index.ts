@@ -40,6 +40,92 @@ function buildTemplate(): NodeTpl {
   return root
 }
 
+function makeLeafHandler(
+  rawPath: string,
+  def: RouteDef,
+  bound: Record<string, any>,
+  client: XOXNOClient
+) {
+  const { input: _input, output: _output, ...rest } = def
+
+  const core = async (
+    args: typeof _input & OurRequestInit & { body?: object } = {}
+  ) => {
+    const fullArgs = { ...bound, ...args }
+    const url = rawPath.replace(
+      /:([a-zA-Z_]+)/g,
+      (_, p) => `${fullArgs[p as keyof typeof fullArgs]}`
+    )
+
+    const paramNames = [...rawPath.matchAll(/:([a-zA-Z_]+)/g)].map((m) => m[1])
+    const extraArgs = Object.fromEntries(
+      Object.entries(fullArgs).filter(([k]) => !paramNames.includes(k))
+    )
+
+    const hasAddress = /:address[^A-Z]/.test(rawPath) || 'address' in extraArgs
+    const hasCollection =
+      /:collection[^A-Z]/.test(rawPath) || 'collection' in extraArgs
+
+    if (hasAddress) {
+      const addr = (fullArgs as any).address
+      if (!isAddressValid(addr)) throw new AddressNotFoundError(addr)
+    }
+
+    if (hasCollection) {
+      const col = (fullArgs as any).collection
+      const bad = Array.isArray(col)
+        ? col.some((x: string) => !isValidCollectionTicker(x))
+        : !isValidCollectionTicker(col)
+      if (bad) throw new CollectionNotFoundError(col)
+    }
+
+    const extraArgsConv = Object.fromEntries(
+      Object.entries(extraArgs).map(([k, v]) => {
+        return [
+          k,
+          v instanceof FormData
+            ? v
+            : k === 'filter' || k === 'body'
+              ? JSON.stringify(v)
+              : Array.isArray(v)
+                ? v.join(',')
+                : v,
+        ]
+      })
+    )
+
+    const { body, auth, method, headers, cache, next, debug, ...params } =
+      extraArgsConv
+
+    const Authorization = auth ? `Bearer ${auth}` : undefined
+
+    const headersData = {
+      ...(headers as HeadersInit),
+      ...(Authorization ? { Authorization } : {}),
+    }
+
+    const hydratedNext = { ...next, tags: [...(next?.tags ?? []), url] }
+
+    return client.fetchWithTimeout<typeof _output>(url, {
+      method,
+      params,
+      body,
+      headers: headersData,
+      cache,
+      debug,
+      ...(hydratedNext ? { next: hydratedNext } : {}),
+    })
+  }
+
+  const leaf: any = (args = {}) => core(args)
+  for (const verb of Object.keys(rest)) {
+    if (!coveredMethods.includes(verb as ICoveredMethods)) continue
+    leaf[verb] = (va: any) =>
+      core({ ...va, method: va.method ?? verb.toUpperCase() })
+  }
+  return leaf
+}
+
 export function buildSdk(client: XOXNOClient): SDK {
   const tplRoot = buildTemplate()
 
@@ -134,90 +220,4 @@ export function buildSdk(client: XOXNOClient): SDK {
   }
 
   return instantiate(tplRoot, {}) as SDK
-}
-
-function makeLeafHandler(
-  rawPath: string,
-  def: RouteDef,
-  bound: Record<string, any>,
-  client: XOXNOClient
-) {
-  const { input: _input, output: _output, ...rest } = def
-
-  const core = async (
-    args: typeof _input & OurRequestInit & { body?: object } = {}
-  ) => {
-    const fullArgs = { ...bound, ...args }
-    const url = rawPath.replace(
-      /:([a-zA-Z_]+)/g,
-      (_, p) => `${fullArgs[p as keyof typeof fullArgs]}`
-    )
-
-    const paramNames = [...rawPath.matchAll(/:([a-zA-Z_]+)/g)].map((m) => m[1])
-    const extraArgs = Object.fromEntries(
-      Object.entries(fullArgs).filter(([k]) => !paramNames.includes(k))
-    )
-
-    const hasAddress = /:address[^A-Z]/.test(rawPath) || 'address' in extraArgs
-    const hasCollection =
-      /:collection[^A-Z]/.test(rawPath) || 'collection' in extraArgs
-
-    if (hasAddress) {
-      const addr = (fullArgs as any).address
-      if (!isAddressValid(addr)) throw new AddressNotFoundError(addr)
-    }
-
-    if (hasCollection) {
-      const col = (fullArgs as any).collection
-      const bad = Array.isArray(col)
-        ? col.some((x: string) => !isValidCollectionTicker(x))
-        : !isValidCollectionTicker(col)
-      if (bad) throw new CollectionNotFoundError(col)
-    }
-
-    const extraArgsConv = Object.fromEntries(
-      Object.entries(extraArgs).map(([k, v]) => {
-        return [
-          k,
-          v instanceof FormData
-            ? v
-            : k === 'filter' || k === 'body'
-              ? JSON.stringify(v)
-              : Array.isArray(v)
-                ? v.join(',')
-                : v,
-        ]
-      })
-    )
-
-    const { body, auth, method, headers, cache, next, debug, ...params } =
-      extraArgsConv
-
-    const Authorization = auth ? `Bearer ${auth}` : undefined
-
-    const headersData = {
-      ...(headers as HeadersInit),
-      ...(Authorization ? { Authorization } : {}),
-    }
-
-    const hydratedNext = { ...next, tags: [...(next?.tags ?? []), url] }
-
-    return client.fetchWithTimeout<typeof _output>(url, {
-      method,
-      params,
-      body,
-      headers: headersData,
-      cache,
-      debug,
-      ...(hydratedNext ? { next: hydratedNext } : {}),
-    })
-  }
-
-  const leaf: any = (args = {}) => core(args)
-  for (const verb of Object.keys(rest)) {
-    if (!coveredMethods.includes(verb as ICoveredMethods)) continue
-    leaf[verb] = (va: any) =>
-      core({ ...va, method: va.method ?? verb.toUpperCase() })
-  }
-  return leaf
 }
