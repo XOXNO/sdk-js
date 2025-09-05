@@ -191,4 +191,12 @@ type SDKUnion = {
 
 export type SDK = SimplifyDeep<MergeRec<SDKUnion>>
 
-export type SDKTags = keyof typeof endpoints
+export type SDKTags = {
+  [K in keyof typeof endpoints]: IsEmptyObj<
+    (typeof endpoints)[K]['input']
+  > extends true
+    ? IsEmptyObj<(typeof endpoints)[K]['output']> extends true
+      ? never
+      : K
+    : K
+}[keyof typeof endpoints]
