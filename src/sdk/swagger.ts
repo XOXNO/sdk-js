@@ -90,7 +90,6 @@ import type {
   GlobalConversationSummaryDto,
   GlobalOfferPaginated,
   GlobalSearchResourcesPaginated,
-  IMetrics,
   InventorySummaryDtoHydrated,
   LendingAccountProfile,
   LendingAccountSummary,
@@ -445,18 +444,6 @@ export const endpoints = {
     input: {} as { value?: number; fiatCurrencies?: string[] },
     output: {} as Record<string, number>,
   },
-  '/tokens/xoxno': {
-    input: {},
-    output: {} as IMetrics,
-  },
-  '/tokens/egld': {
-    input: {},
-    output: {} as IMetrics,
-  },
-  '/tokens/sui': {
-    input: {},
-    output: {} as IMetrics,
-  },
   '/tokens/xoxno/info': {
     input: {},
     output: {} as XoxnoInfo,
@@ -466,6 +453,10 @@ export const endpoints = {
     output: {} as XoxnoLiquidStatsDto,
   },
   '/liquid/egld/stats': {
+    input: {},
+    output: {} as XoxnoLiquidStatsDto,
+  },
+  '/liquid/sui/stats': {
     input: {},
     output: {} as XoxnoLiquidStatsDto,
   },

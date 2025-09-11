@@ -575,6 +575,9 @@ sdk.liquid.xoxno.stats(...); // XoxnoLiquidStatsDto
 // GET /liquid/egld/stats
 sdk.liquid.egld.stats(...); // XoxnoLiquidStatsDto
 
+// GET /liquid/sui/stats
+sdk.liquid.sui.stats(...); // XoxnoLiquidStatsDto
+
 // GET /liquid/xoxno/rate
 sdk.liquid.xoxno.rate(...); // RateType
 
@@ -697,15 +700,6 @@ sdk.tokens.usdPrice(...); // Record<string, number>
 
 // GET /tokens/egld/fiat-price
 sdk.tokens.egld.fiatPrice(...); // Record<string, number>
-
-// GET /tokens/xoxno
-sdk.tokens.xoxno(...); // IMetrics
-
-// GET /tokens/egld
-sdk.tokens.egld(...); // IMetrics
-
-// GET /tokens/sui
-sdk.tokens.sui(...); // IMetrics
 
 // GET /tokens/xoxno/info
 sdk.tokens.xoxno.info(...); // XoxnoInfo
