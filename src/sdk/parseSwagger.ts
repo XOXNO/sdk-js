@@ -136,6 +136,9 @@ function parseSchema(curr: INestSchema, url: string, schemas: object): string {
   }
 }
 
+const alreadyChecked = new Set<string>([])
+const duplicates: string[] = []
+
 async function parseSwagger() {
   const yml = await fetch('https://api.xoxno.com/swagger.yaml').then((res) => {
     return res.text()
@@ -179,6 +182,13 @@ async function parseSwagger() {
         return item.in === 'query'
       })
       const transformedKey = key.replace(/{([^}]+)}/g, ':$1')
+      const toCheckRaw = `${method}-${transformedKey}`
+      const toCheck = toCheckRaw.replace(/:([^/]+)/g, 'PLACEHOLDER')
+      if (alreadyChecked.has(toCheck)) {
+        duplicates.push(toCheckRaw)
+      } else {
+        alreadyChecked.add(toCheck)
+      }
       const schemas = parsed.components.schemas
       const transformedInputs = queryParameters.length
         ? queryParameters.reduce((acc: Record<string, unknown>, curr) => {
@@ -323,6 +333,10 @@ async function parseSwagger() {
   )
 
   await writeFile(path.join(process.cwd(), './md/transformed.txt'), transformed)
+
+  if (duplicates.length) {
+    console.log(duplicates)
+  }
 
   /* await writeFile(
     path.join(process.cwd(), './src/test/swagger2.ts'),

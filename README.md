@@ -434,8 +434,8 @@ sdk.event.eventId("...").role.roleId("...").DELETE(...); // SuccessDto
 // DELETE /event/:eventId/guest
 sdk.event.eventId("...").guest.DELETE(...); // SuccessDto
 
-// GET /event/:eventId/role/:address
-sdk.event.eventId("...").role.address("...")(...); // EventUserRoleDoc
+// GET /event/:eventId/roleOf/:address
+sdk.event.eventId("...").roleOf.address("...")(...); // EventUserRoleDoc
 
 // POST /event/:eventId/scan
 sdk.event.eventId("...").scan.POST(...); // TicketValidationResult

@@ -1633,7 +1633,7 @@ export const endpoints = {
       securityMode: 'requiredAny',
     },
   },
-  '/event/:eventId/role/:address': {
+  '/event/:eventId/roleOf/:address': {
     input: {},
     output: {} as EventUserRoleDoc,
     securityMode: 'requiredAny',
