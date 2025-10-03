@@ -91,6 +91,7 @@ import type {
   GlobalOfferPaginated,
   GlobalSearchResourcesPaginated,
   InventorySummaryDtoHydrated,
+  LendingAccountPnl,
   LendingAccountProfile,
   LendingAccountSummary,
   LendingEModeCategoryProfile,
@@ -573,6 +574,14 @@ export const endpoints = {
   '/user/lending/position/:identifier': {
     input: {},
     output: {} as LendingAccountProfile[],
+  },
+  '/lending/pnl/:identifier': {
+    input: {},
+    output: {} as LendingAccountPnl[],
+  },
+  '/user/lending/pnl/:address': {
+    input: {},
+    output: {} as LendingAccountPnl[],
   },
   '/user/lending/summary/:identifier': {
     input: {},

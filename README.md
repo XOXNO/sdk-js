@@ -527,6 +527,9 @@ sdk.lending.market.query(...); // LendingMarketProfileQuery
 // GET /lending/market/indexes
 sdk.lending.market.indexes(...); // Record<string, LendingIndexesDto>
 
+// GET /lending/pnl/:identifier
+sdk.lending.pnl.identifier("...")(...); // LendingAccountPnl[]
+
 // GET /lending/market/emode-categories
 sdk.lending.market.emodeCategories(...); // LendingEModeCategoryProfile[]
 
@@ -817,6 +820,9 @@ sdk.user.lending.address("...")(...); // LendingAccountProfile[]
 
 // GET /user/lending/position/:identifier
 sdk.user.lending.position.identifier("...")(...); // LendingAccountProfile[]
+
+// GET /user/lending/pnl/:address
+sdk.user.lending.pnl.address("...")(...); // LendingAccountPnl[]
 
 // GET /user/lending/summary/:identifier
 sdk.user.lending.summary.identifier("...")(...); // LendingAccountSummary

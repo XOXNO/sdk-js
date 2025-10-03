@@ -352,6 +352,14 @@
     "input": {},
     "output": {} as LendingAccountProfile[]
   },
+  "/lending/pnl/:identifier": {
+    "input": {},
+    "output": {} as LendingAccountPnl[]
+  },
+  "/user/lending/pnl/:address": {
+    "input": {},
+    "output": {} as LendingAccountPnl[]
+  },
   "/user/lending/summary/:identifier": {
     "input": {},
     "output": {} as LendingAccountSummary
