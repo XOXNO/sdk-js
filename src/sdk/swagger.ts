@@ -575,8 +575,8 @@ export const endpoints = {
     input: {},
     output: {} as LendingAccountProfile[],
   },
-  '/lending/pnl/:identifier': {
-    input: {},
+  '/lending/pnl': {
+    input: {} as { identifiers: string[] },
     output: {} as LendingAccountPnl[],
   },
   '/user/lending/pnl/:address': {
@@ -1370,6 +1370,12 @@ export const endpoints = {
       input: {},
       output: {} as EventProfile,
       body: {} as EventProfileEditDto,
+      securityMode: 'requiredAny',
+    },
+    DELETE: {
+      input: {},
+      output: {} as SuccessDto,
+      body: {},
       securityMode: 'requiredAny',
     },
   },

@@ -314,6 +314,9 @@ sdk.event.eventId("...")(...); // EventProfile
 // PATCH /event/:eventId
 sdk.event.eventId("...").PATCH(...); // EventProfile
 
+// DELETE /event/:eventId
+sdk.event.eventId("...").DELETE(...); // SuccessDto
+
 // GET /event/profile/query
 sdk.event.profile.query(...); // EventProfileQuery
 
@@ -527,8 +530,8 @@ sdk.lending.market.query(...); // LendingMarketProfileQuery
 // GET /lending/market/indexes
 sdk.lending.market.indexes(...); // Record<string, LendingIndexesDto>
 
-// GET /lending/pnl/:identifier
-sdk.lending.pnl.identifier("...")(...); // LendingAccountPnl[]
+// GET /lending/pnl
+sdk.lending.pnl(...); // LendingAccountPnl[]
 
 // GET /lending/market/emode-categories
 sdk.lending.market.emodeCategories(...); // LendingEModeCategoryProfile[]
