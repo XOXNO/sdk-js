@@ -803,6 +803,10 @@
     "input": {},
     "output": {} as LendingNftAttributes[]
   },
+  "/lending/liquidate": {
+    "input": {},
+    "output": {} as Record<string, number>
+  },
   "/lending/market/:token/price/egld": {
     "input": {},
     "output": {} as LendingTokenPriceDto
@@ -956,6 +960,128 @@
       "output": {} as NotificationSuccessResponseDto,
       "body": {} as EventNotificationDto,
       "securityMode": "requiredAny"
+    }
+  },
+  "/perp/exchange/acceptTerms": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/perp/exchange/sendAsset": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/perp/exchange/sendExternalAsset": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/perp/exchange/deposit": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/perp/exchange/withdraw": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/perp/exchange/order": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as PerpOrderResponse,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/tradingview/bars/:symbol": {
+    "input": {},
+    "output": {} as BarDto[]
+  },
+  "/tradingview/coin/:symbol": {
+    "input": {},
+    "output": {} as SymbolInfoDto[]
+  },
+  "/perp/coin/:symbol": {
+    "input": {},
+    "output": {} as PerpCoinExtended[]
+  },
+  "/perp/coin/spot/:symbol": {
+    "input": {},
+    "output": {} as PerpSpotCoinExtended[]
+  },
+  "/perp/coins": {
+    "input": {},
+    "output": {} as PerpCoinExtendedSlim[]
+  },
+  "/perp/legal-check/:address": {
+    "input": {},
+    "output": {} as PerpLegalCheck
+  },
+  "/perp/coins/spot": {
+    "input": {},
+    "output": {} as PerpSpotCoinExtendedSlim[]
+  },
+  "/perp/orderbook/:symbol": {
+    "input": {},
+    "output": {} as L2BookPerpResponseSingle[]
+  },
+  "/perp/trades/:symbol": {
+    "input": {},
+    "output": {} as TradesPerpResponseSingle[]
+  },
+  "/perp/stats/spot/:symbol": {
+    "input": {},
+    "output": {} as ActiveSpotAssetCtx[]
+  },
+  "/perp/stats/:symbol": {
+    "input": {},
+    "output": {} as ActivePerpAssetCtx[]
+  },
+  "/perp/subscribe": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {} as PerpEvent
+    }
+  },
+  "/perp/unsubscribe": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {} as PerpEvent
     }
   },
   "/activity/query": {

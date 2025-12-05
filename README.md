@@ -572,6 +572,9 @@ sdk.lending.account.nonce("...").attributes(...); // LendingNftAttributes
 // GET /lending/account/:nonce/positions
 sdk.lending.account.nonce("...").positions(...); // LendingNftAttributes[]
 
+// GET /lending/liquidate
+sdk.lending.liquidate(...); // Record<string, number>
+
 // GET /lending/market/:token/price/egld
 sdk.lending.market.token("...").price.egld(...); // LendingTokenPriceDto
 
@@ -680,6 +683,57 @@ sdk.nft.search.query(...); // NftPaginated
 // POST /notify/global-broadcast
 sdk.notify.globalBroadcast.POST(...); // SuccessWithMessageDto
 
+// POST /perp/exchange/acceptTerms
+sdk.perp.exchange.acceptTerms.POST(...); // SuccessDto
+
+// POST /perp/exchange/sendAsset
+sdk.perp.exchange.sendAsset.POST(...); // SuccessDto
+
+// POST /perp/exchange/sendExternalAsset
+sdk.perp.exchange.sendExternalAsset.POST(...); // SuccessDto
+
+// POST /perp/exchange/deposit
+sdk.perp.exchange.deposit.POST(...); // SuccessDto
+
+// POST /perp/exchange/withdraw
+sdk.perp.exchange.withdraw.POST(...); // SuccessDto
+
+// POST /perp/exchange/order
+sdk.perp.exchange.order.POST(...); // PerpOrderResponse
+
+// GET /perp/coin/:symbol
+sdk.perp.coin.symbol("...")(...); // PerpCoinExtended[]
+
+// GET /perp/coin/spot/:symbol
+sdk.perp.coin.spot.symbol("...")(...); // PerpSpotCoinExtended[]
+
+// GET /perp/coins
+sdk.perp.coins(...); // PerpCoinExtendedSlim[]
+
+// GET /perp/legal-check/:address
+sdk.perp.legalCheck.address("...")(...); // PerpLegalCheck
+
+// GET /perp/coins/spot
+sdk.perp.coins.spot(...); // PerpSpotCoinExtendedSlim[]
+
+// GET /perp/orderbook/:symbol
+sdk.perp.orderbook.symbol("...")(...); // L2BookPerpResponseSingle[]
+
+// GET /perp/trades/:symbol
+sdk.perp.trades.symbol("...")(...); // TradesPerpResponseSingle[]
+
+// GET /perp/stats/spot/:symbol
+sdk.perp.stats.spot.symbol("...")(...); // ActiveSpotAssetCtx[]
+
+// GET /perp/stats/:symbol
+sdk.perp.stats.symbol("...")(...); // ActivePerpAssetCtx[]
+
+// POST /perp/subscribe
+sdk.perp.subscribe.POST(...); // SuccessDto
+
+// POST /perp/unsubscribe
+sdk.perp.unsubscribe.POST(...); // SuccessDto
+
 // GET /pool/:poolId/profile
 sdk.pool.poolId("...").profile(...); // StakingSummary
 
@@ -709,6 +763,12 @@ sdk.tokens.egld.fiatPrice(...); // Record<string, number>
 
 // GET /tokens/xoxno/info
 sdk.tokens.xoxno.info(...); // XoxnoInfo
+
+// GET /tradingview/bars/:symbol
+sdk.tradingview.bars.symbol("...")(...); // BarDto[]
+
+// GET /tradingview/coin/:symbol
+sdk.tradingview.coin.symbol("...")(...); // SymbolInfoDto[]
 
 // POST /transaction/cost
 sdk.transaction.cost.POST(...); // TransactionCostData
