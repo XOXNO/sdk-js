@@ -1049,6 +1049,10 @@ export const endpoints = {
     input: {},
     output: {} as Record<string, number>,
   },
+  '/lending/sync-account-positions': {
+    input: {},
+    output: {} as LendingNftAttributes[],
+  },
   '/lending/market/:token/price/egld': {
     input: {},
     output: {} as LendingTokenPriceDto,

@@ -575,6 +575,9 @@ sdk.lending.account.nonce("...").positions(...); // LendingNftAttributes[]
 // GET /lending/liquidate
 sdk.lending.liquidate(...); // Record<string, number>
 
+// GET /lending/sync-account-positions
+sdk.lending.syncAccountPositions(...); // LendingNftAttributes[]
+
 // GET /lending/market/:token/price/egld
 sdk.lending.market.token("...").price.egld(...); // LendingTokenPriceDto
 
