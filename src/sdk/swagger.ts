@@ -5,7 +5,6 @@ import type {
   AnalyticsMarketplaceUniqueUsers,
   AnalyticsVolumeDto,
   AnsweredQuestionWithDetails,
-  ArdaSwapResultDto,
   BageQRData,
   BarDto,
   ChatMessageDocHydrated,
@@ -85,7 +84,6 @@ import type {
   EventVoucherEditDto,
   EventVoucherFilter,
   EventVoucherQuery,
-  FetchSwapRoutesResponseDto,
   FilterQueryDto,
   FloorPriceDto,
   FollowCollectionDto,
@@ -213,6 +211,27 @@ import type {
 } from '@xoxno/types/enums'
 
 export const endpoints = {
+  '/liquid/xoxno/rate': {
+    input: {},
+    output: {} as RateType,
+  },
+  '/liquid/xoxno/liquid-supply': {
+    input: {},
+    output: {} as string,
+  },
+  '/liquid/xoxno/staked': {
+    input: {},
+    output: {} as string,
+  },
+  '/user/login': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as LoginAccessDto,
+      body: {} as LoginRequestDto,
+    },
+  },
   '/user/:address/network-account': {
     input: {},
     output: {} as UserNetworkInfoDto,
@@ -450,6 +469,10 @@ export const endpoints = {
     input: {},
     output: {} as TokenDataDocHydrated[],
   },
+  '/tokens/restricted': {
+    input: {},
+    output: {} as string[],
+  },
   '/tokens/usd-price': {
     input: {} as { identifier?: string[]; cache?: boolean },
     output: {} as Record<string, number>,
@@ -473,18 +496,6 @@ export const endpoints = {
   '/liquid/sui/stats': {
     input: {},
     output: {} as XoxnoLiquidStatsDto,
-  },
-  '/liquid/xoxno/rate': {
-    input: {},
-    output: {} as RateType,
-  },
-  '/liquid/xoxno/liquid-supply': {
-    input: {},
-    output: {} as string,
-  },
-  '/liquid/xoxno/staked': {
-    input: {},
-    output: {} as string,
   },
   '/analytics/marketplace-unique-users': {
     input: {} as { before: string; after: string; bin: string },
@@ -533,40 +544,6 @@ export const endpoints = {
   '/user/:address/delegation': {
     input: {},
     output: {} as DelegationDataOutput[],
-  },
-  '/ash/min-token-quantity': {
-    input: {} as {
-      originalToken: string
-      originalTokenValue: string
-      paymentToken: string
-    },
-    output: {} as FetchSwapRoutesResponseDto,
-  },
-  '/ash/max-token-quantity': {
-    input: {} as {
-      paymentTokenValue: string
-      paymentToken: string
-      wantedToken: string
-      slippage: number
-    },
-    output: {} as FetchSwapRoutesResponseDto,
-  },
-  '/arda/max-token-quantity': {
-    input: {} as {
-      paymentTokenValue: string
-      paymentToken: string
-      wantedToken: string
-      slippage: number
-    },
-    output: {} as ArdaSwapResultDto,
-  },
-  '/arda/min-token-quantity': {
-    input: {} as {
-      originalToken: string
-      originalTokenValue: string
-      paymentToken: string
-    },
-    output: {} as ArdaSwapResultDto,
   },
   '/lending/market/:token/profile': {
     input: {},
@@ -665,8 +642,13 @@ export const endpoints = {
     output: {} as InventorySummaryDtoHydrated[],
   },
   '/user/:address/offers': {
-    input: {} as { type?: OfferType; top?: number; skip?: number },
-    output: {} as NftOfferPaginated,
+    input: {} as {
+      type?: OfferType
+      top?: number
+      skip?: number
+      continuationToken?: string
+    },
+    output: {} as NftOfferPaginated & { continuationToken?: string | null },
   },
   '/nft/offer/query': {
     input: {} as { filter: PublicOnly<NftOfferDocFilter> },
@@ -677,16 +659,16 @@ export const endpoints = {
     output: {} as NftOfferDocHydrated[],
   },
   '/user/:address/favorite/nfts': {
-    input: {} as { top?: number; skip?: number },
-    output: {} as NftPaginated,
+    input: {} as { top?: number; skip?: number; continuationToken?: string },
+    output: {} as NftPaginated & { continuationToken?: string | null },
   },
   '/collection/:collection/attributes': {
     input: {},
     output: {} as Record<string, ValueFp & Record<string, TraitInfo>>,
   },
   '/nft/:identifier/offers': {
-    input: {} as { skip: number; top: number },
-    output: {} as NftOfferPaginated,
+    input: {} as { skip: number; top: number; continuationToken?: string },
+    output: {} as NftOfferPaginated & { continuationToken?: string | null },
   },
   '/collection/:collection/ranks': {
     input: {},
@@ -876,70 +858,6 @@ export const endpoints = {
     input: {},
     output: {} as ShareholderDto[],
   },
-  '/user/native-token': {
-    input: {} as { originalUrl?: string; extraInfo?: string },
-    output: {} as string,
-  },
-  '/user/web2': {
-    input: {},
-    output: {} as Web2UserDoc,
-    securityMode: 'requiredWeb2',
-  },
-  '/user/web2/session-cookie': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as SuccessWithMessageDto,
-      body: {},
-      securityMode: 'requiredWeb2',
-    },
-  },
-  '/user/web2/wallet': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as Web2UserDoc,
-      body: {} as NativeWalletDto,
-      securityMode: 'requiredWeb2',
-    },
-  },
-  '/user/web2/wallet-switch': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as Web2UserDoc,
-      body: {} as SwitchWalletDto,
-      securityMode: 'requiredWeb2',
-    },
-  },
-  '/user/web2/wallet-link': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as Web2UserDoc,
-      body: {} as Web2WalletDto,
-      securityMode: 'requiredWeb2',
-    },
-  },
-  '/user/web2/:index/wallet-link': {
-    input: {},
-    output: {},
-    DELETE: {
-      input: {},
-      output: {} as Web2UserDoc,
-      body: {},
-      securityMode: 'requiredWeb2',
-    },
-  },
-  '/user/web2/shards': {
-    input: {},
-    output: {} as Web2UserShardsDto,
-    securityMode: 'requiredWeb2',
-  },
   '/pool/:poolId/profile': {
     input: {},
     output: {} as StakingSummary,
@@ -1068,8 +986,8 @@ export const endpoints = {
     },
   },
   '/user/notifications': {
-    input: {} as { top?: number; skip?: number },
-    output: {} as NotificationPaginated,
+    input: {} as { top?: number; skip?: number; continuationToken?: string },
+    output: {} as NotificationPaginated & { continuationToken?: string | null },
     securityMode: 'requiredAny',
   },
   '/user/notifications/unread-count': {
@@ -1119,8 +1037,10 @@ export const endpoints = {
     },
   },
   '/mobile/history': {
-    input: {} as { top?: number; skip?: number },
-    output: {} as PushNotificationResponse,
+    input: {} as { top?: number; skip?: number; continuationToken?: string },
+    output: {} as PushNotificationResponse & {
+      continuationToken?: string | null
+    },
     securityMode: 'requiredAny',
   },
   '/mobile/history/unread-count': {
@@ -1206,6 +1126,152 @@ export const endpoints = {
       output: {} as NotificationSuccessResponseDto,
       body: {} as EventNotificationDto,
       securityMode: 'requiredAny',
+    },
+  },
+  '/user/native-token': {
+    input: {} as { originalUrl?: string; extraInfo?: string },
+    output: {} as string,
+  },
+  '/user/web2': {
+    input: {},
+    output: {} as Web2UserDoc,
+    securityMode: 'requiredWeb2',
+  },
+  '/user/web2/session-cookie': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as SuccessWithMessageDto,
+      body: {},
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/wallet': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {} as NativeWalletDto,
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/wallet-switch': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {} as SwitchWalletDto,
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/wallet-link': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {} as Web2WalletDto,
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/:index/wallet-link': {
+    input: {},
+    output: {},
+    DELETE: {
+      input: {},
+      output: {} as Web2UserDoc,
+      body: {},
+      securityMode: 'requiredWeb2',
+    },
+  },
+  '/user/web2/shards': {
+    input: {},
+    output: {} as Web2UserShardsDto,
+    securityMode: 'requiredWeb2',
+  },
+  '/activity/query': {
+    input: {} as { filter: PublicOnly<NftActivityFilter> },
+    output: {} as NftActivityPaginated,
+  },
+  '/activity/:identifier': {
+    input: {},
+    output: {} as NftActivityDocHydrated,
+  },
+  '/analytics/volume': {
+    input: {} as {
+      startTime?: string
+      endTime?: string
+      bin?: string
+      chain: ActivityChain[]
+    },
+    output: {} as VolumeGraph[],
+  },
+  '/collection/:collection/analytics/volume': {
+    input: {} as { startTime?: string; endTime?: string; bin?: string },
+    output: {} as AnalyticsVolumeDto[],
+  },
+  '/user/:address/analytics/volume': {
+    input: {},
+    output: {} as UserAnalyticsDto,
+  },
+  '/analytics/overview': {
+    input: {} as { chain: ActivityChain[] },
+    output: {} as GlobalAnalyticsOverviewResponseDto,
+  },
+  '/user/stats': {
+    input: {} as {
+      skip?: number
+      top?: number
+      orderBy?: UserStatsOrderByColumn
+      orderDirection?: KustoOrderDirection
+    },
+    output: {} as UserStatsDto[],
+  },
+  '/user/xoxno-drop': {
+    input: {} as { skip?: number; top?: number; address?: string },
+    output: {} as AirdropDtoHydrated[],
+  },
+  '/user/me/xoxno-drop': {
+    input: {},
+    output: {} as AirdropDtoHydrated[],
+    securityMode: 'requiredAny',
+  },
+  '/transactions/:txHash': {
+    input: {} as { withResults?: boolean },
+    output: {} as TransactionDetailed,
+  },
+  '/transactions/:txHash/status': {
+    input: {},
+    output: {} as TransactionProcessStatus,
+  },
+  '/transaction/cost': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as TransactionCostData,
+      body: {} as TransactionCreate,
+    },
+  },
+  '/transactions': {
+    input: {},
+    output: {},
+    POST: {
+      input: {},
+      output: {} as TransactionSendResult,
+      body: {} as TransactionCreate,
+    },
+  },
+  '/transactions/batch': {
+    input: {},
+    output: {},
+    POST: {
+      input: {} as { isRelay?: boolean },
+      output: {} as TransactionSendResult[],
+      body: {} as TransactionCreate[],
     },
   },
   '/perp/exchange/acceptTerms': {
@@ -1330,97 +1396,6 @@ export const endpoints = {
       body: {} as PerpEvent,
     },
   },
-  '/activity/query': {
-    input: {} as { filter: PublicOnly<NftActivityFilter> },
-    output: {} as NftActivityPaginated,
-  },
-  '/activity/:identifier': {
-    input: {},
-    output: {} as NftActivityDocHydrated,
-  },
-  '/analytics/volume': {
-    input: {} as {
-      startTime?: string
-      endTime?: string
-      bin?: string
-      chain: ActivityChain[]
-    },
-    output: {} as VolumeGraph[],
-  },
-  '/collection/:collection/analytics/volume': {
-    input: {} as { startTime?: string; endTime?: string; bin?: string },
-    output: {} as AnalyticsVolumeDto[],
-  },
-  '/user/:address/analytics/volume': {
-    input: {},
-    output: {} as UserAnalyticsDto,
-  },
-  '/analytics/overview': {
-    input: {} as { chain: ActivityChain[] },
-    output: {} as GlobalAnalyticsOverviewResponseDto,
-  },
-  '/user/stats': {
-    input: {} as {
-      skip?: number
-      top?: number
-      orderBy?: UserStatsOrderByColumn
-      orderDirection?: KustoOrderDirection
-    },
-    output: {} as UserStatsDto[],
-  },
-  '/user/xoxno-drop': {
-    input: {} as { skip?: number; top?: number; address?: string },
-    output: {} as AirdropDtoHydrated[],
-  },
-  '/user/me/xoxno-drop': {
-    input: {},
-    output: {} as AirdropDtoHydrated[],
-    securityMode: 'requiredAny',
-  },
-  '/user/login': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as LoginAccessDto,
-      body: {} as LoginRequestDto,
-    },
-  },
-  '/transactions/:txHash': {
-    input: {} as { withResults?: boolean },
-    output: {} as TransactionDetailed,
-  },
-  '/transactions/:txHash/status': {
-    input: {},
-    output: {} as TransactionProcessStatus,
-  },
-  '/transaction/cost': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as TransactionCostData,
-      body: {} as TransactionCreate,
-    },
-  },
-  '/transactions': {
-    input: {},
-    output: {},
-    POST: {
-      input: {},
-      output: {} as TransactionSendResult,
-      body: {} as TransactionCreate,
-    },
-  },
-  '/transactions/batch': {
-    input: {},
-    output: {},
-    POST: {
-      input: {} as { isRelay?: boolean },
-      output: {} as TransactionSendResult[],
-      body: {} as TransactionCreate[],
-    },
-  },
   '/user/chat/message': {
     input: {},
     output: {},
@@ -1432,13 +1407,25 @@ export const endpoints = {
     },
   },
   '/user/chat/conversation': {
-    input: {} as { isGroupChat?: boolean; top?: number; skip?: number },
-    output: {} as UserConversationPaginated,
+    input: {} as {
+      isGroupChat?: boolean
+      top?: number
+      skip?: number
+      continuationToken?: string
+    },
+    output: {} as UserConversationPaginated & {
+      continuationToken?: string | null
+    },
     securityMode: 'requiredAny',
   },
   '/user/chat/conversation/:conversationId': {
-    input: {} as { receiver: string; top?: number; skip?: number },
-    output: {} as ChatMessagePaginated,
+    input: {} as {
+      receiver: string
+      top?: number
+      skip?: number
+      continuationToken?: string
+    },
+    output: {} as ChatMessagePaginated & { continuationToken?: string | null },
     securityMode: 'requiredAny',
     DELETE: {
       input: {},
@@ -1463,8 +1450,8 @@ export const endpoints = {
     },
   },
   '/user/chat/block': {
-    input: {},
-    output: {} as UserBlockPaginated,
+    input: {} as { top?: number; skip?: number; continuationToken?: string },
+    output: {} as UserBlockPaginated & { continuationToken?: string | null },
     securityMode: 'requiredAny',
   },
   '/user/chat/block/:address': {
