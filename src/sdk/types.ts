@@ -20,8 +20,7 @@ type CollectParams<S extends string> =
     ? { [K in P]: string } & CollectParams<`/${R}`>
     : S extends `${string}:${infer P}`
       ? { [K in P]: string }
-      : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-        {}
+      : {}
 
 type RequireAtLeastOne<T> = {
   [K in keyof T]-?: { [P in K]-?: T[P] } & Omit<T, K>
@@ -40,8 +39,7 @@ type AuthBag<M> = M extends 'optionalAny'
   ? { auth?: string }
   : M extends 'requiredAny' | 'requiredWeb2' | 'requiredJwt'
     ? { auth: string }
-    : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-      { auth?: never }
+    : { auth?: never }
 
 type VerbExtras<Full, PBag> = {
   [Verb in keyof Full as Verb extends
@@ -67,7 +65,6 @@ type VerbExtras<Full, PBag> = {
 type DropKey<T, K extends PropertyKey> = { [P in Exclude<keyof T, K>]: T[P] }
 
 type RequiredKeys<T> = {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   [K in keyof T]-?: {} extends Pick<T, K> ? never : K
 }[keyof T]
 
@@ -112,8 +109,7 @@ type PathToTree<
                   AuthBag<SecurityModeOf<Full>> &
                   OurRequestInit
               ) => Promise<O>
-          : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-            {}) &
+          : {}) &
           VerbExtras<Full, DropKey<Bag, Param>>
       }
     : P extends `/${infer Leaf}`
@@ -134,9 +130,8 @@ type PathToTree<
                     Bag &
                     AuthBag<SecurityModeOf<Full>> &
                     OurRequestInit
-                ) => Promise<O>
-            : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-              {}) &
+              ) => Promise<O>
+            : {}) &
             VerbExtras<Full, Bag>
         }
       : never
@@ -163,8 +158,7 @@ type FnUnion<U> = Extract<U, AnyFn>
 type ObjUnion<U> = Exclude<U, AnyFn>
 
 type CollapseFnUnionOrNever<U> = [FnUnion<U>] extends [never]
-  ? // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    {}
+  ? {}
   : CollapseFnUnion<FnUnion<U>>
 
 type MergeRec<U> = [U] extends [object]

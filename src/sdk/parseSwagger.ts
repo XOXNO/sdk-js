@@ -82,7 +82,7 @@ function isOneOfSchema(schema: IAdditionalProperties): schema is IOneOf {
   return 'oneOf' in schema
 }
 
-function parseSchema(curr: INestSchema, url: string, schemas: object): string {
+function parseSchema(curr: INestSchema, schemas: object): string {
   if (isComplexSchema(curr)) {
     const theType = curr.$ref.split('/').pop()!
     const schemaRaw = schemas[theType as keyof typeof schemas]
@@ -99,35 +99,35 @@ function parseSchema(curr: INestSchema, url: string, schemas: object): string {
         const allOf = curr.additionalProperties.allOf
         return `Record<string, ${`${allOf
           .map((item) => {
-            return parseSchema(item, url, schemas)
+            return parseSchema(item, schemas)
           })
           .join(' & ')}`}>`
       } else if (isOneOfSchema(curr.additionalProperties)) {
         const oneOf = curr.additionalProperties.oneOf
         return `Record<string, ${`${oneOf
           .map((item) => {
-            return parseSchema(item, url, schemas)
+            return parseSchema(item, schemas)
           })
           .join(' | ')}`}>`
       } else {
-        return `Record<string, ${parseSchema(curr.additionalProperties, url, schemas)}>`
+        return `Record<string, ${parseSchema(curr.additionalProperties, schemas)}>`
       }
     }
     if (curr.type === 'array') {
-      return `${parseSchema(curr.items, url, schemas)}[]`
+      return `${parseSchema(curr.items, schemas)}[]`
     }
     if (isAllOfSchema(curr)) {
       const allOf = curr.allOf
       return `${allOf
         .map((item) => {
-          return parseSchema(item, url, schemas)
+          return parseSchema(item, schemas)
         })
         .join('&')}`
     } else if (isOneOfSchema(curr)) {
       const oneOf = curr.oneOf
       return `${oneOf
         .map((item) => {
-          return parseSchema(item, url, schemas)
+          return parseSchema(item, schemas)
         })
         .join('|')}`
     } else {
@@ -192,7 +192,7 @@ async function parseSwagger() {
       const schemas = parsed.components.schemas
       const transformedInputs = queryParameters.length
         ? queryParameters.reduce((acc: Record<string, unknown>, curr) => {
-            const parsed = parseSchema(curr.schema, transformedKey, schemas)
+            const parsed = parseSchema(curr.schema, schemas)
             acc[curr.name] = {
               type:
                 curr.name === 'chain'
@@ -221,7 +221,6 @@ async function parseSwagger() {
           type: parseSchema(
             Object.values(endpoint.responses)[0].content['application/json']
               .schema,
-            transformedKey,
             schemas
           ),
         },
@@ -233,7 +232,6 @@ async function parseSwagger() {
               type: endpoint.requestBody.content['application/json']
                 ? parseSchema(
                     endpoint.requestBody.content['application/json'].schema,
-                    transformedKey,
                     schemas
                   )
                 : 'FormData',
@@ -250,7 +248,7 @@ async function parseSwagger() {
       }
 
       result[transformedKey] = {
-        ...(result[transformedKey] ?? {}),
+        ...result[transformedKey],
         ...(method === 'get'
           ? {
               input: io.input,

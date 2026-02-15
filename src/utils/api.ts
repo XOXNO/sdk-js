@@ -1,5 +1,3 @@
-import type { IChainID } from '@multiversx/sdk-core/out/interface'
-
 import {
   API_URL,
   API_URL_DEV,
@@ -38,7 +36,7 @@ export enum Chain {
 }
 export class XOXNOClient {
   public apiUrl: string
-  public chain: IChainID
+  public chain: Chain
   public init: OurRequestInit
   public config: {
     mediaUrl: string
@@ -179,7 +177,7 @@ export class XOXNOClient {
 
       try {
         message = JSON.parse(text)
-      } catch (_) {
+      } catch {
         message = { message: text }
       }
 
@@ -192,7 +190,7 @@ export class XOXNOClient {
 
     try {
       return JSON.parse(text) as T
-    } catch (_) {
+    } catch {
       return text as T
     }
   }

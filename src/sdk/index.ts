@@ -163,7 +163,6 @@ export function buildSdk(client: XOXNOClient): SDK {
         key in produced &&
         typeof (produced as any)[key] === 'function'
       ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
         const fn = (produced as any)[key] as Function
         const rest = Object.fromEntries(
           Object.entries(produced).filter(([k]) => k !== key)

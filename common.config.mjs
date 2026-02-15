@@ -1,7 +1,6 @@
 export default {
   entry: {
     index: './src/index.ts',
-    interactor: './src/interactor.ts',
   },
   module: {
     rules: [
