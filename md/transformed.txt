@@ -1,4 +1,25 @@
 {
+  "/liquid/xoxno/rate": {
+    "input": {},
+    "output": {} as RateType
+  },
+  "/liquid/xoxno/liquid-supply": {
+    "input": {},
+    "output": {} as string
+  },
+  "/liquid/xoxno/staked": {
+    "input": {},
+    "output": {} as string
+  },
+  "/user/login": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as LoginAccessDto,
+      "body": {} as LoginRequestDto
+    }
+  },
   "/user/:address/network-account": {
     "input": {},
     "output": {} as UserNetworkInfoDto
@@ -232,6 +253,10 @@
     "input": {},
     "output": {} as TokenDataDocHydrated[]
   },
+  "/tokens/restricted": {
+    "input": {},
+    "output": {} as string[]
+  },
   "/tokens/usd-price": {
     "input": {} as {identifier?: string[], cache?: boolean},
     "output": {} as Record<string, number>
@@ -255,18 +280,6 @@
   "/liquid/sui/stats": {
     "input": {},
     "output": {} as XoxnoLiquidStatsDto
-  },
-  "/liquid/xoxno/rate": {
-    "input": {},
-    "output": {} as RateType
-  },
-  "/liquid/xoxno/liquid-supply": {
-    "input": {},
-    "output": {} as string
-  },
-  "/liquid/xoxno/staked": {
-    "input": {},
-    "output": {} as string
   },
   "/analytics/marketplace-unique-users": {
     "input": {} as {before: string, after: string, bin: string},
@@ -315,22 +328,6 @@
   "/user/:address/delegation": {
     "input": {},
     "output": {} as DelegationDataOutput[]
-  },
-  "/ash/min-token-quantity": {
-    "input": {} as {originalToken: string, originalTokenValue: string, paymentToken: string},
-    "output": {} as FetchSwapRoutesResponseDto
-  },
-  "/ash/max-token-quantity": {
-    "input": {} as {paymentTokenValue: string, paymentToken: string, wantedToken: string, slippage: number},
-    "output": {} as FetchSwapRoutesResponseDto
-  },
-  "/arda/max-token-quantity": {
-    "input": {} as {paymentTokenValue: string, paymentToken: string, wantedToken: string, slippage: number},
-    "output": {} as ArdaSwapResultDto
-  },
-  "/arda/min-token-quantity": {
-    "input": {} as {originalToken: string, originalTokenValue: string, paymentToken: string},
-    "output": {} as ArdaSwapResultDto
   },
   "/lending/market/:token/profile": {
     "input": {},
@@ -634,70 +631,6 @@
     "input": {},
     "output": {} as ShareholderDto[]
   },
-  "/user/native-token": {
-    "input": {} as {originalUrl?: string, extraInfo?: string},
-    "output": {} as string
-  },
-  "/user/web2": {
-    "input": {},
-    "output": {} as Web2UserDoc,
-    "securityMode": "requiredWeb2"
-  },
-  "/user/web2/session-cookie": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as SuccessWithMessageDto,
-      "body": {},
-      "securityMode": "requiredWeb2"
-    }
-  },
-  "/user/web2/wallet": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as Web2UserDoc,
-      "body": {} as NativeWalletDto,
-      "securityMode": "requiredWeb2"
-    }
-  },
-  "/user/web2/wallet-switch": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as Web2UserDoc,
-      "body": {} as SwitchWalletDto,
-      "securityMode": "requiredWeb2"
-    }
-  },
-  "/user/web2/wallet-link": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as Web2UserDoc,
-      "body": {} as Web2WalletDto,
-      "securityMode": "requiredWeb2"
-    }
-  },
-  "/user/web2/:index/wallet-link": {
-    "input": {},
-    "output": {},
-    "DELETE": {
-      "input": {},
-      "output": {} as Web2UserDoc,
-      "body": {},
-      "securityMode": "requiredWeb2"
-    }
-  },
-  "/user/web2/shards": {
-    "input": {},
-    "output": {} as Web2UserShardsDto,
-    "securityMode": "requiredWeb2"
-  },
   "/pool/:poolId/profile": {
     "input": {},
     "output": {} as StakingSummary,
@@ -966,6 +899,142 @@
       "securityMode": "requiredAny"
     }
   },
+  "/user/native-token": {
+    "input": {} as {originalUrl?: string, extraInfo?: string},
+    "output": {} as string
+  },
+  "/user/web2": {
+    "input": {},
+    "output": {} as Web2UserDoc,
+    "securityMode": "requiredWeb2"
+  },
+  "/user/web2/session-cookie": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessWithMessageDto,
+      "body": {},
+      "securityMode": "requiredWeb2"
+    }
+  },
+  "/user/web2/wallet": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as Web2UserDoc,
+      "body": {} as NativeWalletDto,
+      "securityMode": "requiredWeb2"
+    }
+  },
+  "/user/web2/wallet-switch": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as Web2UserDoc,
+      "body": {} as SwitchWalletDto,
+      "securityMode": "requiredWeb2"
+    }
+  },
+  "/user/web2/wallet-link": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as Web2UserDoc,
+      "body": {} as Web2WalletDto,
+      "securityMode": "requiredWeb2"
+    }
+  },
+  "/user/web2/:index/wallet-link": {
+    "input": {},
+    "output": {},
+    "DELETE": {
+      "input": {},
+      "output": {} as Web2UserDoc,
+      "body": {},
+      "securityMode": "requiredWeb2"
+    }
+  },
+  "/user/web2/shards": {
+    "input": {},
+    "output": {} as Web2UserShardsDto,
+    "securityMode": "requiredWeb2"
+  },
+  "/activity/query": {
+    "input": {} as {filter: PublicOnly<NftActivityFilter>},
+    "output": {} as NftActivityPaginated
+  },
+  "/activity/:identifier": {
+    "input": {},
+    "output": {} as NftActivityDocHydrated
+  },
+  "/analytics/volume": {
+    "input": {} as {startTime?: string, endTime?: string, bin?: string, chain: ActivityChain[]},
+    "output": {} as VolumeGraph[]
+  },
+  "/collection/:collection/analytics/volume": {
+    "input": {} as {startTime?: string, endTime?: string, bin?: string},
+    "output": {} as AnalyticsVolumeDto[]
+  },
+  "/user/:address/analytics/volume": {
+    "input": {},
+    "output": {} as UserAnalyticsDto
+  },
+  "/analytics/overview": {
+    "input": {} as {chain: ActivityChain[]},
+    "output": {} as GlobalAnalyticsOverviewResponseDto
+  },
+  "/user/stats": {
+    "input": {} as {skip?: number, top?: number, orderBy?: UserStatsOrderByColumn, orderDirection?: KustoOrderDirection},
+    "output": {} as UserStatsDto[]
+  },
+  "/user/xoxno-drop": {
+    "input": {} as {skip?: number, top?: number, address?: string},
+    "output": {} as AirdropDtoHydrated[]
+  },
+  "/user/me/xoxno-drop": {
+    "input": {},
+    "output": {} as AirdropDtoHydrated[],
+    "securityMode": "requiredAny"
+  },
+  "/transactions/:txHash": {
+    "input": {} as {withResults?: boolean},
+    "output": {} as TransactionDetailed
+  },
+  "/transactions/:txHash/status": {
+    "input": {},
+    "output": {} as TransactionProcessStatus
+  },
+  "/transaction/cost": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as TransactionCostData,
+      "body": {} as TransactionCreate
+    }
+  },
+  "/transactions": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as TransactionSendResult,
+      "body": {} as TransactionCreate
+    }
+  },
+  "/transactions/batch": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {} as {isRelay?: boolean},
+      "output": {} as TransactionSendResult[],
+      "body": {} as TransactionCreate[]
+    }
+  },
   "/perp/exchange/acceptTerms": {
     "input": {},
     "output": {},
@@ -1086,87 +1155,6 @@
       "input": {},
       "output": {} as SuccessDto,
       "body": {} as PerpEvent
-    }
-  },
-  "/activity/query": {
-    "input": {} as {filter: PublicOnly<NftActivityFilter>},
-    "output": {} as NftActivityPaginated
-  },
-  "/activity/:identifier": {
-    "input": {},
-    "output": {} as NftActivityDocHydrated
-  },
-  "/analytics/volume": {
-    "input": {} as {startTime?: string, endTime?: string, bin?: string, chain: ActivityChain[]},
-    "output": {} as VolumeGraph[]
-  },
-  "/collection/:collection/analytics/volume": {
-    "input": {} as {startTime?: string, endTime?: string, bin?: string},
-    "output": {} as AnalyticsVolumeDto[]
-  },
-  "/user/:address/analytics/volume": {
-    "input": {},
-    "output": {} as UserAnalyticsDto
-  },
-  "/analytics/overview": {
-    "input": {} as {chain: ActivityChain[]},
-    "output": {} as GlobalAnalyticsOverviewResponseDto
-  },
-  "/user/stats": {
-    "input": {} as {skip?: number, top?: number, orderBy?: UserStatsOrderByColumn, orderDirection?: KustoOrderDirection},
-    "output": {} as UserStatsDto[]
-  },
-  "/user/xoxno-drop": {
-    "input": {} as {skip?: number, top?: number, address?: string},
-    "output": {} as AirdropDtoHydrated[]
-  },
-  "/user/me/xoxno-drop": {
-    "input": {},
-    "output": {} as AirdropDtoHydrated[],
-    "securityMode": "requiredAny"
-  },
-  "/user/login": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as LoginAccessDto,
-      "body": {} as LoginRequestDto
-    }
-  },
-  "/transactions/:txHash": {
-    "input": {} as {withResults?: boolean},
-    "output": {} as TransactionDetailed
-  },
-  "/transactions/:txHash/status": {
-    "input": {},
-    "output": {} as TransactionProcessStatus
-  },
-  "/transaction/cost": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as TransactionCostData,
-      "body": {} as TransactionCreate
-    }
-  },
-  "/transactions": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as TransactionSendResult,
-      "body": {} as TransactionCreate
-    }
-  },
-  "/transactions/batch": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {} as {isRelay?: boolean},
-      "output": {} as TransactionSendResult[],
-      "body": {} as TransactionCreate[]
     }
   },
   "/user/chat/message": {

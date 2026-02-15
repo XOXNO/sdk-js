@@ -188,18 +188,6 @@ sdk.analytics.volume(...); // VolumeGraph[]
 // GET /analytics/overview
 sdk.analytics.overview(...); // GlobalAnalyticsOverviewResponseDto
 
-// GET /arda/max-token-quantity
-sdk.arda.maxTokenQuantity(...); // ArdaSwapResultDto
-
-// GET /arda/min-token-quantity
-sdk.arda.minTokenQuantity(...); // ArdaSwapResultDto
-
-// GET /ash/min-token-quantity
-sdk.ash.minTokenQuantity(...); // FetchSwapRoutesResponseDto
-
-// GET /ash/max-token-quantity
-sdk.ash.maxTokenQuantity(...); // FetchSwapRoutesResponseDto
-
 // GET /collection/:collection/attributes
 sdk.collection.collection("...").attributes(...); // Record<string, ValueFp & Record<string, TraitInfo>>
 
@@ -581,15 +569,6 @@ sdk.lending.syncAccountPositions(...); // LendingNftAttributes[]
 // GET /lending/market/:token/price/egld
 sdk.lending.market.token("...").price.egld(...); // LendingTokenPriceDto
 
-// GET /liquid/xoxno/stats
-sdk.liquid.xoxno.stats(...); // XoxnoLiquidStatsDto
-
-// GET /liquid/egld/stats
-sdk.liquid.egld.stats(...); // XoxnoLiquidStatsDto
-
-// GET /liquid/sui/stats
-sdk.liquid.sui.stats(...); // XoxnoLiquidStatsDto
-
 // GET /liquid/xoxno/rate
 sdk.liquid.xoxno.rate(...); // RateType
 
@@ -598,6 +577,15 @@ sdk.liquid.xoxno.liquidSupply(...); // string
 
 // GET /liquid/xoxno/staked
 sdk.liquid.xoxno.staked(...); // string
+
+// GET /liquid/xoxno/stats
+sdk.liquid.xoxno.stats(...); // XoxnoLiquidStatsDto
+
+// GET /liquid/egld/stats
+sdk.liquid.egld.stats(...); // XoxnoLiquidStatsDto
+
+// GET /liquid/sui/stats
+sdk.liquid.sui.stats(...); // XoxnoLiquidStatsDto
 
 // GET /liquid/egld/rate
 sdk.liquid.egld.rate(...); // RateType
@@ -758,6 +746,9 @@ sdk.tokens(...); // TokenDataDocHydrated[]
 // GET /tokens/swap
 sdk.tokens.swap(...); // TokenDataDocHydrated[]
 
+// GET /tokens/restricted
+sdk.tokens.restricted(...); // string[]
+
 // GET /tokens/usd-price
 sdk.tokens.usdPrice(...); // Record<string, number>
 
@@ -787,6 +778,9 @@ sdk.transactions.POST(...); // TransactionSendResult
 
 // POST /transactions/batch
 sdk.transactions.batch.POST(...); // TransactionSendResult[]
+
+// POST /user/login
+sdk.user.login.POST(...); // LoginAccessDto
 
 // GET /user/:address/network-account
 sdk.user.address("...").networkAccount(...); // UserNetworkInfoDto
@@ -911,30 +905,6 @@ sdk.user.address("...").creator.listing(...); // CreatorDetailsDto
 // GET /user/:address/creator/details
 sdk.user.address("...").creator.details(...); // CreatorDetailsDto
 
-// GET /user/native-token
-sdk.user.nativeToken(...); // string
-
-// GET /user/web2
-sdk.user.web2(...); // Web2UserDoc
-
-// POST /user/web2/session-cookie
-sdk.user.web2.sessionCookie.POST(...); // SuccessWithMessageDto
-
-// POST /user/web2/wallet
-sdk.user.web2.wallet.POST(...); // Web2UserDoc
-
-// POST /user/web2/wallet-switch
-sdk.user.web2.walletSwitch.POST(...); // Web2UserDoc
-
-// POST /user/web2/wallet-link
-sdk.user.web2.walletLink.POST(...); // Web2UserDoc
-
-// DELETE /user/web2/:index/wallet-link
-sdk.user.web2.index("...").walletLink.DELETE(...); // Web2UserDoc
-
-// GET /user/web2/shards
-sdk.user.web2.shards(...); // Web2UserShardsDto
-
 // GET /user/:address/staking/available-pools
 sdk.user.address("...").staking.availablePools(...); // StakingSummary[]
 
@@ -974,6 +944,30 @@ sdk.user.notifications.clear.DELETE(...); // SuccessDto
 // PATCH /user/notifications/read
 sdk.user.notifications.read.PATCH(...); // NotificationDoc|SuccessDto
 
+// GET /user/native-token
+sdk.user.nativeToken(...); // string
+
+// GET /user/web2
+sdk.user.web2(...); // Web2UserDoc
+
+// POST /user/web2/session-cookie
+sdk.user.web2.sessionCookie.POST(...); // SuccessWithMessageDto
+
+// POST /user/web2/wallet
+sdk.user.web2.wallet.POST(...); // Web2UserDoc
+
+// POST /user/web2/wallet-switch
+sdk.user.web2.walletSwitch.POST(...); // Web2UserDoc
+
+// POST /user/web2/wallet-link
+sdk.user.web2.walletLink.POST(...); // Web2UserDoc
+
+// DELETE /user/web2/:index/wallet-link
+sdk.user.web2.index("...").walletLink.DELETE(...); // Web2UserDoc
+
+// GET /user/web2/shards
+sdk.user.web2.shards(...); // Web2UserShardsDto
+
 // GET /user/:address/analytics/volume
 sdk.user.address("...").analytics.volume(...); // UserAnalyticsDto
 
@@ -985,9 +979,6 @@ sdk.user.xoxnoDrop(...); // AirdropDtoHydrated[]
 
 // GET /user/me/xoxno-drop
 sdk.user.me.xoxnoDrop(...); // AirdropDtoHydrated[]
-
-// POST /user/login
-sdk.user.login.POST(...); // LoginAccessDto
 
 // POST /user/chat/message
 sdk.user.chat.message.POST(...); // ChatMessageDocHydrated
