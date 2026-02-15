@@ -1,6 +1,6 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "1.0.85",
+  "version": "1.0.86",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "type": "module",
   "exports": {
