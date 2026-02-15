@@ -624,8 +624,11 @@ export const endpoints = {
     output: {} as Record<string, number>,
   },
   '/nft/query': {
-    input: {} as { filter: PublicOnly<NftDocFilter> },
-    output: {} as NftPaginated,
+    input: {} as {
+      filter: PublicOnly<NftDocFilter>
+      continuationToken?: string
+    },
+    output: {} as NftPaginated & { continuationToken?: string | null },
   },
   '/nft/:identifier/like': {
     input: {},
@@ -651,8 +654,11 @@ export const endpoints = {
     output: {} as NftOfferPaginated & { continuationToken?: string | null },
   },
   '/nft/offer/query': {
-    input: {} as { filter: PublicOnly<NftOfferDocFilter> },
-    output: {} as NftOfferPaginated,
+    input: {} as {
+      filter: PublicOnly<NftOfferDocFilter>
+      continuationToken?: string
+    },
+    output: {} as NftOfferPaginated & { continuationToken?: string | null },
   },
   '/nft/offer/:identifier': {
     input: {},
@@ -761,12 +767,22 @@ export const endpoints = {
     },
   },
   '/collection/query': {
-    input: {} as { filter?: PublicOnly<CollectionProfileFilter> },
-    output: {} as CollectionProfilePaginated,
+    input: {} as {
+      filter?: PublicOnly<CollectionProfileFilter>
+      continuationToken?: string
+    },
+    output: {} as CollectionProfilePaginated & {
+      continuationToken?: string | null
+    },
   },
   '/collection/drops/query': {
-    input: {} as { filter?: PublicOnly<CollectionMintProfileFilter> },
-    output: {} as CollectionMintProfilePaginated,
+    input: {} as {
+      filter?: PublicOnly<CollectionMintProfileFilter>
+      continuationToken?: string
+    },
+    output: {} as CollectionMintProfilePaginated & {
+      continuationToken?: string | null
+    },
   },
   '/collection/:collection/drop-info': {
     input: {},
@@ -835,12 +851,22 @@ export const endpoints = {
     output: {} as CollectionStatsDocHydrated,
   },
   '/collection/stats/query': {
-    input: {} as { filter: PublicOnly<CollectionStatsFilter> },
-    output: {} as CollectionStatsPaginated,
+    input: {} as {
+      filter: PublicOnly<CollectionStatsFilter>
+      continuationToken?: string
+    },
+    output: {} as CollectionStatsPaginated & {
+      continuationToken?: string | null
+    },
   },
   '/collection/global-offer/query': {
-    input: {} as { filter: PublicOnly<CollectionOffersFilter> },
-    output: {} as GlobalOfferPaginated,
+    input: {} as {
+      filter: PublicOnly<CollectionOffersFilter>
+      continuationToken?: string
+    },
+    output: {} as GlobalOfferPaginated & {
+      continuationToken?: string | null
+    },
   },
   '/user/:address/creator/listing': {
     input: {},
@@ -1193,8 +1219,11 @@ export const endpoints = {
     securityMode: 'requiredWeb2',
   },
   '/activity/query': {
-    input: {} as { filter: PublicOnly<NftActivityFilter> },
-    output: {} as NftActivityPaginated,
+    input: {} as {
+      filter: PublicOnly<NftActivityFilter>
+      continuationToken?: string
+    },
+    output: {} as NftActivityPaginated & { continuationToken?: string | null },
   },
   '/activity/:identifier': {
     input: {},
