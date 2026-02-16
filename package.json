@@ -1,6 +1,6 @@
 {
   "name": "@xoxno/sdk-js",
-  "version": "1.0.93",
+  "version": "1.0.94",
   "description": "The SDK to interact with the XOXNO Protocol!",
   "type": "module",
   "exports": {
@@ -93,6 +93,6 @@
   "dependencies": {
     "@multiversx/sdk-core": "^15.3.2",
     "@multiversx/sdk-network-providers": "^2.9.3",
-    "@xoxno/types": "^1.0.378"
+    "@xoxno/types": "^1.0.379"
   }
 }
