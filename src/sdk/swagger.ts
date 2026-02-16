@@ -404,7 +404,10 @@ export const endpoints = {
     "output": {} as Record<string, number>
   },
   "/nft/query": {
-    "input": {} as {filter: PublicOnly<NftDocFilter>},
+    "input": {} as {
+      filter: PublicOnly<NftDocFilter>,
+      continuationToken?: string,
+    },
     "output": {} as NftPaginated
   },
   "/nft/:identifier/like": {
@@ -426,7 +429,10 @@ export const endpoints = {
     "output": {} as NftOfferPaginated
   },
   "/nft/offer/query": {
-    "input": {} as {filter: PublicOnly<NftOfferDocFilter>},
+    "input": {} as {
+      filter: PublicOnly<NftOfferDocFilter>,
+      continuationToken?: string,
+    },
     "output": {} as NftOfferPaginated
   },
   "/nft/offer/:identifier": {
@@ -536,11 +542,17 @@ export const endpoints = {
     }
   },
   "/collection/query": {
-    "input": {} as {filter?: PublicOnly<CollectionProfileFilter>},
+    "input": {} as {
+      filter?: PublicOnly<CollectionProfileFilter>,
+      continuationToken?: string,
+    },
     "output": {} as CollectionProfilePaginated
   },
   "/collection/drops/query": {
-    "input": {} as {filter?: PublicOnly<CollectionMintProfileFilter>},
+    "input": {} as {
+      filter?: PublicOnly<CollectionMintProfileFilter>,
+      continuationToken?: string,
+    },
     "output": {} as CollectionMintProfilePaginated
   },
   "/collection/:collection/drop-info": {
@@ -610,11 +622,17 @@ export const endpoints = {
     "output": {} as CollectionStatsDocHydrated
   },
   "/collection/stats/query": {
-    "input": {} as {filter: PublicOnly<CollectionStatsFilter>},
+    "input": {} as {
+      filter: PublicOnly<CollectionStatsFilter>,
+      continuationToken?: string,
+    },
     "output": {} as CollectionStatsPaginated
   },
   "/collection/global-offer/query": {
-    "input": {} as {filter: PublicOnly<CollectionOffersFilter>},
+    "input": {} as {
+      filter: PublicOnly<CollectionOffersFilter>,
+      continuationToken?: string,
+    },
     "output": {} as GlobalOfferPaginated
   },
   "/user/:address/creator/listing": {
@@ -966,7 +984,10 @@ export const endpoints = {
     "securityMode": "requiredWeb2"
   },
   "/activity/query": {
-    "input": {} as {filter: PublicOnly<NftActivityFilter>},
+    "input": {} as {
+      filter: PublicOnly<NftActivityFilter>,
+      continuationToken?: string,
+    },
     "output": {} as NftActivityPaginated
   },
   "/activity/:identifier": {
