@@ -1,4 +1,4 @@
-name: npm publish to main
+name: npm publish to alpha
 
 on:
   push:
