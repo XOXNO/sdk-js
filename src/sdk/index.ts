@@ -94,14 +94,26 @@ function makeLeafHandler(
       })
     )
 
-    const { body, auth, method, headers, cache, next, debug, ...params } =
-      extraArgsConv
+    const {
+      body,
+      auth,
+      method,
+      headers,
+      cache,
+      next,
+      debug,
+      continuationToken,
+      ...params
+    } = extraArgsConv
 
     const Authorization = auth ? `Bearer ${auth}` : undefined
 
     const headersData = {
       ...(headers as HeadersInit),
       ...(Authorization ? { Authorization } : {}),
+      ...(continuationToken
+        ? { 'X-Continuation-Token': String(continuationToken) }
+        : {}),
     }
 
     const hydratedNext = { ...next, tags: [...(next?.tags ?? []), url] }
