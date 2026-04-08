@@ -404,11 +404,8 @@ export const endpoints = {
     "output": {} as Record<string, number>
   },
   "/nft/query": {
-    "input": {} as {
-      filter: PublicOnly<NftDocFilter>,
-      continuationToken?: string,
-    },
-    "output": {} as NftPaginated
+    "input": {} as {filter: PublicOnly<NftDocFilter>, continuationToken?: string},
+    "output": {} as NftPaginated&{ continuationToken?: string }
   },
   "/nft/:identifier/like": {
     "input": {},
@@ -425,31 +422,28 @@ export const endpoints = {
     "output": {} as InventorySummaryDtoHydrated[]
   },
   "/user/:address/offers": {
-    "input": {} as {type?: OfferType, top?: number, skip?: number},
-    "output": {} as NftOfferPaginated
+    "input": {} as {skip?: number, top?: number, continuationToken?: string, type?: OfferType},
+    "output": {} as NftOfferPaginated&{ continuationToken?: string }
   },
   "/nft/offer/query": {
-    "input": {} as {
-      filter: PublicOnly<NftOfferDocFilter>,
-      continuationToken?: string,
-    },
-    "output": {} as NftOfferPaginated
+    "input": {} as {filter: PublicOnly<NftOfferDocFilter>, continuationToken?: string},
+    "output": {} as NftOfferPaginated&{ continuationToken?: string }
   },
   "/nft/offer/:identifier": {
     "input": {},
     "output": {} as NftOfferDocHydrated[]
   },
   "/user/:address/favorite/nfts": {
-    "input": {} as {top?: number, skip?: number},
-    "output": {} as NftPaginated
+    "input": {} as {skip?: number, top?: number, continuationToken?: string},
+    "output": {} as NftPaginated&{ continuationToken?: string }
   },
   "/collection/:collection/attributes": {
     "input": {},
     "output": {} as Record<string, ValueFp & Record<string, TraitInfo>>
   },
   "/nft/:identifier/offers": {
-    "input": {} as {skip: number, top: number},
-    "output": {} as NftOfferPaginated
+    "input": {} as {skip?: number, top?: number, continuationToken?: string},
+    "output": {} as NftOfferPaginated&{ continuationToken?: string }
   },
   "/collection/:collection/ranks": {
     "input": {},
@@ -542,18 +536,12 @@ export const endpoints = {
     }
   },
   "/collection/query": {
-    "input": {} as {
-      filter?: PublicOnly<CollectionProfileFilter>,
-      continuationToken?: string,
-    },
-    "output": {} as CollectionProfilePaginated
+    "input": {} as {filter?: PublicOnly<CollectionProfileFilter>, continuationToken?: string},
+    "output": {} as CollectionProfilePaginated&{ continuationToken?: string }
   },
   "/collection/drops/query": {
-    "input": {} as {
-      filter?: PublicOnly<CollectionMintProfileFilter>,
-      continuationToken?: string,
-    },
-    "output": {} as CollectionMintProfilePaginated
+    "input": {} as {filter?: PublicOnly<CollectionMintProfileFilter>, continuationToken?: string},
+    "output": {} as CollectionMintProfilePaginated&{ continuationToken?: string }
   },
   "/collection/:collection/drop-info": {
     "input": {},
@@ -622,18 +610,12 @@ export const endpoints = {
     "output": {} as CollectionStatsDocHydrated
   },
   "/collection/stats/query": {
-    "input": {} as {
-      filter: PublicOnly<CollectionStatsFilter>,
-      continuationToken?: string,
-    },
-    "output": {} as CollectionStatsPaginated
+    "input": {} as {filter: PublicOnly<CollectionStatsFilter>, continuationToken?: string},
+    "output": {} as CollectionStatsPaginated&{ continuationToken?: string }
   },
   "/collection/global-offer/query": {
-    "input": {} as {
-      filter: PublicOnly<CollectionOffersFilter>,
-      continuationToken?: string,
-    },
-    "output": {} as GlobalOfferPaginated
+    "input": {} as {filter: PublicOnly<CollectionOffersFilter>, continuationToken?: string},
+    "output": {} as GlobalOfferPaginated&{ continuationToken?: string }
   },
   "/user/:address/creator/listing": {
     "input": {},
@@ -779,8 +761,8 @@ export const endpoints = {
     }
   },
   "/user/notifications": {
-    "input": {} as {top?: number, skip?: number},
-    "output": {} as NotificationPaginated,
+    "input": {} as {skip?: number, top?: number, continuationToken?: string},
+    "output": {} as NotificationPaginated&{ continuationToken?: string },
     "securityMode": "requiredAny"
   },
   "/user/notifications/unread-count": {
@@ -830,8 +812,8 @@ export const endpoints = {
     }
   },
   "/mobile/history": {
-    "input": {} as {top?: number, skip?: number},
-    "output": {} as PushNotificationResponse,
+    "input": {} as {skip?: number, top?: number, continuationToken?: string},
+    "output": {} as PushNotificationResponse&{ continuationToken?: string },
     "securityMode": "requiredAny"
   },
   "/mobile/history/unread-count": {
@@ -984,11 +966,8 @@ export const endpoints = {
     "securityMode": "requiredWeb2"
   },
   "/activity/query": {
-    "input": {} as {
-      filter: PublicOnly<NftActivityFilter>,
-      continuationToken?: string,
-    },
-    "output": {} as NftActivityPaginated
+    "input": {} as {filter: PublicOnly<NftActivityFilter>, continuationToken?: string},
+    "output": {} as NftActivityPaginated&{ continuationToken?: string }
   },
   "/activity/:identifier": {
     "input": {},
@@ -1191,13 +1170,13 @@ export const endpoints = {
     }
   },
   "/user/chat/conversation": {
-    "input": {} as {isGroupChat?: boolean, top?: number, skip?: number},
-    "output": {} as UserConversationPaginated,
+    "input": {} as {skip?: number, top?: number, isGroupChat?: boolean, continuationToken?: string},
+    "output": {} as UserConversationPaginated&{ continuationToken?: string },
     "securityMode": "requiredAny"
   },
   "/user/chat/conversation/:conversationId": {
-    "input": {} as {receiver: string, top?: number, skip?: number},
-    "output": {} as ChatMessagePaginated,
+    "input": {} as {skip?: number, top?: number, receiver: string, continuationToken?: string},
+    "output": {} as ChatMessagePaginated&{ continuationToken?: string },
     "securityMode": "requiredAny",
     "DELETE": {
       "input": {},
@@ -1222,8 +1201,8 @@ export const endpoints = {
     }
   },
   "/user/chat/block": {
-    "input": {},
-    "output": {} as UserBlockPaginated,
+    "input": {} as {skip?: number, top?: number, continuationToken?: string},
+    "output": {} as UserBlockPaginated&{ continuationToken?: string },
     "securityMode": "requiredAny"
   },
   "/user/chat/block/:address": {

@@ -174,7 +174,7 @@ For your reference, here is a list of all endpoints that are available:
 
 ```typescript
 // GET /activity/query
-sdk.activity.query(...); // NftActivityPaginated
+sdk.activity.query(...); // NftActivityPaginated&{
 
 // GET /activity/:identifier
 sdk.activity.identifier("...")(...); // NftActivityDocHydrated
@@ -231,10 +231,10 @@ sdk.collection.collection("...").pinned(...); // CollectionPinnedStatusDto
 sdk.collection.collection("...").follow.POST(...); // FollowCollectionDto
 
 // GET /collection/query
-sdk.collection.query(...); // CollectionProfilePaginated
+sdk.collection.query(...); // CollectionProfilePaginated&{
 
 // GET /collection/drops/query
-sdk.collection.drops.query(...); // CollectionMintProfilePaginated
+sdk.collection.drops.query(...); // CollectionMintProfilePaginated&{
 
 // GET /collection/:collection/drop-info
 sdk.collection.collection("...").dropInfo(...); // CollectionMintProfileDocWithStages
@@ -267,10 +267,10 @@ sdk.collection.collection("...").owner(...); // CollectionOwnerDto
 sdk.collection.collection("...").stats(...); // CollectionStatsDocHydrated
 
 // GET /collection/stats/query
-sdk.collection.stats.query(...); // CollectionStatsPaginated
+sdk.collection.stats.query(...); // CollectionStatsPaginated&{
 
 // GET /collection/global-offer/query
-sdk.collection.globalOffer.query(...); // GlobalOfferPaginated
+sdk.collection.globalOffer.query(...); // GlobalOfferPaginated&{
 
 // GET /collection/:collection/staking/summary
 sdk.collection.collection("...").staking.summary(...); // StakingSummary[]
@@ -627,7 +627,7 @@ sdk.mobile.device.deviceId("...")(...); // MobileDeviceDoc
 sdk.mobile.device.deviceId("...").DELETE(...); // SuccessDto
 
 // GET /mobile/history
-sdk.mobile.history(...); // PushNotificationResponse
+sdk.mobile.history(...); // PushNotificationResponse&{
 
 // GET /mobile/history/unread-count
 sdk.mobile.history.unreadCount(...); // PushNotificationCountResponse
@@ -645,19 +645,19 @@ sdk.mobile.history.clearAll.DELETE(...); // NotificationSuccessResponseDto
 sdk.mobile.history.clearId.notificationId("...").DELETE(...); // NotificationSuccessResponseDto
 
 // GET /nft/query
-sdk.nft.query(...); // NftPaginated
+sdk.nft.query(...); // NftPaginated&{
 
 // POST /nft/:identifier/like
 sdk.nft.identifier("...").like.POST(...); // LikeNftDto
 
 // GET /nft/offer/query
-sdk.nft.offer.query(...); // NftOfferPaginated
+sdk.nft.offer.query(...); // NftOfferPaginated&{
 
 // GET /nft/offer/:identifier
 sdk.nft.offer.identifier("...")(...); // NftOfferDocHydrated[]
 
 // GET /nft/:identifier/offers
-sdk.nft.identifier("...").offers(...); // NftOfferPaginated
+sdk.nft.identifier("...").offers(...); // NftOfferPaginated&{
 
 // GET /nft/pinned
 sdk.nft.pinned(...); // NftDocHydrated[]
@@ -894,10 +894,10 @@ sdk.user.lending.image.nonce("...")(...); // string
 sdk.user.address("...").inventorySummary(...); // InventorySummaryDtoHydrated[]
 
 // GET /user/:address/offers
-sdk.user.address("...").offers(...); // NftOfferPaginated
+sdk.user.address("...").offers(...); // NftOfferPaginated&{
 
 // GET /user/:address/favorite/nfts
-sdk.user.address("...").favorite.nfts(...); // NftPaginated
+sdk.user.address("...").favorite.nfts(...); // NftPaginated&{
 
 // GET /user/:address/creator/listing
 sdk.user.address("...").creator.listing(...); // CreatorDetailsDto
@@ -933,7 +933,7 @@ sdk.user.creatorTag("...").ownedServices(...); // OwnedServicesDto
 sdk.user.search(...); // GlobalSearchResourcesPaginated
 
 // GET /user/notifications
-sdk.user.notifications(...); // NotificationPaginated
+sdk.user.notifications(...); // NotificationPaginated&{
 
 // GET /user/notifications/unread-count
 sdk.user.notifications.unreadCount(...); // PushNotificationCountResponse
@@ -984,10 +984,10 @@ sdk.user.me.xoxnoDrop(...); // AirdropDtoHydrated[]
 sdk.user.chat.message.POST(...); // ChatMessageDocHydrated
 
 // GET /user/chat/conversation
-sdk.user.chat.conversation(...); // UserConversationPaginated
+sdk.user.chat.conversation(...); // UserConversationPaginated&{
 
 // GET /user/chat/conversation/:conversationId
-sdk.user.chat.conversation.conversationId("...")(...); // ChatMessagePaginated
+sdk.user.chat.conversation.conversationId("...")(...); // ChatMessagePaginated&{
 
 // DELETE /user/chat/conversation/:conversationId
 sdk.user.chat.conversation.conversationId("...").DELETE(...); // SuccessDto
@@ -999,7 +999,7 @@ sdk.user.chat.conversationSummary(...); // GlobalConversationSummaryDto
 sdk.user.chat.conversation.conversationId("...").message.messageId("...").DELETE(...); // SuccessDto
 
 // GET /user/chat/block
-sdk.user.chat.block(...); // UserBlockPaginated
+sdk.user.chat.block(...); // UserBlockPaginated&{
 
 // POST /user/chat/block/:address
 sdk.user.chat.block.address("...").POST(...); // SuccessDto

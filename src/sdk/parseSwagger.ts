@@ -27,18 +27,22 @@ type IAllOf = { allOf: INestSchema[] }
 
 type IOneOf = { oneOf: INestSchema[] }
 
-type IAdditionalProperties = INestSchema | IAllOf | IOneOf
+type INestObjectSchema = {
+  type: 'object'
+  additionalProperties?: IAdditionalProperties
+  properties?: Record<string, INestSchema>
+  required?: string[]
+}
 
 type INestPrimitiveSchema =
-  | { type: INestType }
+  | { type: Exclude<INestType, 'array' | 'object'> }
   | { type: 'array'; items: INestSchema }
-  | {
-      type: 'object'
-      additionalProperties: IAdditionalProperties
-    }
+  | INestObjectSchema
 type INestComplexSchema = { $ref: `#/components/schemas/${string}` }
 
-type INestSchema = INestPrimitiveSchema | INestComplexSchema
+type INestSchema = INestPrimitiveSchema | INestComplexSchema | IAllOf | IOneOf
+
+type IAdditionalProperties = INestSchema | boolean
 
 type INestNested = Record<
   IReturnTypes,
@@ -70,70 +74,115 @@ function metaToTypeShape(meta: Record<string, FieldMeta>): string {
   }`.replace(/\?$/, '')
 }
 
-function isComplexSchema(schema: INestSchema): schema is INestComplexSchema {
-  return '$ref' in schema
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
 }
 
-function isAllOfSchema(schema: IAdditionalProperties): schema is IAllOf {
-  return 'allOf' in schema
+function isComplexSchema(schema: unknown): schema is INestComplexSchema {
+  return isObjectRecord(schema) && '$ref' in schema
 }
 
-function isOneOfSchema(schema: IAdditionalProperties): schema is IOneOf {
-  return 'oneOf' in schema
+function isAllOfSchema(schema: unknown): schema is IAllOf {
+  return isObjectRecord(schema) && Array.isArray((schema as IAllOf).allOf)
 }
 
-function parseSchema(curr: INestSchema, schemas: object): string {
+function isOneOfSchema(schema: unknown): schema is IOneOf {
+  return isObjectRecord(schema) && Array.isArray((schema as IOneOf).oneOf)
+}
+
+function parseSchema(curr: unknown, schemas: Record<string, unknown>): string {
+  if (!isObjectRecord(curr)) {
+    return 'unknown'
+  }
+
   if (isComplexSchema(curr)) {
     const theType = curr.$ref.split('/').pop()!
     const schemaRaw = schemas[theType as keyof typeof schemas]
-    const isEnum = schemaRaw && 'enum' in schemaRaw
+    const isEnum = isObjectRecord(schemaRaw) && 'enum' in schemaRaw
     if (isEnum) {
       sdkEnumImports.push(theType)
     } else if (theType !== 'Object') {
       sdkImports.push(theType)
     }
     return theType
-  } else {
-    if (curr.type === 'object') {
-      if (isAllOfSchema(curr.additionalProperties)) {
-        const allOf = curr.additionalProperties.allOf
-        return `Record<string, ${`${allOf
-          .map((item) => {
-            return parseSchema(item, schemas)
-          })
-          .join(' & ')}`}>`
-      } else if (isOneOfSchema(curr.additionalProperties)) {
-        const oneOf = curr.additionalProperties.oneOf
-        return `Record<string, ${`${oneOf
-          .map((item) => {
-            return parseSchema(item, schemas)
-          })
-          .join(' | ')}`}>`
-      } else {
-        return `Record<string, ${parseSchema(curr.additionalProperties, schemas)}>`
-      }
-    }
-    if (curr.type === 'array') {
-      return `${parseSchema(curr.items, schemas)}[]`
-    }
-    if (isAllOfSchema(curr)) {
-      const allOf = curr.allOf
-      return `${allOf
-        .map((item) => {
-          return parseSchema(item, schemas)
-        })
-        .join('&')}`
-    } else if (isOneOfSchema(curr)) {
-      const oneOf = curr.oneOf
-      return `${oneOf
-        .map((item) => {
-          return parseSchema(item, schemas)
-        })
-        .join('|')}`
-    } else {
-      return curr.type
-    }
   }
+
+  if (isAllOfSchema(curr)) {
+    return curr.allOf
+      .map((item) => {
+        return parseSchema(item, schemas)
+      })
+      .join('&')
+  }
+
+  if (isOneOfSchema(curr)) {
+    return curr.oneOf
+      .map((item) => {
+        return parseSchema(item, schemas)
+      })
+      .join('|')
+  }
+
+  if (!('type' in curr) || typeof curr.type !== 'string') {
+    return 'unknown'
+  }
+
+  if (curr.type === 'object') {
+    const requiredFields = new Set<string>(
+      Array.isArray(curr.required)
+        ? curr.required.filter((item): item is string => typeof item === 'string')
+        : []
+    )
+    const properties = isObjectRecord(curr.properties)
+      ? (curr.properties as Record<string, unknown>)
+      : undefined
+    const additionalProperties =
+      curr.additionalProperties as IAdditionalProperties | undefined
+
+    if (properties && Object.keys(properties).length) {
+      const fields = Object.entries(properties)
+        .map(([key, value]) => {
+          return `${key}${requiredFields.has(key) ? '' : '?'}: ${parseSchema(
+            value,
+            schemas
+          )}`
+        })
+        .join('; ')
+      return `{ ${fields} }`
+    }
+
+    if (additionalProperties === undefined || additionalProperties) {
+      if (additionalProperties === true || additionalProperties === undefined) {
+        return 'Record<string, unknown>'
+      }
+
+      if (isAllOfSchema(additionalProperties)) {
+        return `Record<string, ${additionalProperties.allOf
+          .map((item) => {
+            return parseSchema(item, schemas)
+          })
+          .join(' & ')}>`
+      }
+
+      if (isOneOfSchema(additionalProperties)) {
+        return `Record<string, ${additionalProperties.oneOf
+          .map((item) => {
+            return parseSchema(item, schemas)
+          })
+          .join(' | ')}>`
+      }
+
+      return `Record<string, ${parseSchema(additionalProperties, schemas)}>`
+    }
+
+    return 'Record<string, never>'
+  }
+
+  if (curr.type === 'array') {
+    return `${parseSchema(curr.items, schemas)}[]`
+  }
+
+  return curr.type
 }
 
 const alreadyChecked = new Set<string>([])
@@ -189,7 +238,7 @@ async function parseSwagger() {
       } else {
         alreadyChecked.add(toCheck)
       }
-      const schemas = parsed.components.schemas
+      const schemas = parsed.components.schemas as Record<string, unknown>
       const transformedInputs = queryParameters.length
         ? queryParameters.reduce((acc: Record<string, unknown>, curr) => {
             const parsed = parseSchema(curr.schema, schemas)
