@@ -17,6 +17,7 @@ export const isAddressValid = (address: string): boolean => {
   return address
     ? (address.startsWith('erd1') && address.length === 62) ||
         /^0x[a-fA-F0-9]{40,64}$/.test(address) ||
-        /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)
+        /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address) ||
+        /^G[A-Z2-7]{55}$/.test(address) // Stellar
     : false
 }
