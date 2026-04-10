@@ -6,6 +6,10 @@ import { endpoints as routes } from './swagger'
 import type { SDK } from './types'
 import { coveredMethods, type ICoveredMethods } from './utils'
 
+// Stellar Soroban lending transaction builders (Wave 1B).
+// Additive re-export — no overlap with the auto-generated read SDK.
+export * from './stellar'
+
 const kebabToCamel = (s: string) =>
   s.replace(/-([a-z])/g, (_, c) => c.toUpperCase())
 
