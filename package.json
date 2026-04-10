@@ -94,6 +94,6 @@
     "@multiversx/sdk-core": "^15.3.2",
     "@multiversx/sdk-network-providers": "^2.9.3",
     "@stellar/stellar-sdk": "^15.0.1",
-    "@xoxno/types": "^1.0.383"
+    "@xoxno/types": "^1.0.384"
   }
 }
