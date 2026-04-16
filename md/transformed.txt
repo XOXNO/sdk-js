@@ -736,14 +736,6 @@
     "input": {},
     "output": {} as LendingNftAttributes[]
   },
-  "/lending/liquidate": {
-    "input": {},
-    "output": {} as Record<string, number>
-  },
-  "/lending/sync-account-positions": {
-    "input": {},
-    "output": {} as LendingNftAttributes[]
-  },
   "/lending/market/:token/price/egld": {
     "input": {},
     "output": {} as LendingTokenPriceDto
@@ -898,6 +890,10 @@
       "body": {} as EventNotificationDto,
       "securityMode": "requiredAny"
     }
+  },
+  "/user/stellar/challenge": {
+    "input": {} as {account: string},
+    "output": {} as StellarChallengeResponseDto
   },
   "/user/native-token": {
     "input": {} as {originalUrl?: string, extraInfo?: string},
@@ -1717,5 +1713,9 @@
       "body": {} as EventNotificationDto,
       "securityMode": "requiredAny"
     }
+  },
+  "/stellar/aggregator/quote": {
+    "input": {} as {assetIn: string, assetOut: string, amount: string, tradeType: string, network: string, slippageBps?: number, parts?: number, maxHops?: number},
+    "output": {} as SoroswapQuoteResponseDto
   }
 }

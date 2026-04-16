@@ -560,12 +560,6 @@ sdk.lending.account.nonce("...").attributes(...); // LendingNftAttributes
 // GET /lending/account/:nonce/positions
 sdk.lending.account.nonce("...").positions(...); // LendingNftAttributes[]
 
-// GET /lending/liquidate
-sdk.lending.liquidate(...); // Record<string, number>
-
-// GET /lending/sync-account-positions
-sdk.lending.syncAccountPositions(...); // LendingNftAttributes[]
-
 // GET /lending/market/:token/price/egld
 sdk.lending.market.token("...").price.egld(...); // LendingTokenPriceDto
 
@@ -739,6 +733,9 @@ sdk.pool.poolId("...").uploadPicture.PUT(...); // StakingPoolDoc
 
 // GET /search
 sdk.search(...); // GlobalSearchResourcesPaginated
+
+// GET /stellar/aggregator/quote
+sdk.stellar.aggregator.quote(...); // SoroswapQuoteResponseDto
 
 // GET /tokens
 sdk.tokens(...); // TokenDataDocHydrated[]
@@ -943,6 +940,9 @@ sdk.user.notifications.clear.DELETE(...); // SuccessDto
 
 // PATCH /user/notifications/read
 sdk.user.notifications.read.PATCH(...); // NotificationDoc|SuccessDto
+
+// GET /user/stellar/challenge
+sdk.user.stellar.challenge(...); // StellarChallengeResponseDto
 
 // GET /user/native-token
 sdk.user.nativeToken(...); // string
