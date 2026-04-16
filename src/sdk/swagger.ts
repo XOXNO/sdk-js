@@ -255,6 +255,10 @@ export const endpoints = {
     "input": {},
     "output": {} as TokenDataDocHydrated[]
   },
+  "/tokens/swap/stellar": {
+    "input": {},
+    "output": {} as TokenDataDocHydrated[]
+  },
   "/tokens/restricted": {
     "input": {},
     "output": {} as string[]
