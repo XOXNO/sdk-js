@@ -388,7 +388,7 @@ export const endpoints = {
     "output": {} as LendingMarketAverageGraph[]
   },
   "/lending/leaderboard": {
-    "input": {} as {skip?: number, top?: number, orderBy?: LendingPositionOrderByColumn, orderDirection?: KustoOrderDirection, token?: string},
+    "input": {} as {skip?: number, top?: number, orderBy?: LendingPositionOrderByColumn, orderDirection?: KustoOrderDirection, token?: string, chain?: 'MVX' | 'STELLAR'},
     "output": {} as LendingPositionStatus[]
   },
   "/lending/leaderboard/liquidate": {
