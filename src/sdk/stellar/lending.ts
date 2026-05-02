@@ -38,6 +38,7 @@
  */
 
 import type {
+  AggregatorSwapDto,
   BorrowArgs,
   FlashLoanArgs,
   LiquidateArgs,
@@ -48,8 +49,26 @@ import type {
   SupplyArgs,
   SwapCollateralArgs,
   SwapDebtArgs,
+  SwapHopDto,
+  SwapPathDto,
+  SwapVenue,
   WithdrawArgs,
 } from '@xoxno/types'
+
+/**
+ * Inlined copy of `SWAP_VENUES` from `@xoxno/types` so the SDK can
+ * validate a runtime-supplied venue without forcing the (NestJS-coupled)
+ * @xoxno/types module to load at runtime. Kept in lockstep with the
+ * upstream constant; any new on-chain venue must be added in both
+ * places + the contract's `SwapVenue` enum.
+ */
+const STELLAR_SWAP_VENUES = [
+  'Soroswap',
+  'Aquarius',
+  'Phoenix',
+  'NativeAmm',
+  'StaticBridge',
+] as const satisfies readonly SwapVenue[]
 import {
   Account,
   Address,
@@ -103,33 +122,42 @@ export interface BuiltStellarTx {
 }
 
 /**
- * Input shape for the Stellar-specific `SwapSteps` payload carried on
+ * Input shape for the Stellar-specific `swap` payload carried on
  * `MultiplyArgs.steps`, `SwapDebtArgs.steps`, `SwapCollateralArgs.steps`,
  * `RepayDebtWithCollateralArgs.steps`.
  *
  * @xoxno/types declares `steps: unknown` on the Wave 0 DTOs so every chain
- * owns its own encoding. On Stellar, this is what callers MUST pass,
- * which is serialised to a Soroban `Vec<SwapHop>` struct matching
- * rs-lending/stellar/common/src/types.rs:
+ * owns its own encoding. On Stellar, callers MUST pass an
+ * `AggregatorSwapDto` which is serialised into the Soroban
+ * `AggregatorSwap` struct from `rs-lending-xlm common/src/types.rs`:
  *
  *   pub struct SwapHop {
- *       pub pool_address: Address,
+ *       pub fee_bps: u32,
+ *       pub pool: Address,
  *       pub token_in: Address,
  *       pub token_out: Address,
+ *       pub venue: SwapVenue,   // tag-only enum
+ *   }
+ *   pub struct SwapPath {
+ *       pub amount_in: i128,
+ *       pub hops: Vec<SwapHop>,
  *       pub min_amount_out: i128,
  *   }
+ *   pub struct AggregatorSwap {  // controller payload
+ *       pub paths: Vec<SwapPath>,
+ *       pub total_min_out: i128,
+ *   }
+ *
+ * The controller wraps `AggregatorSwap` in `BatchSwap` (filling
+ * `sender = current_contract_address`) before forwarding to the router.
+ *
+ * Re-exported from this module so consumers can `import { StellarSwapStepsInput }`
+ * and get the canonical typed shape without reaching into `@xoxno/types`.
  */
-export interface StellarSwapStepsInput {
-  hops: StellarSwapHopInput[]
-}
-
-export interface StellarSwapHopInput {
-  poolAddress: string
-  tokenIn: string
-  tokenOut: string
-  /** Decimal string i128. */
-  minAmountOut: string
-}
+export type StellarSwapStepsInput = AggregatorSwapDto
+export type StellarSwapHopInput = SwapHopDto
+export type StellarSwapPathInput = SwapPathDto
+export type StellarSwapVenue = SwapVenue
 
 // -----------------------------------------------------------------------------
 // Encoding helpers — all deterministic, no RPC
@@ -177,36 +205,95 @@ const scStruct = (fields: Record<string, xdr.ScVal>): xdr.ScVal => {
 }
 
 /**
- * Encode a `SwapSteps` struct: `{ hops: Vec<SwapHop> }`.
+ * Encode a Soroban `enum SwapVenue` (tag-only / unit variant). At the
+ * XDR level a unit variant is `scvVec([symbol_name])`.
  */
-const encodeSwapSteps = (steps: StellarSwapStepsInput): xdr.ScVal => {
-  const hops = steps.hops.map((h) =>
-    scStruct({
-      pool_address: addr(h.poolAddress),
-      token_in: addr(h.tokenIn),
-      token_out: addr(h.tokenOut),
-      min_amount_out: i128(h.minAmountOut),
+const encodeSwapVenue = (venue: SwapVenue): xdr.ScVal =>
+  xdr.ScVal.scvVec([sym(venue)])
+
+/**
+ * Encode the controller-facing `AggregatorSwap` struct
+ * (`{ paths: Vec<SwapPath>, total_min_out: i128 }`).
+ *
+ * Field names emitted on the wire are the contract's snake_case names —
+ * `scStruct()` lex-sorts keys, so the resulting bytes match the Soroban
+ * `#[contracttype]`-derived layout exactly.
+ */
+const encodeAggregatorSwap = (swap: StellarSwapStepsInput): xdr.ScVal => {
+  const paths = swap.paths.map((path) => {
+    const hops = path.hops.map((hop) =>
+      scStruct({
+        fee_bps: u32(hop.feeBps),
+        pool: addr(hop.pool),
+        token_in: addr(hop.tokenIn),
+        token_out: addr(hop.tokenOut),
+        venue: encodeSwapVenue(hop.venue),
+      })
+    )
+    return scStruct({
+      amount_in: i128(path.amountIn),
+      hops: xdr.ScVal.scvVec(hops),
+      min_amount_out: i128(path.minAmountOut),
     })
-  )
-  return scStruct({ hops: xdr.ScVal.scvVec(hops) })
+  })
+  return scStruct({
+    paths: xdr.ScVal.scvVec(paths),
+    total_min_out: i128(swap.totalMinOut),
+  })
 }
 
 /**
- * Validate the untyped `steps` field from a Wave 0 DTO and narrow it to the
- * Stellar-specific input shape. Throws a clear error if the caller passed
- * the wrong shape.
+ * Validate the untyped `steps` field from a Wave 0 DTO and narrow it
+ * to `AggregatorSwapDto`. Throws a clear error if the caller passed
+ * the wrong shape (legacy single-`hops` payloads are rejected here so
+ * the failure surfaces at the SDK boundary, not deep inside the
+ * Soroban host on-chain).
  */
 const asStellarSwapSteps = (steps: unknown): StellarSwapStepsInput => {
-  if (
-    !steps ||
-    typeof steps !== 'object' ||
-    !Array.isArray((steps as StellarSwapStepsInput).hops)
-  ) {
+  if (!steps || typeof steps !== 'object') {
     throw new Error(
-      'Stellar builder: `steps` must be a StellarSwapStepsInput ({ hops: [...] })'
+      'Stellar builder: `steps` must be an AggregatorSwapDto ({ paths, totalMinOut })'
     )
   }
-  return steps as StellarSwapStepsInput
+  const candidate = steps as Partial<StellarSwapStepsInput>
+  if (!Array.isArray(candidate.paths) || candidate.paths.length === 0) {
+    throw new Error(
+      'Stellar builder: `steps.paths` must be a non-empty array of SwapPathDto'
+    )
+  }
+  if (typeof candidate.totalMinOut !== 'string') {
+    throw new Error(
+      'Stellar builder: `steps.totalMinOut` must be an i128 decimal string'
+    )
+  }
+  for (const [idx, path] of candidate.paths.entries()) {
+    if (
+      !path ||
+      typeof path.amountIn !== 'string' ||
+      typeof path.minAmountOut !== 'string' ||
+      !Array.isArray(path.hops) ||
+      path.hops.length === 0
+    ) {
+      throw new Error(
+        `Stellar builder: \`steps.paths[${idx}]\` must have amountIn, minAmountOut and a non-empty hops array`
+      )
+    }
+    for (const [hopIdx, hop] of path.hops.entries()) {
+      if (
+        !hop ||
+        typeof hop.feeBps !== 'number' ||
+        typeof hop.pool !== 'string' ||
+        typeof hop.tokenIn !== 'string' ||
+        typeof hop.tokenOut !== 'string' ||
+        !STELLAR_SWAP_VENUES.includes(hop.venue as SwapVenue)
+      ) {
+        throw new Error(
+          `Stellar builder: \`steps.paths[${idx}].hops[${hopIdx}]\` must have feeBps, pool, tokenIn, tokenOut, and a valid venue`
+        )
+      }
+    }
+  }
+  return candidate as StellarSwapStepsInput
 }
 
 /**
@@ -385,7 +472,7 @@ export function buildStellarMultiplyTx(
     i128(args.debtToFlashLoan),
     addr(args.debtToken),
     u32(args.mode),
-    encodeSwapSteps(asStellarSwapSteps(args.steps)),
+    encodeAggregatorSwap(asStellarSwapSteps(args.steps)),
   ])
 }
 
@@ -403,7 +490,7 @@ export function buildStellarSwapDebtTx(
     addr(args.existingDebtToken),
     i128(args.newDebtAmount),
     addr(args.newDebtToken),
-    encodeSwapSteps(asStellarSwapSteps(args.steps)),
+    encodeAggregatorSwap(asStellarSwapSteps(args.steps)),
   ])
 }
 
@@ -421,7 +508,7 @@ export function buildStellarSwapCollateralTx(
     addr(args.currentCollateral),
     i128(args.fromAmount),
     addr(args.newCollateral),
-    encodeSwapSteps(asStellarSwapSteps(args.steps)),
+    encodeAggregatorSwap(asStellarSwapSteps(args.steps)),
   ])
 }
 
@@ -440,7 +527,7 @@ export function buildStellarRepayDebtWithCollateralTx(
     addr(args.collateralToken),
     i128(args.collateralAmount),
     addr(args.debtToken),
-    encodeSwapSteps(asStellarSwapSteps(args.steps)),
+    encodeAggregatorSwap(asStellarSwapSteps(args.steps)),
     bool(args.closePosition),
   ])
 }

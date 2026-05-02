@@ -73,6 +73,16 @@ const FIXTURE_LP =
 // Stellar requires a tx source sequence strictly less than next ledger sequence.
 const FIXTURE_SEQUENCE = '123456789'
 
+// Pin Date.now so the tx `timeBounds.maxTime` (Date.now()/1000 + timeoutSecs)
+// is deterministic — otherwise stored XDR snapshots drift each test run.
+beforeAll(() => {
+  jest.useFakeTimers({ now: new Date('2026-01-01T00:00:00Z') })
+})
+
+afterAll(() => {
+  jest.useRealTimers()
+})
+
 const BASE_OPTS: StellarBuilderOptions = {
   network: 'testnet',
   caller: FIXTURE_CALLER,
@@ -83,14 +93,22 @@ const BASE_OPTS: StellarBuilderOptions = {
 }
 
 const FIXTURE_STEPS: StellarSwapStepsInput = {
-  hops: [
+  paths: [
     {
-      poolAddress: FIXTURE_LP,
-      tokenIn: FIXTURE_USDC,
-      tokenOut: FIXTURE_XLM,
+      amountIn: '1000000000',
+      hops: [
+        {
+          feeBps: 30,
+          pool: FIXTURE_LP,
+          tokenIn: FIXTURE_USDC,
+          tokenOut: FIXTURE_XLM,
+          venue: 'Soroswap',
+        },
+      ],
       minAmountOut: '1000000',
     },
   ],
+  totalMinOut: '1000000',
 }
 
 // -----------------------------------------------------------------------------
@@ -391,7 +409,7 @@ describe('Stellar lending builders — input validation', () => {
         ...multiplyArgs,
         steps: { wrong: true },
       } as unknown as MultiplyArgs)
-    ).toThrow(/steps.*StellarSwapStepsInput/)
+    ).toThrow(/steps\.paths.*non-empty/)
   })
 
   it('throws on invalid flash_loan data shape', () => {
