@@ -18,8 +18,8 @@ importers:
         specifier: ^15.0.1
         version: 15.0.1
       '@xoxno/types':
-        specifier: ^1.0.393
-        version: 1.0.393
+        specifier: ^1.0.395
+        version: 1.0.395
     devDependencies:
       '@commitlint/cli':
         specifier: ^20.4.1
@@ -1653,8 +1653,8 @@ packages:
     resolution: {integrity: sha512-CBJYipR5lrtQQZl9ylarWyh1qhcs/tMy9ydSHte/Hefn3ev8NMvS3ss+eqiXEoBr2wBVgKj2qjcViXO9P/8K4A==}
     engines: {node: '>=20'}
 
-  '@xoxno/types@1.0.393':
-    resolution: {integrity: sha512-obtFj/nm5IZcg1JF+GzahYbWIVJcfkdHrmfTQC2dY6CQue1isyHl0v43ALhgb3mSQLfvtGcPStidIbCWf7VVrg==}
+  '@xoxno/types@1.0.395':
+    resolution: {integrity: sha512-tq9GOwJMtNmxA9Vs7jro0hbJ+iEUxACM+WYWugnUtp1SfNvL80RyP8A+xBRSiO13M1OSGpVIIdQH4ji2jLYeAA==}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -6169,7 +6169,7 @@ snapshots:
     dependencies:
       arch: 3.0.0
 
-  '@xoxno/types@1.0.393': {}
+  '@xoxno/types@1.0.395': {}
 
   '@xtuc/ieee754@1.2.0': {}
 

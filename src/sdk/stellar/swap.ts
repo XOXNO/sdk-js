@@ -177,13 +177,13 @@ export function mapQuoteResponseToAggregatorSwap(
 
 const mapHop = (hop: {
   feeBps: number
-  poolAddress: string
+  address: string
   from: string
   to: string
   dex: string
 }): SwapHopDto => ({
   feeBps: hop.feeBps,
-  pool: hop.poolAddress,
+  pool: hop.address,
   tokenIn: hop.from,
   tokenOut: hop.to,
   venue: hop.dex as SwapHopDto['venue'],
