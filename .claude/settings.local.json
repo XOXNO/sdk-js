@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(npm run test:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx ts-node:*)",
+      "mcp__ide__getDiagnostics",
+      "mcp__acp__Edit"
+    ],
+    "deny": []
+  }
+}

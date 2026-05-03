@@ -218,6 +218,12 @@ const encodeSwapVenue = (venue: SwapVenue): xdr.ScVal =>
  * Field names emitted on the wire are the contract's snake_case names —
  * `scStruct()` lex-sorts keys, so the resulting bytes match the Soroban
  * `#[contracttype]`-derived layout exactly.
+ *
+ * `SwapPath` is the new PPM-split shape: each path declares
+ * `split_ppm` (parts-per-million share of the batch's total input) and
+ * a `hops` chain. There are no per-path or per-hop amount fields — the
+ * router computes per-path input as `total_in * split_ppm / 1_000_000`
+ * (last path absorbs PPM rounding).
  */
 const encodeAggregatorSwap = (swap: StellarSwapStepsInput): xdr.ScVal => {
   const paths = swap.paths.map((path) => {
@@ -231,9 +237,8 @@ const encodeAggregatorSwap = (swap: StellarSwapStepsInput): xdr.ScVal => {
       })
     )
     return scStruct({
-      amount_in: i128(path.amountIn),
       hops: xdr.ScVal.scvVec(hops),
-      min_amount_out: i128(path.minAmountOut),
+      split_ppm: u32(path.splitPpm),
     })
   })
   return scStruct({
@@ -245,9 +250,8 @@ const encodeAggregatorSwap = (swap: StellarSwapStepsInput): xdr.ScVal => {
 /**
  * Validate the untyped `steps` field from a Wave 0 DTO and narrow it
  * to `AggregatorSwapDto`. Throws a clear error if the caller passed
- * the wrong shape (legacy single-`hops` payloads are rejected here so
- * the failure surfaces at the SDK boundary, not deep inside the
- * Soroban host on-chain).
+ * the wrong shape so the failure surfaces at the SDK boundary, not
+ * deep inside the Soroban host on-chain.
  */
 const asStellarSwapSteps = (steps: unknown): StellarSwapStepsInput => {
   if (!steps || typeof steps !== 'object') {
@@ -266,18 +270,20 @@ const asStellarSwapSteps = (steps: unknown): StellarSwapStepsInput => {
       'Stellar builder: `steps.totalMinOut` must be an i128 decimal string'
     )
   }
+  let sumPpm = 0
   for (const [idx, path] of candidate.paths.entries()) {
     if (
       !path ||
-      typeof path.amountIn !== 'string' ||
-      typeof path.minAmountOut !== 'string' ||
+      typeof path.splitPpm !== 'number' ||
+      path.splitPpm <= 0 ||
       !Array.isArray(path.hops) ||
       path.hops.length === 0
     ) {
       throw new Error(
-        `Stellar builder: \`steps.paths[${idx}]\` must have amountIn, minAmountOut and a non-empty hops array`
+        `Stellar builder: \`steps.paths[${idx}]\` must have splitPpm > 0 and a non-empty hops array`
       )
     }
+    sumPpm += path.splitPpm
     for (const [hopIdx, hop] of path.hops.entries()) {
       if (
         !hop ||
@@ -292,6 +298,11 @@ const asStellarSwapSteps = (steps: unknown): StellarSwapStepsInput => {
         )
       }
     }
+  }
+  if (sumPpm !== 1_000_000) {
+    throw new Error(
+      `Stellar builder: \`steps.paths[].splitPpm\` must sum to 1_000_000, got ${sumPpm}`
+    )
   }
   return candidate as StellarSwapStepsInput
 }

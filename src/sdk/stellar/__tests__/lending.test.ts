@@ -95,7 +95,6 @@ const BASE_OPTS: StellarBuilderOptions = {
 const FIXTURE_STEPS: StellarSwapStepsInput = {
   paths: [
     {
-      amountIn: '1000000000',
       hops: [
         {
           feeBps: 30,
@@ -105,7 +104,7 @@ const FIXTURE_STEPS: StellarSwapStepsInput = {
           venue: 'Soroswap',
         },
       ],
-      minAmountOut: '1000000',
+      splitPpm: 1_000_000,
     },
   ],
   totalMinOut: '1000000',

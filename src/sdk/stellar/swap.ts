@@ -63,19 +63,20 @@ const encodeHop = (hop: SwapHopDto): xdr.ScVal =>
 
 const encodePath = (path: SwapPathDto): xdr.ScVal =>
   scStruct({
-    amount_in: i128(path.amountIn),
     hops: xdr.ScVal.scvVec(path.hops.map(encodeHop)),
-    min_amount_out: i128(path.minAmountOut),
+    split_ppm: u32(path.splitPpm),
   })
 
 /** Encode the router-facing `BatchSwap` struct. */
 const encodeBatchSwap = (
   swap: AggregatorSwapDto,
-  sender: string
+  sender: string,
+  totalIn: string
 ): xdr.ScVal =>
   scStruct({
     paths: xdr.ScVal.scvVec(swap.paths.map(encodePath)),
     sender: addr(sender),
+    total_in: i128(totalIn),
     total_min_out: i128(swap.totalMinOut),
   })
 
@@ -85,15 +86,22 @@ export interface StellarBatchSwapBuilderOptions extends StellarBuilderOptions {
    * resolved from `STELLAR_AGGREGATOR_ROUTER[network]`.
    */
   routerAddress?: string
+  /**
+   * Total input amount the router will pull from `caller` once at the
+   * start of `batch_execute` (i128 decimal string). Per-path
+   * allocations are derived inside the router from each path's
+   * `splitPpm`. For a quote-derived swap, pass `quote.amountIn`.
+   */
+  totalIn: string
 }
 
 /**
  * Build an unsigned XDR for a direct user → aggregator router swap.
  *
- * The `swap` payload (paths + per-path min-outs + total-min-out) comes
- * straight from the quote server; map a
- * `StellarAggregatorQuoteResponseDto` to `AggregatorSwapDto` via
- * `mapQuoteResponseToAggregatorSwap` before calling this.
+ * The `swap` payload (paths + total-min-out) comes straight from the
+ * quote server; map a `StellarAggregatorQuoteResponseDto` to
+ * `AggregatorSwapDto` via `mapQuoteResponseToAggregatorSwap` before
+ * calling this. `opts.totalIn` is the authoritative input amount.
  */
 export function buildStellarBatchSwapTx(
   opts: StellarBatchSwapBuilderOptions,
@@ -109,7 +117,12 @@ export function buildStellarBatchSwapTx(
     fee: opts.fee ?? BASE_FEE,
     networkPassphrase: STELLAR_NETWORK_PASSPHRASE[opts.network],
   })
-    .addOperation(contract.call('batch_execute', encodeBatchSwap(swap, opts.caller)))
+    .addOperation(
+      contract.call(
+        'batch_execute',
+        encodeBatchSwap(swap, opts.caller, opts.totalIn)
+      )
+    )
     .setTimeout(opts.timeoutSeconds ?? 300)
     .build()
 
@@ -118,9 +131,9 @@ export function buildStellarBatchSwapTx(
 
 /**
  * Translate a quote-server response into the controller-facing
- * `AggregatorSwapDto`. The mapping is purely a key rename plus the
- * fallback for single-path quotes that omit `paths` (we wrap the flat
- * `hops` list as a single path).
+ * `AggregatorSwapDto`. Each path's `splitPpm` comes straight from the
+ * server; the single-path fallback (when `paths` is omitted) gets the
+ * full 1_000_000 weight.
  *
  * Throws if `amountOutMin` is missing — the controller refuses
  * unbounded swaps so the SDK rejects them at the boundary.
@@ -135,24 +148,15 @@ export function mapQuoteResponseToAggregatorSwap(
   }
   const totalMinOut = quote.amountOutMin
 
-  const paths = quote.paths
+  const paths: SwapPathDto[] = quote.paths
     ? quote.paths.map((path) => ({
-        amountIn: path.amountIn,
         hops: path.swaps.map(mapHop),
-        // Apply the global slippage proportionally to each path's
-        // expected output. The server already encodes the same factor
-        // in `amountOutMin` at the response root.
-        minAmountOut: scaleByOutputRatio(
-          path.amountOut,
-          quote.amountOut,
-          totalMinOut
-        ),
+        splitPpm: path.splitPpm,
       }))
     : [
         {
-          amountIn: quote.amountIn,
           hops: quote.hops.map(mapHop),
-          minAmountOut: totalMinOut,
+          splitPpm: 1_000_000,
         },
       ]
 
@@ -172,19 +176,3 @@ const mapHop = (hop: {
   tokenOut: hop.to,
   venue: hop.dex as SwapHopDto['venue'],
 })
-
-/**
- * Compute `pathOut * (totalMinOut / totalOut)` using BigInt to keep
- * full i128 precision (the values are decimal strings well above
- * 2^53). Result is floored — the contract treats `min_amount_out` as
- * a strict lower bound, so floor is the safe rounding direction.
- */
-const scaleByOutputRatio = (
-  pathOut: string,
-  totalOut: string,
-  totalMinOut: string
-): string => {
-  const total = BigInt(totalOut)
-  if (total === 0n) return totalMinOut
-  return ((BigInt(pathOut) * BigInt(totalMinOut)) / total).toString()
-}
