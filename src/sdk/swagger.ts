@@ -368,7 +368,7 @@ export const endpoints = {
     "output": {} as LendingAccountSummary
   },
   "/user/lending/image/:nonce": {
-    "input": {} as {isStatic: boolean},
+    "input": {} as {isStatic: boolean, chain?: ActivityChain[]},
     "output": {} as string
   },
   "/lending/market/emode-categories": {
@@ -388,7 +388,7 @@ export const endpoints = {
     "output": {} as LendingMarketAverageGraph[]
   },
   "/lending/leaderboard": {
-    "input": {} as {skip?: number, top?: number, orderBy?: LendingPositionOrderByColumn, orderDirection?: KustoOrderDirection, token?: string, chain?: 'MVX' | 'STELLAR'},
+    "input": {} as {skip?: number, top?: number, orderBy?: LendingPositionOrderByColumn, orderDirection?: KustoOrderDirection, token?: string, chain?: ActivityChain[]},
     "output": {} as LendingPositionStatus[]
   },
   "/lending/leaderboard/liquidate": {

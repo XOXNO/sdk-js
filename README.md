@@ -734,6 +734,9 @@ sdk.pool.poolId("...").uploadPicture.PUT(...); // StakingPoolDoc
 // GET /search
 sdk.search(...); // GlobalSearchResourcesPaginated
 
+// GET /stellar/tokens
+sdk.stellar.tokens(...); // TokenDataDocHydrated[]
+
 // GET /stellar/aggregator/quote
 sdk.stellar.aggregator.quote(...); // SoroswapQuoteResponseDto
 

@@ -253,6 +253,10 @@
     "input": {},
     "output": {} as TokenDataDocHydrated[]
   },
+  "/stellar/tokens": {
+    "input": {},
+    "output": {} as TokenDataDocHydrated[]
+  },
   "/tokens/restricted": {
     "input": {},
     "output": {} as string[]
@@ -362,7 +366,7 @@
     "output": {} as LendingAccountSummary
   },
   "/user/lending/image/:nonce": {
-    "input": {} as {isStatic: boolean},
+    "input": {} as {isStatic: boolean, chain?: ActivityChain[]},
     "output": {} as string
   },
   "/lending/market/emode-categories": {
@@ -382,7 +386,7 @@
     "output": {} as LendingMarketAverageGraph[]
   },
   "/lending/leaderboard": {
-    "input": {} as {skip?: number, top?: number, orderBy?: LendingPositionOrderByColumn, orderDirection?: KustoOrderDirection, token?: string},
+    "input": {} as {skip?: number, top?: number, orderBy?: LendingPositionOrderByColumn, orderDirection?: KustoOrderDirection, token?: string, chain?: ActivityChain[]},
     "output": {} as LendingPositionStatus[]
   },
   "/lending/leaderboard/liquidate": {

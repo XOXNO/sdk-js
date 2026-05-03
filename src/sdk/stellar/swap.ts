@@ -67,14 +67,19 @@ const encodePath = (path: SwapPathDto): xdr.ScVal =>
     split_ppm: u32(path.splitPpm),
   })
 
+const u64 = (n: number | string): xdr.ScVal =>
+  new ScInt(typeof n === 'string' ? n : n.toString()).toU64()
+
 /** Encode the router-facing `BatchSwap` struct. */
 const encodeBatchSwap = (
   swap: AggregatorSwapDto,
   sender: string,
-  totalIn: string
+  totalIn: string,
+  referralId: number | string
 ): xdr.ScVal =>
   scStruct({
     paths: xdr.ScVal.scvVec(swap.paths.map(encodePath)),
+    referral_id: u64(referralId),
     sender: addr(sender),
     total_in: i128(totalIn),
     total_min_out: i128(swap.totalMinOut),
@@ -93,6 +98,13 @@ export interface StellarBatchSwapBuilderOptions extends StellarBuilderOptions {
    * `splitPpm`. For a quote-derived swap, pass `quote.amountIn`.
    */
   totalIn: string
+  /**
+   * Referral identifier embedded into the BatchSwap. Defaults to `0`
+   * (no referral / no fee — matches rs-aggregator MVX semantics).
+   * Non-zero IDs MUST be registered on-chain via `add_referral` or the
+   * router reverts at execution.
+   */
+  referralId?: number | string
 }
 
 /**
@@ -120,7 +132,7 @@ export function buildStellarBatchSwapTx(
     .addOperation(
       contract.call(
         'batch_execute',
-        encodeBatchSwap(swap, opts.caller, opts.totalIn)
+        encodeBatchSwap(swap, opts.caller, opts.totalIn, opts.referralId ?? 0)
       )
     )
     .setTimeout(opts.timeoutSeconds ?? 300)
