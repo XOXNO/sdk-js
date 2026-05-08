@@ -189,7 +189,8 @@ const alreadyChecked = new Set<string>([])
 const duplicates: string[] = []
 
 async function parseSwagger() {
-  const yml = await fetch('https://api.xoxno.com/swagger.yaml').then((res) => {
+  const swaggerUrl = process.env.SWAGGER_URL ?? 'https://api.xoxno.com/swagger.yaml'
+  const yml = await fetch(swaggerUrl).then((res) => {
     return res.text()
   })
 
