@@ -30,9 +30,7 @@ export const STELLAR_LENDING_CONTROLLER: Record<StellarNetwork, string> = {
  */
 export const STELLAR_AGGREGATOR_ROUTER: Record<StellarNetwork, string> = {
   mainnet: process.env.STELLAR_AGGREGATOR_ROUTER_MAINNET ?? '',
-  testnet:
-    process.env.STELLAR_AGGREGATOR_ROUTER_TESTNET ??
-    'CDH6RRN5P6KUAMMTR3TKSX36PZTHMOIG3M3WWEGU2G5GSSSEAYTRU4OK',
+  testnet: process.env.STELLAR_AGGREGATOR_ROUTER_TESTNET ?? '',
 }
 
 /**
