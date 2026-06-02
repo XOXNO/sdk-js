@@ -199,6 +199,12 @@ const multiplyArgs: MultiplyArgs = {
   steps: FIXTURE_STEPS,
 }
 
+const multiplyWithInitialArgs: MultiplyArgs = {
+  ...multiplyArgs,
+  initialPayment: { token: FIXTURE_USDC, amount: '50000000' },
+  convertSwap: FIXTURE_STEPS,
+}
+
 const swapDebtArgs: SwapDebtArgs = {
   accountNonce: 42,
   existingDebtToken: FIXTURE_XLM,
@@ -280,9 +286,17 @@ describe('Stellar lending transaction builders — sanity', () => {
     {
       name: 'multiply',
       expectedFn: 'multiply',
-      // caller, account_id, e_mode, collateral, debt_to_flash, debt_token, mode, steps
-      expectedArgCount: 8,
+      // caller, account_id, e_mode, collateral, debt_to_flash, debt_token, mode,
+      // swap, initial_payment (None → Void), convert_swap (None → Void)
+      expectedArgCount: 10,
       build: () => buildStellarMultiplyTx(BASE_OPTS, multiplyArgs),
+    },
+    {
+      name: 'multiply (with initial_payment + convert_swap)',
+      expectedFn: 'multiply',
+      // same arity; the two trailing Options are Some(...) instead of Void
+      expectedArgCount: 10,
+      build: () => buildStellarMultiplyTx(BASE_OPTS, multiplyWithInitialArgs),
     },
     {
       name: 'swap_debt',

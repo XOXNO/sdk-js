@@ -54,36 +54,26 @@ import type {
   SwapVenue,
   WithdrawArgs,
 } from '@xoxno/types'
-
-/**
- * Inlined copy of `SWAP_VENUES` from `@xoxno/types` so the SDK can
- * validate a runtime-supplied venue without forcing the (NestJS-coupled)
- * @xoxno/types module to load at runtime. Kept in lockstep with the
- * upstream constant; any new on-chain venue must be added in both
- * places + the contract's `SwapVenue` enum.
- */
-const STELLAR_SWAP_VENUES = [
-  'Soroswap',
-  'Aquarius',
-  'Phoenix',
-  'NativeAmm',
-  'StaticBridge',
-] as const satisfies readonly SwapVenue[]
-import {
-  Account,
-  Address,
-  BASE_FEE,
-  Contract,
-  ScInt,
-  TransactionBuilder,
-  xdr,
-} from '@stellar/stellar-sdk'
+import { Account, BASE_FEE, Contract, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
 
 import {
   getStellarLendingController,
   STELLAR_NETWORK_PASSPHRASE,
   type StellarNetwork,
 } from './contracts'
+import {
+  addr,
+  asStellarBytes,
+  asStellarSwapSteps,
+  bool,
+  encodeAggregatorSwap,
+  i128,
+  option,
+  tupleAddrAmount,
+  tupleAddrAmountVec,
+  u32,
+  u64,
+} from './scval-encode'
 
 // -----------------------------------------------------------------------------
 // Shared types
@@ -160,166 +150,6 @@ export type StellarSwapPathInput = SwapPathDto
 export type StellarSwapVenue = SwapVenue
 
 // -----------------------------------------------------------------------------
-// Encoding helpers — all deterministic, no RPC
-// -----------------------------------------------------------------------------
-
-const addr = (a: string): xdr.ScVal => new Address(a).toScVal()
-const i128 = (s: string): xdr.ScVal => new ScInt(s).toI128()
-const u32 = (n: number): xdr.ScVal => xdr.ScVal.scvU32(n)
-const u64 = (n: number | string): xdr.ScVal =>
-  new ScInt(typeof n === 'string' ? n : n.toString()).toU64()
-const bool = (b: boolean): xdr.ScVal => xdr.ScVal.scvBool(b)
-const bytes = (hex: string): xdr.ScVal => {
-  const cleanHex = hex.startsWith('0x') ? hex.slice(2) : hex
-  const buf = Buffer.from(cleanHex, 'hex')
-  return xdr.ScVal.scvBytes(buf)
-}
-const sym = (s: string): xdr.ScVal => xdr.ScVal.scvSymbol(s)
-
-/**
- * Encode `Vec<(Address, i128)>` — a Soroban tuple-vec of (asset, amount).
- * Each tuple is a 2-element `scvVec`.
- */
-const tupleAddrAmountVec = (
-  entries: Array<{ token: string; amount: string }>
-): xdr.ScVal =>
-  xdr.ScVal.scvVec(
-    entries.map((e) => xdr.ScVal.scvVec([addr(e.token), i128(e.amount)]))
-  )
-
-/**
- * Encode a Soroban `struct` — at the XDR level, structs are maps with
- * `Symbol` keys in **lexicographic order** of field names.
- */
-const scStruct = (fields: Record<string, xdr.ScVal>): xdr.ScVal => {
-  const entries = Object.keys(fields)
-    .sort()
-    .map(
-      (k) =>
-        new xdr.ScMapEntry({
-          key: sym(k),
-          val: fields[k] as xdr.ScVal,
-        })
-    )
-  return xdr.ScVal.scvMap(entries)
-}
-
-/**
- * Encode a Soroban `enum SwapVenue` (tag-only / unit variant). At the
- * XDR level a unit variant is `scvVec([symbol_name])`.
- */
-const encodeSwapVenue = (venue: SwapVenue): xdr.ScVal =>
-  xdr.ScVal.scvVec([sym(venue)])
-
-/**
- * Encode the controller-facing `AggregatorSwap` struct
- * (`{ paths: Vec<SwapPath>, total_min_out: i128 }`).
- *
- * Field names emitted on the wire are the contract's snake_case names —
- * `scStruct()` lex-sorts keys, so the resulting bytes match the Soroban
- * `#[contracttype]`-derived layout exactly.
- *
- * `SwapPath` is the new PPM-split shape: each path declares
- * `split_ppm` (parts-per-million share of the batch's total input) and
- * a `hops` chain. There are no per-path or per-hop amount fields — the
- * router computes per-path input as `total_in * split_ppm / 1_000_000`
- * (last path absorbs PPM rounding).
- */
-const encodeAggregatorSwap = (swap: StellarSwapStepsInput): xdr.ScVal => {
-  const paths = swap.paths.map((path) => {
-    const hops = path.hops.map((hop) =>
-      scStruct({
-        fee_bps: u32(hop.feeBps),
-        pool: addr(hop.pool),
-        token_in: addr(hop.tokenIn),
-        token_out: addr(hop.tokenOut),
-        venue: encodeSwapVenue(hop.venue),
-      })
-    )
-    return scStruct({
-      hops: xdr.ScVal.scvVec(hops),
-      split_ppm: u32(path.splitPpm),
-    })
-  })
-  return scStruct({
-    paths: xdr.ScVal.scvVec(paths),
-    total_min_out: i128(swap.totalMinOut),
-  })
-}
-
-/**
- * Validate the untyped `steps` field from a Wave 0 DTO and narrow it
- * to `AggregatorSwapDto`. Throws a clear error if the caller passed
- * the wrong shape so the failure surfaces at the SDK boundary, not
- * deep inside the Soroban host on-chain.
- */
-const asStellarSwapSteps = (steps: unknown): StellarSwapStepsInput => {
-  if (!steps || typeof steps !== 'object') {
-    throw new Error(
-      'Stellar builder: `steps` must be an AggregatorSwapDto ({ paths, totalMinOut })'
-    )
-  }
-  const candidate = steps as Partial<StellarSwapStepsInput>
-  if (!Array.isArray(candidate.paths) || candidate.paths.length === 0) {
-    throw new Error(
-      'Stellar builder: `steps.paths` must be a non-empty array of SwapPathDto'
-    )
-  }
-  if (typeof candidate.totalMinOut !== 'string') {
-    throw new Error(
-      'Stellar builder: `steps.totalMinOut` must be an i128 decimal string'
-    )
-  }
-  let sumPpm = 0
-  for (const [idx, path] of candidate.paths.entries()) {
-    if (
-      !path ||
-      typeof path.splitPpm !== 'number' ||
-      path.splitPpm <= 0 ||
-      !Array.isArray(path.hops) ||
-      path.hops.length === 0
-    ) {
-      throw new Error(
-        `Stellar builder: \`steps.paths[${idx}]\` must have splitPpm > 0 and a non-empty hops array`
-      )
-    }
-    sumPpm += path.splitPpm
-    for (const [hopIdx, hop] of path.hops.entries()) {
-      if (
-        !hop ||
-        typeof hop.feeBps !== 'number' ||
-        typeof hop.pool !== 'string' ||
-        typeof hop.tokenIn !== 'string' ||
-        typeof hop.tokenOut !== 'string' ||
-        !STELLAR_SWAP_VENUES.includes(hop.venue as SwapVenue)
-      ) {
-        throw new Error(
-          `Stellar builder: \`steps.paths[${idx}].hops[${hopIdx}]\` must have feeBps, pool, tokenIn, tokenOut, and a valid venue`
-        )
-      }
-    }
-  }
-  if (sumPpm !== 1_000_000) {
-    throw new Error(
-      `Stellar builder: \`steps.paths[].splitPpm\` must sum to 1_000_000, got ${sumPpm}`
-    )
-  }
-  return candidate as StellarSwapStepsInput
-}
-
-/**
- * Validate the untyped `data` field on FlashLoanArgs and narrow it to
- * Buffer / hex string for Soroban `Bytes` encoding.
- */
-const asStellarBytes = (data: unknown): xdr.ScVal => {
-  if (typeof data === 'string') return bytes(data)
-  if (data instanceof Uint8Array) return xdr.ScVal.scvBytes(Buffer.from(data))
-  throw new Error(
-    'Stellar builder: `data` must be a hex string or Uint8Array (Soroban Bytes payload)'
-  )
-}
-
-// -----------------------------------------------------------------------------
 // Transaction assembly
 // -----------------------------------------------------------------------------
 
@@ -331,7 +161,7 @@ const asStellarBytes = (data: unknown): xdr.ScVal => {
  * footprint + auth entries + resource fees) before signing. The UI layer
  * does this via `rpc.Server.prepareTransaction`.
  */
-function buildTx(
+export function buildTx(
   opts: StellarBuilderOptions,
   method: string,
   params: xdr.ScVal[]
@@ -467,7 +297,13 @@ export function buildStellarFlashLoanTx(
 
 /**
  * multiply(caller, account_id, e_mode_category, collateral_token,
- *          debt_to_flash_loan: i128, debt_token, mode: u32, steps: SwapSteps) -> u64
+ *          debt_to_flash_loan: i128, debt_token, mode: PositionMode,
+ *          swap: AggregatorSwap, initial_payment: Option<(Address, i128)>,
+ *          convert_swap: Option<AggregatorSwap>) -> u64
+ *
+ * `mode` is a repr(u32) `PositionMode` → encoded as `scvU32`. The two trailing
+ * `Option`s seed an optional initial collateral payment and a secondary swap
+ * converting it into the collateral token; both omit to Soroban `Void`.
  */
 export function buildStellarMultiplyTx(
   opts: StellarBuilderOptions,
@@ -484,6 +320,8 @@ export function buildStellarMultiplyTx(
     addr(args.debtToken),
     u32(args.mode),
     encodeAggregatorSwap(asStellarSwapSteps(args.steps)),
+    option(args.initialPayment, (p) => tupleAddrAmount(p.token, p.amount)),
+    option(args.convertSwap, (s) => encodeAggregatorSwap(asStellarSwapSteps(s))),
   ])
 }
 
