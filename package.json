@@ -5,13 +5,18 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.bundled.d.ts",
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.cjs.js"
+      "import": {
+        "types": "./dist/index.bundled.d.ts",
+        "default": "./dist/index.esm.js"
+      },
+      "require": {
+        "types": "./dist/index.bundled.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "types": "./dist/index.bundled.d.ts",
-  "main": "./dist/index.cjs.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.esm.js",
   "files": [
     "dist/**/*"
@@ -20,10 +25,12 @@
   "scripts": {
     "test": "jest",
     "build:sdk": "npx bun run src/sdk/parseSwagger.ts && npx oxlint src/sdk/swagger.ts --fix && npx bun run md/extract.ts",
-    "build:types": "tsc --emitDeclarationOnly && dts-bundle-generator --no-check --external-imports @xoxno/types @stellar/stellar-sdk @nestjs/common @nestjs/swagger -o dist/index.bundled.d.ts src/index.ts",
+    "build:types": "tsc --emitDeclarationOnly && dts-bundle-generator --no-check --external-imports @xoxno/types @stellar/stellar-sdk @nestjs/common @nestjs/swagger -o dist/index.bundled.d.ts src/index.ts && cp dist/index.bundled.d.ts dist/index.bundled.d.cts",
     "build:esm": "webpack --config webpack-esm.config.mjs",
     "build:cjs": "webpack --config webpack-cjs.config.mjs",
     "build": "npm run build:sdk && npm run build:types && npm run build:esm && npm run build:cjs",
+    "verify:dist": "node -e \"const m=require('./dist/index.cjs'); if(typeof m.decodeStellarLendingEvent!=='function')throw new Error('CJS require broken'); console.log('CJS ok')\" && node --input-type=module -e \"import('./dist/index.esm.js').then(m=>{if(typeof m.decodeStellarLendingEvent!=='function')throw new Error('ESM import broken'); console.log('ESM ok')})\"",
+    "prepublishOnly": "npm run verify:dist",
     "lint": "oxlint src",
     "format": "oxlint src --fix",
     "commit": "git-cz",
