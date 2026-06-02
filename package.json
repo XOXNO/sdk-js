@@ -5,12 +5,12 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/index.bundled.d.ts",
       "import": "./dist/index.esm.js",
       "require": "./dist/index.cjs.js"
     }
   },
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.bundled.d.ts",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.esm.js",
   "files": [
@@ -20,7 +20,7 @@
   "scripts": {
     "test": "jest",
     "build:sdk": "npx bun run src/sdk/parseSwagger.ts && npx oxlint src/sdk/swagger.ts --fix && npx bun run md/extract.ts",
-    "build:types": "tsc --emitDeclarationOnly && dts-bundle-generator --no-check --external-imports @xoxno/types @stellar/stellar-sdk @nestjs/common @nestjs/swagger -o dist/index.d.ts src/index.ts",
+    "build:types": "tsc --emitDeclarationOnly && dts-bundle-generator --no-check --external-imports @xoxno/types @stellar/stellar-sdk @nestjs/common @nestjs/swagger -o dist/index.bundled.d.ts src/index.ts",
     "build:esm": "webpack --config webpack-esm.config.mjs",
     "build:cjs": "webpack --config webpack-cjs.config.mjs",
     "build": "npm run build:sdk && npm run build:types && npm run build:esm && npm run build:cjs",
