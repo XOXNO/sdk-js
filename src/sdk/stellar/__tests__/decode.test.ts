@@ -1,12 +1,9 @@
 /**
- * Decoder tests locked against REAL captured event XDR.
+ * Decoder tests locked against captured event XDR.
  *
- * `fixtures/lending-events.json` was produced by publishing every controller
- * `#[contractevent]` in a soroban-sdk 26 test env and serializing each event's
- * topics + `data` to base64 XDR via `ScVal::to_xdr_base64` — byte-identical to
- * what Soroban RPC `getEvents` delivers. These tests prove the decoders match
- * on-chain reality (not a hand-built assumption) and that the four legacy
- * consumer bugs are fixed.
+ * `fixtures/lending-events.json` holds every controller `#[contractevent]`'s
+ * topics + `data` serialized to base64 XDR, exactly as Soroban RPC `getEvents`
+ * delivers them.
  */
 
 import { xdr } from '@stellar/stellar-sdk'
@@ -92,11 +89,11 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
 
     expect(borrow!.positionType).toBe('Borrow')
     expect(borrow!.action).toBe('borrow')
-    // Bug fix: borrow risk params are not-applicable → undefined, NOT 0.
+    // Borrow risk params are not applicable → undefined, NOT 0.
     expect(borrow!.liquidationThresholdBps).toBeUndefined()
     expect(borrow!.liquidationBonusBps).toBeUndefined()
     expect(borrow!.loanToValueBps).toBeUndefined()
-    // Bug fix: no phantom liquidationFeesBps on deltas.
+    // Position deltas carry no liquidationFeesBps field.
     expect('liquidationFeesBps' in (borrow as object)).toBe(false)
     expect('liquidationFeesBps' in (deposit as object)).toBe(false)
   })
@@ -112,7 +109,7 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(single.topic).toBe('debt:ceiling_update')
   })
 
-  it('decodes oracle:twap_degraded (previously unhandled by both consumers)', () => {
+  it('decodes oracle:twap_degraded', () => {
     const ev = decodeFixture('oracle:twap_degraded')
     if (ev.topic !== 'oracle:twap_degraded') throw new Error('narrow')
     expect(ev.data.reasonCode).toBe(3)

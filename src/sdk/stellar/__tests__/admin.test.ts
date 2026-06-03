@@ -1,15 +1,14 @@
 /**
- * Snapshot + structural tests for the Stellar lending ADMIN / CONFIG / KEEPER /
- * ACCESS transaction builders.
+ * Snapshot + structural tests for the Stellar lending admin / config / keeper /
+ * access transaction builders.
  *
- * Beyond the function-name / arg-count / determinism / snapshot guards shared
- * with `lending.test.ts`, this suite decodes the complex `#[contracttype]`
- * struct args (`MarketOracleConfigInput`, `AssetConfigRaw`) back out of the XDR
- * and asserts the ScMap keys are ascending-sorted (the Soroban host requires
- * sorted symbol keys) and that the oracle union / custom-option tags are
- * well-formed. The encoders reuse the same `scStruct` already proven on-chain
- * by the production swap builders; for the all-lowercase snake_case field sets
- * used here, JS lexicographic order matches Soroban's symbol collation.
+ * Beyond the function-name / arg-count / determinism / snapshot guards, this
+ * suite decodes the complex `#[contracttype]` struct args
+ * (`MarketOracleConfigInput`, `AssetConfigRaw`) back out of the XDR and asserts
+ * the ScMap keys are ascending-sorted (the Soroban host requires sorted symbol
+ * keys) and that the oracle union / custom-option tags are well-formed. For the
+ * all-lowercase snake_case field sets used here, JS lexicographic order matches
+ * Soroban's symbol collation.
  */
 
 import { Networks, Transaction, xdr as stellarXdr } from '@stellar/stellar-sdk'
@@ -53,7 +52,7 @@ import {
 import type { StellarBuilderOptions } from '../lending'
 
 // -----------------------------------------------------------------------------
-// Deterministic fixtures (kept in lockstep with lending.test.ts)
+// Deterministic fixtures
 // -----------------------------------------------------------------------------
 
 const FIXTURE_CALLER =

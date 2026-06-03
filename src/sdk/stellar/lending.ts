@@ -1,40 +1,19 @@
 /**
- * Stellar Soroban lending transaction builders (Wave 1B).
+ * Stellar lending user-operation transaction builders.
  *
- * Each builder takes a Wave 0 `*Args` DTO from @xoxno/types plus a shared
- * `StellarBuilderOptions` ({ network, caller, sourceSequence, ... }) and
- * returns an unsigned transaction XDR string ready for wallet signing
- * (Freighter / LOBSTR / xBull / WalletConnect via StellarWalletsKit).
+ * Each builder takes an `*Args` DTO from `@xoxno/types` plus a shared
+ * `StellarBuilderOptions` ({ network, caller, sourceSequence, ... }) and returns
+ * an unsigned transaction XDR string ready for wallet signing.
  *
- * Mirrors the Stellar controller entry points in
- * rs-lending/stellar/controller/src/lib.rs:
- *
- *   supply(caller, account_id: u64, e_mode_category: u32, assets: Vec<(Address, i128)>) -> u64
- *   borrow(caller, account_id: u64, borrows: Vec<(Address, i128)>)
- *   withdraw(caller, account_id: u64, withdrawals: Vec<(Address, i128)>)
- *   repay(caller, account_id: u64, payments: Vec<(Address, i128)>)
- *   liquidate(liquidator, account_id: u64, debt_payments: Vec<(Address, i128)>)
- *   flash_loan(caller, asset, amount: i128, receiver, data: Bytes)
- *   multiply(caller, account_id, e_mode_category, collateral_token,
- *            debt_to_flash_loan: i128, debt_token, mode: u32, steps: SwapSteps) -> u64
- *   swap_debt(caller, account_id, existing_debt_token, new_debt_amount: i128,
- *             new_debt_token, steps: SwapSteps)
- *   swap_collateral(caller, account_id, current_collateral, from_amount: i128,
- *                   new_collateral, steps: SwapSteps)
- *   repay_debt_with_collateral(caller, account_id, collateral_token,
- *                              collateral_amount: i128, debt_token,
- *                              steps: SwapSteps, close_position: bool)
- *
- * i128 values cross the boundary as decimal strings and are encoded via
- * `new ScInt(str).toI128()`. addresses (Stellar `G...` accounts and Soroban
+ * i128 values cross the boundary as decimal strings, encoded via
+ * `new ScInt(str).toI128()`. Addresses (Stellar `G...` accounts and Soroban
  * `C...` contracts) are encoded via `new Address(str).toScVal()`.
  *
- * These builders are RPC-free on purpose: they accept a caller-supplied
- * `sourceSequence` so the returned XDR is deterministic and snapshot-testable.
- * The UI hook layer (Wave 1C) is responsible for fetching the current sequence
- * via `rpc.Server.getAccount(caller)` and calling `rpc.Server.prepareTransaction`
- * (which handles simulation + Soroban footprint/auth/resource fee) before
- * handing the XDR to the wallet to sign.
+ * Builders are RPC-free: they accept a caller-supplied `sourceSequence` so the
+ * returned XDR is deterministic and snapshot-testable. The caller fetches the
+ * current sequence via `rpc.Server.getAccount(caller)` and runs
+ * `rpc.Server.prepareTransaction` (simulation + Soroban footprint/auth/resource
+ * fee) before handing the XDR to the wallet to sign.
  */
 
 import type {
@@ -113,36 +92,12 @@ export interface BuiltStellarTx {
 
 /**
  * Input shape for the Stellar-specific `swap` payload carried on
- * `MultiplyArgs.steps`, `SwapDebtArgs.steps`, `SwapCollateralArgs.steps`,
+ * `MultiplyArgs.steps`, `SwapDebtArgs.steps`, `SwapCollateralArgs.steps`, and
  * `RepayDebtWithCollateralArgs.steps`.
  *
- * @xoxno/types declares `steps: unknown` on the Wave 0 DTOs so every chain
- * owns its own encoding. On Stellar, callers MUST pass an
- * `AggregatorSwapDto` which is serialised into the Soroban
- * `AggregatorSwap` struct from `rs-lending-xlm common/src/types.rs`:
- *
- *   pub struct SwapHop {
- *       pub fee_bps: u32,
- *       pub pool: Address,
- *       pub token_in: Address,
- *       pub token_out: Address,
- *       pub venue: SwapVenue,   // tag-only enum
- *   }
- *   pub struct SwapPath {
- *       pub amount_in: i128,
- *       pub hops: Vec<SwapHop>,
- *       pub min_amount_out: i128,
- *   }
- *   pub struct AggregatorSwap {  // controller payload
- *       pub paths: Vec<SwapPath>,
- *       pub total_min_out: i128,
- *   }
- *
- * The controller wraps `AggregatorSwap` in `BatchSwap` (filling
- * `sender = current_contract_address`) before forwarding to the router.
- *
- * Re-exported from this module so consumers can `import { StellarSwapStepsInput }`
- * and get the canonical typed shape without reaching into `@xoxno/types`.
+ * `@xoxno/types` declares `steps: unknown` on these DTOs so every chain owns its
+ * own encoding. On Stellar, callers must pass an `AggregatorSwapDto`, which is
+ * serialised into the Soroban `AggregatorSwap` struct.
  */
 export type StellarSwapStepsInput = AggregatorSwapDto
 export type StellarSwapHopInput = SwapHopDto

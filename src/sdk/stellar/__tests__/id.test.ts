@@ -1,11 +1,5 @@
 /**
- * Byte-identical parity guard for the Stellar lending activity-id primitives.
- *
- * Expected values are computed from api-v2's verbatim formula (the source these
- * functions were ported from). Both consumers route their id derivation through
- * these functions, so locking the outputs here is what makes the Phase 4
- * activity-indexing consolidation safe — divergence shows up as a failing
- * assertion, not as duplicated Cosmos docs.
+ * Tests for the Stellar lending activity-id primitives, locking their outputs.
  */
 
 import {

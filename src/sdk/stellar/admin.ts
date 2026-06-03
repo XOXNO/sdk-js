@@ -1,10 +1,6 @@
 /**
- * Stellar Soroban lending ADMIN / CONFIG / KEEPER / ACCESS transaction builders.
- *
- * Companion to `lending.ts` (user operations). Every state-changing controller
- * entry point that is not a plain user op lives here, 1:1 with the controller
- * `#[contractimpl]` methods in `rs-lending-xlm/contracts/controller/src/{access,
- * config,router}.rs`. Each builder returns an unsigned `BuiltStellarTx` XDR.
+ * Stellar lending admin / config / keeper / access transaction builders. Each
+ * builder returns an unsigned `BuiltStellarTx` XDR.
  *
  * Auth model:
  *   - `#[only_owner]` methods take no `caller` param — the tx source
@@ -12,10 +8,6 @@
  *   - `#[only_role(caller, "ROLE")]` and caller-taking methods encode
  *     `opts.caller` as the leading `Address` arg; that account must hold the
  *     role and sign the tx.
- *
- * The complex contract structs (`InterestRateModel`, `MarketParamsRaw`,
- * `AssetConfigRaw`, `PositionLimits`, `MarketOracleConfigInput`) are encoded
- * here from their `@xoxno/types` builder-input DTOs.
  */
 
 import type {
@@ -27,9 +19,8 @@ import type {
   PositionLimitsDto,
 } from '@xoxno/types'
 
-// `@xoxno/types` does not re-export its string enums on the top-level surface,
-// so reference their shapes via the DTOs' field types rather than importing the
-// enum names directly.
+// String-enum shapes referenced via the DTOs' field types, since `@xoxno/types`
+// does not re-export those enums on its top-level surface.
 type OracleAssetRefInput = NonNullable<OracleSourceConfigInputDto['asset']>
 type OracleReadModeInput = OracleSourceConfigInputDto['readMode']
 
@@ -49,8 +40,8 @@ import { buildTx, type BuiltStellarTx, type StellarBuilderOptions } from './lend
 import { xdr } from '@stellar/stellar-sdk'
 
 // -----------------------------------------------------------------------------
-// Enum string-value constants — mirror the `@xoxno/types` string enums without
-// importing them at runtime (keeps the NestJS-coupled module out of the bundle).
+// Enum string-value constants — the runtime values of the `@xoxno/types` string
+// enums, referenced without importing them at runtime.
 // -----------------------------------------------------------------------------
 
 const ORACLE_STRATEGY_U32: Record<string, number> = {

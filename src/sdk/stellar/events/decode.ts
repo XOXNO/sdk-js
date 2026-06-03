@@ -1,25 +1,16 @@
 /**
- * Decoders for the 21 XOXNO Stellar lending controller `#[contractevent]`s.
+ * Decoders for the 21 Stellar lending controller `#[contractevent]`s.
  *
- * Public API is **base64-XDR-string in** — `decodeStellarLendingEvent(topicsB64,
- * dataB64)` parses with the SDK's own bundled `@stellar/stellar-sdk`, so no live
- * `xdr.ScVal` ever crosses the consumer boundary. This makes decoding immune to
- * the dual-package hazard and to `@stellar/stellar-sdk` version skew between the
- * SDK and its consumers (Soroban RPC `getEvents` already delivers `topic[]` and
- * `value` as base64 XDR — pass them straight through).
+ * The public API takes base64-XDR strings (`decodeStellarLendingEvent(topicsB64,
+ * dataB64)`) and parses them with this SDK's bundled `@stellar/stellar-sdk`, so
+ * no live `xdr.ScVal` crosses the consumer boundary. Soroban RPC `getEvents`
+ * already delivers `topic[]` and `value` as base64 XDR — pass them straight
+ * through.
  *
- * soroban-sdk 26 serializes every contractevent `data` as an `ScMap` keyed by
- * field name (verified against real captured emissions, including single-field
- * and batch events), so `scValToNative` yields a snake_case-keyed object with
- * `bigint` for i128/u64, `number` for u32, strkey strings for addresses,
- * strings for symbols, `null` for absent `Option`s, and arrays for `Vec`s.
- *
- * Bug fixes baked in vs the consumers' legacy decoders:
- *   - the real `debt:ceiling_batch_update` is decoded (the single
- *     `debt:ceiling_update` is dead on-chain but kept for completeness);
- *   - `oracle:twap_degraded` is decoded;
- *   - borrow-side deltas expose risk fields as `undefined` (not 0);
- *   - no `liquidation_fees_bps` is read off position deltas (it does not exist).
+ * Each contractevent `data` serializes as an `ScMap` keyed by field name, so
+ * `scValToNative` yields a snake_case-keyed object with `bigint` for i128/u64,
+ * `number` for u32, strkey strings for addresses, strings for symbols, `null`
+ * for absent `Option`s, and arrays for `Vec`s.
  */
 
 import { scValToNative, xdr } from '@stellar/stellar-sdk'

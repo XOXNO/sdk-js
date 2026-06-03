@@ -1,28 +1,17 @@
 /**
- * Shared Soroban `ScVal` encoding primitives for the Stellar lending SDK.
- *
- * Extracted verbatim from `lending.ts` so both the user-operation builders
- * (`lending.ts`) and the admin/config builders (`admin.ts`) encode against one
- * implementation. Behavior-preserving: the existing builder XDR snapshots must
- * not change.
+ * Soroban `ScVal` encoding primitives for the Stellar lending builders.
  *
  * i128/u128 values cross the boundary as decimal strings (`new ScInt(str)`).
  * Addresses (Stellar `G...` accounts and Soroban `C...` contracts) encode via
- * `new Address(str).toScVal()`. Soroban `#[contracttype]` structs are ScMaps
- * with `Symbol` keys in ascending order — `scStruct` lex-sorts the field names,
- * which matches Soroban's small-symbol collation for the all-lowercase
- * snake_case field sets used here.
+ * `new Address(str).toScVal()`.
  */
 
 import type { AggregatorSwapDto, SwapVenue } from '@xoxno/types'
 import { Address, ScInt, xdr } from '@stellar/stellar-sdk'
 
 /**
- * Inlined copy of `SWAP_VENUES` from `@xoxno/types` so the SDK can validate a
- * runtime-supplied venue without forcing the (NestJS-coupled) `@xoxno/types`
- * module to load at runtime. Kept in lockstep with the upstream constant; any
- * new on-chain venue must be added in both places + the contract's `SwapVenue`
- * enum.
+ * On-chain swap venues, validated at runtime for a caller-supplied venue.
+ * Mirrors `SWAP_VENUES` from `@xoxno/types` and the contract's `SwapVenue` enum.
  */
 export const STELLAR_SWAP_VENUES = [
   'Soroswap',
@@ -149,10 +138,9 @@ export const encodeAggregatorSwap = (
 }
 
 /**
- * Validate the untyped `steps` field from a Wave 0 DTO and narrow it to
- * `AggregatorSwapDto`. Throws a clear error if the caller passed the wrong
- * shape so the failure surfaces at the SDK boundary, not deep inside the
- * Soroban host on-chain.
+ * Validate the untyped `steps` field and narrow it to `AggregatorSwapDto`.
+ * Throws if the caller passed the wrong shape so the failure surfaces at the
+ * SDK boundary, not inside the Soroban host on-chain.
  */
 export const asStellarSwapSteps = (steps: unknown): StellarSwapStepsInput => {
   if (!steps || typeof steps !== 'object') {

@@ -146,7 +146,7 @@ const parseInvokedFunction = (
 }
 
 // -----------------------------------------------------------------------------
-// Fixtures — one per Wave 0 DTO
+// Fixtures — one per builder DTO
 // -----------------------------------------------------------------------------
 
 const supplyArgs: SupplyArgs = {

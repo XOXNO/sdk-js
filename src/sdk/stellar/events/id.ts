@@ -1,16 +1,10 @@
 /**
- * Stellar lending activity-id derivation — the single owner of the inputs that
- * compose `NftActivityDoc.id` (`${txHash}-${eventIdentifier}-${eventOrder}`).
+ * Stellar lending activity-id derivation: the inputs that compose
+ * `NftActivityDoc.id` (`${txHash}-${eventIdentifier}-${eventOrder}`).
  *
- * Both indexing consumers (xoxno-api-v2, xoxno-az-functions) MUST derive these
- * inputs here so the activity ids they write to `NFT_ACTIVITY_DATA` are
- * byte-identical — the hard gate for consolidating activity indexing into a
- * single producer. Ported verbatim from api-v2's `stellar-lending-activity.mapper`.
- *
- * The activity-type string values mirror `@xoxno/types` `XoxnoLendingActivity`.
- * They are inlined (not imported) because `@xoxno/types` does not re-export its
- * enums on the top-level type surface and the SDK keeps that NestJS-coupled
- * module out of its runtime bundle.
+ * The activity-type string values mirror `@xoxno/types` `XoxnoLendingActivity`,
+ * inlined rather than imported since `@xoxno/types` does not re-export its enums
+ * on its top-level type surface.
  */
 
 /** Synthetic NFT collection ticker for Stellar lending accounts. */
