@@ -23,7 +23,8 @@ export const STELLAR_LENDING_CONTROLLER: Record<StellarNetwork, string> = {
 
 /**
  * Stellar aggregator router contract addresses per network.
- * Targets `batch_execute(BatchSwap)` for direct (non-lending) swaps.
+ * Targets `execute_strategy(sender, total_in, swap_xdr)` for direct
+ * (non-lending) swaps.
  * Env vars:
  *   - STELLAR_AGGREGATOR_ROUTER_MAINNET
  *   - STELLAR_AGGREGATOR_ROUTER_TESTNET
@@ -86,7 +87,7 @@ export function getStellarLendingController(network: StellarNetwork): string {
 
 /**
  * Assert an aggregator router address is configured for the target network.
- * Used by `buildStellarBatchSwapTx` for direct user→router swaps.
+ * Used by `buildStellarExecuteStrategyTx` for direct user -> router swaps.
  */
 export function getStellarAggregatorRouter(network: StellarNetwork): string {
   const addr = STELLAR_AGGREGATOR_ROUTER[network]

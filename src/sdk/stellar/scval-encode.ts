@@ -6,22 +6,52 @@
  * `new Address(str).toScVal()`.
  */
 
-import type { AggregatorSwapDto, SwapVenue } from '@xoxno/types'
 import { Address, ScInt, xdr } from '@stellar/stellar-sdk'
 
 /**
  * On-chain swap venues, validated at runtime for a caller-supplied venue.
- * Mirrors `SWAP_VENUES` from `@xoxno/types` and the contract's `SwapVenue` enum.
+ * Mirrors the Soroban-only aggregator router's `SwapVenue` enum.
  */
 export const STELLAR_SWAP_VENUES = [
   'Soroswap',
   'Aquarius',
   'Phoenix',
-  'NativeAmm',
-  'StaticBridge',
-] as const satisfies readonly SwapVenue[]
+  'Sushi',
+  'CometDex',
+] as const
 
-export type StellarSwapStepsInput = AggregatorSwapDto
+export type StellarSwapVenue = (typeof STELLAR_SWAP_VENUES)[number]
+
+export interface StellarStrategySwapHopInput {
+  amountOut: string
+  pool: string
+  tokenIn: string
+  tokenOut: string
+  venue: StellarSwapVenue
+}
+
+export interface StellarStrategySwapPathInput {
+  hops: StellarStrategySwapHopInput[]
+  splitPpm: number
+}
+
+export interface StellarStrategyPayloadInput {
+  paths: StellarStrategySwapPathInput[]
+  referralId?: number | string
+  tokenIn: string
+  tokenOut: string
+  totalMinOut: string
+}
+
+export type StellarStrategySwapInput =
+  | string
+  | Uint8Array
+  | { routeXdr: string }
+  | { swapXdr: string }
+  | { bytes: string | Uint8Array }
+  | StellarStrategyPayloadInput
+
+export type StellarSwapStepsInput = StellarStrategySwapInput
 
 export const addr = (a: string): xdr.ScVal => new Address(a).toScVal()
 export const i128 = (s: string): xdr.ScVal => new ScInt(s).toI128()
@@ -103,23 +133,21 @@ export const scStruct = (fields: Record<string, xdr.ScVal>): xdr.ScVal => {
  * Encode a Soroban `enum SwapVenue` (tag-only / unit variant). At the XDR level
  * a unit variant is `scvVec([symbol_name])`.
  */
-export const encodeSwapVenue = (venue: SwapVenue): xdr.ScVal =>
+export const encodeSwapVenue = (venue: StellarSwapVenue): xdr.ScVal =>
   xdr.ScVal.scvVec([sym(venue)])
 
 /**
- * Encode the controller-facing `AggregatorSwap` struct
- * (`{ paths: Vec<SwapPath>, total_min_out: i128 }`).
- *
- * `SwapPath` is the PPM-split shape: each path declares `split_ppm`
- * (parts-per-million share of the batch's total input) and a `hops` chain.
+ * Encode the aggregator router's decoded `StrategyPayload` struct. The caller
+ * usually receives this as quote `routeXdr`; this helper is for tests and for
+ * callers that construct routes locally.
  */
-export const encodeAggregatorSwap = (
-  swap: StellarSwapStepsInput
+export const encodeStrategyPayload = (
+  payload: StellarStrategyPayloadInput
 ): xdr.ScVal => {
-  const paths = swap.paths.map((path) => {
+  const paths = payload.paths.map((path) => {
     const hops = path.hops.map((hop) =>
       scStruct({
-        fee_bps: u32(hop.feeBps),
+        amount_out: i128(hop.amountOut),
         pool: addr(hop.pool),
         token_in: addr(hop.tokenIn),
         token_out: addr(hop.tokenOut),
@@ -133,26 +161,47 @@ export const encodeAggregatorSwap = (
   })
   return scStruct({
     paths: xdr.ScVal.scvVec(paths),
-    total_min_out: i128(swap.totalMinOut),
+    referral_id: u64(payload.referralId ?? 0),
+    token_in: addr(payload.tokenIn),
+    token_out: addr(payload.tokenOut),
+    total_min_out: i128(payload.totalMinOut),
   })
 }
 
+/** @deprecated Use `encodeStrategyPayload`. */
+export const encodeAggregatorSwap = encodeStrategyPayload
+
+export const encodeStrategyPayloadToBytes = (
+  payload: StellarStrategyPayloadInput
+): xdr.ScVal =>
+  xdr.ScVal.scvBytes(
+    Buffer.from(encodeStrategyPayload(payload).toXDR('base64'), 'base64')
+  )
+
 /**
- * Validate the untyped `steps` field and narrow it to `AggregatorSwapDto`.
+ * Validate the untyped `steps` field and narrow it to `StrategyPayload`.
  * Throws if the caller passed the wrong shape so the failure surfaces at the
  * SDK boundary, not inside the Soroban host on-chain.
  */
-export const asStellarSwapSteps = (steps: unknown): StellarSwapStepsInput => {
+export const asStellarStrategyPayload = (
+  steps: unknown
+): StellarStrategyPayloadInput => {
   if (!steps || typeof steps !== 'object') {
     throw new Error(
-      'Stellar builder: `steps` must be an AggregatorSwapDto ({ paths, totalMinOut })'
+      'Stellar builder: decoded strategy `steps` must be a StrategyPayload ({ paths, tokenIn, tokenOut, totalMinOut })'
     )
   }
-  const candidate = steps as Partial<StellarSwapStepsInput>
+  const candidate = steps as Partial<StellarStrategyPayloadInput>
   if (!Array.isArray(candidate.paths) || candidate.paths.length === 0) {
     throw new Error(
-      'Stellar builder: `steps.paths` must be a non-empty array of SwapPathDto'
+      'Stellar builder: `steps.paths` must be a non-empty array of strategy paths'
     )
+  }
+  if (typeof candidate.tokenIn !== 'string') {
+    throw new Error('Stellar builder: `steps.tokenIn` must be a contract address')
+  }
+  if (typeof candidate.tokenOut !== 'string') {
+    throw new Error('Stellar builder: `steps.tokenOut` must be a contract address')
   }
   if (typeof candidate.totalMinOut !== 'string') {
     throw new Error(
@@ -176,14 +225,14 @@ export const asStellarSwapSteps = (steps: unknown): StellarSwapStepsInput => {
     for (const [hopIdx, hop] of path.hops.entries()) {
       if (
         !hop ||
-        typeof hop.feeBps !== 'number' ||
+        typeof hop.amountOut !== 'string' ||
         typeof hop.pool !== 'string' ||
         typeof hop.tokenIn !== 'string' ||
         typeof hop.tokenOut !== 'string' ||
-        !STELLAR_SWAP_VENUES.includes(hop.venue as SwapVenue)
+        !STELLAR_SWAP_VENUES.includes(hop.venue as StellarSwapVenue)
       ) {
         throw new Error(
-          `Stellar builder: \`steps.paths[${idx}].hops[${hopIdx}]\` must have feeBps, pool, tokenIn, tokenOut, and a valid venue`
+          `Stellar builder: \`steps.paths[${idx}].hops[${hopIdx}]\` must have amountOut, pool, tokenIn, tokenOut, and a valid Soroban venue`
         )
       }
     }
@@ -193,8 +242,95 @@ export const asStellarSwapSteps = (steps: unknown): StellarSwapStepsInput => {
       `Stellar builder: \`steps.paths[].splitPpm\` must sum to 1_000_000, got ${sumPpm}`
     )
   }
-  return candidate as StellarSwapStepsInput
+  return candidate as StellarStrategyPayloadInput
 }
+
+const isHexString = (s: string): boolean =>
+  s.length > 0 && s.length % 2 === 0 && /^[0-9a-fA-F]+$/.test(s)
+
+const strategyBytes = (data: Uint8Array): xdr.ScVal => {
+  const buf = Buffer.from(data)
+  if (buf.length === 0) {
+    throw new Error(
+      'Stellar builder: strategy swap bytes must be non-empty base64 routeXdr, 0x hex string, or Uint8Array'
+    )
+  }
+  return xdr.ScVal.scvBytes(buf)
+}
+
+const decodeStrategyBytesString = (encoded: string): Buffer => {
+  const trimmed = encoded.trim()
+  if (trimmed.startsWith('0x')) {
+    const hex = trimmed.slice(2)
+    if (!isHexString(hex)) {
+      throw new Error(
+        'Stellar builder: strategy swap bytes hex string must be 0x-prefixed and even-length'
+      )
+    }
+    return Buffer.from(hex, 'hex')
+  }
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(trimmed)) {
+    throw new Error(
+      'Stellar builder: strategy swap bytes must be base64 routeXdr or 0x-prefixed hex'
+    )
+  }
+  const decoded = Buffer.from(trimmed, 'base64')
+  if (decoded.length === 0) {
+    throw new Error(
+      'Stellar builder: strategy swap bytes must be non-empty base64 routeXdr, 0x hex string, or Uint8Array'
+    )
+  }
+  return decoded
+}
+
+const hasRouteXdr = (input: object): input is { routeXdr: string } =>
+  'routeXdr' in input && typeof (input as { routeXdr?: unknown }).routeXdr === 'string'
+
+const hasSwapXdr = (input: object): input is { swapXdr: string } =>
+  'swapXdr' in input && typeof (input as { swapXdr?: unknown }).swapXdr === 'string'
+
+const hasBytes = (
+  input: object
+): input is { bytes: string | Uint8Array } =>
+  'bytes' in input &&
+  (typeof (input as { bytes?: unknown }).bytes === 'string' ||
+    (input as { bytes?: unknown }).bytes instanceof Uint8Array)
+
+/**
+ * Encode opaque strategy bytes for the lending controller. Accepted inputs:
+ *   - quote `routeXdr` base64 string
+ *   - `{ routeXdr }` / `{ swapXdr }`
+ *   - raw `Uint8Array` / `{ bytes }`
+ *   - decoded `StrategyPayload` object
+ */
+export const asStellarStrategySwapBytes = (steps: unknown): xdr.ScVal => {
+  if (typeof steps === 'string') {
+    return strategyBytes(decodeStrategyBytesString(steps))
+  }
+  if (steps instanceof Uint8Array) {
+    return strategyBytes(steps)
+  }
+  if (steps && typeof steps === 'object') {
+    if (hasRouteXdr(steps)) {
+      return strategyBytes(decodeStrategyBytesString(steps.routeXdr))
+    }
+    if (hasSwapXdr(steps)) {
+      return strategyBytes(decodeStrategyBytesString(steps.swapXdr))
+    }
+    if (hasBytes(steps)) {
+      return typeof steps.bytes === 'string'
+        ? strategyBytes(decodeStrategyBytesString(steps.bytes))
+        : strategyBytes(steps.bytes)
+    }
+    return encodeStrategyPayloadToBytes(asStellarStrategyPayload(steps))
+  }
+  throw new Error(
+    'Stellar builder: `steps` must be opaque strategy bytes (`routeXdr`, base64/hex string, or Uint8Array)'
+  )
+}
+
+/** @deprecated Use `asStellarStrategyPayload` or `asStellarStrategySwapBytes`. */
+export const asStellarSwapSteps = asStellarStrategyPayload
 
 /**
  * Validate the untyped `data` field on FlashLoanArgs and narrow it to

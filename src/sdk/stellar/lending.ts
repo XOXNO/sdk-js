@@ -17,7 +17,6 @@
  */
 
 import type {
-  AggregatorSwapDto,
   BorrowArgs,
   FlashLoanArgs,
   LiquidateArgs,
@@ -28,9 +27,6 @@ import type {
   SupplyArgs,
   SwapCollateralArgs,
   SwapDebtArgs,
-  SwapHopDto,
-  SwapPathDto,
-  SwapVenue,
   WithdrawArgs,
 } from '@xoxno/types'
 import { Account, BASE_FEE, Contract, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
@@ -43,15 +39,17 @@ import {
 import {
   addr,
   asStellarBytes,
-  asStellarSwapSteps,
+  asStellarStrategySwapBytes,
   bool,
-  encodeAggregatorSwap,
   i128,
   option,
   tupleAddrAmount,
   tupleAddrAmountVec,
   u32,
   u64,
+  type StellarStrategySwapHopInput,
+  type StellarStrategySwapInput,
+  type StellarStrategySwapPathInput,
 } from './scval-encode'
 
 // -----------------------------------------------------------------------------
@@ -95,14 +93,16 @@ export interface BuiltStellarTx {
  * `MultiplyArgs.steps`, `SwapDebtArgs.steps`, `SwapCollateralArgs.steps`, and
  * `RepayDebtWithCollateralArgs.steps`.
  *
- * `@xoxno/types` declares `steps: unknown` on these DTOs so every chain owns its
- * own encoding. On Stellar, callers must pass an `AggregatorSwapDto`, which is
- * serialised into the Soroban `AggregatorSwap` struct.
+ * `@xoxno/types` declares `steps: unknown` on these DTOs so every chain owns
+ * its own encoding. On Stellar, callers pass opaque aggregator strategy bytes,
+ * normally the quote response `routeXdr` (base64 ScVal XDR) or `{ routeXdr }`.
+ * The lending controller forwards those bytes to the aggregator and does not
+ * decode the aggregator route.
  */
-export type StellarSwapStepsInput = AggregatorSwapDto
-export type StellarSwapHopInput = SwapHopDto
-export type StellarSwapPathInput = SwapPathDto
-export type StellarSwapVenue = SwapVenue
+export type StellarSwapStepsInput = StellarStrategySwapInput
+export type StellarSwapHopInput = StellarStrategySwapHopInput
+export type StellarSwapPathInput = StellarStrategySwapPathInput
+export type { StellarSwapVenue } from './scval-encode'
 
 // -----------------------------------------------------------------------------
 // Transaction assembly
@@ -253,8 +253,8 @@ export function buildStellarFlashLoanTx(
 /**
  * multiply(caller, account_id, e_mode_category, collateral_token,
  *          debt_to_flash_loan: i128, debt_token, mode: PositionMode,
- *          swap: AggregatorSwap, initial_payment: Option<(Address, i128)>,
- *          convert_swap: Option<AggregatorSwap>) -> u64
+ *          swap: Bytes, initial_payment: Option<(Address, i128)>,
+ *          convert_swap: Option<Bytes>) -> u64
  *
  * `mode` is a repr(u32) `PositionMode` → encoded as `scvU32`. The two trailing
  * `Option`s seed an optional initial collateral payment and a secondary swap
@@ -274,15 +274,15 @@ export function buildStellarMultiplyTx(
     i128(args.debtToFlashLoan),
     addr(args.debtToken),
     u32(args.mode),
-    encodeAggregatorSwap(asStellarSwapSteps(args.steps)),
+    asStellarStrategySwapBytes(args.steps),
     option(args.initialPayment, (p) => tupleAddrAmount(p.token, p.amount)),
-    option(args.convertSwap, (s) => encodeAggregatorSwap(asStellarSwapSteps(s))),
+    option(args.convertSwap, asStellarStrategySwapBytes),
   ])
 }
 
 /**
  * swap_debt(caller, account_id, existing_debt_token, new_debt_amount: i128,
- *           new_debt_token, steps: SwapSteps)
+ *           new_debt_token, steps: Bytes)
  */
 export function buildStellarSwapDebtTx(
   opts: StellarBuilderOptions,
@@ -294,13 +294,13 @@ export function buildStellarSwapDebtTx(
     addr(args.existingDebtToken),
     i128(args.newDebtAmount),
     addr(args.newDebtToken),
-    encodeAggregatorSwap(asStellarSwapSteps(args.steps)),
+    asStellarStrategySwapBytes(args.steps),
   ])
 }
 
 /**
  * swap_collateral(caller, account_id, current_collateral, from_amount: i128,
- *                 new_collateral, steps: SwapSteps)
+ *                 new_collateral, steps: Bytes)
  */
 export function buildStellarSwapCollateralTx(
   opts: StellarBuilderOptions,
@@ -312,14 +312,14 @@ export function buildStellarSwapCollateralTx(
     addr(args.currentCollateral),
     i128(args.fromAmount),
     addr(args.newCollateral),
-    encodeAggregatorSwap(asStellarSwapSteps(args.steps)),
+    asStellarStrategySwapBytes(args.steps),
   ])
 }
 
 /**
  * repay_debt_with_collateral(caller, account_id, collateral_token,
  *                            collateral_amount: i128, debt_token,
- *                            steps: SwapSteps, close_position: bool)
+ *                            steps: Bytes, close_position: bool)
  */
 export function buildStellarRepayDebtWithCollateralTx(
   opts: StellarBuilderOptions,
@@ -331,7 +331,7 @@ export function buildStellarRepayDebtWithCollateralTx(
     addr(args.collateralToken),
     i128(args.collateralAmount),
     addr(args.debtToken),
-    encodeAggregatorSwap(asStellarSwapSteps(args.steps)),
+    asStellarStrategySwapBytes(args.steps),
     bool(args.closePosition),
   ])
 }

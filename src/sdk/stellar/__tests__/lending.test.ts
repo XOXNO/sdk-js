@@ -67,8 +67,7 @@ const FIXTURE_USDC =
   'CABQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGCK3'
 const FIXTURE_XLM =
   'CACAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAINCW'
-const FIXTURE_LP =
-  'CACQKBIFAUCQKBIFAUCQKBIFAUCQKBIFAUCQKBIFAUCQKBIFAUCQLC2U'
+const FIXTURE_ROUTE_XDR = 'AQIDBA=='
 
 // Stellar requires a tx source sequence strictly less than next ledger sequence.
 const FIXTURE_SEQUENCE = '123456789'
@@ -92,23 +91,7 @@ const BASE_OPTS: StellarBuilderOptions = {
   timeoutSeconds: 300,
 }
 
-const FIXTURE_STEPS: StellarSwapStepsInput = {
-  paths: [
-    {
-      hops: [
-        {
-          feeBps: 30,
-          pool: FIXTURE_LP,
-          tokenIn: FIXTURE_USDC,
-          tokenOut: FIXTURE_XLM,
-          venue: 'Soroswap',
-        },
-      ],
-      splitPpm: 1_000_000,
-    },
-  ],
-  totalMinOut: '1000000',
-}
+const FIXTURE_STEPS: StellarSwapStepsInput = { routeXdr: FIXTURE_ROUTE_XDR }
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -420,9 +403,9 @@ describe('Stellar lending builders — input validation', () => {
     expect(() =>
       buildStellarMultiplyTx(BASE_OPTS, {
         ...multiplyArgs,
-        steps: { wrong: true },
+        steps: 42,
       } as unknown as MultiplyArgs)
-    ).toThrow(/steps\.paths.*non-empty/)
+    ).toThrow(/steps.*opaque strategy bytes/)
   })
 
   it('throws on invalid flash_loan data shape', () => {
