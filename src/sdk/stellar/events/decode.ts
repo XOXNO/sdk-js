@@ -161,6 +161,7 @@ const REGISTRY: Record<string, DecoderFn> = {
       slope3: dec(d.slope3),
       midUtilization: dec(d.mid_utilization),
       optimalUtilization: dec(d.optimal_utilization),
+      maxUtilization: optDec(d.max_utilization),
       reserveFactor: num(d.reserve_factor),
       marketAddress: str(d.market_address),
       config: decodeAssetConfig(d.config as Raw),
@@ -177,6 +178,7 @@ const REGISTRY: Record<string, DecoderFn> = {
       slope3Ray: dec(d.slope3_ray),
       midUtilizationRay: dec(d.mid_utilization_ray),
       optimalUtilizationRay: dec(d.optimal_utilization_ray),
+      maxUtilizationRay: optDec(d.max_utilization_ray),
       reserveFactorBps: num(d.reserve_factor_bps),
     },
   }),
@@ -226,7 +228,12 @@ const REGISTRY: Record<string, DecoderFn> = {
   }),
   'config:oracle': (d) => ({
     topic: 'config:oracle',
-    data: { asset: str(d.asset), oracle: decodeOracleProvider(d.oracle as Raw) },
+    data: {
+      asset: str(d.asset),
+      oracle: decodeOracleProvider(d.oracle as Raw),
+      minSanityPriceWad: optDec(d.min_sanity_price_wad),
+      maxSanityPriceWad: optDec(d.max_sanity_price_wad),
+    },
   }),
   'config:emode_category': (d) => ({
     topic: 'config:emode_category',
