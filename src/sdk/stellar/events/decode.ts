@@ -141,6 +141,10 @@ const decodeOracleProvider = (o: Raw): StellarLendingOracleUpdateStruct => {
     strategy: ORACLE_STRATEGY[num(o.strategy)] ?? 'Single',
     primary: decodeOracleSource(o, 'primary'),
     anchor: hasAnchor ? decodeOracleSource(o, 'anchor') : undefined,
+    primaryQuoteToken: optStr(o.primary_quote_token),
+    anchorQuoteToken: optStr(o.anchor_quote_token),
+    minSanityPriceWad: optDec(o.min_sanity_price_wad),
+    maxSanityPriceWad: optDec(o.max_sanity_price_wad),
   }
   return oracle as unknown as StellarLendingOracleUpdateStruct
 }
@@ -231,8 +235,6 @@ const REGISTRY: Record<string, DecoderFn> = {
     data: {
       asset: str(d.asset),
       oracle: decodeOracleProvider(d.oracle as Raw),
-      minSanityPriceWad: optDec(d.min_sanity_price_wad),
-      maxSanityPriceWad: optDec(d.max_sanity_price_wad),
     },
   }),
   'config:emode_category': (d) => ({
