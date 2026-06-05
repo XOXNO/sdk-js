@@ -139,21 +139,49 @@ export function buildTx(
 }
 
 // -----------------------------------------------------------------------------
+// Shared batch asset shape (Vec<(Address, i128)> on the controller)
+// -----------------------------------------------------------------------------
+
+export interface StellarTokenAmount {
+  token: string
+  amount: string
+}
+
+export interface StellarSupplyBatchArgs {
+  accountNonce?: number
+  eModeCategory?: number
+  assets: ReadonlyArray<StellarTokenAmount>
+}
+
+export interface StellarBorrowBatchArgs {
+  accountNonce: number
+  borrows: ReadonlyArray<StellarTokenAmount>
+}
+
+export interface StellarWithdrawBatchArgs {
+  accountNonce: number
+  withdrawals: ReadonlyArray<StellarTokenAmount>
+}
+
+export interface StellarRepayBatchArgs {
+  accountNonce: number
+  payments: ReadonlyArray<StellarTokenAmount>
+}
+
+// -----------------------------------------------------------------------------
 // Builders — 10 entry points, 1 : 1 with the Stellar controller
 // -----------------------------------------------------------------------------
 
 /**
  * supply(caller, account_id: u64, e_mode_category: u32, assets: Vec<(Address, i128)>)
- * @xoxno/types `SupplyArgs` is a single-asset shape; the Stellar contract
- * expects a batch — we wrap the single asset in a 1-element Vec.
  */
-export function buildStellarSupplyTx(
+export function buildStellarSupplyBatchTx(
   opts: StellarBuilderOptions,
-  args: SupplyArgs
+  args: StellarSupplyBatchArgs
 ): BuiltStellarTx {
   const accountId = args.accountNonce ?? 0
   const eModeCategory = args.eModeCategory ?? 0
-  const assets = tupleAddrAmountVec([{ token: args.token, amount: args.amount }])
+  const assets = tupleAddrAmountVec([...args.assets])
 
   return buildTx(opts, 'supply', [
     addr(opts.caller),
@@ -164,18 +192,56 @@ export function buildStellarSupplyTx(
 }
 
 /**
+ * @xoxno/types `SupplyArgs` is a single-asset shape; the Stellar contract
+ * expects a batch — we wrap the single asset in a 1-element Vec.
+ */
+export function buildStellarSupplyTx(
+  opts: StellarBuilderOptions,
+  args: SupplyArgs
+): BuiltStellarTx {
+  return buildStellarSupplyBatchTx(opts, {
+    accountNonce: args.accountNonce,
+    eModeCategory: args.eModeCategory,
+    assets: [{ token: args.token, amount: args.amount }],
+  })
+}
+
+export function buildStellarBorrowBatchTx(
+  opts: StellarBuilderOptions,
+  args: StellarBorrowBatchArgs
+): BuiltStellarTx {
+  const borrows = tupleAddrAmountVec([...args.borrows])
+
+  return buildTx(opts, 'borrow', [
+    addr(opts.caller),
+    u64(args.accountNonce),
+    borrows,
+  ])
+}
+
+/**
  * borrow(caller, account_id: u64, borrows: Vec<(Address, i128)>)
  */
 export function buildStellarBorrowTx(
   opts: StellarBuilderOptions,
   args: BorrowArgs
 ): BuiltStellarTx {
-  const borrows = tupleAddrAmountVec([{ token: args.token, amount: args.amount }])
+  return buildStellarBorrowBatchTx(opts, {
+    accountNonce: args.accountNonce,
+    borrows: [{ token: args.token, amount: args.amount }],
+  })
+}
 
-  return buildTx(opts, 'borrow', [
+export function buildStellarWithdrawBatchTx(
+  opts: StellarBuilderOptions,
+  args: StellarWithdrawBatchArgs
+): BuiltStellarTx {
+  const withdrawals = tupleAddrAmountVec([...args.withdrawals])
+
+  return buildTx(opts, 'withdraw', [
     addr(opts.caller),
     u64(args.accountNonce),
-    borrows,
+    withdrawals,
   ])
 }
 
@@ -186,14 +252,22 @@ export function buildStellarWithdrawTx(
   opts: StellarBuilderOptions,
   args: WithdrawArgs
 ): BuiltStellarTx {
-  const withdrawals = tupleAddrAmountVec([
-    { token: args.token, amount: args.amount },
-  ])
+  return buildStellarWithdrawBatchTx(opts, {
+    accountNonce: args.accountNonce,
+    withdrawals: [{ token: args.token, amount: args.amount }],
+  })
+}
 
-  return buildTx(opts, 'withdraw', [
+export function buildStellarRepayBatchTx(
+  opts: StellarBuilderOptions,
+  args: StellarRepayBatchArgs
+): BuiltStellarTx {
+  const payments = tupleAddrAmountVec([...args.payments])
+
+  return buildTx(opts, 'repay', [
     addr(opts.caller),
     u64(args.accountNonce),
-    withdrawals,
+    payments,
   ])
 }
 
@@ -204,13 +278,10 @@ export function buildStellarRepayTx(
   opts: StellarBuilderOptions,
   args: RepayArgs
 ): BuiltStellarTx {
-  const payments = tupleAddrAmountVec([{ token: args.token, amount: args.amount }])
-
-  return buildTx(opts, 'repay', [
-    addr(opts.caller),
-    u64(args.accountNonce),
-    payments,
-  ])
+  return buildStellarRepayBatchTx(opts, {
+    accountNonce: args.accountNonce,
+    payments: [{ token: args.token, amount: args.amount }],
+  })
 }
 
 /**
