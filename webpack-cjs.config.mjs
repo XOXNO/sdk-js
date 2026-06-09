@@ -6,6 +6,9 @@ import common from './common.config.mjs'
 
 export default merge(common, {
   mode: 'production',
+  // CJS output: emit `require('@stellar/stellar-sdk')` for the externalized
+  // dependency so the consumer resolves its own copy.
+  externalsType: 'commonjs',
   output: {
     // `.cjs` (not `.cjs.js`) so Node interprets it as CommonJS under the
     // package's `"type": "module"` — otherwise `require()` of the SDK from a

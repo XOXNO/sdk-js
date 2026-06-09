@@ -18,6 +18,18 @@ export default {
       entryOnly: true,
     }),
   ],
+  // Leave `@stellar/stellar-sdk` (and any subpath) out of the bundle so the
+  // SDK uses the CONSUMER's copy. Bundling it inlines a second copy of
+  // stellar-base, whose `Transaction`/`Account`/`xdr` classes then differ
+  // from the consumer's by reference — `rpc.Server.prepareTransaction` runs
+  // `instanceof Transaction` against the consumer's class and throws
+  // "expected a 'Transaction', got: [object Object]". It is declared a
+  // peerDependency; both consumers (xoxno-api-v2, xoxno-az-functions) and the
+  // UI already depend on it directly. `externalsType` is set per build
+  // (`module` for ESM, `commonjs` for CJS).
+  externals: {
+    '@stellar/stellar-sdk': '@stellar/stellar-sdk',
+  },
   module: {
     rules: [
       {
