@@ -348,7 +348,7 @@ export const endpoints = {
     "output": {} as LendingAccountProfile[]
   },
   "/lending/market/indexes": {
-    "input": {},
+    "input": {} as {chain?: ActivityChain[]},
     "output": {} as Record<string, LendingIndexesDto>
   },
   "/user/lending/position/:identifier": {
