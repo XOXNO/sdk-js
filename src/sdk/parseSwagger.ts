@@ -1,4 +1,4 @@
-import { writeFile } from 'fs/promises'
+import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
 
 import { parse } from 'yaml'
@@ -190,18 +190,24 @@ const duplicates: string[] = []
 
 async function parseSwagger() {
   const swaggerUrl = process.env.SWAGGER_URL ?? 'https://api.xoxno.com/swagger.yaml'
-  const yml = await fetch(swaggerUrl).then((res) => {
-    return res.text()
-  })
+  const swaggerJsonPath = path.join(process.cwd(), './src/sdk/swagger.json')
+
+  const response = await fetch(swaggerUrl).catch(() => undefined)
+  let parsed = response?.ok ? parse(await response.text()) : undefined
+
+  if (parsed?.paths) {
+    await writeFile(swaggerJsonPath, JSON.stringify(parsed))
+  } else {
+    // A WAF challenge or outage on the swagger endpoint must not block SDK
+    // releases: build from the last committed spec and say so loudly.
+    console.error(
+      `swagger fetch failed (${swaggerUrl} -> ${response?.status ?? 'network error'}); ` +
+        'building from committed src/sdk/swagger.json'
+    )
+    parsed = JSON.parse(await readFile(swaggerJsonPath, 'utf8'))
+  }
 
   const result: IRawSdk = {}
-
-  const parsed = parse(yml)
-
-  await writeFile(
-    path.join(process.cwd(), './src/sdk/swagger.json'),
-    JSON.stringify(parsed)
-  )
 
   for (const [key, value] of Object.entries(parsed.paths)) {
     const typedValue = value as Record<
