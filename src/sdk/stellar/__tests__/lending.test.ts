@@ -47,6 +47,7 @@ import {
   buildStellarSupplyTx,
   buildStellarSwapCollateralTx,
   buildStellarSwapDebtTx,
+  buildStellarWithdrawBatchTx,
   buildStellarWithdrawTx,
   type StellarBuilderOptions,
   type StellarSwapStepsInput,
@@ -241,9 +242,23 @@ describe('Stellar lending transaction builders — sanity', () => {
     {
       name: 'withdraw',
       expectedFn: 'withdraw',
-      // caller, account_id, withdrawals
-      expectedArgCount: 3,
+      // caller, account_id, withdrawals, to (None -> Void)
+      expectedArgCount: 4,
       build: () => buildStellarWithdrawTx(BASE_OPTS, withdrawArgs),
+    },
+    {
+      name: 'withdraw (batch with recipient)',
+      expectedFn: 'withdraw',
+      // same arity; the trailing Option is Some(address) instead of Void
+      expectedArgCount: 4,
+      build: () =>
+        buildStellarWithdrawBatchTx(BASE_OPTS, {
+          accountNonce: withdrawArgs.accountNonce,
+          withdrawals: [
+            { token: withdrawArgs.token, amount: withdrawArgs.amount },
+          ],
+          to: FIXTURE_CALLER,
+        }),
     },
     {
       name: 'repay',

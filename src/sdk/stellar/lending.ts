@@ -161,6 +161,14 @@ export interface StellarBorrowBatchArgs {
 export interface StellarWithdrawBatchArgs {
   accountNonce: number
   withdrawals: ReadonlyArray<StellarTokenAmount>
+  /**
+   * Optional recipient override (`C...` or `G...`). The pool pays the
+   * withdrawn tokens to this address instead of the caller. Omit for the
+   * standard flow — the contract arg is still sent, encoded as
+   * `Option::None` (ScVal void), which the controller resolves to the
+   * caller.
+   */
+  to?: string
 }
 
 export interface StellarRepayBatchArgs {
@@ -242,11 +250,14 @@ export function buildStellarWithdrawBatchTx(
     addr(opts.caller),
     u64(args.accountNonce),
     withdrawals,
+    option(args.to, addr),
   ])
 }
 
 /**
- * withdraw(caller, account_id: u64, withdrawals: Vec<(Address, i128)>)
+ * withdraw(caller, account_id: u64, withdrawals: Vec<(Address, i128)>,
+ * to: Option<Address>) — `to` is always sent; absent means the caller
+ * receives the funds.
  */
 export function buildStellarWithdrawTx(
   opts: StellarBuilderOptions,
