@@ -7,10 +7,15 @@
  * already delivers `topic[]` and `value` as base64 XDR — pass them straight
  * through.
  *
- * Each contractevent `data` serializes as an `ScMap` keyed by field name, so
+ * Most contractevent `data` serializes as an `ScMap` keyed by field name, so
  * `scValToNative` yields a snake_case-keyed object with `bigint` for i128/u64,
  * `number` for u32, strkey strings for addresses, strings for symbols, `null`
  * for absent `Option`s, and arrays for `Vec`s.
+ *
+ * The three hot topics (`position:batch_update`, `market:batch_state_update`,
+ * `debt:ceiling_batch_update`) use the vec-encoded ABI v2 instead: `data` is an
+ * `ScVec` whose field order IS the ABI, so `scValToNative` yields nested arrays
+ * decoded positionally.
  */
 
 import { scValToNative, xdr } from '@stellar/stellar-sdk'
@@ -57,10 +62,28 @@ const ORACLE_STRATEGY = ['Single', 'PrimaryWithAnchor'] as const
 const ORACLE_PROVIDER = ['ReflectorSep40', 'RedStonePriceFeed'] as const
 const ORACLE_READ_MODE = ['Spot', 'Twap'] as const
 
-const positionType = (v: unknown): 'Deposit' | 'Borrow' =>
-  num(v) === 2 ? 'Borrow' : 'Deposit'
+/** PositionAction u32 discriminant → legacy action string (frozen wire table). */
+const POSITION_ACTION = [
+  'supply',
+  'borrow',
+  'withdraw',
+  'repay',
+  'liq_repay',
+  'liq_seize',
+  'multiply',
+  'param_upd',
+  'sw_debt_r',
+  'sw_col_wd',
+  'rp_col_wd',
+  'rp_col_r',
+  'close_wd',
+] as const
+
 const positionMode = (v: unknown): 'None' | 'Multiply' | 'Long' | 'Short' =>
   POSITION_MODE[num(v)] ?? 'None'
+// Unknown discriminants surface as their decimal string instead of throwing.
+const positionAction = (v: unknown): string => POSITION_ACTION[num(v)] ?? dec(v)
+const vec = (v: unknown): readonly unknown[] => (Array.isArray(v) ? v : [])
 
 // ---- nested struct decoders -------------------------------------------------
 
@@ -84,23 +107,51 @@ const decodeAssetConfig = (c: Raw) => ({
   eModeCategories: ((c.e_mode_categories as unknown[]) ?? []).map(num),
 })
 
-const decodePositionDelta = (d: Raw) => {
-  const pt = positionType(d.position_type)
+/**
+ * Vec-encoded position delta. Deposit entries are arrays of 8
+ * `[action, asset, scaled_amount_ray, index_ray, amount, liq_threshold_bps,
+ * liq_bonus_bps, ltv_bps]`; borrow entries stop after `amount` (array of 5).
+ */
+const decodePositionDelta = (e: readonly unknown[], pt: 'Deposit' | 'Borrow') => {
   const isBorrow = pt === 'Borrow'
   return {
-    action: str(d.action),
+    action: positionAction(e[0]),
     positionType: pt,
-    asset: str(d.asset),
-    scaledAmountRay: dec(d.scaled_amount_ray),
-    indexRay: dec(d.index_ray),
-    amount: dec(d.amount),
-    assetPriceWad: optDec(d.asset_price_wad),
+    asset: str(e[1]),
+    scaledAmountRay: dec(e[2]),
+    indexRay: dec(e[3]),
+    amount: dec(e[4]),
     // Borrow deltas carry no collateral risk params — surface undefined, not 0.
-    liquidationThresholdBps: isBorrow ? undefined : num(d.liquidation_threshold_bps),
-    liquidationBonusBps: isBorrow ? undefined : num(d.liquidation_bonus_bps),
-    loanToValueBps: isBorrow ? undefined : num(d.loan_to_value_bps),
+    liquidationThresholdBps: isBorrow ? undefined : num(e[5]),
+    liquidationBonusBps: isBorrow ? undefined : num(e[6]),
+    loanToValueBps: isBorrow ? undefined : num(e[7]),
   }
 }
+
+/** Vec-encoded account attributes: array of 5
+ * `[owner, e_mode_category_id, is_isolated_position, mode, isolated_token?]`. */
+const decodeAccountAttributes = (a: readonly unknown[]) => ({
+  owner: str(a[0]),
+  isIsolatedPosition: Boolean(a[2]),
+  eModeCategoryId: num(a[1]),
+  mode: positionMode(a[3]),
+  isolatedToken: optStr(a[4]),
+})
+
+/** Vec-encoded market snapshot: array of 9
+ * `[asset, timestamp_ms, supply_index, borrow_index, reserves, supplied,
+ * borrowed, revenue, asset_price_wad?]`. */
+const decodeMarketSnapshot = (e: readonly unknown[]) => ({
+  asset: str(e[0]),
+  timestamp: num(e[1]),
+  supplyIndexRay: dec(e[2]),
+  borrowIndexRay: dec(e[3]),
+  reservesRay: dec(e[4]),
+  suppliedRay: dec(e[5]),
+  borrowedRay: dec(e[6]),
+  revenueRay: dec(e[7]),
+  assetPriceWad: optDec(e[8]),
+})
 
 const decodeOracleSource = (o: Raw, prefix: 'primary' | 'anchor') => {
   const readMode = ORACLE_READ_MODE[num(o[`${prefix}_read_mode`])] ?? 'Spot'
@@ -186,36 +237,29 @@ const REGISTRY: Record<string, DecoderFn> = {
       reserveFactorBps: num(d.reserve_factor_bps),
     },
   }),
+  // Vec-encoded (ABI v2): data is the entries Vec directly, each an array of 9.
   'market:batch_state_update': (d) => ({
     topic: 'market:batch_state_update',
     data: {
-      updates: ((d.updates as Raw[]) ?? []).map((u) => ({
-        asset: str(u.asset),
-        timestamp: num(u.timestamp),
-        supplyIndexRay: dec(u.supply_index_ray),
-        borrowIndexRay: dec(u.borrow_index_ray),
-        reservesRay: dec(u.reserves_ray),
-        suppliedRay: dec(u.supplied_ray),
-        borrowedRay: dec(u.borrowed_ray),
-        revenueRay: dec(u.revenue_ray),
-        assetPriceWad: optDec(u.asset_price_wad),
-      })),
+      updates: vec(d).map((u) => decodeMarketSnapshot(vec(u))),
     },
   }),
-  'position:batch_update': (d) => ({
-    topic: 'position:batch_update',
-    data: {
-      accountId: dec(d.account_id),
-      accountAttributes: {
-        owner: str((d.account_attributes as Raw).owner),
-        isIsolatedPosition: Boolean((d.account_attributes as Raw).is_isolated_position),
-        eModeCategoryId: num((d.account_attributes as Raw).e_mode_category_id),
-        mode: positionMode((d.account_attributes as Raw).mode),
-        isolatedToken: optStr((d.account_attributes as Raw).isolated_token),
+  // Vec-encoded (ABI v2): data = [account_id, attributes, deposits, borrows].
+  // `updates` merges all deposit entries first, then all borrow entries.
+  'position:batch_update': (d) => {
+    const v = vec(d)
+    return {
+      topic: 'position:batch_update',
+      data: {
+        accountId: dec(v[0]),
+        accountAttributes: decodeAccountAttributes(vec(v[1])),
+        updates: [
+          ...vec(v[2]).map((e) => decodePositionDelta(vec(e), 'Deposit')),
+          ...vec(v[3]).map((e) => decodePositionDelta(vec(e), 'Borrow')),
+        ],
       },
-      updates: ((d.updates as Raw[]) ?? []).map(decodePositionDelta),
-    },
-  }),
+    }
+  },
   'position:flash_loan': (d) => ({
     topic: 'position:flash_loan',
     data: {
@@ -268,13 +312,14 @@ const REGISTRY: Record<string, DecoderFn> = {
     topic: 'debt:ceiling_update',
     data: { asset: str(d.asset), totalDebtUsdWad: dec(d.total_debt_usd_wad) },
   }),
+  // Vec-encoded (ABI v2): data is the entries Vec directly, each `[asset, total_debt_usd_wad]`.
   'debt:ceiling_batch_update': (d) => ({
     topic: 'debt:ceiling_batch_update',
     data: {
-      updates: ((d.updates as Raw[]) ?? []).map((u) => ({
-        asset: str(u.asset),
-        totalDebtUsdWad: dec(u.total_debt_usd_wad),
-      })),
+      updates: vec(d).map((u) => {
+        const e = vec(u)
+        return { asset: str(e[0]), totalDebtUsdWad: dec(e[1]) }
+      }),
     },
   }),
   'debt:bad_debt': (d) => ({

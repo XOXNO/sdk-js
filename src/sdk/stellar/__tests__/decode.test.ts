@@ -1,12 +1,15 @@
 /**
  * Decoder tests locked against captured event XDR.
  *
- * `fixtures/lending-events.json` holds every controller `#[contractevent]`'s
- * topics + `data` serialized to base64 XDR, exactly as Soroban RPC `getEvents`
- * delivers them.
+ * `fixtures/lending-events.json` holds the map-encoded controller
+ * `#[contractevent]`s' topics + `data` serialized to base64 XDR, exactly as
+ * Soroban RPC `getEvents` delivers them. The three vec-encoded ABI v2 topics
+ * (`position:batch_update`, `market:batch_state_update`,
+ * `debt:ceiling_batch_update`) are constructed below with ScVal builders so
+ * the wire field order stays explicit.
  */
 
-import { xdr } from '@stellar/stellar-sdk'
+import { Address, nativeToScVal, xdr } from '@stellar/stellar-sdk'
 
 import {
   decodeStellarLendingEvent,
@@ -21,7 +24,107 @@ interface Fixture {
   topics: string[]
   data: string
 }
-const FIXTURES = fixtures as Fixture[]
+
+// ---- ABI v2 vec-encoded fixture construction ---------------------------------
+
+const sym = (s: string): xdr.ScVal => xdr.ScVal.scvSymbol(s)
+const u32 = (n: number): xdr.ScVal => xdr.ScVal.scvU32(n)
+const u64 = (n: bigint): xdr.ScVal => nativeToScVal(n, { type: 'u64' })
+const i128 = (n: bigint): xdr.ScVal => nativeToScVal(n, { type: 'i128' })
+const boolV = (v: boolean): xdr.ScVal => xdr.ScVal.scvBool(v)
+const none = (): xdr.ScVal => xdr.ScVal.scvVoid()
+const vecV = (items: xdr.ScVal[]): xdr.ScVal => xdr.ScVal.scvVec(items)
+const addrV = (a: string): xdr.ScVal => Address.fromString(a).toScVal()
+const b64 = (v: xdr.ScVal): string => v.toXDR('base64')
+const topicsFor = (domain: string, action: string): string[] => [
+  b64(sym(domain)),
+  b64(sym(action)),
+]
+
+const OWNER = Address.account(Buffer.alloc(32, 9)).toString()
+const ASSET_A = Address.contract(Buffer.alloc(32, 1)).toString()
+const ASSET_B = Address.contract(Buffer.alloc(32, 2)).toString()
+
+const RAY = 10n ** 27n
+
+/** Deposit entry: array of 8 `[action, asset, scaled, index, amount, lt, lb, ltv]`. */
+const depositEntry = (action: number, asset: string, amount: bigint): xdr.ScVal =>
+  vecV([
+    u32(action),
+    addrV(asset),
+    i128(amount * 10n ** 9n),
+    i128(RAY),
+    i128(amount),
+    u32(8000),
+    u32(500),
+    u32(7500),
+  ])
+
+/** Borrow entry: array of 5 `[action, asset, scaled, index, amount]`. */
+const borrowEntry = (action: number, asset: string, amount: bigint): xdr.ScVal =>
+  vecV([u32(action), addrV(asset), i128(amount * 10n ** 9n), i128(RAY), i128(amount)])
+
+/** Market entry: array of 9, trailing `asset_price_wad` is `Option<i128>`. */
+const marketEntry = (asset: string, priceWad: bigint | null): xdr.ScVal =>
+  vecV([
+    addrV(asset),
+    u64(1718000000000n),
+    i128(1050000000000000000000000000n),
+    i128(1100000000000000000000000000n),
+    i128(7n * RAY),
+    i128(500n * RAY),
+    i128(300n * RAY),
+    i128(2n * RAY),
+    priceWad === null ? none() : i128(priceWad),
+  ])
+
+const V2_FIXTURES: Fixture[] = [
+  {
+    topic: 'position:batch_update',
+    topics: topicsFor('position', 'batch_update'),
+    // [account_id, attributes, deposits, borrows] — liquidation-shaped.
+    data: b64(
+      vecV([
+        u64(42n),
+        vecV([addrV(OWNER), u32(1), boolV(false), u32(1), none()]),
+        vecV([depositEntry(5, ASSET_A, 1000000n), depositEntry(5, ASSET_B, 2000000n)]),
+        vecV([borrowEntry(4, ASSET_B, 500000n), borrowEntry(4, ASSET_A, 750000n)]),
+      ])
+    ),
+  },
+  {
+    topic: 'position:batch_update_unknown_action',
+    topics: topicsFor('position', 'batch_update'),
+    // Unknown action discriminant (99) + isolated attrs with isolated_token set.
+    data: b64(
+      vecV([
+        u64(7n),
+        vecV([addrV(OWNER), u32(0), boolV(true), u32(0), addrV(ASSET_A)]),
+        vecV([depositEntry(99, ASSET_A, 1n), depositEntry(0, ASSET_B, 1n)]),
+        vecV([]),
+      ])
+    ),
+  },
+  {
+    topic: 'market:batch_state_update',
+    topics: topicsFor('market', 'batch_state_update'),
+    // Data is the entries Vec directly — price present, then absent.
+    data: b64(vecV([marketEntry(ASSET_A, 1230000000000000000n), marketEntry(ASSET_B, null)])),
+  },
+  {
+    topic: 'debt:ceiling_batch_update',
+    topics: topicsFor('debt', 'ceiling_batch_update'),
+    // Data is the entries Vec directly, each `[asset, total_debt_usd_wad]`.
+    data: b64(
+      vecV([
+        vecV([addrV(ASSET_A), i128(123000000000000000000n)]),
+        vecV([addrV(ASSET_B), i128(0n)]),
+      ])
+    ),
+  },
+]
+
+const FIXTURES = [...(fixtures as Fixture[]), ...V2_FIXTURES]
 const byTopic = (t: string): Fixture => {
   const f = FIXTURES.find((x) => x.topic === t)
   if (!f) throw new Error(`fixture not found: ${t}`)
@@ -71,40 +174,89 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(ev.data.config.liquidationFeesBps).toBe(100)
   })
 
-  it('position:batch_update — Deposit keeps risk fields, Borrow nulls them (bug fix)', () => {
+  it('position:batch_update (vec ABI v2) — merges deposits then borrows, maps action strings', () => {
     const ev = decodeFixture('position:batch_update')
     if (ev.topic !== 'position:batch_update') throw new Error('narrow')
     expect(ev.data.accountId).toBe('42')
+    expect(ev.data.accountAttributes.owner).toBe(OWNER)
     expect(ev.data.accountAttributes.mode).toBe('Multiply')
     expect(ev.data.accountAttributes.eModeCategoryId).toBe(1)
+    expect(ev.data.accountAttributes.isIsolatedPosition).toBe(false)
     expect(ev.data.accountAttributes.isolatedToken).toBeUndefined()
 
-    const [deposit, borrow] = ev.data.updates
-    expect(deposit!.positionType).toBe('Deposit')
-    expect(deposit!.action).toBe('supply')
+    // Merged order: ALL deposit entries first (in order), then all borrows.
+    expect(ev.data.updates).toHaveLength(4)
+    expect(ev.data.updates.map((u) => u.positionType)).toEqual([
+      'Deposit',
+      'Deposit',
+      'Borrow',
+      'Borrow',
+    ])
+    expect(ev.data.updates.map((u) => u.action)).toEqual([
+      'liq_seize',
+      'liq_seize',
+      'liq_repay',
+      'liq_repay',
+    ])
+    const [deposit, deposit2, borrow] = ev.data.updates
+    expect(deposit!.asset).toBe(ASSET_A)
+    expect(deposit2!.asset).toBe(ASSET_B)
+    expect(deposit!.amount).toBe('1000000')
+    expect(deposit!.scaledAmountRay).toBe('1000000000000000')
+    expect(deposit!.indexRay).toBe(RAY.toString())
     expect(deposit!.liquidationThresholdBps).toBe(8000)
     expect(deposit!.liquidationBonusBps).toBe(500)
     expect(deposit!.loanToValueBps).toBe(7500)
-    expect(deposit!.amount).toBe('1000000')
 
-    expect(borrow!.positionType).toBe('Borrow')
-    expect(borrow!.action).toBe('borrow')
+    expect(borrow!.asset).toBe(ASSET_B)
+    expect(borrow!.amount).toBe('500000')
     // Borrow risk params are not applicable → undefined, NOT 0.
     expect(borrow!.liquidationThresholdBps).toBeUndefined()
     expect(borrow!.liquidationBonusBps).toBeUndefined()
     expect(borrow!.loanToValueBps).toBeUndefined()
-    // Position deltas carry no liquidationFeesBps field.
-    expect('liquidationFeesBps' in (borrow as object)).toBe(false)
-    expect('liquidationFeesBps' in (deposit as object)).toBe(false)
+    // assetPriceWad left the position-delta wire format in ABI v2.
+    expect(Object.keys(deposit as object)).not.toContain('assetPriceWad')
+    expect(Object.keys(borrow as object)).not.toContain('assetPriceWad')
   })
 
-  it('decodes the REAL debt:ceiling_batch_update (not just the dead single)', () => {
+  it('position:batch_update — unknown action discriminant decodes as its decimal string', () => {
+    const f = byTopic('position:batch_update_unknown_action')
+    const ev = decodeStellarLendingEvent(f.topics, f.data)
+    if (ev?.topic !== 'position:batch_update') throw new Error('narrow')
+    expect(ev.data.accountId).toBe('7')
+    expect(ev.data.accountAttributes.mode).toBe('None')
+    expect(ev.data.accountAttributes.isIsolatedPosition).toBe(true)
+    expect(ev.data.accountAttributes.isolatedToken).toBe(ASSET_A)
+    expect(ev.data.updates.map((u) => u.action)).toEqual(['99', 'supply'])
+  })
+
+  it('market:batch_state_update (vec ABI v2) — price present and absent (null)', () => {
+    const ev = decodeFixture('market:batch_state_update')
+    if (ev.topic !== 'market:batch_state_update') throw new Error('narrow')
+    expect(ev.data.updates).toHaveLength(2)
+    const [withPrice, withoutPrice] = ev.data.updates
+    expect(withPrice!.asset).toBe(ASSET_A)
+    expect(withPrice!.timestamp).toBe(1718000000000)
+    expect(withPrice!.supplyIndexRay).toBe('1050000000000000000000000000')
+    expect(withPrice!.borrowIndexRay).toBe('1100000000000000000000000000')
+    expect(withPrice!.reservesRay).toBe((7n * RAY).toString())
+    expect(withPrice!.suppliedRay).toBe((500n * RAY).toString())
+    expect(withPrice!.borrowedRay).toBe((300n * RAY).toString())
+    expect(withPrice!.revenueRay).toBe((2n * RAY).toString())
+    expect(withPrice!.assetPriceWad).toBe('1230000000000000000')
+    expect(withoutPrice!.asset).toBe(ASSET_B)
+    expect(withoutPrice!.assetPriceWad).toBeUndefined()
+  })
+
+  it('debt:ceiling_batch_update (vec ABI v2) — positional `[asset, total_debt_usd_wad]`', () => {
     const batch = decodeFixture('debt:ceiling_batch_update')
     if (batch.topic !== 'debt:ceiling_batch_update') throw new Error('narrow')
-    expect(batch.data.updates).toHaveLength(1)
+    expect(batch.data.updates).toHaveLength(2)
+    expect(batch.data.updates[0]!.asset).toBe(ASSET_A)
     expect(batch.data.updates[0]!.totalDebtUsdWad).toBe('123000000000000000000')
-    expect(batch.data.updates[0]!.asset).toMatch(/^C[A-Z2-7]{55}$/)
-    // The dead single is still decodable for completeness.
+    expect(batch.data.updates[1]!.asset).toBe(ASSET_B)
+    expect(batch.data.updates[1]!.totalDebtUsdWad).toBe('0')
+    // The dead single (still map-encoded) is still decodable for completeness.
     const single = decodeFixture('debt:ceiling_update')
     expect(single.topic).toBe('debt:ceiling_update')
   })

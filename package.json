@@ -104,7 +104,7 @@
   "dependencies": {
     "@multiversx/sdk-core": "^15.3.2",
     "@multiversx/sdk-network-providers": "^2.9.3",
-    "@xoxno/types": "^1.0.410"
+    "@xoxno/types": "1.0.412"
   },
   "peerDependencies": {
     "@stellar/stellar-sdk": "^15.0.0"
