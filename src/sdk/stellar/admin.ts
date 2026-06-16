@@ -89,7 +89,7 @@ export const encodeMarketParamsRaw = (p: MarketParamsRawDto): xdr.ScVal =>
     slope3_ray: i128(p.slope3Ray),
   })
 
-/** `AssetConfigRaw` — 17 risk/limit fields. */
+/** `AssetConfigRaw` — 15 risk/limit fields. */
 export const encodeAssetConfigRaw = (c: AssetConfigRawDto): xdr.ScVal =>
   scStruct({
     borrow_cap: i128(c.borrowCap),
@@ -106,8 +106,6 @@ export const encodeAssetConfigRaw = (c: AssetConfigRawDto): xdr.ScVal =>
     liquidation_fees_bps: u32(c.liquidationFeesBps),
     liquidation_threshold_bps: u32(c.liquidationThresholdBps),
     loan_to_value_bps: u32(c.loanToValueBps),
-    min_collat_floor_usd_wad: i128(c.minCollatFloorUsdWad),
-    min_debt_floor_usd_wad: i128(c.minDebtFloorUsdWad),
     supply_cap: i128(c.supplyCap),
   })
 

@@ -290,6 +290,9 @@ sdk.collection.drops.search(...); // CollectionMintProfilePaginated
 // GET /collection/:collection/analytics/volume
 sdk.collection.collection("...").analytics.volume(...); // AnalyticsVolumeDto[]
 
+// GET /collections/analytics/volume
+sdk.collections.analytics.volume(...); // Record<string, AnalyticsVolumeDto[]>
+
 // GET /countries
 sdk.countries(...); // string[]
 
@@ -514,6 +517,12 @@ sdk.lending.market.token("...").profile(...); // LendingMarketProfile
 
 // GET /lending/market/query
 sdk.lending.market.query(...); // LendingMarketProfileQuery
+
+// GET /lending/governance/proposals
+sdk.lending.governance.proposals(...); // LendingGovernanceProposalQuery
+
+// GET /lending/governance/proposal/:id
+sdk.lending.governance.proposal.id("...")(...); // LendingGovernanceProposalDoc
 
 // GET /lending/market/indexes
 sdk.lending.market.indexes(...); // Record<string, LendingIndexesDto>

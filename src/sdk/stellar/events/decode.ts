@@ -102,8 +102,6 @@ const decodeAssetConfig = (c: Raw) => ({
   flashloanFeeBps: num(c.flashloan_fee_bps),
   borrowCap: dec(c.borrow_cap),
   supplyCap: dec(c.supply_cap),
-  minCollatFloorUsdWad: dec(c.min_collat_floor_usd_wad),
-  minDebtFloorUsdWad: dec(c.min_debt_floor_usd_wad),
   eModeCategories: ((c.e_mode_categories as unknown[]) ?? []).map(num),
 })
 

@@ -1,4 +1,4 @@
-import type { PublicOnly,RateType,LoginAccessDto,LoginRequestDto,UserNetworkInfoDto,UserTokenInventoryResponseDto,UserProfileDoc,UserProfileEditDto,UserProfileDto,UserSettingsDoc,NotificationPreferencesPostDto,SetEmailDto,SetPhoneDto,UserBillingDetails,VerifyEmailDto,TradesilvaniaSignature,SuccessDto,CreatorProfileDto,CreatorProfileDoc,CreatorProfileEditDto,CollectionStatsFilter,CollectionStatsPaginated,CheckLikeStatusResponseDto,UserFavoriteResponseDto,TokenDataDocHydrated,XoxnoInfo,XoxnoLiquidStatsDto,AnalyticsMarketplaceUniqueUsers,ProtocolAprType,ProviderDto,DelegationDataOutput,LendingMarketProfile,LendingMarketProfileFilter,LendingMarketProfileQuery,LendingAccountProfile,LendingIndexesDto,LendingAccountPnl,LendingAccountSummary,LendingEModeCategoryProfile,LendingMarketAnalyticsGraph,LendingMarketAverageGraph,LendingPositionStatus,LendingOverallStats,NftDocFilter,NftPaginated,LikeNftDto,InventorySummaryDtoHydrated,NftOfferPaginated,NftOfferDocFilter,NftOfferDocHydrated,ValueFp,TraitInfo,CollectionRanksDTO,ListingsResponseDto,NftDocHydrated,SignDataDto,SignWithdrawDto,SignAcceptGlobalOfferDto,SignMintDto,NftDocFull,CollectionProfileDoc,CollectionProfileEditDto,FloorPriceDto,PinnedCollectionDto,CollectionMintProfileDocHydrated,CollectionPinnedStatusDto,FollowCollectionDto,CollectionProfileFilter,CollectionProfilePaginated,CollectionMintProfileFilter,CollectionMintProfilePaginated,CollectionMintProfileDocWithStages,CollectionHoldersDto,CollectionHoldersExportDto,CollectionOwnerDto,CollectionStatsDocHydrated,CollectionOffersFilter,GlobalOfferPaginated,CreatorDetailsDto,ShareholderDto,StakingSummary,StakingPoolDoc,StakingEditDto,OwnedCollectionsDto,UserStakingSummaryDto,StakingCreatorDoc,StakingUserPoolNfts,StakingExploreDtoHydrated,OwnedServicesDto,FilterQueryDto,GlobalSearchResourcesPaginated,LendingNftAttributes,LendingTokenPriceDto,NotificationPaginated,PushNotificationCountResponse,NotificationDoc,MobileDeviceDoc,MobileDeviceRegistrationDto,PushNotificationResponse,PushNotificationDoc,NotificationSuccessResponseDto,EventNotificationDto,CreatorMarketingNotificationDto,StellarChallengeResponseDto,Web2UserDoc,SuccessWithMessageDto,NativeWalletDto,SwitchWalletDto,Web2WalletDto,Web2UserShardsDto,NftActivityFilter,NftActivityPaginated,NftActivityDocHydrated,VolumeGraph,AnalyticsVolumeDto,UserAnalyticsDto,GlobalAnalyticsOverviewResponseDto,UserStatsDto,AirdropDtoHydrated,TransactionDetailed,TransactionProcessStatus,TransactionCostData,TransactionCreate,TransactionSendResult,PerpOrderResponse,BarDto,SymbolInfoDto,PerpCoinExtended,PerpSpotCoinExtended,PerpCoinExtendedSlim,PerpLegalCheck,PerpSpotCoinExtendedSlim,L2BookPerpResponseSingle,TradesPerpResponseSingle,ActiveSpotAssetCtx,ActivePerpAssetCtx,PerpEvent,ChatMessageDocHydrated,SendChatMessageDto,UserConversationPaginated,ChatMessagePaginated,GlobalConversationSummaryDto,UserBlockPaginated,WebSocketTokenDto,UserInfo,EventProfile,EventProfileCreateDto,EventProfileEditDto,EventProfileFilter,EventProfileQuery,EventRegistrationResponseDto,EventGuestRegistrationDto,EventTicketProfileDoc,EventTicketProfileCreateDto,EventTicketProfileEditDto,EventStageProfileDoc,EventStageProfileCreateDto,EventStageProfileEditDto,TicketPricesResponse,TicketCalculationRequestDto,DiscountCodeValidationResponse,EventInvitationDoc,EventInvitationCreateDto,EventInvitationFilter,EventInvitationQuery,EventInvitation,EventAcceptInvitation,EventClaimInvitationDto,EventVoucherFilter,EventVoucherQuery,EventQuestionDoc,EventQuestionCreateDto,EventQuestionEditDto,EventGuestFilter,EventGuestProfileQuery,EventGuestProfile,EventGuestExport,EventUserRole,EventUserRoleCreateDto,EventUserRoleEditDto,EventUserRoleDoc,BageQRData,TicketValidationResult,EventCheckInQR,EventVoucherDoc,EventVoucherCreateDto,EventVoucherEditDto,ManualCheckInDto,AnsweredQuestionWithDetails,EventGuestApproveDto,EventCountGroupedByCountry,EventReferralConfigDoc,EventReferralConfigCreateDto,EventReferralConfigEditDto,EventReferralConfigFilter,EventReferralConfigPaginated,EventReferralDoc,EventReferralCreateDto,EventReferralEditDto,EventReferralFilter,EventReferralPaginated,SoroswapQuoteResponseDto } from '@xoxno/types';
+import type { PublicOnly,RateType,LoginAccessDto,LoginRequestDto,UserNetworkInfoDto,UserTokenInventoryResponseDto,UserProfileDoc,UserProfileEditDto,UserProfileDto,UserSettingsDoc,NotificationPreferencesPostDto,SetEmailDto,SetPhoneDto,UserBillingDetails,VerifyEmailDto,TradesilvaniaSignature,SuccessDto,CreatorProfileDto,CreatorProfileDoc,CreatorProfileEditDto,CollectionStatsFilter,CollectionStatsPaginated,CheckLikeStatusResponseDto,UserFavoriteResponseDto,TokenDataDocHydrated,XoxnoInfo,XoxnoLiquidStatsDto,AnalyticsMarketplaceUniqueUsers,ProtocolAprType,ProviderDto,DelegationDataOutput,LendingMarketProfile,LendingMarketProfileFilter,LendingMarketProfileQuery,LendingGovernanceProposalFilter,LendingGovernanceProposalQuery,LendingGovernanceProposalDoc,LendingAccountProfile,LendingIndexesDto,LendingAccountPnl,LendingAccountSummary,LendingEModeCategoryProfile,LendingMarketAnalyticsGraph,LendingMarketAverageGraph,LendingPositionStatus,LendingOverallStats,NftDocFilter,NftPaginated,LikeNftDto,InventorySummaryDtoHydrated,NftOfferPaginated,NftOfferDocFilter,NftOfferDocHydrated,ValueFp,TraitInfo,CollectionRanksDTO,ListingsResponseDto,NftDocHydrated,SignDataDto,SignWithdrawDto,SignAcceptGlobalOfferDto,SignMintDto,NftDocFull,CollectionProfileDoc,CollectionProfileEditDto,FloorPriceDto,PinnedCollectionDto,CollectionMintProfileDocHydrated,CollectionPinnedStatusDto,FollowCollectionDto,CollectionProfileFilter,CollectionProfilePaginated,CollectionMintProfileFilter,CollectionMintProfilePaginated,CollectionMintProfileDocWithStages,CollectionHoldersDto,CollectionHoldersExportDto,CollectionOwnerDto,CollectionStatsDocHydrated,CollectionOffersFilter,GlobalOfferPaginated,CreatorDetailsDto,ShareholderDto,StakingSummary,StakingPoolDoc,StakingEditDto,OwnedCollectionsDto,UserStakingSummaryDto,StakingCreatorDoc,StakingUserPoolNfts,StakingExploreDtoHydrated,OwnedServicesDto,FilterQueryDto,GlobalSearchResourcesPaginated,LendingNftAttributes,LendingTokenPriceDto,NotificationPaginated,PushNotificationCountResponse,NotificationDoc,MobileDeviceDoc,MobileDeviceRegistrationDto,PushNotificationResponse,PushNotificationDoc,NotificationSuccessResponseDto,EventNotificationDto,CreatorMarketingNotificationDto,StellarChallengeResponseDto,Web2UserDoc,SuccessWithMessageDto,NativeWalletDto,SwitchWalletDto,Web2WalletDto,Web2UserShardsDto,NftActivityFilter,NftActivityPaginated,NftActivityDocHydrated,VolumeGraph,AnalyticsVolumeDto,UserAnalyticsDto,GlobalAnalyticsOverviewResponseDto,UserStatsDto,AirdropDtoHydrated,TransactionDetailed,TransactionProcessStatus,TransactionCostData,TransactionCreate,TransactionSendResult,ChatMessageDocHydrated,SendChatMessageDto,UserConversationPaginated,ChatMessagePaginated,GlobalConversationSummaryDto,UserBlockPaginated,WebSocketTokenDto,UserInfo,EventProfile,EventProfileCreateDto,EventProfileEditDto,EventProfileFilter,EventProfileQuery,EventRegistrationResponseDto,EventGuestRegistrationDto,EventTicketProfileDoc,EventTicketProfileCreateDto,EventTicketProfileEditDto,EventStageProfileDoc,EventStageProfileCreateDto,EventStageProfileEditDto,TicketPricesResponse,TicketCalculationRequestDto,DiscountCodeValidationResponse,EventInvitationDoc,EventInvitationCreateDto,EventInvitationFilter,EventInvitationQuery,EventInvitation,EventAcceptInvitation,EventClaimInvitationDto,EventVoucherFilter,EventVoucherQuery,EventQuestionDoc,EventQuestionCreateDto,EventQuestionEditDto,EventGuestFilter,EventGuestProfileQuery,EventGuestProfile,EventGuestExport,EventUserRole,EventUserRoleCreateDto,EventUserRoleEditDto,EventUserRoleDoc,BageQRData,TicketValidationResult,EventCheckInQR,EventVoucherDoc,EventVoucherCreateDto,EventVoucherEditDto,ManualCheckInDto,AnsweredQuestionWithDetails,EventGuestApproveDto,EventCountGroupedByCountry,EventReferralConfigDoc,EventReferralConfigCreateDto,EventReferralConfigEditDto,EventReferralConfigFilter,EventReferralConfigPaginated,EventReferralDoc,EventReferralCreateDto,EventReferralEditDto,EventReferralFilter,EventReferralPaginated,SoroswapQuoteResponseDto,PerpOrderResponse,BarDto,SymbolInfoDto,PerpCoinExtended,PerpSpotCoinExtended,PerpCoinExtendedSlim,PerpLegalCheck,PerpSpotCoinExtendedSlim,L2BookPerpResponseSingle,TradesPerpResponseSingle,ActiveSpotAssetCtx,ActivePerpAssetCtx,PerpEvent } from '@xoxno/types';
 import type { ActivityChain,TokenCategory,LendingPositionOrderByColumn,KustoOrderDirection,OfferType,StakingStatus,UserStatsOrderByColumn } from '@xoxno/types/enums';
 export const endpoints = {
   "/liquid/xoxno/rate": {
@@ -342,6 +342,14 @@ export const endpoints = {
   "/lending/market/query": {
     "input": {} as {filter: PublicOnly<LendingMarketProfileFilter>},
     "output": {} as LendingMarketProfileQuery
+  },
+  "/lending/governance/proposals": {
+    "input": {} as {filter: PublicOnly<LendingGovernanceProposalFilter>},
+    "output": {} as LendingGovernanceProposalQuery
+  },
+  "/lending/governance/proposal/:id": {
+    "input": {},
+    "output": {} as LendingGovernanceProposalDoc
   },
   "/user/lending/:address": {
     "input": {} as {token?: string},
@@ -981,6 +989,10 @@ export const endpoints = {
     "input": {} as {startTime?: string, endTime?: string, bin?: string},
     "output": {} as AnalyticsVolumeDto[]
   },
+  "/collections/analytics/volume": {
+    "input": {} as {collections: string, startTime?: string, endTime?: string, bin?: string, chain: ActivityChain[]},
+    "output": {} as Record<string, AnalyticsVolumeDto[]>
+  },
   "/user/:address/analytics/volume": {
     "input": {},
     "output": {} as UserAnalyticsDto
@@ -1035,128 +1047,6 @@ export const endpoints = {
       "input": {} as {isRelay?: boolean},
       "output": {} as TransactionSendResult[],
       "body": {} as TransactionCreate[]
-    }
-  },
-  "/perp/exchange/acceptTerms": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as SuccessDto,
-      "body": {},
-      "securityMode": "requiredAny"
-    }
-  },
-  "/perp/exchange/sendAsset": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as SuccessDto,
-      "body": {},
-      "securityMode": "requiredAny"
-    }
-  },
-  "/perp/exchange/sendExternalAsset": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as SuccessDto,
-      "body": {},
-      "securityMode": "requiredAny"
-    }
-  },
-  "/perp/exchange/deposit": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as SuccessDto,
-      "body": {},
-      "securityMode": "requiredAny"
-    }
-  },
-  "/perp/exchange/withdraw": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as SuccessDto,
-      "body": {},
-      "securityMode": "requiredAny"
-    }
-  },
-  "/perp/exchange/order": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as PerpOrderResponse,
-      "body": {},
-      "securityMode": "requiredAny"
-    }
-  },
-  "/tradingview/bars/:symbol": {
-    "input": {},
-    "output": {} as BarDto[]
-  },
-  "/tradingview/coin/:symbol": {
-    "input": {},
-    "output": {} as SymbolInfoDto[]
-  },
-  "/perp/coin/:symbol": {
-    "input": {},
-    "output": {} as PerpCoinExtended[]
-  },
-  "/perp/coin/spot/:symbol": {
-    "input": {},
-    "output": {} as PerpSpotCoinExtended[]
-  },
-  "/perp/coins": {
-    "input": {},
-    "output": {} as PerpCoinExtendedSlim[]
-  },
-  "/perp/legal-check/:address": {
-    "input": {},
-    "output": {} as PerpLegalCheck
-  },
-  "/perp/coins/spot": {
-    "input": {},
-    "output": {} as PerpSpotCoinExtendedSlim[]
-  },
-  "/perp/orderbook/:symbol": {
-    "input": {},
-    "output": {} as L2BookPerpResponseSingle[]
-  },
-  "/perp/trades/:symbol": {
-    "input": {},
-    "output": {} as TradesPerpResponseSingle[]
-  },
-  "/perp/stats/spot/:symbol": {
-    "input": {},
-    "output": {} as ActiveSpotAssetCtx[]
-  },
-  "/perp/stats/:symbol": {
-    "input": {},
-    "output": {} as ActivePerpAssetCtx[]
-  },
-  "/perp/subscribe": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as SuccessDto,
-      "body": {} as PerpEvent
-    }
-  },
-  "/perp/unsubscribe": {
-    "input": {},
-    "output": {},
-    "POST": {
-      "input": {},
-      "output": {} as SuccessDto,
-      "body": {} as PerpEvent
     }
   },
   "/user/chat/message": {
@@ -1723,5 +1613,127 @@ export const endpoints = {
   "/stellar/aggregator/quote": {
     "input": {} as {assetIn: string, assetOut: string, amount: string, tradeType: string, network: string, slippageBps?: number, parts?: number, maxHops?: number},
     "output": {} as SoroswapQuoteResponseDto
+  },
+  "/perp/exchange/acceptTerms": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/perp/exchange/sendAsset": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/perp/exchange/sendExternalAsset": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/perp/exchange/deposit": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/perp/exchange/withdraw": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/perp/exchange/order": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as PerpOrderResponse,
+      "body": {},
+      "securityMode": "requiredAny"
+    }
+  },
+  "/tradingview/bars/:symbol": {
+    "input": {},
+    "output": {} as BarDto[]
+  },
+  "/tradingview/coin/:symbol": {
+    "input": {},
+    "output": {} as SymbolInfoDto[]
+  },
+  "/perp/coin/:symbol": {
+    "input": {},
+    "output": {} as PerpCoinExtended[]
+  },
+  "/perp/coin/spot/:symbol": {
+    "input": {},
+    "output": {} as PerpSpotCoinExtended[]
+  },
+  "/perp/coins": {
+    "input": {},
+    "output": {} as PerpCoinExtendedSlim[]
+  },
+  "/perp/legal-check/:address": {
+    "input": {},
+    "output": {} as PerpLegalCheck
+  },
+  "/perp/coins/spot": {
+    "input": {},
+    "output": {} as PerpSpotCoinExtendedSlim[]
+  },
+  "/perp/orderbook/:symbol": {
+    "input": {},
+    "output": {} as L2BookPerpResponseSingle[]
+  },
+  "/perp/trades/:symbol": {
+    "input": {},
+    "output": {} as TradesPerpResponseSingle[]
+  },
+  "/perp/stats/spot/:symbol": {
+    "input": {},
+    "output": {} as ActiveSpotAssetCtx[]
+  },
+  "/perp/stats/:symbol": {
+    "input": {},
+    "output": {} as ActivePerpAssetCtx[]
+  },
+  "/perp/subscribe": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {} as PerpEvent
+    }
+  },
+  "/perp/unsubscribe": {
+    "input": {},
+    "output": {},
+    "POST": {
+      "input": {},
+      "output": {} as SuccessDto,
+      "body": {} as PerpEvent
+    }
   }
 } as const;

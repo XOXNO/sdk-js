@@ -122,8 +122,6 @@ const createPoolArgs = {
     flashloanFeeBps: 9,
     borrowCap: '0',
     supplyCap: '0',
-    minCollatFloorUsdWad: '1000000000000000000',
-    minDebtFloorUsdWad: '1000000000000000000',
     eModeCategories: [1, 2],
   },
 } satisfies CreateLiquidityPoolArgs
@@ -449,13 +447,13 @@ describe('Stellar lending admin builders', () => {
 // -----------------------------------------------------------------------------
 
 describe('complex struct encoding', () => {
-  it('AssetConfigRaw is an scvMap with 17 ascending-sorted keys', () => {
+  it('AssetConfigRaw is an scvMap with 15 ascending-sorted keys', () => {
     const parsed = parseInvoked(
       buildStellarCreateLiquidityPoolTx(BASE_OPTS, createPoolArgs).xdr
     )
     // create_liquidity_pool(asset, params, config) → config is arg index 2.
     const keys = mapKeys(parsed.args[2]!)
-    expect(keys).toHaveLength(17)
+    expect(keys).toHaveLength(15)
     expect(isAscending(keys)).toBe(true)
     expect(keys).toContain('e_mode_categories')
     expect(keys).not.toContain('liquidationFeesBps') // snake_case only
@@ -544,7 +542,6 @@ describe('complex struct encoding', () => {
     expect(acfgField('flashloan_fee_bps').switch().name).toBe('scvU32')
     expect(acfgField('borrow_cap').switch().name).toBe('scvI128')
     expect(acfgField('isolation_debt_ceiling_usd_wad').switch().name).toBe('scvI128')
-    expect(acfgField('min_collat_floor_usd_wad').switch().name).toBe('scvI128')
     expect(acfgField('is_borrowable').switch().name).toBe('scvBool')
     expect(acfgField('e_mode_categories').switch().name).toBe('scvVec')
 

@@ -77,6 +77,13 @@ export interface StellarBuilderOptions {
    * preview/staging deployments.
    */
   controllerAddress?: string
+  /**
+   * Override the governance (timelock) contract address. Normally resolved from
+   * env via `getStellarGovernance(network)` — override is for tests and
+   * preview/staging deployments. Required (env or override) for the governance
+   * `propose_*` / `execute` / `execute_*` builders.
+   */
+  governanceAddress?: string
   /** Base fee in stroops (default BASE_FEE = "100"). */
   fee?: string
   /** Tx timeout in seconds (default 300). */

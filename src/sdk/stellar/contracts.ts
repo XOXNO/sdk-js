@@ -35,6 +35,19 @@ export const STELLAR_AGGREGATOR_ROUTER: Record<StellarNetwork, string> = {
 }
 
 /**
+ * Stellar governance (timelock) contract addresses per network. Owns the
+ * controller's admin surface: PROPOSER-gated `propose_*` scheduling and the
+ * open `execute` / `execute_*` lifecycle.
+ * Env vars:
+ *   - STELLAR_GOVERNANCE_MAINNET
+ *   - STELLAR_GOVERNANCE_TESTNET
+ */
+export const STELLAR_GOVERNANCE: Record<StellarNetwork, string> = {
+  mainnet: process.env.STELLAR_GOVERNANCE_MAINNET ?? '',
+  testnet: process.env.STELLAR_GOVERNANCE_TESTNET ?? '',
+}
+
+/**
  * Default Soroban RPC URLs per network.
  * Overridable at runtime via the `sorobanRpcUrl` option on each builder.
  */
@@ -95,6 +108,21 @@ export function getStellarAggregatorRouter(network: StellarNetwork): string {
     throw new Error(
       `Stellar aggregator router address not configured for network "${network}". ` +
         `Set STELLAR_AGGREGATOR_ROUTER_${network.toUpperCase()} env var.`
+    )
+  }
+  return addr
+}
+
+/**
+ * Assert a governance address is configured for the target network. Used by
+ * the governance `propose_*` / `execute` / `execute_*` builders.
+ */
+export function getStellarGovernance(network: StellarNetwork): string {
+  const addr = STELLAR_GOVERNANCE[network]
+  if (!addr) {
+    throw new Error(
+      `Stellar governance address not configured for network "${network}". ` +
+        `Set STELLAR_GOVERNANCE_${network.toUpperCase()} env var.`
     )
   }
   return addr
