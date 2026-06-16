@@ -93,7 +93,6 @@ const decodeAssetConfig = (c: Raw) => ({
   liquidationFeesBps: num(c.liquidation_fees_bps),
   isCollateralizable: Boolean(c.is_collateralizable),
   isBorrowable: Boolean(c.is_borrowable),
-  isSiloedBorrowing: Boolean(c.is_siloed_borrowing),
   isFlashloanable: Boolean(c.is_flashloanable),
   flashloanFeeBps: num(c.flashloan_fee_bps),
   borrowCap: dec(c.borrow_cap),

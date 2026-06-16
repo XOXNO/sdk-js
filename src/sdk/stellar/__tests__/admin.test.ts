@@ -114,7 +114,6 @@ const createPoolArgs = {
     liquidationFeesBps: 100,
     isCollateralizable: true,
     isBorrowable: true,
-    isSiloedBorrowing: false,
     isFlashloanable: true,
     flashloanFeeBps: 9,
     borrowCap: '0',
@@ -444,13 +443,13 @@ describe('Stellar lending admin builders', () => {
 // -----------------------------------------------------------------------------
 
 describe('complex struct encoding', () => {
-  it('AssetConfigRaw is an scvMap with 12 ascending-sorted keys', () => {
+  it('AssetConfigRaw is an scvMap with 11 ascending-sorted keys', () => {
     const parsed = parseInvoked(
       buildStellarCreateLiquidityPoolTx(BASE_OPTS, createPoolArgs).xdr
     )
     // create_liquidity_pool(asset, params, config) → config is arg index 2.
     const keys = mapKeys(parsed.args[2]!)
-    expect(keys).toHaveLength(12)
+    expect(keys).toHaveLength(11)
     expect(isAscending(keys)).toBe(true)
     expect(keys).toContain('e_mode_categories')
     expect(keys).not.toContain('liquidationFeesBps') // snake_case only
