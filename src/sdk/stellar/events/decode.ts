@@ -349,7 +349,7 @@ const REGISTRY: Record<string, DecoderFn> = {
   }),
 }
 
-/** Topic keys this SDK can decode (the 21 controller contractevents). */
+/** Topic keys this SDK can decode (the 19 controller contractevents). */
 export const STELLAR_LENDING_TOPICS = Object.freeze(
   Object.keys(REGISTRY)
 ) as readonly string[]
