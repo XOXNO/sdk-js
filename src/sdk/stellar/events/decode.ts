@@ -1,5 +1,5 @@
 /**
- * Decoders for the 21 Stellar lending controller `#[contractevent]`s.
+ * Decoders for the 19 Stellar lending controller `#[contractevent]`s.
  *
  * The public API takes base64-XDR strings (`decodeStellarLendingEvent(topicsB64,
  * dataB64)`) and parses them with this SDK's bundled `@stellar/stellar-sdk`, so
@@ -12,10 +12,9 @@
  * `number` for u32, strkey strings for addresses, strings for symbols, `null`
  * for absent `Option`s, and arrays for `Vec`s.
  *
- * The three hot topics (`position:batch_update`, `market:batch_state_update`,
- * `debt:ceiling_batch_update`) use the vec-encoded ABI v2 instead: `data` is an
- * `ScVec` whose field order IS the ABI, so `scValToNative` yields nested arrays
- * decoded positionally.
+ * The two hot topics (`position:batch_update`, `market:batch_state_update`)
+ * use the vec-encoded ABI v2 instead: `data` is an `ScVec` whose field order
+ * IS the ABI, so `scValToNative` yields nested arrays decoded positionally.
  */
 
 import { scValToNative, xdr } from '@stellar/stellar-sdk'
@@ -94,11 +93,8 @@ const decodeAssetConfig = (c: Raw) => ({
   liquidationFeesBps: num(c.liquidation_fees_bps),
   isCollateralizable: Boolean(c.is_collateralizable),
   isBorrowable: Boolean(c.is_borrowable),
-  isIsolatedAsset: Boolean(c.is_isolated_asset),
   isSiloedBorrowing: Boolean(c.is_siloed_borrowing),
   isFlashloanable: Boolean(c.is_flashloanable),
-  isolationBorrowEnabled: Boolean(c.isolation_borrow_enabled),
-  isolationDebtCeilingUsdWad: dec(c.isolation_debt_ceiling_usd_wad),
   flashloanFeeBps: num(c.flashloan_fee_bps),
   borrowCap: dec(c.borrow_cap),
   supplyCap: dec(c.supply_cap),
@@ -126,14 +122,12 @@ const decodePositionDelta = (e: readonly unknown[], pt: 'Deposit' | 'Borrow') =>
   }
 }
 
-/** Vec-encoded account attributes: array of 5
- * `[owner, e_mode_category_id, is_isolated_position, mode, isolated_token?]`. */
+/** Vec-encoded account attributes: array of 3
+ * `[owner, e_mode_category_id, mode]`. */
 const decodeAccountAttributes = (a: readonly unknown[]) => ({
   owner: str(a[0]),
-  isIsolatedPosition: Boolean(a[2]),
   eModeCategoryId: num(a[1]),
-  mode: positionMode(a[3]),
-  isolatedToken: optStr(a[4]),
+  mode: positionMode(a[2]),
 })
 
 /** Vec-encoded market snapshot: array of 9
@@ -305,20 +299,6 @@ const REGISTRY: Record<string, DecoderFn> = {
   'config:remove_emode_asset': (d) => ({
     topic: 'config:remove_emode_asset',
     data: { asset: str(d.asset), categoryId: num(d.category_id) },
-  }),
-  'debt:ceiling_update': (d) => ({
-    topic: 'debt:ceiling_update',
-    data: { asset: str(d.asset), totalDebtUsdWad: dec(d.total_debt_usd_wad) },
-  }),
-  // Vec-encoded (ABI v2): data is the entries Vec directly, each `[asset, total_debt_usd_wad]`.
-  'debt:ceiling_batch_update': (d) => ({
-    topic: 'debt:ceiling_batch_update',
-    data: {
-      updates: vec(d).map((u) => {
-        const e = vec(u)
-        return { asset: str(e[0]), totalDebtUsdWad: dec(e[1]) }
-      }),
-    },
   }),
   'debt:bad_debt': (d) => ({
     topic: 'debt:bad_debt',

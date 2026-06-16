@@ -3,10 +3,9 @@
  *
  * `fixtures/lending-events.json` holds the map-encoded controller
  * `#[contractevent]`s' topics + `data` serialized to base64 XDR, exactly as
- * Soroban RPC `getEvents` delivers them. The three vec-encoded ABI v2 topics
- * (`position:batch_update`, `market:batch_state_update`,
- * `debt:ceiling_batch_update`) are constructed below with ScVal builders so
- * the wire field order stays explicit.
+ * Soroban RPC `getEvents` delivers them. The two vec-encoded ABI v2 topics
+ * (`position:batch_update`, `market:batch_state_update`) are constructed below
+ * with ScVal builders so the wire field order stays explicit.
  */
 
 import { Address, nativeToScVal, xdr } from '@stellar/stellar-sdk'
@@ -86,7 +85,7 @@ const V2_FIXTURES: Fixture[] = [
     data: b64(
       vecV([
         u64(42n),
-        vecV([addrV(OWNER), u32(1), boolV(false), u32(1), none()]),
+        vecV([addrV(OWNER), u32(1), u32(1)]),
         vecV([depositEntry(5, ASSET_A, 1000000n), depositEntry(5, ASSET_B, 2000000n)]),
         vecV([borrowEntry(4, ASSET_B, 500000n), borrowEntry(4, ASSET_A, 750000n)]),
       ])
@@ -95,11 +94,11 @@ const V2_FIXTURES: Fixture[] = [
   {
     topic: 'position:batch_update_unknown_action',
     topics: topicsFor('position', 'batch_update'),
-    // Unknown action discriminant (99) + isolated attrs with isolated_token set.
+    // Unknown action discriminant (99).
     data: b64(
       vecV([
         u64(7n),
-        vecV([addrV(OWNER), u32(0), boolV(true), u32(0), addrV(ASSET_A)]),
+        vecV([addrV(OWNER), u32(0), u32(0)]),
         vecV([depositEntry(99, ASSET_A, 1n), depositEntry(0, ASSET_B, 1n)]),
         vecV([]),
       ])
@@ -110,17 +109,6 @@ const V2_FIXTURES: Fixture[] = [
     topics: topicsFor('market', 'batch_state_update'),
     // Data is the entries Vec directly — price present, then absent.
     data: b64(vecV([marketEntry(ASSET_A, 1230000000000000000n), marketEntry(ASSET_B, null)])),
-  },
-  {
-    topic: 'debt:ceiling_batch_update',
-    topics: topicsFor('debt', 'ceiling_batch_update'),
-    // Data is the entries Vec directly, each `[asset, total_debt_usd_wad]`.
-    data: b64(
-      vecV([
-        vecV([addrV(ASSET_A), i128(123000000000000000000n)]),
-        vecV([addrV(ASSET_B), i128(0n)]),
-      ])
-    ),
   },
 ]
 
@@ -138,9 +126,9 @@ const decodeFixture = (t: string) => {
 }
 
 describe('decodeStellarLendingEvent — real fixtures', () => {
-  it('has a decoder for all 21 controller events and decodes every fixture', () => {
-    expect(STELLAR_LENDING_TOPICS).toHaveLength(21)
-    expect(FIXTURES.length).toBeGreaterThanOrEqual(21)
+  it('has a decoder for all 19 controller events and decodes every fixture', () => {
+    expect(STELLAR_LENDING_TOPICS).toHaveLength(19)
+    expect(FIXTURES.length).toBeGreaterThanOrEqual(19)
     for (const f of FIXTURES) {
       const ev = decodeStellarLendingEvent(f.topics, f.data)
       expect(ev).not.toBeNull()
@@ -181,8 +169,6 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(ev.data.accountAttributes.owner).toBe(OWNER)
     expect(ev.data.accountAttributes.mode).toBe('Multiply')
     expect(ev.data.accountAttributes.eModeCategoryId).toBe(1)
-    expect(ev.data.accountAttributes.isIsolatedPosition).toBe(false)
-    expect(ev.data.accountAttributes.isolatedToken).toBeUndefined()
 
     // Merged order: ALL deposit entries first (in order), then all borrows.
     expect(ev.data.updates).toHaveLength(4)
@@ -225,8 +211,6 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     if (ev?.topic !== 'position:batch_update') throw new Error('narrow')
     expect(ev.data.accountId).toBe('7')
     expect(ev.data.accountAttributes.mode).toBe('None')
-    expect(ev.data.accountAttributes.isIsolatedPosition).toBe(true)
-    expect(ev.data.accountAttributes.isolatedToken).toBe(ASSET_A)
     expect(ev.data.updates.map((u) => u.action)).toEqual(['99', 'supply'])
   })
 
@@ -246,19 +230,6 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(withPrice!.assetPriceWad).toBe('1230000000000000000')
     expect(withoutPrice!.asset).toBe(ASSET_B)
     expect(withoutPrice!.assetPriceWad).toBeUndefined()
-  })
-
-  it('debt:ceiling_batch_update (vec ABI v2) — positional `[asset, total_debt_usd_wad]`', () => {
-    const batch = decodeFixture('debt:ceiling_batch_update')
-    if (batch.topic !== 'debt:ceiling_batch_update') throw new Error('narrow')
-    expect(batch.data.updates).toHaveLength(2)
-    expect(batch.data.updates[0]!.asset).toBe(ASSET_A)
-    expect(batch.data.updates[0]!.totalDebtUsdWad).toBe('123000000000000000000')
-    expect(batch.data.updates[1]!.asset).toBe(ASSET_B)
-    expect(batch.data.updates[1]!.totalDebtUsdWad).toBe('0')
-    // The dead single (still map-encoded) is still decodable for completeness.
-    const single = decodeFixture('debt:ceiling_update')
-    expect(single.topic).toBe('debt:ceiling_update')
   })
 
   it('decodes oracle:twap_degraded', () => {
