@@ -1,5 +1,11 @@
 /**
- * Decoders for the 19 Stellar lending controller `#[contractevent]`s.
+ * Decoders for the Stellar lending controller `#[contractevent]`s.
+ *
+ * The controller defines 20 contractevents; this SDK decodes 19. The lone
+ * omission is `config:min_borrow_collateral` (a single global `i128` floor with
+ * no indexing/UI consumer — the governance `SetMinBorrowCollateral` proposal
+ * already surfaces the value), so `decodeStellarLendingEvent` returns `null` for
+ * it like any other unhandled topic.
  *
  * The public API takes base64-XDR strings (`decodeStellarLendingEvent(topicsB64,
  * dataB64)`) and parses them with this SDK's bundled `@stellar/stellar-sdk`, so
@@ -349,7 +355,8 @@ const REGISTRY: Record<string, DecoderFn> = {
   }),
 }
 
-/** Topic keys this SDK can decode (the 19 controller contractevents). */
+/** Topic keys this SDK can decode (19 of the controller's 20 contractevents;
+ * `config:min_borrow_collateral` is intentionally not decoded). */
 export const STELLAR_LENDING_TOPICS = Object.freeze(
   Object.keys(REGISTRY)
 ) as readonly string[]
