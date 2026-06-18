@@ -19,6 +19,7 @@
  * before signing.
  */
 
+import { jest } from '@jest/globals'
 import type {
   BorrowArgs,
   FlashLoanArgs,

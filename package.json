@@ -6,16 +6,16 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/index.bundled.d.ts",
+        "types": "./dist/index.d.ts",
         "default": "./dist/index.esm.js"
       },
       "require": {
-        "types": "./dist/index.bundled.d.cts",
+        "types": "./dist/index.d.ts",
         "default": "./dist/index.cjs"
       }
     }
   },
-  "types": "./dist/index.bundled.d.ts",
+  "types": "./dist/index.d.ts",
   "main": "./dist/index.cjs",
   "module": "./dist/index.esm.js",
   "files": [
@@ -23,9 +23,9 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "test": "jest",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "build:sdk": "npx bun run src/sdk/parseSwagger.ts && npx oxlint src/sdk/swagger.ts --fix && npx bun run md/extract.ts",
-    "build:types": "tsc --emitDeclarationOnly && dts-bundle-generator --no-check --external-imports @xoxno/types @stellar/stellar-sdk @nestjs/common @nestjs/swagger -o dist/index.bundled.d.ts src/index.ts && cp dist/index.bundled.d.ts dist/index.bundled.d.cts",
+    "build:types": "tsc --emitDeclarationOnly",
     "build:esm": "webpack --config webpack-esm.config.mjs",
     "build:cjs": "webpack --config webpack-cjs.config.mjs",
     "build": "npm run build:sdk && npm run build:types && npm run build:esm && npm run build:cjs",
@@ -74,7 +74,7 @@
     "@nestjs/swagger": "^11.4.4",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "@stellar/stellar-sdk": "^15.0.1",
+    "@stellar/stellar-sdk": "^16.0.0",
     "@swc/cli": "^0.8.0",
     "@swc/core": "^1.15.11",
     "@types/jest": "^30.0.0",
@@ -107,6 +107,6 @@
     "@xoxno/types": "1.0.416"
   },
   "peerDependencies": {
-    "@stellar/stellar-sdk": "^15.0.0"
+    "@stellar/stellar-sdk": ">=15.0.0 <17.0.0"
   }
 }

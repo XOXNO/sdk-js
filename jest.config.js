@@ -4,6 +4,7 @@ export default {
   testEnvironment: 'node',
   collectCoverage: true,
   testMatch: ['**/__tests__/**/*.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   moduleFileExtensions: ['ts', 'js', 'd.ts', 'json'],
   globals: {
     'ts-jest': {

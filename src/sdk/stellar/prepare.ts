@@ -1,7 +1,19 @@
 import { TransactionBuilder } from '@stellar/stellar-sdk'
-import type { rpc } from '@stellar/stellar-sdk'
+import type { FeeBumpTransaction, Transaction } from '@stellar/stellar-sdk'
 
 import type { BuiltStellarTx } from './lending'
+
+/**
+ * The single `rpc.Server` capability the prepare helpers need. Declared
+ * structurally instead of `Pick<rpc.Server, 'prepareTransaction'>` so the
+ * published `.d.ts` references stellar-sdk's concrete `Transaction` exports
+ * rather than its `rpc` namespace — the namespaced form trips
+ * `dts-bundle-generator`'s external-type resolution under stellar-sdk v16. A
+ * real `rpc.Server` satisfies this structurally, so call sites are unchanged.
+ */
+export interface StellarTxPreparer {
+  prepareTransaction(tx: Transaction | FeeBumpTransaction): Promise<Transaction>
+}
 
 export function tagStellarInvokedContractError(
   contractId: string,
@@ -17,7 +29,7 @@ export function tagStellarInvokedContractError(
  * UIs can map `Error(Contract, #N)` codes to the right ABI.
  */
 export async function prepareStellarTxXdr(
-  server: Pick<rpc.Server, 'prepareTransaction'>,
+  server: StellarTxPreparer,
   xdr: string,
   opts?: { invokedContractId?: string }
 ): Promise<string> {
@@ -33,7 +45,7 @@ export async function prepareStellarTxXdr(
 }
 
 export async function prepareStellarBuiltTx(
-  server: Pick<rpc.Server, 'prepareTransaction'>,
+  server: StellarTxPreparer,
   built: BuiltStellarTx,
   opts?: { invokedContractId?: string }
 ): Promise<string> {

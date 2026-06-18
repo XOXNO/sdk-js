@@ -11,6 +11,7 @@
  * Soroban's symbol collation.
  */
 
+import { jest } from '@jest/globals'
 import { Networks, Transaction, xdr as stellarXdr } from '@stellar/stellar-sdk'
 
 import {
