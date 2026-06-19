@@ -283,9 +283,6 @@ const REGISTRY: Record<string, DecoderFn> = {
     data: {
       category: {
         categoryId: num((d.category as Raw).category_id),
-        loanToValueBps: num((d.category as Raw).loan_to_value_bps),
-        liquidationThresholdBps: num((d.category as Raw).liquidation_threshold_bps),
-        liquidationBonusBps: num((d.category as Raw).liquidation_bonus_bps),
         isDeprecated: Boolean((d.category as Raw).is_deprecated),
       },
     },
@@ -297,6 +294,9 @@ const REGISTRY: Record<string, DecoderFn> = {
       config: {
         isCollateralizable: Boolean((d.config as Raw).is_collateralizable),
         isBorrowable: Boolean((d.config as Raw).is_borrowable),
+        loanToValueBps: num((d.config as Raw).loan_to_value_bps),
+        liquidationThresholdBps: num((d.config as Raw).liquidation_threshold_bps),
+        liquidationBonusBps: num((d.config as Raw).liquidation_bonus_bps),
       },
       categoryId: num(d.category_id),
     },

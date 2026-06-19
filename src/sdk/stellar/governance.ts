@@ -41,7 +41,6 @@ import {
   type EditAssetConfigArgs,
   type EditOracleToleranceArgs,
   type EModeAssetArgs,
-  type EModeCategoryEditArgs,
   type RemoveEModeAssetArgs,
   type RoleGrantArgs,
   type TransferOwnershipArgs,
@@ -141,11 +140,6 @@ const buildExecuteSelf = (
 // Builder argument shapes (SDK-local)
 // -----------------------------------------------------------------------------
 
-export interface AddEModeCategoryArgs {
-  ltv: number
-  threshold: number
-  bonus: number
-}
 export interface RemoveEModeCategoryArgs {
   id: number
 }
@@ -242,32 +236,12 @@ export function buildStellarProposeSetMinBorrowCollatTx(
   )
 }
 
-/** propose_add_e_mode_category(proposer, ltv: u32, threshold: u32, bonus: u32, salt) */
+/** propose_add_e_mode_category(proposer, salt) — risk params are per-asset */
 export function buildStellarProposeAddEModeCategoryTx(
   opts: StellarBuilderOptions,
-  args: AddEModeCategoryArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    'propose_add_e_mode_category',
-    [u32(args.ltv), u32(args.threshold), u32(args.bonus)],
-    salt
-  )
-}
-
-/** propose_edit_e_mode_category(proposer, id: u32, ltv: u32, threshold: u32, bonus: u32, salt) */
-export function buildStellarProposeEditEModeCategoryTx(
-  opts: StellarBuilderOptions,
-  args: EModeCategoryEditArgs,
-  salt: StellarGovernanceSalt
-): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    'propose_edit_e_mode_category',
-    [u32(args.id), u32(args.ltv), u32(args.threshold), u32(args.bonus)],
-    salt
-  )
+  return buildPropose(opts, 'propose_add_e_mode_category', [], salt)
 }
 
 /** propose_remove_e_mode_category(proposer, id: u32, salt) */
@@ -284,7 +258,7 @@ export function buildStellarProposeRemoveEModeCategoryTx(
   )
 }
 
-/** propose_add_asset_to_e_mode(proposer, asset, category_id, can_collateral, can_borrow, salt) */
+/** propose_add_asset_to_e_mode(proposer, asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, salt) */
 export function buildStellarProposeAddAssetToEModeTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs,
@@ -298,12 +272,15 @@ export function buildStellarProposeAddAssetToEModeTx(
       u32(args.categoryId),
       bool(args.canCollateral),
       bool(args.canBorrow),
+      u32(args.ltv),
+      u32(args.threshold),
+      u32(args.bonus),
     ],
     salt
   )
 }
 
-/** propose_edit_asset_in_e_mode(proposer, asset, category_id, can_collateral, can_borrow, salt) */
+/** propose_edit_asset_in_e_mode(proposer, asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, salt) */
 export function buildStellarProposeEditAssetInEModeTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs,
@@ -317,6 +294,9 @@ export function buildStellarProposeEditAssetInEModeTx(
       u32(args.categoryId),
       bool(args.canCollateral),
       bool(args.canBorrow),
+      u32(args.ltv),
+      u32(args.threshold),
+      u32(args.bonus),
     ],
     salt
   )
