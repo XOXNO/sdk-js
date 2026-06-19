@@ -230,17 +230,14 @@ export interface EditAssetConfigArgs {
   asset: string
   config: AssetConfigRawDto
 }
-export interface EModeCategoryEditArgs {
-  id: number
-  ltv: number
-  threshold: number
-  bonus: number
-}
 export interface EModeAssetArgs {
   asset: string
   categoryId: number
   canCollateral: boolean
   canBorrow: boolean
+  ltv: number
+  threshold: number
+  bonus: number
 }
 export interface RemoveEModeAssetArgs {
   asset: string
@@ -391,29 +388,11 @@ export function buildStellarSetPositionLimitsTx(
   return buildTx(opts, 'set_position_limits', [encodePositionLimits(args)])
 }
 
-/** add_e_mode_category(ltv: u32, threshold: u32, bonus: u32) -> u32 — #[only_owner] */
+/** add_e_mode_category() -> u32 — #[only_owner]. Risk params are per-asset. */
 export function buildStellarAddEModeCategoryTx(
-  opts: StellarBuilderOptions,
-  args: { ltv: number; threshold: number; bonus: number }
+  opts: StellarBuilderOptions
 ): BuiltStellarTx {
-  return buildTx(opts, 'add_e_mode_category', [
-    u32(args.ltv),
-    u32(args.threshold),
-    u32(args.bonus),
-  ])
-}
-
-/** edit_e_mode_category(id: u32, ltv: u32, threshold: u32, bonus: u32) — #[only_owner] */
-export function buildStellarEditEModeCategoryTx(
-  opts: StellarBuilderOptions,
-  args: EModeCategoryEditArgs
-): BuiltStellarTx {
-  return buildTx(opts, 'edit_e_mode_category', [
-    u32(args.id),
-    u32(args.ltv),
-    u32(args.threshold),
-    u32(args.bonus),
-  ])
+  return buildTx(opts, 'add_e_mode_category', [])
 }
 
 /** remove_e_mode_category(id: u32) — #[only_owner] */
@@ -424,7 +403,7 @@ export function buildStellarRemoveEModeCategoryTx(
   return buildTx(opts, 'remove_e_mode_category', [u32(args.id)])
 }
 
-/** add_asset_to_e_mode_category(asset, category_id, can_collateral, can_borrow) — #[only_owner] */
+/** add_asset_to_e_mode_category(asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus) — #[only_owner] */
 export function buildStellarAddAssetToEModeCategoryTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs
@@ -434,10 +413,13 @@ export function buildStellarAddAssetToEModeCategoryTx(
     u32(args.categoryId),
     bool(args.canCollateral),
     bool(args.canBorrow),
+    u32(args.ltv),
+    u32(args.threshold),
+    u32(args.bonus),
   ])
 }
 
-/** edit_asset_in_e_mode_category(asset, category_id, can_collateral, can_borrow) — #[only_owner] */
+/** edit_asset_in_e_mode_category(asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus) — #[only_owner] */
 export function buildStellarEditAssetInEModeCategoryTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs
@@ -447,6 +429,9 @@ export function buildStellarEditAssetInEModeCategoryTx(
     u32(args.categoryId),
     bool(args.canCollateral),
     bool(args.canBorrow),
+    u32(args.ltv),
+    u32(args.threshold),
+    u32(args.bonus),
   ])
 }
 

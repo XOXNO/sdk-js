@@ -26,7 +26,6 @@ import {
   buildStellarDisableTokenOracleTx,
   buildStellarEditAssetConfigTx,
   buildStellarEditAssetInEModeCategoryTx,
-  buildStellarEditEModeCategoryTx,
   buildStellarEditOracleToleranceTx,
   buildStellarGrantRoleTx,
   buildStellarMigrateTx,
@@ -274,14 +273,8 @@ const cases: Case[] = [
   {
     name: 'add_e_mode_category',
     expectedFn: 'add_e_mode_category',
-    expectedArgCount: 3,
-    build: () => buildStellarAddEModeCategoryTx(BASE_OPTS, { ltv: 9000, threshold: 9500, bonus: 200 }),
-  },
-  {
-    name: 'edit_e_mode_category',
-    expectedFn: 'edit_e_mode_category',
-    expectedArgCount: 4,
-    build: () => buildStellarEditEModeCategoryTx(BASE_OPTS, { id: 1, ltv: 9000, threshold: 9500, bonus: 200 }),
+    expectedArgCount: 0,
+    build: () => buildStellarAddEModeCategoryTx(BASE_OPTS),
   },
   {
     name: 'remove_e_mode_category',
@@ -292,25 +285,31 @@ const cases: Case[] = [
   {
     name: 'add_asset_to_e_mode_category',
     expectedFn: 'add_asset_to_e_mode_category',
-    expectedArgCount: 4,
+    expectedArgCount: 7,
     build: () =>
       buildStellarAddAssetToEModeCategoryTx(BASE_OPTS, {
         asset: FIXTURE_USDC,
         categoryId: 1,
         canCollateral: true,
         canBorrow: false,
+        ltv: 9000,
+        threshold: 9500,
+        bonus: 200,
       }),
   },
   {
     name: 'edit_asset_in_e_mode_category',
     expectedFn: 'edit_asset_in_e_mode_category',
-    expectedArgCount: 4,
+    expectedArgCount: 7,
     build: () =>
       buildStellarEditAssetInEModeCategoryTx(BASE_OPTS, {
         asset: FIXTURE_USDC,
         categoryId: 1,
         canCollateral: true,
         canBorrow: true,
+        ltv: 9000,
+        threshold: 9500,
+        bonus: 200,
       }),
   },
   {
