@@ -21,6 +21,7 @@ import type {
   FlashLoanArgs,
   LiquidateArgs,
   LiquidateDebtPayment,
+  MigrateFromBlendArgs,
   MultiplyArgs,
   RepayArgs,
   RepayDebtWithCollateralArgs,
@@ -47,6 +48,7 @@ import {
   tupleAddrAmountVec,
   u32,
   u64,
+  vec,
   type StellarStrategySwapHopInput,
   type StellarStrategySwapInput,
   type StellarStrategySwapPathInput,
@@ -336,6 +338,34 @@ export function buildStellarFlashLoanTx(
     i128(args.amount),
     addr(args.receiver),
     asStellarBytes(args.data),
+  ])
+}
+
+/**
+ * Build a `migrate_from_blend` controller invocation: atomically moves a Blend
+ * V2 position (collateral + supply + debt) into XOXNO at zero flash-loan fee.
+ *
+ * ABI: `migrate_from_blend(caller, account_id, e_mode_category, blend_pool,
+ * collateral_assets, supply_assets, debt_caps: Vec<(Address, i128)>)`. Pass
+ * `accountId = "0"` to open a new account. Each debt cap should slightly exceed
+ * the live Blend debt — Blend refunds the excess, reconciled on-chain.
+ *
+ * Like every builder this emits an unsigned invoke; the nested `submit(from =
+ * user)` authorization is materialized by `prepareTransaction` (simulation) and
+ * signed by the wallet over the whole envelope.
+ */
+export function buildStellarMigrateFromBlendTx(
+  opts: StellarBuilderOptions,
+  args: MigrateFromBlendArgs
+): BuiltStellarTx {
+  return buildTx(opts, 'migrate_from_blend', [
+    addr(opts.caller),
+    u64(args.accountId),
+    u32(args.eModeCategory),
+    addr(args.blendPool),
+    vec(args.collateralTokens.map(addr)),
+    vec(args.supplyTokens.map(addr)),
+    tupleAddrAmountVec(args.debtCaps.map((d) => ({ token: d.token, amount: d.cap }))),
   ])
 }
 

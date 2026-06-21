@@ -24,6 +24,7 @@ import type {
   BorrowArgs,
   FlashLoanArgs,
   LiquidateArgs,
+  MigrateFromBlendArgs,
   MultiplyArgs,
   RepayArgs,
   RepayDebtWithCollateralArgs,
@@ -42,6 +43,7 @@ import {
   buildStellarBorrowTx,
   buildStellarFlashLoanTx,
   buildStellarLiquidateTx,
+  buildStellarMigrateFromBlendTx,
   buildStellarMultiplyTx,
   buildStellarRepayDebtWithCollateralTx,
   buildStellarRepayTx,
@@ -174,6 +176,15 @@ const flashLoanArgs: FlashLoanArgs = {
   data: '0xdeadbeef',
 }
 
+const migrateFromBlendArgs: MigrateFromBlendArgs = {
+  blendPool: FIXTURE_CONTROLLER,
+  accountId: '0',
+  eModeCategory: 0,
+  collateralTokens: [FIXTURE_XLM],
+  supplyTokens: [FIXTURE_USDC],
+  debtCaps: [{ token: FIXTURE_USDC, cap: '200500000' }],
+}
+
 const multiplyArgs: MultiplyArgs = {
   accountNonce: 0,
   eModeCategory: 2,
@@ -281,6 +292,14 @@ describe('Stellar lending transaction builders — sanity', () => {
       // caller, asset, amount, receiver, data
       expectedArgCount: 5,
       build: () => buildStellarFlashLoanTx(BASE_OPTS, flashLoanArgs),
+    },
+    {
+      name: 'migrate_from_blend',
+      expectedFn: 'migrate_from_blend',
+      // caller, account_id, e_mode, blend_pool, collateral, supply, debt_caps
+      expectedArgCount: 7,
+      build: () =>
+        buildStellarMigrateFromBlendTx(BASE_OPTS, migrateFromBlendArgs),
     },
     {
       name: 'multiply',
