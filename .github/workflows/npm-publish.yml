@@ -38,7 +38,13 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
+      # build:sdk fetches prod /swagger.yaml, which sits behind Cloudflare. Its
+      # per-edge cache can serve a stale spec to this runner even when origin is
+      # fresh (dropping new routes from the generated SDK). A unique query per run
+      # forces a cache miss so the build always regenerates from the live spec.
       - run: npm run build --if-present
+        env:
+          SWAGGER_URL: https://api.xoxno.com/swagger.yaml?ci=${{ github.run_id }}
       - run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ''
