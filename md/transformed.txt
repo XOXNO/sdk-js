@@ -1608,6 +1608,10 @@
       "securityMode": "requiredAny"
     }
   },
+  "/user/blend/:address": {
+    "input": {},
+    "output": {} as BlendUserPosition
+  },
   "/stellar/aggregator/quote": {
     "input": {} as {assetIn: string, assetOut: string, amount: string, tradeType: string, network: string, slippageBps?: number, parts?: number, maxHops?: number},
     "output": {} as SoroswapQuoteResponseDto

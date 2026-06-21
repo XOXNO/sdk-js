@@ -1039,4 +1039,7 @@ sdk.user.me.event.badge(...); // string
 
 // GET /user/me/event/badge/payload
 sdk.user.me.event.badge.payload(...); // BageQRData
+
+// GET /user/blend/:address
+sdk.user.blend.address("...")(...); // BlendUserPosition
 ```
