@@ -101,9 +101,23 @@ const decodeAssetConfig = (c: Raw) => ({
   isBorrowable: Boolean(c.is_borrowable),
   isFlashloanable: Boolean(c.is_flashloanable),
   flashloanFeeBps: num(c.flashloan_fee_bps),
-  borrowCap: dec(c.borrow_cap),
-  supplyCap: dec(c.supply_cap),
   eModeCategories: ((c.e_mode_categories as unknown[]) ?? []).map(num),
+})
+
+const decodeMarketParams = (p: Raw) => ({
+  maxBorrowRateRay: dec(p.max_borrow_rate_ray),
+  baseBorrowRateRay: dec(p.base_borrow_rate_ray),
+  slope1Ray: dec(p.slope1_ray),
+  slope2Ray: dec(p.slope2_ray),
+  slope3Ray: dec(p.slope3_ray),
+  midUtilizationRay: dec(p.mid_utilization_ray),
+  optimalUtilizationRay: dec(p.optimal_utilization_ray),
+  maxUtilizationRay: optDec(p.max_utilization_ray),
+  reserveFactorBps: num(p.reserve_factor_bps),
+  supplyCap: dec(p.supply_cap),
+  borrowCap: dec(p.borrow_cap),
+  assetId: optStr(p.asset_id),
+  assetDecimals: p.asset_decimals === undefined ? undefined : num(p.asset_decimals),
 })
 
 /**
@@ -241,6 +255,18 @@ const REGISTRY: Record<string, DecoderFn> = {
       updates: vec(d).map((u) => decodeMarketSnapshot(vec(u))),
     },
   }),
+  'market:batch_params_update': (d) => ({
+    topic: 'market:batch_params_update',
+    data: {
+      updates: vec((d as Raw).updates).map((entry) => {
+        const row = entry as Raw
+        return {
+          asset: str(row.asset),
+          params: decodeMarketParams(row.params as Raw),
+        }
+      }),
+    },
+  }),
   // Vec-encoded (ABI v2): data = [account_id, attributes, deposits, borrows].
   // `updates` merges all deposit entries first, then all borrow entries.
   'position:batch_update': (d) => {
@@ -297,6 +323,8 @@ const REGISTRY: Record<string, DecoderFn> = {
         loanToValueBps: num((d.config as Raw).loan_to_value_bps),
         liquidationThresholdBps: num((d.config as Raw).liquidation_threshold_bps),
         liquidationBonusBps: num((d.config as Raw).liquidation_bonus_bps),
+        supplyCap: dec((d.config as Raw).supply_cap),
+        borrowCap: dec((d.config as Raw).borrow_cap),
       },
       categoryId: num(d.category_id),
     },

@@ -44,6 +44,7 @@ import {
   type RemoveEModeAssetArgs,
   type RoleGrantArgs,
   type TransferOwnershipArgs,
+  type UpdatePoolCapsArgs,
   type UpgradeLiquidityPoolParamsArgs,
 } from './admin'
 import {
@@ -258,7 +259,7 @@ export function buildStellarProposeRemoveEModeCategoryTx(
   )
 }
 
-/** propose_add_asset_to_e_mode(proposer, asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, salt) */
+/** propose_add_asset_to_e_mode(proposer, asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, supply_cap, borrow_cap, salt) */
 export function buildStellarProposeAddAssetToEModeTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs,
@@ -275,12 +276,14 @@ export function buildStellarProposeAddAssetToEModeTx(
       u32(args.ltv),
       u32(args.threshold),
       u32(args.bonus),
+      i128(args.supplyCap),
+      i128(args.borrowCap),
     ],
     salt
   )
 }
 
-/** propose_edit_asset_in_e_mode(proposer, asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, salt) */
+/** propose_edit_asset_in_e_mode(proposer, asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, supply_cap, borrow_cap, salt) */
 export function buildStellarProposeEditAssetInEModeTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs,
@@ -297,7 +300,23 @@ export function buildStellarProposeEditAssetInEModeTx(
       u32(args.ltv),
       u32(args.threshold),
       u32(args.bonus),
+      i128(args.supplyCap),
+      i128(args.borrowCap),
     ],
+    salt
+  )
+}
+
+/** propose_update_pool_caps(proposer, asset, supply_cap, borrow_cap, salt) */
+export function buildStellarProposeUpdatePoolCapsTx(
+  opts: StellarBuilderOptions,
+  args: UpdatePoolCapsArgs,
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(
+    opts,
+    'propose_update_pool_caps',
+    [addr(args.asset), i128(args.supplyCap), i128(args.borrowCap)],
     salt
   )
 }

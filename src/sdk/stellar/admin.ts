@@ -79,6 +79,7 @@ export const encodeMarketParamsRaw = (p: MarketParamsRawDto): xdr.ScVal =>
     asset_decimals: u32(p.assetDecimals),
     asset_id: addr(p.assetId),
     base_borrow_rate_ray: i128(p.baseBorrowRateRay),
+    borrow_cap: i128(p.borrowCap),
     max_borrow_rate_ray: i128(p.maxBorrowRateRay),
     max_utilization_ray: i128(p.maxUtilizationRay),
     mid_utilization_ray: i128(p.midUtilizationRay),
@@ -87,12 +88,12 @@ export const encodeMarketParamsRaw = (p: MarketParamsRawDto): xdr.ScVal =>
     slope1_ray: i128(p.slope1Ray),
     slope2_ray: i128(p.slope2Ray),
     slope3_ray: i128(p.slope3Ray),
+    supply_cap: i128(p.supplyCap),
   })
 
-/** `AssetConfigRaw` — 11 risk/limit fields. */
+/** `AssetConfigRaw` — risk flags and e-mode membership (hub caps live on pool params). */
 export const encodeAssetConfigRaw = (c: AssetConfigRawDto): xdr.ScVal =>
   scStruct({
-    borrow_cap: i128(c.borrowCap),
     e_mode_categories: vec(c.eModeCategories.map((id) => u32(id))),
     flashloan_fee_bps: u32(c.flashloanFeeBps),
     is_borrowable: bool(c.isBorrowable),
@@ -102,7 +103,6 @@ export const encodeAssetConfigRaw = (c: AssetConfigRawDto): xdr.ScVal =>
     liquidation_fees_bps: u32(c.liquidationFeesBps),
     liquidation_threshold_bps: u32(c.liquidationThresholdBps),
     loan_to_value_bps: u32(c.loanToValueBps),
-    supply_cap: i128(c.supplyCap),
   })
 
 /** `PositionLimits` — per-account supply/borrow position caps. */
@@ -238,6 +238,13 @@ export interface EModeAssetArgs {
   ltv: number
   threshold: number
   bonus: number
+  supplyCap: string
+  borrowCap: string
+}
+export interface UpdatePoolCapsArgs {
+  asset: string
+  supplyCap: string
+  borrowCap: string
 }
 export interface RemoveEModeAssetArgs {
   asset: string
@@ -403,7 +410,7 @@ export function buildStellarRemoveEModeCategoryTx(
   return buildTx(opts, 'remove_e_mode_category', [u32(args.id)])
 }
 
-/** add_asset_to_e_mode_category(asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus) — #[only_owner] */
+/** add_asset_to_e_mode_category(asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, supply_cap, borrow_cap) — #[only_owner] */
 export function buildStellarAddAssetToEModeCategoryTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs
@@ -416,10 +423,12 @@ export function buildStellarAddAssetToEModeCategoryTx(
     u32(args.ltv),
     u32(args.threshold),
     u32(args.bonus),
+    i128(args.supplyCap),
+    i128(args.borrowCap),
   ])
 }
 
-/** edit_asset_in_e_mode_category(asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus) — #[only_owner] */
+/** edit_asset_in_e_mode_category(asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, supply_cap, borrow_cap) — #[only_owner] */
 export function buildStellarEditAssetInEModeCategoryTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs
@@ -432,6 +441,20 @@ export function buildStellarEditAssetInEModeCategoryTx(
     u32(args.ltv),
     u32(args.threshold),
     u32(args.bonus),
+    i128(args.supplyCap),
+    i128(args.borrowCap),
+  ])
+}
+
+/** update_pool_caps(asset, supply_cap, borrow_cap) — #[only_owner] */
+export function buildStellarUpdatePoolCapsTx(
+  opts: StellarBuilderOptions,
+  args: UpdatePoolCapsArgs
+): BuiltStellarTx {
+  return buildTx(opts, 'update_pool_caps', [
+    addr(args.asset),
+    i128(args.supplyCap),
+    i128(args.borrowCap),
   ])
 }
 

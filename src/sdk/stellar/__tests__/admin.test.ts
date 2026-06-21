@@ -106,6 +106,8 @@ const createPoolArgs = {
     optimalUtilizationRay: '800000000000000000000000000',
     maxUtilizationRay: '950000000000000000000000000',
     reserveFactorBps: 1000,
+    supplyCap: '100000000000000',
+    borrowCap: '100000000000000',
   },
   config: {
     loanToValueBps: 7500,
@@ -116,8 +118,6 @@ const createPoolArgs = {
     isBorrowable: true,
     isFlashloanable: true,
     flashloanFeeBps: 9,
-    borrowCap: '0',
-    supplyCap: '0',
     eModeCategories: [1, 2],
   },
 } satisfies CreateLiquidityPoolArgs
@@ -285,7 +285,7 @@ const cases: Case[] = [
   {
     name: 'add_asset_to_e_mode_category',
     expectedFn: 'add_asset_to_e_mode_category',
-    expectedArgCount: 7,
+    expectedArgCount: 9,
     build: () =>
       buildStellarAddAssetToEModeCategoryTx(BASE_OPTS, {
         asset: FIXTURE_USDC,
@@ -295,12 +295,14 @@ const cases: Case[] = [
         ltv: 9000,
         threshold: 9500,
         bonus: 200,
+        supplyCap: '0',
+        borrowCap: '0',
       }),
   },
   {
     name: 'edit_asset_in_e_mode_category',
     expectedFn: 'edit_asset_in_e_mode_category',
-    expectedArgCount: 7,
+    expectedArgCount: 9,
     build: () =>
       buildStellarEditAssetInEModeCategoryTx(BASE_OPTS, {
         asset: FIXTURE_USDC,
@@ -310,6 +312,8 @@ const cases: Case[] = [
         ltv: 9000,
         threshold: 9500,
         bonus: 200,
+        supplyCap: '0',
+        borrowCap: '0',
       }),
   },
   {
@@ -449,24 +453,25 @@ describe('complex struct encoding', () => {
     )
     // create_liquidity_pool(asset, params, config) → config is arg index 2.
     const keys = mapKeys(parsed.args[2]!)
-    expect(keys).toHaveLength(11)
+    expect(keys).toHaveLength(9)
     expect(isAscending(keys)).toBe(true)
     expect(keys).toContain('e_mode_categories')
     expect(keys).not.toContain('liquidationFeesBps') // snake_case only
   })
 
-  it('MarketParamsRaw is an scvMap with 11 ascending-sorted keys', () => {
+  it('MarketParamsRaw is an scvMap with 13 ascending-sorted keys', () => {
     const parsed = parseInvoked(
       buildStellarCreateLiquidityPoolTx(BASE_OPTS, createPoolArgs).xdr
     )
     const keys = mapKeys(parsed.args[1]!)
-    expect(keys).toHaveLength(11)
+    expect(keys).toHaveLength(13)
     expect(isAscending(keys)).toBe(true)
     expect(keys).toEqual(
       [
         'asset_decimals',
         'asset_id',
         'base_borrow_rate_ray',
+        'borrow_cap',
         'max_borrow_rate_ray',
         'max_utilization_ray',
         'mid_utilization_ray',
@@ -475,6 +480,7 @@ describe('complex struct encoding', () => {
         'slope1_ray',
         'slope2_ray',
         'slope3_ray',
+        'supply_cap',
       ].sort()
     )
   })
@@ -536,7 +542,6 @@ describe('complex struct encoding', () => {
       acfgEntries.find((e) => e.key().sym().toString() === name)!.val()
     expect(acfgField('loan_to_value_bps').switch().name).toBe('scvU32')
     expect(acfgField('flashloan_fee_bps').switch().name).toBe('scvU32')
-    expect(acfgField('borrow_cap').switch().name).toBe('scvI128')
     expect(acfgField('is_borrowable').switch().name).toBe('scvBool')
     expect(acfgField('e_mode_categories').switch().name).toBe('scvVec')
 
@@ -551,6 +556,8 @@ describe('complex struct encoding', () => {
     expect(pField('reserve_factor_bps').switch().name).toBe('scvU32')
     expect(pField('asset_decimals').switch().name).toBe('scvU32')
     expect(pField('asset_id').switch().name).toBe('scvAddress')
+    expect(pField('supply_cap').switch().name).toBe('scvI128')
+    expect(pField('borrow_cap').switch().name).toBe('scvI128')
 
     // MarketOracleConfigInput — stale seconds are u64, tolerances u32, sanity i128.
     const cfg = parseInvoked(
