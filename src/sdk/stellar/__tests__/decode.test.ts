@@ -125,9 +125,9 @@ const decodeFixture = (t: string) => {
 }
 
 describe('decodeStellarLendingEvent — real fixtures', () => {
-  it('has a decoder for all 19 controller events and decodes every fixture', () => {
-    expect(STELLAR_LENDING_TOPICS).toHaveLength(19)
-    expect(FIXTURES.length).toBeGreaterThanOrEqual(19)
+  it('has a decoder for all 21 lending events and decodes every fixture', () => {
+    expect(STELLAR_LENDING_TOPICS).toHaveLength(21)
+    expect(FIXTURES.length).toBeGreaterThanOrEqual(21)
     for (const f of FIXTURES) {
       const ev = decodeStellarLendingEvent(f.topics, f.data)
       expect(ev).not.toBeNull()
@@ -229,6 +229,15 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(withPrice!.assetPriceWad).toBe('1230000000000000000')
     expect(withoutPrice!.asset).toBe(ASSET_B)
     expect(withoutPrice!.assetPriceWad).toBeUndefined()
+  })
+
+  it('decodes strategy:fee — i128 amounts as decimal strings', () => {
+    const ev = decodeFixture('strategy:fee')
+    if (ev.topic !== 'strategy:fee') throw new Error('narrow')
+    expect(ev.data.asset).toMatch(/^C[A-Z2-7]{55}$/)
+    expect(ev.data.amount).toBe('1000000000')
+    expect(ev.data.fee).toBe('10000000')
+    expect(ev.data.amountSent).toBe('990000000')
   })
 
   it('decodes oracle:twap_degraded', () => {

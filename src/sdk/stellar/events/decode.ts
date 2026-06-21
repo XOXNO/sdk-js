@@ -1,8 +1,8 @@
 /**
  * Decoders for the Stellar lending controller `#[contractevent]`s.
  *
- * The controller defines 20 contractevents; this SDK decodes 19. The lone
- * omission is `config:min_borrow_collateral` (a single global `i128` floor with
+ * The controller defines 20+ contractevents; this SDK decodes 20 of them plus the
+ * pool's `strategy:fee`. The lone controller omission is `config:min_borrow_collateral` (a single global `i128` floor with
  * no indexing/UI consumer — the governance `SetMinBorrowCollateral` proposal
  * already surfaces the value), so `decodeStellarLendingEvent` returns `null` for
  * it like any other unhandled topic.
@@ -255,18 +255,19 @@ const REGISTRY: Record<string, DecoderFn> = {
       updates: vec(d).map((u) => decodeMarketSnapshot(vec(u))),
     },
   }),
-  'market:batch_params_update': (d) => ({
-    topic: 'market:batch_params_update',
-    data: {
-      updates: vec((d as Raw).updates).map((entry) => {
-        const row = entry as Raw
-        return {
-          asset: str(row.asset),
-          params: decodeMarketParams(row.params as Raw),
-        }
-      }),
-    },
-  }),
+  'market:batch_params_update': (d) =>
+    ({
+      topic: 'market:batch_params_update',
+      data: {
+        updates: vec((d as Raw).updates).map((entry) => {
+          const row = entry as Raw
+          return {
+            asset: str(row.asset),
+            params: decodeMarketParams(row.params as Raw),
+          }
+        }),
+      },
+    }) as Extract<StellarLendingDecodedEvent, { topic: 'market:batch_params_update' }>,
   // Vec-encoded (ABI v2): data = [account_id, attributes, deposits, borrows].
   // `updates` merges all deposit entries first, then all borrow entries.
   'position:batch_update': (d) => {
@@ -350,6 +351,15 @@ const REGISTRY: Record<string, DecoderFn> = {
       accountId: dec(d.account_id),
     },
   }),
+  'strategy:fee': (d) => ({
+    topic: 'strategy:fee',
+    data: {
+      asset: str(d.asset),
+      amount: dec(d.amount),
+      fee: dec(d.fee),
+      amountSent: dec(d.amount_sent),
+    },
+  }),
   'config:approve_token': (d) => ({
     topic: 'config:approve_token',
     data: { wasmHash: hex(d.wasm_hash), approved: Boolean(d.approved) },
@@ -383,8 +393,8 @@ const REGISTRY: Record<string, DecoderFn> = {
   }),
 }
 
-/** Topic keys this SDK can decode (19 of the controller's 20 contractevents;
- * `config:min_borrow_collateral` is intentionally not decoded). */
+/** Topic keys this SDK can decode (20 controller contractevents plus the pool's
+ * `strategy:fee`; `config:min_borrow_collateral` is intentionally not decoded). */
 export const STELLAR_LENDING_TOPICS = Object.freeze(
   Object.keys(REGISTRY)
 ) as readonly string[]

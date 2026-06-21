@@ -44,6 +44,7 @@ import {
   buildStellarUpdateAccountThresholdTx,
   buildStellarUpdateIndexesTx,
   buildStellarUpgradeControllerTx,
+  buildStellarUpdatePoolCapsTx,
   buildStellarUpgradeLiquidityPoolParamsTx,
   buildStellarUpgradeLiquidityPoolTx,
   type ConfigureMarketOracleArgs,
@@ -314,6 +315,17 @@ const cases: Case[] = [
         bonus: 200,
         supplyCap: '0',
         borrowCap: '0',
+      }),
+  },
+  {
+    name: 'update_pool_caps',
+    expectedFn: 'update_pool_caps',
+    expectedArgCount: 3,
+    build: () =>
+      buildStellarUpdatePoolCapsTx(BASE_OPTS, {
+        asset: FIXTURE_USDC,
+        supplyCap: '100000000000000',
+        borrowCap: '50000000000000',
       }),
   },
   {
