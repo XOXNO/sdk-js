@@ -165,7 +165,12 @@ export class XOXNOClient {
 
     const res = await fetch(url, init as RequestInit).catch((error) => {
       if (error instanceof Error && !error.message.match(/^http(s?):\/\//)) {
-        throw new Error(`${url}: ${error.message}`)
+        // Preserve the underlying network reason as `cause` — the undici/system
+        // error carries the real code (UND_ERR_SOCKET, ECONNREFUSED, ENOTFOUND,
+        // timeouts). Without it the thrown message is only "<url>: fetch failed".
+        throw Object.assign(new Error(`${url}: ${error.message}`), {
+          cause: error,
+        })
       }
       throw error
     })
