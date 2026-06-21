@@ -7,7 +7,7 @@ on:
 
 jobs:
   bump-version:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: write
     steps:
@@ -24,7 +24,11 @@ jobs:
 
   publish:
     needs: bump-version
-    runs-on: ubuntu-latest
+    # Self-hosted: its IP is allow-listed in Cloudflare, so build:sdk's swagger
+    # fetch reaches the real api-v2 (404 in prod -> committed swagger.json
+    # fallback, which carries /user/blend) instead of a stale CDN 200 that
+    # silently drops routes from the generated SDK.
+    runs-on: self-hosted
     permissions:
       id-token: write
       contents: read
