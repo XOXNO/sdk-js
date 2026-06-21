@@ -7,7 +7,7 @@ on:
 
 jobs:
   bump-version:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
@@ -24,11 +24,7 @@ jobs:
 
   publish:
     needs: bump-version
-    # Self-hosted: its IP is allow-listed in Cloudflare, so build:sdk's swagger
-    # fetch reaches the real api-v2 (404 in prod -> committed swagger.json
-    # fallback, which carries /user/blend) instead of a stale CDN 200 that
-    # silently drops routes from the generated SDK.
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
@@ -43,10 +39,6 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
       - run: npm run build --if-present
-      # No --provenance: npm only accepts sigstore provenance from GitHub-hosted
-      # runners (E422 on self-hosted). Running self-hosted is what lets build:sdk's
-      # swagger fetch reach the Cloudflare-allow-listed api-v2, which matters more
-      # than the provenance attestation.
-      - run: npm publish --access public
+      - run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ''
