@@ -18,9 +18,13 @@
  * `number` for u32, strkey strings for addresses, strings for symbols, `null`
  * for absent `Option`s, and arrays for `Vec`s.
  *
- * The two hot topics (`position:batch_update`, `market:batch_state_update`)
- * use the vec-encoded ABI v2 instead: `data` is an `ScVec` whose field order
- * IS the ABI, so `scValToNative` yields nested arrays decoded positionally.
+ * The hot topics (`position:batch_update`, `market:batch_state_update`) use the
+ * vec-encoded ABI v2 instead: `data` is an `ScVec` whose field order IS the ABI,
+ * so `scValToNative` yields nested arrays decoded positionally.
+ *
+ * `market:batch_params_update` is likewise single-value: `data` is the updates
+ * `ScVec` directly (NOT an ScMap wrapping `updates`) — read `d`, not `d.updates`
+ * — though each entry is itself an ScMap.
  */
 
 import { scValToNative, xdr } from '@stellar/stellar-sdk'
@@ -255,11 +259,13 @@ const REGISTRY: Record<string, DecoderFn> = {
       updates: vec(d).map((u) => decodeMarketSnapshot(vec(u))),
     },
   }),
+  // Vec-encoded (single-value): `data` is the updates `Vec` directly (NOT an
+  // ScMap wrapping an `updates` field), each entry an ScMap { asset, params }.
   'market:batch_params_update': (d) =>
     ({
       topic: 'market:batch_params_update',
       data: {
-        updates: vec((d as Raw).updates).map((entry) => {
+        updates: vec(d).map((entry) => {
           const row = entry as Raw
           return {
             asset: str(row.asset),

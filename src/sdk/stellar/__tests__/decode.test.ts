@@ -32,6 +32,12 @@ const u64 = (n: bigint): xdr.ScVal => nativeToScVal(n, { type: 'u64' })
 const i128 = (n: bigint): xdr.ScVal => nativeToScVal(n, { type: 'i128' })
 const none = (): xdr.ScVal => xdr.ScVal.scvVoid()
 const vecV = (items: xdr.ScVal[]): xdr.ScVal => xdr.ScVal.scvVec(items)
+const mapV = (entries: Record<string, xdr.ScVal>): xdr.ScVal =>
+  xdr.ScVal.scvMap(
+    Object.keys(entries)
+      .sort()
+      .map((k) => new xdr.ScMapEntry({ key: sym(k), val: entries[k]! }))
+  )
 const addrV = (a: string): xdr.ScVal => Address.fromString(a).toScVal()
 const b64 = (v: xdr.ScVal): string => v.toXDR('base64')
 const topicsFor = (domain: string, action: string): string[] => [
@@ -229,6 +235,41 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(withPrice!.assetPriceWad).toBe('1230000000000000000')
     expect(withoutPrice!.asset).toBe(ASSET_B)
     expect(withoutPrice!.assetPriceWad).toBeUndefined()
+  })
+
+  // Regression: `market:batch_params_update` is single-value — `data` is the
+  // updates Vec directly. Reading `d.updates` yields [] and silently drops the
+  // supply/borrow caps (the only fields unique to this event), leaving indexed
+  // caps frozen at their create-time value.
+  it('market:batch_params_update (single-value Vec) — decodes supply/borrow caps', () => {
+    const params = mapV({
+      asset_decimals: u32(7),
+      asset_id: addrV(ASSET_A),
+      base_borrow_rate_ray: i128(10000000000000000000000000n),
+      borrow_cap: i128(50000000000000n),
+      max_borrow_rate_ray: i128(800000000000000000000000000n),
+      max_utilization_ray: i128(900000000000000000000000000n),
+      mid_utilization_ray: i128(500000000000000000000000000n),
+      optimal_utilization_ray: i128(800000000000000000000000000n),
+      reserve_factor_bps: u32(2000),
+      slope1_ray: i128(40000000000000000000000000n),
+      slope2_ray: i128(100000000000000000000000000n),
+      slope3_ray: i128(250000000000000000000000000n),
+      supply_cap: i128(50000000000000n),
+    })
+    const data = b64(vecV([mapV({ asset: addrV(ASSET_A), params })]))
+    const ev = decodeStellarLendingEvent(
+      topicsFor('market', 'batch_params_update'),
+      data
+    )
+    if (!ev || ev.topic !== 'market:batch_params_update') throw new Error('narrow')
+    expect(ev.data.updates).toHaveLength(1)
+    expect(ev.data.updates[0]!.asset).toBe(ASSET_A)
+    expect(ev.data.updates[0]!.params.supplyCap).toBe('50000000000000')
+    expect(ev.data.updates[0]!.params.borrowCap).toBe('50000000000000')
+    expect(ev.data.updates[0]!.params.maxUtilizationRay).toBe(
+      '900000000000000000000000000'
+    )
   })
 
   it('decodes strategy:fee — i128 amounts as decimal strings', () => {
