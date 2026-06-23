@@ -459,15 +459,18 @@ describe('Stellar lending admin builders', () => {
 // -----------------------------------------------------------------------------
 
 describe('complex struct encoding', () => {
-  it('AssetConfigRaw is an scvMap with 11 ascending-sorted keys', () => {
+  it('AssetConfigRaw is an scvMap with 10 ascending-sorted keys', () => {
     const parsed = parseInvoked(
       buildStellarCreateLiquidityPoolTx(BASE_OPTS, createPoolArgs).xdr
     )
     // create_liquidity_pool(asset, params, config) → config is arg index 2.
     const keys = mapKeys(parsed.args[2]!)
-    expect(keys).toHaveLength(9)
+    expect(keys).toHaveLength(10)
     expect(isAscending(keys)).toBe(true)
     expect(keys).toContain('e_mode_categories')
+    // `asset_decimals` is derived on-chain but must be present, or the contract's
+    // 10-field struct decodes as a 9-entry map and traps with Object/UnexpectedSize.
+    expect(keys).toContain('asset_decimals')
     expect(keys).not.toContain('liquidationFeesBps') // snake_case only
   })
 

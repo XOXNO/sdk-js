@@ -94,6 +94,12 @@ export const encodeMarketParamsRaw = (p: MarketParamsRawDto): xdr.ScVal =>
 /** `AssetConfigRaw` — risk flags and e-mode membership (hub caps live on pool params). */
 export const encodeAssetConfigRaw = (c: AssetConfigRawDto): xdr.ScVal =>
   scStruct({
+    // The contract's `AssetConfigRaw` carries `asset_decimals`, but the value is
+    // derived on-chain and ignored on input: `create_liquidity_pool` copies it
+    // from the pool's `MarketParamsRaw` and `edit_asset_config` preserves the
+    // stored value. The field must still be present, or the 10-field struct
+    // decodes as a 9-entry map and traps host-side with `Object/UnexpectedSize`.
+    asset_decimals: u32(0),
     e_mode_categories: vec(c.eModeCategories.map((id) => u32(id))),
     flashloan_fee_bps: u32(c.flashloanFeeBps),
     is_borrowable: bool(c.isBorrowable),
