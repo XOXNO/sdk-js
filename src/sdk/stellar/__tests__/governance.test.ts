@@ -6,7 +6,13 @@
 import { jest } from '@jest/globals'
 import { Networks, Transaction, xdr as stellarXdr } from '@stellar/stellar-sdk'
 
-import { buildStellarProposeUpdatePoolCapsTx } from '../governance'
+import {
+  buildStellarGovernanceExecuteUpdateDelayTx,
+  buildStellarProposeDeployPoolTx,
+  buildStellarProposeSetAggregatorTx,
+  buildStellarProposeUpdateDelayTx,
+  buildStellarProposeUpdatePoolCapsTx,
+} from '../governance'
 import type { StellarBuilderOptions } from '../lending'
 
 const FIXTURE_CALLER =
@@ -55,47 +61,182 @@ const parseInvoked = (
   }
 }
 
+/** Read the variant symbol of an `AdminOperation` enum ScVal (`scvVec[sym,...]`). */
+const adminOpVariant = (op: stellarXdr.ScVal): string => {
+  expect(op.switch().name).toBe('scvVec')
+  const elems = op.vec()!
+  expect(elems[0]!.switch().name).toBe('scvSymbol')
+  return elems[0]!.sym().toString()
+}
+
 describe('Stellar lending governance builders', () => {
-  describe('propose_update_pool_caps', () => {
+  // Every proposal routes through `propose(proposer, op: AdminOperation, salt)`:
+  // arg0 = proposer Address, arg1 = the AdminOperation enum, arg2 = salt bytes.
+  describe('propose — generic AdminOperation entrypoint', () => {
+    describe('UpdatePoolCaps (struct-payload variant)', () => {
+      const build = () =>
+        buildStellarProposeUpdatePoolCapsTx(
+          BASE_OPTS,
+          {
+            asset: FIXTURE_USDC,
+            supplyCap: '100000000000000',
+            borrowCap: '50000000000000',
+          },
+          FIXTURE_SALT
+        )
+
+      let built: { xdr: string }
+      beforeAll(() => {
+        built = build()
+      })
+
+      it('returns non-empty base64 XDR', () => {
+        expect(typeof built.xdr).toBe('string')
+        expect(built.xdr.length).toBeGreaterThan(0)
+      })
+
+      it('calls propose with [proposer, AdminOperation, salt]', () => {
+        const parsed = parseInvoked(built.xdr)
+        expect(parsed.functionName).toBe('propose')
+        expect(parsed.args).toHaveLength(3)
+        expect(parsed.args[0]!.switch().name).toBe('scvAddress')
+        expect(parsed.args[1]!.switch().name).toBe('scvVec')
+        expect(parsed.args[2]!.switch().name).toBe('scvBytes')
+      })
+
+      it('wraps the UpdatePoolCaps variant with a struct payload', () => {
+        const op = parseInvoked(built.xdr).args[1]!
+        expect(adminOpVariant(op)).toBe('UpdatePoolCaps')
+        // [symbol, PoolCapsArgs struct]
+        expect(op.vec()).toHaveLength(2)
+        expect(op.vec()![1]!.switch().name).toBe('scvMap')
+      })
+
+      it('is deterministic', () => {
+        expect(build().xdr).toBe(built.xdr)
+      })
+
+      it('matches stored snapshot', () => {
+        expect(built.xdr).toMatchSnapshot()
+      })
+    })
+
+    describe('SetAggregator (single Address variant)', () => {
+      // Built inside `it` so the outer `beforeAll` fake timers are active and
+      // the tx timebounds (hence the snapshot) are deterministic.
+      const build = () =>
+        buildStellarProposeSetAggregatorTx(
+          BASE_OPTS,
+          { aggregator: FIXTURE_USDC },
+          FIXTURE_SALT
+        )
+
+      it('wraps SetAggregator with an Address payload', () => {
+        const op = parseInvoked(build().xdr).args[1]!
+        expect(adminOpVariant(op)).toBe('SetAggregator')
+        expect(op.vec()).toHaveLength(2)
+        expect(op.vec()![1]!.switch().name).toBe('scvAddress')
+      })
+
+      it('matches stored snapshot', () => {
+        expect(build().xdr).toMatchSnapshot()
+      })
+    })
+
+    describe('DeployPool (unit variant)', () => {
+      const build = () => buildStellarProposeDeployPoolTx(BASE_OPTS, FIXTURE_SALT)
+
+      it('encodes DeployPool as a tag-only enum', () => {
+        const op = parseInvoked(build().xdr).args[1]!
+        expect(adminOpVariant(op)).toBe('DeployPool')
+        expect(op.vec()).toHaveLength(1)
+      })
+
+      it('matches stored snapshot', () => {
+        expect(build().xdr).toMatchSnapshot()
+      })
+    })
+  })
+
+  // Byte-parity gate: the AdminOperation ScVal the SDK encodes MUST match the
+  // contract's own XDR for the same value, because the timelock hashes it into
+  // the operation id. Expected values are produced by the governance crate test
+  // `op::xdr_parity::print_canonical_admin_op_xdrs` (rs-lending-xlm) using the
+  // address below. If the contract enum/struct layout changes, regenerate them.
+  describe('AdminOperation byte-parity with contract', () => {
+    const PARITY_ADDR =
+      'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM'
+    const opXdr = (xdrB64: string): string =>
+      parseInvoked(xdrB64).args[1]!.toXDR('base64')
+
+    it('DeployPool', () => {
+      expect(opXdr(buildStellarProposeDeployPoolTx(BASE_OPTS, FIXTURE_SALT).xdr)).toBe(
+        'AAAAEAAAAAEAAAABAAAADwAAAApEZXBsb3lQb29sAAA='
+      )
+    })
+
+    it('UpdateGovDelay(34560)', () => {
+      expect(
+        opXdr(
+          buildStellarProposeUpdateDelayTx(BASE_OPTS, { newDelay: 34560 }, FIXTURE_SALT).xdr
+        )
+      ).toBe('AAAAEAAAAAEAAAACAAAADwAAAA5VcGRhdGVHb3ZEZWxheQAAAAAAAwAAhwA=')
+    })
+
+    it('SetAggregator(addr)', () => {
+      expect(
+        opXdr(
+          buildStellarProposeSetAggregatorTx(
+            BASE_OPTS,
+            { aggregator: PARITY_ADDR },
+            FIXTURE_SALT
+          ).xdr
+        )
+      ).toBe(
+        'AAAAEAAAAAEAAAACAAAADwAAAA1TZXRBZ2dyZWdhdG9yAAAAAAAAEgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ=='
+      )
+    })
+
+    it('UpdatePoolCaps (struct field order: asset, borrow_cap, supply_cap)', () => {
+      expect(
+        opXdr(
+          buildStellarProposeUpdatePoolCapsTx(
+            BASE_OPTS,
+            {
+              asset: PARITY_ADDR,
+              supplyCap: '100000000000000',
+              borrowCap: '50000000000000',
+            },
+            FIXTURE_SALT
+          ).xdr
+        )
+      ).toBe(
+        'AAAAEAAAAAEAAAACAAAADwAAAA5VcGRhdGVQb29sQ2FwcwAAAAAAEQAAAAEAAAADAAAADwAAAAVhc3NldAAAAAAAABIAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAPAAAACmJvcnJvd19jYXAAAAAAAAoAAAAAAAAAAAAALXmIPSAAAAAADwAAAApzdXBwbHlfY2FwAAAAAAAKAAAAAAAAAAAAAFrzEHpAAA=='
+      )
+    })
+  })
+
+  // Governance-self ops execute through `execute_self(executor, op, salt)`:
+  // arg0 = executor (None/Void), arg1 = the AdminOperation, arg2 = salt.
+  describe('execute_self — governance-self ops', () => {
     const build = () =>
-      buildStellarProposeUpdatePoolCapsTx(
+      buildStellarGovernanceExecuteUpdateDelayTx(
         BASE_OPTS,
-        {
-          asset: FIXTURE_USDC,
-          supplyCap: '100000000000000',
-          borrowCap: '50000000000000',
-        },
+        { newDelay: 34560 },
         FIXTURE_SALT
       )
 
-    let built: { xdr: string }
-
-    beforeAll(() => {
-      built = build()
-    })
-
-    it('returns non-empty base64 XDR', () => {
-      expect(typeof built.xdr).toBe('string')
-      expect(built.xdr.length).toBeGreaterThan(0)
-    })
-
-    it('encodes propose_update_pool_caps with proposer + 3 args + salt (5 total)', () => {
-      const parsed = parseInvoked(built.xdr)
-      expect(parsed.functionName).toBe('propose_update_pool_caps')
-      expect(parsed.args).toHaveLength(5)
-      expect(parsed.args[0]!.switch().name).toBe('scvAddress')
-      expect(parsed.args[1]!.switch().name).toBe('scvAddress')
-      expect(parsed.args[2]!.switch().name).toBe('scvI128')
-      expect(parsed.args[3]!.switch().name).toBe('scvI128')
-      expect(parsed.args[4]!.switch().name).toBe('scvBytes')
-    })
-
-    it('is deterministic', () => {
-      expect(build().xdr).toBe(built.xdr)
+    it('calls execute_self with [None, AdminOperation, salt]', () => {
+      const parsed = parseInvoked(build().xdr)
+      expect(parsed.functionName).toBe('execute_self')
+      expect(parsed.args).toHaveLength(3)
+      expect(parsed.args[0]!.switch().name).toBe('scvVoid')
+      expect(adminOpVariant(parsed.args[1]!)).toBe('UpdateGovDelay')
+      expect(parsed.args[2]!.switch().name).toBe('scvBytes')
     })
 
     it('matches stored snapshot', () => {
-      expect(built.xdr).toMatchSnapshot()
+      expect(build().xdr).toMatchSnapshot()
     })
   })
 })

@@ -4,17 +4,22 @@
  * (`opts.governanceAddress`, or env via `getStellarGovernance(network)`).
  *
  * Flow:
- *   - An admin holding the PROPOSER role calls a `propose_*` method. The
- *     leading arg is `proposer = opts.caller` (an `Address`); the remaining
- *     args mirror the matching controller setter exactly; the trailing arg is
- *     a `salt: BytesN<32>`. Validation runs at propose time; the call returns
- *     the operation id (`BytesN<32>`).
+ *   - An admin holding the PROPOSER role calls the single `propose(proposer,
+ *     op: AdminOperation, salt)` entrypoint. `proposer = opts.caller`; `op` is
+ *     the serialized `AdminOperation` enum identifying the target setter and its
+ *     args; `salt: BytesN<32>` is trailing. Validation runs at propose time and
+ *     the call returns the operation id (`BytesN<32>`).
  *   - After the timelock delay, ANYONE executes. Controller-targeted ops go
  *     through the generic `execute(executor, target, function, args,
- *     predecessor, salt)`; governance-self ops go through typed `execute_*`.
- *     Open execution passes `executor = None` (Soroban `Option::None`, encoded
- *     as `scvVoid` — mirrors the lending `withdraw` builder's optional `to`).
+ *     predecessor, salt)`; governance-self ops go through `execute_self(executor,
+ *     op: AdminOperation, salt)`. Open execution passes `executor = None`
+ *     (Soroban `Option::None`, encoded as `scvVoid`).
  *   - `predecessor` is ALWAYS the 32-zero-byte `BytesN<32>` in this system.
+ *
+ * The on-chain scheduled `Operation` (target, function, args) is byte-identical
+ * to the pre-enum typed proposers, so the operation id, the generic `execute`
+ * path, and event indexing are unchanged. The `AdminOperation` enum only changes
+ * the `propose` / `execute_self` call encoding, which these builders own.
  *
  * Builders are RPC-free and deterministic (synthetic `Account(caller,
  * sourceSequence)`), exactly like the lending / admin builders. The returned
@@ -52,7 +57,17 @@ import {
   STELLAR_NETWORK_PASSPHRASE,
 } from './contracts'
 import type { BuiltStellarTx, StellarBuilderOptions } from './lending'
-import { addr, bool, bytesN, i128, sym, u32, vec, voidVal } from './scval-encode'
+import {
+  addr,
+  bool,
+  bytesN,
+  i128,
+  scStruct,
+  sym,
+  u32,
+  vec,
+  voidVal,
+} from './scval-encode'
 
 // -----------------------------------------------------------------------------
 // Salt / predecessor helpers
@@ -81,6 +96,90 @@ const saltScVal = (salt: StellarGovernanceSalt): xdr.ScVal => {
   }
   return xdr.ScVal.scvBytes(buf)
 }
+
+// -----------------------------------------------------------------------------
+// AdminOperation enum encoding
+// -----------------------------------------------------------------------------
+
+/**
+ * Encode an `AdminOperation` enum value. At the XDR level a Soroban enum value
+ * is `scvVec([scvSymbol(VariantName), ...payload])`: a unit variant carries only
+ * the symbol, a single/tuple variant appends its fields in declaration order,
+ * and a struct-carrying variant appends the single `scStruct(..)` payload. The
+ * `VariantName` MUST match the Rust `AdminOperation` variant identifier exactly.
+ */
+const adminOp = (variant: string, ...payload: xdr.ScVal[]): xdr.ScVal =>
+  vec([sym(variant), ...payload])
+
+// Argument-struct encoders. The `scStruct` keys MUST be the Rust struct field
+// names (snake_case); `scStruct` sorts them lexicographically into the `scvMap`
+// layout the contract decodes. Builder arg interfaces stay camelCase.
+
+const encodeEModeAssetArgs = (a: EModeAssetArgs): xdr.ScVal =>
+  scStruct({
+    asset: addr(a.asset),
+    category_id: u32(a.categoryId),
+    can_collateral: bool(a.canCollateral),
+    can_borrow: bool(a.canBorrow),
+    ltv: u32(a.ltv),
+    threshold: u32(a.threshold),
+    bonus: u32(a.bonus),
+    supply_cap: i128(a.supplyCap),
+    borrow_cap: i128(a.borrowCap),
+  })
+
+const encodePoolCapsArgs = (a: UpdatePoolCapsArgs): xdr.ScVal =>
+  scStruct({
+    asset: addr(a.asset),
+    supply_cap: i128(a.supplyCap),
+    borrow_cap: i128(a.borrowCap),
+  })
+
+const encodeRemoveAssetFromEModeArgs = (a: RemoveEModeAssetArgs): xdr.ScVal =>
+  scStruct({
+    asset: addr(a.asset),
+    category_id: u32(a.categoryId),
+  })
+
+const encodeCreatePoolArgs = (a: CreateLiquidityPoolArgs): xdr.ScVal =>
+  scStruct({
+    asset: addr(a.asset),
+    params: encodeMarketParamsRaw(a.params),
+    config: encodeAssetConfigRaw(a.config),
+  })
+
+const encodeUpgradePoolParamsArgs = (
+  a: UpgradeLiquidityPoolParamsArgs
+): xdr.ScVal =>
+  scStruct({
+    asset: addr(a.asset),
+    params: encodeInterestRateModel(a.params),
+  })
+
+const encodeTransferOwnershipArgs = (a: TransferOwnershipArgs): xdr.ScVal =>
+  scStruct({
+    new_owner: addr(a.newOwner),
+    live_until_ledger: u32(a.liveUntilLedger),
+  })
+
+const encodeConfigureOracleArgs = (a: ConfigureMarketOracleArgs): xdr.ScVal =>
+  scStruct({
+    asset: addr(a.asset),
+    cfg: encodeMarketOracleConfigInput(a.config),
+  })
+
+const encodeEditToleranceArgs = (a: EditOracleToleranceArgs): xdr.ScVal =>
+  scStruct({
+    asset: addr(a.asset),
+    first_tolerance: u32(a.firstTolerance),
+    last_tolerance: u32(a.lastTolerance),
+  })
+
+const encodeRoleArgs = (a: RoleGrantArgs): xdr.ScVal =>
+  scStruct({
+    account: addr(a.account),
+    role: sym(a.role),
+  })
 
 // -----------------------------------------------------------------------------
 // Governance transaction assembly
@@ -114,28 +213,28 @@ function buildGovernanceTx(
 }
 
 /**
- * Build a `propose_*` tx: `proposer = opts.caller`, then the controller-setter
- * args, then `salt`. The caller must hold the PROPOSER role and sign the tx.
+ * Build a `propose(proposer, op, salt)` tx: `proposer = opts.caller`, then the
+ * `AdminOperation`, then `salt`. The caller must hold PROPOSER and sign the tx.
  */
 const buildPropose = (
   opts: StellarBuilderOptions,
-  method: string,
-  args: xdr.ScVal[],
+  op: xdr.ScVal,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx =>
-  buildGovernanceTx(opts, method, [addr(opts.caller), ...args, saltScVal(salt)])
+  buildGovernanceTx(opts, 'propose', [addr(opts.caller), op, saltScVal(salt)])
 
 /**
- * Build an `execute_*` (governance-self) tx: `executor = None`, then the typed
- * args, then `salt`. Open execution — any account may sign.
+ * Build an `execute_self(executor, op, salt)` (governance-self) tx: `executor =
+ * None`, then the `AdminOperation`, then `salt`. Open execution — any account
+ * may sign. Self-target ops cannot use the generic `execute` (the timelock
+ * rejects `target == governance` to avoid self-reentry).
  */
 const buildExecuteSelf = (
   opts: StellarBuilderOptions,
-  method: string,
-  args: xdr.ScVal[],
+  op: xdr.ScVal,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx =>
-  buildGovernanceTx(opts, method, [voidVal(), ...args, saltScVal(salt)])
+  buildGovernanceTx(opts, 'execute_self', [voidVal(), op, saltScVal(salt)])
 
 // -----------------------------------------------------------------------------
 // Builder argument shapes (SDK-local)
@@ -155,19 +254,19 @@ export interface UpdateDelayArgs {
 }
 
 // -----------------------------------------------------------------------------
-// CONTROLLER-targeted proposers (forward.rs) — proposer + controller args + salt
+// CONTROLLER-targeted proposers — proposer + AdminOperation + salt
 // -----------------------------------------------------------------------------
 
-/** propose_set_aggregator(proposer, addr: Address, salt) */
+/** propose(SetAggregator(addr)) */
 export function buildStellarProposeSetAggregatorTx(
   opts: StellarBuilderOptions,
   args: { aggregator: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(opts, 'propose_set_aggregator', [addr(args.aggregator)], salt)
+  return buildPropose(opts, adminOp('SetAggregator', addr(args.aggregator)), salt)
 }
 
-/** propose_set_accumulator(proposer, addr: Address, salt) */
+/** propose(SetAccumulator(addr)) */
 export function buildStellarProposeSetAccumulatorTx(
   opts: StellarBuilderOptions,
   args: { accumulator: string },
@@ -175,13 +274,12 @@ export function buildStellarProposeSetAccumulatorTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_set_accumulator',
-    [addr(args.accumulator)],
+    adminOp('SetAccumulator', addr(args.accumulator)),
     salt
   )
 }
 
-/** propose_set_pool_template(proposer, hash: BytesN<32>, salt) */
+/** propose(SetLiquidityPoolTemplate(hash)) */
 export function buildStellarProposeSetPoolTemplateTx(
   opts: StellarBuilderOptions,
   args: { wasmHash: string },
@@ -189,13 +287,12 @@ export function buildStellarProposeSetPoolTemplateTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_set_pool_template',
-    [bytesN(args.wasmHash)],
+    adminOp('SetLiquidityPoolTemplate', bytesN(args.wasmHash)),
     salt
   )
 }
 
-/** propose_edit_asset_config(proposer, asset: Address, cfg: AssetConfigRaw, salt) */
+/** propose(EditAssetConfig(asset, cfg)) */
 export function buildStellarProposeEditAssetConfigTx(
   opts: StellarBuilderOptions,
   args: EditAssetConfigArgs,
@@ -203,13 +300,12 @@ export function buildStellarProposeEditAssetConfigTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_edit_asset_config',
-    [addr(args.asset), encodeAssetConfigRaw(args.config)],
+    adminOp('EditAssetConfig', addr(args.asset), encodeAssetConfigRaw(args.config)),
     salt
   )
 }
 
-/** propose_set_position_limits(proposer, limits: PositionLimits, salt) */
+/** propose(SetPositionLimits(limits)) */
 export function buildStellarProposeSetPositionLimitsTx(
   opts: StellarBuilderOptions,
   args: PositionLimitsDto,
@@ -217,13 +313,12 @@ export function buildStellarProposeSetPositionLimitsTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_set_position_limits',
-    [encodePositionLimits(args)],
+    adminOp('SetPositionLimits', encodePositionLimits(args)),
     salt
   )
 }
 
-/** propose_set_min_borrow_collat(proposer, floor_wad: i128, salt) */
+/** propose(SetMinBorrowCollateralUsd(floor_wad)) */
 export function buildStellarProposeSetMinBorrowCollatTx(
   opts: StellarBuilderOptions,
   args: { floorWad: string },
@@ -231,35 +326,29 @@ export function buildStellarProposeSetMinBorrowCollatTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_set_min_borrow_collat',
-    [i128(args.floorWad)],
+    adminOp('SetMinBorrowCollateralUsd', i128(args.floorWad)),
     salt
   )
 }
 
-/** propose_add_e_mode_category(proposer, salt) — risk params are per-asset */
+/** propose(AddEModeCategory) — risk params are per-asset */
 export function buildStellarProposeAddEModeCategoryTx(
   opts: StellarBuilderOptions,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(opts, 'propose_add_e_mode_category', [], salt)
+  return buildPropose(opts, adminOp('AddEModeCategory'), salt)
 }
 
-/** propose_remove_e_mode_category(proposer, id: u32, salt) */
+/** propose(RemoveEModeCategory(id)) */
 export function buildStellarProposeRemoveEModeCategoryTx(
   opts: StellarBuilderOptions,
   args: RemoveEModeCategoryArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    'propose_remove_e_mode_category',
-    [u32(args.id)],
-    salt
-  )
+  return buildPropose(opts, adminOp('RemoveEModeCategory', u32(args.id)), salt)
 }
 
-/** propose_add_asset_to_e_mode(proposer, asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, supply_cap, borrow_cap, salt) */
+/** propose(AddAssetToEModeCategory(EModeAssetArgs)) */
 export function buildStellarProposeAddAssetToEModeTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs,
@@ -267,23 +356,12 @@ export function buildStellarProposeAddAssetToEModeTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_add_asset_to_e_mode',
-    [
-      addr(args.asset),
-      u32(args.categoryId),
-      bool(args.canCollateral),
-      bool(args.canBorrow),
-      u32(args.ltv),
-      u32(args.threshold),
-      u32(args.bonus),
-      i128(args.supplyCap),
-      i128(args.borrowCap),
-    ],
+    adminOp('AddAssetToEModeCategory', encodeEModeAssetArgs(args)),
     salt
   )
 }
 
-/** propose_edit_asset_in_e_mode(proposer, asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, supply_cap, borrow_cap, salt) */
+/** propose(EditAssetInEModeCategory(EModeAssetArgs)) */
 export function buildStellarProposeEditAssetInEModeTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs,
@@ -291,23 +369,12 @@ export function buildStellarProposeEditAssetInEModeTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_edit_asset_in_e_mode',
-    [
-      addr(args.asset),
-      u32(args.categoryId),
-      bool(args.canCollateral),
-      bool(args.canBorrow),
-      u32(args.ltv),
-      u32(args.threshold),
-      u32(args.bonus),
-      i128(args.supplyCap),
-      i128(args.borrowCap),
-    ],
+    adminOp('EditAssetInEModeCategory', encodeEModeAssetArgs(args)),
     salt
   )
 }
 
-/** propose_update_pool_caps(proposer, asset, supply_cap, borrow_cap, salt) */
+/** propose(UpdatePoolCaps(PoolCapsArgs)) */
 export function buildStellarProposeUpdatePoolCapsTx(
   opts: StellarBuilderOptions,
   args: UpdatePoolCapsArgs,
@@ -315,13 +382,12 @@ export function buildStellarProposeUpdatePoolCapsTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_update_pool_caps',
-    [addr(args.asset), i128(args.supplyCap), i128(args.borrowCap)],
+    adminOp('UpdatePoolCaps', encodePoolCapsArgs(args)),
     salt
   )
 }
 
-/** propose_remove_asset_from_e_mode(proposer, asset: Address, category_id: u32, salt) */
+/** propose(RemoveAssetFromEMode(RemoveAssetFromEModeArgs)) */
 export function buildStellarProposeRemoveAssetFromEModeTx(
   opts: StellarBuilderOptions,
   args: RemoveEModeAssetArgs,
@@ -329,31 +395,48 @@ export function buildStellarProposeRemoveAssetFromEModeTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_remove_asset_from_e_mode',
-    [addr(args.asset), u32(args.categoryId)],
+    adminOp('RemoveAssetFromEMode', encodeRemoveAssetFromEModeArgs(args)),
     salt
   )
 }
 
-/** propose_approve_token(proposer, token: Address, salt) */
+/** propose(ApproveToken(token)) */
 export function buildStellarProposeApproveTokenTx(
   opts: StellarBuilderOptions,
   args: { token: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(opts, 'propose_approve_token', [addr(args.token)], salt)
+  return buildPropose(opts, adminOp('ApproveToken', addr(args.token)), salt)
 }
 
-/** propose_revoke_token(proposer, token: Address, salt) */
+/** propose(RevokeToken(token)) */
 export function buildStellarProposeRevokeTokenTx(
   opts: StellarBuilderOptions,
   args: { token: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(opts, 'propose_revoke_token', [addr(args.token)], salt)
+  return buildPropose(opts, adminOp('RevokeToken', addr(args.token)), salt)
 }
 
-/** propose_create_liquidity_pool(proposer, asset, params: MarketParamsRaw, config: AssetConfigRaw, salt) */
+/** propose(ApproveBlendPool(pool)) */
+export function buildStellarProposeApproveBlendPoolTx(
+  opts: StellarBuilderOptions,
+  args: { pool: string },
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(opts, adminOp('ApproveBlendPool', addr(args.pool)), salt)
+}
+
+/** propose(RevokeBlendPool(pool)) */
+export function buildStellarProposeRevokeBlendPoolTx(
+  opts: StellarBuilderOptions,
+  args: { pool: string },
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(opts, adminOp('RevokeBlendPool', addr(args.pool)), salt)
+}
+
+/** propose(CreateLiquidityPool(CreatePoolArgs)) */
 export function buildStellarProposeCreateLiquidityPoolTx(
   opts: StellarBuilderOptions,
   args: CreateLiquidityPoolArgs,
@@ -361,17 +444,12 @@ export function buildStellarProposeCreateLiquidityPoolTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_create_liquidity_pool',
-    [
-      addr(args.asset),
-      encodeMarketParamsRaw(args.params),
-      encodeAssetConfigRaw(args.config),
-    ],
+    adminOp('CreateLiquidityPool', encodeCreatePoolArgs(args)),
     salt
   )
 }
 
-/** propose_upgrade_pool_params(proposer, asset, params: InterestRateModel, salt) */
+/** propose(UpgradeLiquidityPoolParams(UpgradePoolParamsArgs)) */
 export function buildStellarProposeUpgradePoolParamsTx(
   opts: StellarBuilderOptions,
   args: UpgradeLiquidityPoolParamsArgs,
@@ -379,63 +457,42 @@ export function buildStellarProposeUpgradePoolParamsTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_upgrade_pool_params',
-    [addr(args.asset), encodeInterestRateModel(args.params)],
+    adminOp('UpgradeLiquidityPoolParams', encodeUpgradePoolParamsArgs(args)),
     salt
   )
 }
 
-/** propose_deploy_pool(proposer, salt) */
+/** propose(DeployPool) */
 export function buildStellarProposeDeployPoolTx(
   opts: StellarBuilderOptions,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(opts, 'propose_deploy_pool', [], salt)
+  return buildPropose(opts, adminOp('DeployPool'), salt)
 }
 
-/** propose_upgrade_pool(proposer, new_wasm_hash: BytesN<32>, salt) */
+/** propose(UpgradePool(hash)) */
 export function buildStellarProposeUpgradePoolTx(
   opts: StellarBuilderOptions,
   args: { wasmHash: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    'propose_upgrade_pool',
-    [bytesN(args.wasmHash)],
-    salt
-  )
+  return buildPropose(opts, adminOp('UpgradePool', bytesN(args.wasmHash)), salt)
 }
 
-/** propose_grant_controller_role(proposer, account: Address, role: Symbol, salt) */
-export function buildStellarProposeGrantControllerRoleTx(
+/** propose(DisableTokenOracle(asset)) */
+export function buildStellarProposeDisableTokenOracleTx(
   opts: StellarBuilderOptions,
-  args: RoleGrantArgs,
+  args: { asset: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_grant_controller_role',
-    [addr(args.account), sym(args.role)],
+    adminOp('DisableTokenOracle', addr(args.asset)),
     salt
   )
 }
 
-/** propose_revoke_controller_role(proposer, account: Address, role: Symbol, salt) */
-export function buildStellarProposeRevokeControllerRoleTx(
-  opts: StellarBuilderOptions,
-  args: RoleGrantArgs,
-  salt: StellarGovernanceSalt
-): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    'propose_revoke_controller_role',
-    [addr(args.account), sym(args.role)],
-    salt
-  )
-}
-
-/** propose_upgrade_controller(proposer, new_wasm_hash: BytesN<32>, salt) */
+/** propose(UpgradeController(hash)) */
 export function buildStellarProposeUpgradeControllerTx(
   opts: StellarBuilderOptions,
   args: UpgradeArgs,
@@ -443,13 +500,12 @@ export function buildStellarProposeUpgradeControllerTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_upgrade_controller',
-    [bytesN(args.wasmHash)],
+    adminOp('UpgradeController', bytesN(args.wasmHash)),
     salt
   )
 }
 
-/** propose_migrate_controller(proposer, new_version: u32, salt) */
+/** propose(MigrateController(new_version)) */
 export function buildStellarProposeMigrateControllerTx(
   opts: StellarBuilderOptions,
   args: MigrateArgs,
@@ -457,13 +513,12 @@ export function buildStellarProposeMigrateControllerTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_migrate_controller',
-    [u32(args.newVersion)],
+    adminOp('MigrateController', u32(args.newVersion)),
     salt
   )
 }
 
-/** propose_transfer_ctrl_ownership(proposer, new_owner: Address, live_until_ledger: u32, salt) */
+/** propose(TransferCtrlOwnership(TransferOwnershipArgs)) */
 export function buildStellarProposeTransferCtrlOwnershipTx(
   opts: StellarBuilderOptions,
   args: TransferOwnershipArgs,
@@ -471,14 +526,13 @@ export function buildStellarProposeTransferCtrlOwnershipTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_transfer_ctrl_ownership',
-    [addr(args.newOwner), u32(args.liveUntilLedger)],
+    adminOp('TransferCtrlOwnership', encodeTransferOwnershipArgs(args)),
     salt
   )
 }
 
 /**
- * propose_configure_market_oracle(proposer, asset, cfg: MarketOracleConfigInput, salt)
+ * propose(ConfigureMarketOracle(ConfigureOracleArgs))
  *
  * The SDK passes the oracle INPUT args verbatim; the contract resolves the
  * input to a resolved config at propose time (do NOT resolve in the SDK).
@@ -490,13 +544,12 @@ export function buildStellarProposeConfigureMarketOracleTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_configure_market_oracle',
-    [addr(args.asset), encodeMarketOracleConfigInput(args.config)],
+    adminOp('ConfigureMarketOracle', encodeConfigureOracleArgs(args)),
     salt
   )
 }
 
-/** propose_edit_oracle_tolerance(proposer, asset, first_tolerance_bps: u32, last_tolerance_bps: u32, salt) */
+/** propose(EditOracleTolerance(EditToleranceArgs)) */
 export function buildStellarProposeEditOracleToleranceTx(
   opts: StellarBuilderOptions,
   args: EditOracleToleranceArgs,
@@ -504,73 +557,52 @@ export function buildStellarProposeEditOracleToleranceTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_edit_oracle_tolerance',
-    [addr(args.asset), u32(args.firstTolerance), u32(args.lastTolerance)],
+    adminOp('EditOracleTolerance', encodeEditToleranceArgs(args)),
     salt
   )
 }
 
 // -----------------------------------------------------------------------------
-// GOVERNANCE-self proposers (self_timelock.rs) — proposer + typed args + salt
+// GOVERNANCE-self proposers — proposer + AdminOperation + salt
 // -----------------------------------------------------------------------------
 
-/** propose_governance_upgrade(proposer, new_wasm_hash: BytesN<32>, salt) */
+/** propose(UpgradeGov(hash)) */
 export function buildStellarProposeGovernanceUpgradeTx(
   opts: StellarBuilderOptions,
   args: UpgradeArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    'propose_governance_upgrade',
-    [bytesN(args.wasmHash)],
-    salt
-  )
+  return buildPropose(opts, adminOp('UpgradeGov', bytesN(args.wasmHash)), salt)
 }
 
-/** propose_update_delay(proposer, new_delay: u32, salt) */
+/** propose(UpdateGovDelay(new_delay)) */
 export function buildStellarProposeUpdateDelayTx(
   opts: StellarBuilderOptions,
   args: UpdateDelayArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    'propose_update_delay',
-    [u32(args.newDelay)],
-    salt
-  )
+  return buildPropose(opts, adminOp('UpdateGovDelay', u32(args.newDelay)), salt)
 }
 
-/** propose_grant_governance_role(proposer, account: Address, role: Symbol, salt) */
+/** propose(GrantGovRole(RoleArgs)) */
 export function buildStellarProposeGrantGovernanceRoleTx(
   opts: StellarBuilderOptions,
   args: RoleGrantArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    'propose_grant_governance_role',
-    [addr(args.account), sym(args.role)],
-    salt
-  )
+  return buildPropose(opts, adminOp('GrantGovRole', encodeRoleArgs(args)), salt)
 }
 
-/** propose_revoke_governance_role(proposer, account: Address, role: Symbol, salt) */
+/** propose(RevokeGovRole(RoleArgs)) */
 export function buildStellarProposeRevokeGovernanceRoleTx(
   opts: StellarBuilderOptions,
   args: RoleGrantArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    'propose_revoke_governance_role',
-    [addr(args.account), sym(args.role)],
-    salt
-  )
+  return buildPropose(opts, adminOp('RevokeGovRole', encodeRoleArgs(args)), salt)
 }
 
-/** propose_transfer_gov_own(proposer, new_owner: Address, live_until_ledger: u32, salt) */
+/** propose(TransferGovOwnership(TransferOwnershipArgs)) */
 export function buildStellarProposeTransferGovOwnTx(
   opts: StellarBuilderOptions,
   args: TransferOwnershipArgs,
@@ -578,8 +610,7 @@ export function buildStellarProposeTransferGovOwnTx(
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    'propose_transfer_gov_own',
-    [addr(args.newOwner), u32(args.liveUntilLedger)],
+    adminOp('TransferGovOwnership', encodeTransferOwnershipArgs(args)),
     salt
   )
 }
@@ -595,8 +626,8 @@ export interface StellarGovernanceExecuteArgs {
   functionName: string
   /**
    * The controller-call args, each a base64 ScVal XDR string. These must be the
-   * SAME ScVals the matching `propose_*` scheduled (the timelock hashes them
-   * into the op id), in the controller method's arg order. Reconstructed via
+   * SAME ScVals the matching proposal scheduled (the timelock hashes them into
+   * the op id), in the controller method's arg order. Reconstructed via
    * `xdr.ScVal.fromXDR(s, 'base64')`.
    */
   argsXdr: string[]
@@ -614,6 +645,10 @@ export interface StellarGovernanceExecuteArgs {
  * controller-targeted op. `executor = None` (open execution), `target` is the
  * controller `Address`, `function` is a `Symbol`, `args` is the `Vec<Val>`
  * reconstructed from `argsXdr`, `predecessor` defaults to 32 zero bytes.
+ *
+ * Unchanged by the AdminOperation refactor: the scheduled `Operation` is
+ * byte-identical, so callers reconstruct `(target, function, argsXdr)` from the
+ * indexed proposal exactly as before.
  */
 export function buildStellarGovernanceExecuteTx(
   opts: StellarBuilderOptions,
@@ -635,21 +670,16 @@ export function buildStellarGovernanceExecuteTx(
   ])
 }
 
-/** execute_governance_upgrade(executor=None, new_wasm_hash: BytesN<32>, salt) */
+/** execute_self(executor=None, UpgradeGov(hash), salt) */
 export function buildStellarGovernanceExecuteGovernanceUpgradeTx(
   opts: StellarBuilderOptions,
   args: UpgradeArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildExecuteSelf(
-    opts,
-    'execute_governance_upgrade',
-    [bytesN(args.wasmHash)],
-    salt
-  )
+  return buildExecuteSelf(opts, adminOp('UpgradeGov', bytesN(args.wasmHash)), salt)
 }
 
-/** execute_update_delay(executor=None, new_delay: u32, salt) */
+/** execute_self(executor=None, UpdateGovDelay(new_delay), salt) */
 export function buildStellarGovernanceExecuteUpdateDelayTx(
   opts: StellarBuilderOptions,
   args: UpdateDelayArgs,
@@ -657,27 +687,21 @@ export function buildStellarGovernanceExecuteUpdateDelayTx(
 ): BuiltStellarTx {
   return buildExecuteSelf(
     opts,
-    'execute_update_delay',
-    [u32(args.newDelay)],
+    adminOp('UpdateGovDelay', u32(args.newDelay)),
     salt
   )
 }
 
-/** execute_grant_governance_role(executor=None, account: Address, role: Symbol, salt) */
+/** execute_self(executor=None, GrantGovRole(RoleArgs), salt) */
 export function buildStellarGovernanceExecuteGrantGovernanceRoleTx(
   opts: StellarBuilderOptions,
   args: RoleGrantArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildExecuteSelf(
-    opts,
-    'execute_grant_governance_role',
-    [addr(args.account), sym(args.role)],
-    salt
-  )
+  return buildExecuteSelf(opts, adminOp('GrantGovRole', encodeRoleArgs(args)), salt)
 }
 
-/** execute_revoke_governance_role(executor=None, account: Address, role: Symbol, salt) */
+/** execute_self(executor=None, RevokeGovRole(RoleArgs), salt) */
 export function buildStellarGovernanceExecuteRevokeGovernanceRoleTx(
   opts: StellarBuilderOptions,
   args: RoleGrantArgs,
@@ -685,13 +709,12 @@ export function buildStellarGovernanceExecuteRevokeGovernanceRoleTx(
 ): BuiltStellarTx {
   return buildExecuteSelf(
     opts,
-    'execute_revoke_governance_role',
-    [addr(args.account), sym(args.role)],
+    adminOp('RevokeGovRole', encodeRoleArgs(args)),
     salt
   )
 }
 
-/** execute_transfer_gov_own(executor=None, new_owner: Address, live_until_ledger: u32, salt) */
+/** execute_self(executor=None, TransferGovOwnership(TransferOwnershipArgs), salt) */
 export function buildStellarGovernanceExecuteTransferGovOwnTx(
   opts: StellarBuilderOptions,
   args: TransferOwnershipArgs,
@@ -699,8 +722,7 @@ export function buildStellarGovernanceExecuteTransferGovOwnTx(
 ): BuiltStellarTx {
   return buildExecuteSelf(
     opts,
-    'execute_transfer_gov_own',
-    [addr(args.newOwner), u32(args.liveUntilLedger)],
+    adminOp('TransferGovOwnership', encodeTransferOwnershipArgs(args)),
     salt
   )
 }
