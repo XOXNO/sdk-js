@@ -286,7 +286,7 @@ const cases: Case[] = [
   {
     name: 'add_asset_to_e_mode_category',
     expectedFn: 'add_asset_to_e_mode_category',
-    expectedArgCount: 9,
+    expectedArgCount: 1,
     build: () =>
       buildStellarAddAssetToEModeCategoryTx(BASE_OPTS, {
         asset: FIXTURE_USDC,
@@ -303,7 +303,7 @@ const cases: Case[] = [
   {
     name: 'edit_asset_in_e_mode_category',
     expectedFn: 'edit_asset_in_e_mode_category',
-    expectedArgCount: 9,
+    expectedArgCount: 1,
     build: () =>
       buildStellarEditAssetInEModeCategoryTx(BASE_OPTS, {
         asset: FIXTURE_USDC,

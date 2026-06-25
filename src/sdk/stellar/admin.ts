@@ -416,39 +416,39 @@ export function buildStellarRemoveEModeCategoryTx(
   return buildTx(opts, 'remove_e_mode_category', [u32(args.id)])
 }
 
-/** add_asset_to_e_mode_category(asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, supply_cap, borrow_cap) — #[only_owner] */
+// Encodes EModeAssetArgs as the single struct argument the controller's add /
+// edit e-mode entrypoints accept. Keys MUST be the Rust struct field names
+// (snake_case); scStruct sorts them into the scvMap the contract decodes.
+const encodeEModeAssetArgs = (a: EModeAssetArgs): xdr.ScVal =>
+  scStruct({
+    asset: addr(a.asset),
+    category_id: u32(a.categoryId),
+    can_collateral: bool(a.canCollateral),
+    can_borrow: bool(a.canBorrow),
+    ltv: u32(a.ltv),
+    threshold: u32(a.threshold),
+    bonus: u32(a.bonus),
+    supply_cap: i128(a.supplyCap),
+    borrow_cap: i128(a.borrowCap),
+  })
+
+/** add_asset_to_e_mode_category(EModeAssetArgs) — #[only_owner] */
 export function buildStellarAddAssetToEModeCategoryTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'add_asset_to_e_mode_category', [
-    addr(args.asset),
-    u32(args.categoryId),
-    bool(args.canCollateral),
-    bool(args.canBorrow),
-    u32(args.ltv),
-    u32(args.threshold),
-    u32(args.bonus),
-    i128(args.supplyCap),
-    i128(args.borrowCap),
+    encodeEModeAssetArgs(args),
   ])
 }
 
-/** edit_asset_in_e_mode_category(asset, category_id, can_collateral, can_borrow, ltv, threshold, bonus, supply_cap, borrow_cap) — #[only_owner] */
+/** edit_asset_in_e_mode_category(EModeAssetArgs) — #[only_owner] */
 export function buildStellarEditAssetInEModeCategoryTx(
   opts: StellarBuilderOptions,
   args: EModeAssetArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'edit_asset_in_e_mode_category', [
-    addr(args.asset),
-    u32(args.categoryId),
-    bool(args.canCollateral),
-    bool(args.canBorrow),
-    u32(args.ltv),
-    u32(args.threshold),
-    u32(args.bonus),
-    i128(args.supplyCap),
-    i128(args.borrowCap),
+    encodeEModeAssetArgs(args),
   ])
 }
 
