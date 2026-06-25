@@ -389,6 +389,10 @@
     "input": {} as {startTime?: string, endTime?: string, bin?: string},
     "output": {} as LendingMarketAnalyticsGraph[]
   },
+  "/lending/stats/history": {
+    "input": {} as {startTime?: string, endTime?: string, bin?: string, chain?: ActivityChain[]},
+    "output": {} as LendingStatsHistory
+  },
   "/lending/market/:token/average": {
     "input": {},
     "output": {} as LendingMarketAverageGraph[]
