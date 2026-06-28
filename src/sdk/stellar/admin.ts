@@ -210,13 +210,12 @@ export const encodeMarketOracleConfigInput = (
   }
   return scStruct({
     anchor: encodeOracleSourceConfigInputOption(cfg.anchor),
-    first_tolerance_bps: u32(cfg.firstToleranceBps),
-    last_tolerance_bps: u32(cfg.lastToleranceBps),
     max_price_stale_seconds: u64(cfg.maxPriceStaleSeconds),
     max_sanity_price_wad: i128(cfg.maxSanityPriceWad),
     min_sanity_price_wad: i128(cfg.minSanityPriceWad),
     primary: encodeOracleSourceConfigInput(cfg.primary),
     strategy: u32(strategy),
+    tolerance_bps: u32(cfg.toleranceBps),
   })
 }
 
@@ -262,8 +261,7 @@ export interface ConfigureMarketOracleArgs {
 }
 export interface EditOracleToleranceArgs {
   asset: string
-  firstTolerance: number
-  lastTolerance: number
+  tolerance: number
 }
 export interface CreateLiquidityPoolArgs {
   asset: string
@@ -503,7 +501,7 @@ export function buildStellarConfigureMarketOracleTx(
   ])
 }
 
-/** edit_oracle_tolerance(caller, asset, first_tolerance, last_tolerance) — #[only_role(caller, "ORACLE")] */
+/** edit_oracle_tolerance(caller, asset, tolerance) — #[only_role(caller, "ORACLE")] */
 export function buildStellarEditOracleToleranceTx(
   opts: StellarBuilderOptions,
   args: EditOracleToleranceArgs
@@ -511,8 +509,7 @@ export function buildStellarEditOracleToleranceTx(
   return buildTx(opts, 'edit_oracle_tolerance', [
     addr(opts.caller),
     addr(args.asset),
-    u32(args.firstTolerance),
-    u32(args.lastTolerance),
+    u32(args.tolerance),
   ])
 }
 
