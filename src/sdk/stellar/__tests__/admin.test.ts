@@ -127,8 +127,7 @@ const configureOracleArgs = {
   asset: FIXTURE_USDC,
   config: {
     maxPriceStaleSeconds: 900,
-    firstToleranceBps: 200,
-    lastToleranceBps: 500,
+    toleranceBps: 500,
     strategy: 'PrimaryWithAnchor',
     primary: {
       provider: 'ReflectorSep40',
@@ -355,9 +354,9 @@ const cases: Case[] = [
   {
     name: 'edit_oracle_tolerance',
     expectedFn: 'edit_oracle_tolerance',
-    expectedArgCount: 4,
+    expectedArgCount: 3,
     build: () =>
-      buildStellarEditOracleToleranceTx(BASE_OPTS, { asset: FIXTURE_USDC, firstTolerance: 200, lastTolerance: 500 }),
+      buildStellarEditOracleToleranceTx(BASE_OPTS, { asset: FIXTURE_USDC, tolerance: 500 }),
   },
   {
     name: 'disable_token_oracle',
@@ -510,13 +509,12 @@ describe('complex struct encoding', () => {
     expect(isAscending(keys)).toBe(true)
     expect(keys).toEqual([
       'anchor',
-      'first_tolerance_bps',
-      'last_tolerance_bps',
       'max_price_stale_seconds',
       'max_sanity_price_wad',
       'min_sanity_price_wad',
       'primary',
       'strategy',
+      'tolerance_bps',
     ])
 
     const entries = cfg.map()!
@@ -582,7 +580,7 @@ describe('complex struct encoding', () => {
     const cField = (name: string) =>
       cEntries.find((e) => e.key().sym().toString() === name)!.val()
     expect(cField('max_price_stale_seconds').switch().name).toBe('scvU64')
-    expect(cField('first_tolerance_bps').switch().name).toBe('scvU32')
+    expect(cField('tolerance_bps').switch().name).toBe('scvU32')
     expect(cField('min_sanity_price_wad').switch().name).toBe('scvI128')
     expect(cField('max_sanity_price_wad').switch().name).toBe('scvI128')
   })

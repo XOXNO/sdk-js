@@ -171,8 +171,7 @@ const encodeConfigureOracleArgs = (a: ConfigureMarketOracleArgs): xdr.ScVal =>
 const encodeEditToleranceArgs = (a: EditOracleToleranceArgs): xdr.ScVal =>
   scStruct({
     asset: addr(a.asset),
-    first_tolerance: u32(a.firstTolerance),
-    last_tolerance: u32(a.lastTolerance),
+    tolerance: u32(a.tolerance),
   })
 
 const encodeRoleArgs = (a: RoleGrantArgs): xdr.ScVal =>

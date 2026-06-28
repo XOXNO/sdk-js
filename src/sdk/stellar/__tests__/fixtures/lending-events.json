@@ -136,14 +136,6 @@
     "data": "AAAAEQAAAAEAAAABAAAADwAAAAVhc3NldAAAAAAAABIAAAABAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM="
   },
   {
-    "topic": "oracle:twap_degraded",
-    "topics": [
-      "AAAADwAAAAZvcmFjbGUAAA==",
-      "AAAADwAAAA10d2FwX2RlZ3JhZGVkAAAA"
-    ],
-    "data": "AAAAEQAAAAEAAAACAAAADwAAAAZvcmFjbGUAAAAAABIAAAABBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUAAAAPAAAAC3JlYXNvbl9jb2RlAAAAAAMAAAAD"
-  },
-  {
     "topic": "config:oracle_redstone_anchor",
     "topics": [
       "AAAADwAAAAZjb25maWcAAA==",

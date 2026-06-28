@@ -197,10 +197,8 @@ const decodeOracleProvider = (o: Raw): StellarLendingOracleUpdateStruct => {
     baseTokenId: str(o.base_token_id),
     quoteTokenId: str(o.quote_token_id),
     tolerance: {
-      firstUpperRatio: num(o.first_upper_ratio_bps ?? (o.tolerance as Raw)?.first_upper_ratio_bps),
-      firstLowerRatio: num(o.first_lower_ratio_bps ?? (o.tolerance as Raw)?.first_lower_ratio_bps),
-      lastUpperRatio: num(o.last_upper_ratio_bps ?? (o.tolerance as Raw)?.last_upper_ratio_bps),
-      lastLowerRatio: num(o.last_lower_ratio_bps ?? (o.tolerance as Raw)?.last_lower_ratio_bps),
+      upperRatio: num(o.upper_ratio_bps ?? (o.tolerance as Raw)?.upper_ratio_bps),
+      lowerRatio: num(o.lower_ratio_bps ?? (o.tolerance as Raw)?.lower_ratio_bps),
     },
     assetDecimals: num(o.asset_decimals),
     maxPriceStaleSeconds: num(o.max_price_stale_seconds),
@@ -392,10 +390,6 @@ const REGISTRY: Record<string, DecoderFn> = {
   'config:oracle_disabled': (d) => ({
     topic: 'config:oracle_disabled',
     data: { asset: str(d.asset) },
-  }),
-  'oracle:twap_degraded': (d) => ({
-    topic: 'oracle:twap_degraded',
-    data: { oracle: str(d.oracle), reasonCode: num(d.reason_code) },
   }),
 }
 
