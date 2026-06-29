@@ -1,5 +1,6 @@
 export * from './contracts'
 export * from './lending'
+export * from './lending-read'
 export * from './admin'
 export * from './governance'
 export * from './events'
