@@ -13,6 +13,16 @@
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/index.cjs"
       }
+    },
+    "./stellar-lending": {
+      "import": {
+        "types": "./dist/sdk/stellar/index.d.ts",
+        "default": "./dist/sdk/stellar/index.esm.js"
+      },
+      "require": {
+        "types": "./dist/cjs/sdk/stellar/index.d.ts",
+        "default": "./dist/sdk/stellar/index.cjs"
+      }
     }
   },
   "types": "./dist/index.d.ts",

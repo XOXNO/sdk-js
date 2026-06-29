@@ -113,6 +113,35 @@ export const tupleAddrAmountVec = (
   xdr.ScVal.scvVec(entries.map((e) => tupleAddrAmount(e.token, e.amount)))
 
 /**
+ * Encode a `HubAssetKey` `#[contracttype]` struct — the `(hub_id, asset)`
+ * coordinate that keys liquidity and positions on the multi-hub controller.
+ * Emitted as an ScVal map with symbol keys in lexicographic order
+ * (`asset`, then `hub_id`).
+ */
+export const hubAsset = (hubId: number, asset: string): xdr.ScVal =>
+  scStruct({ asset: addr(asset), hub_id: u32(hubId) })
+
+/**
+ * Encode a single Soroban tuple `(HubAssetKey, i128)` as a 2-element `scvVec`.
+ */
+export const tupleHubAssetAmount = (
+  hubId: number,
+  asset: string,
+  amount: string
+): xdr.ScVal => xdr.ScVal.scvVec([hubAsset(hubId, asset), i128(amount)])
+
+/**
+ * Encode `Vec<(HubAssetKey, i128)>` — the multi-hub batch payload carried by
+ * `supply` / `borrow` / `withdraw` / `repay` / `liquidate`.
+ */
+export const tupleHubAssetAmountVec = (
+  entries: Array<{ hubId: number; asset: string; amount: string }>
+): xdr.ScVal =>
+  xdr.ScVal.scvVec(
+    entries.map((e) => tupleHubAssetAmount(e.hubId, e.asset, e.amount))
+  )
+
+/**
  * Encode a Soroban `struct` — at the XDR level, structs are maps with
  * `Symbol` keys in **lexicographic order** of field names.
  */

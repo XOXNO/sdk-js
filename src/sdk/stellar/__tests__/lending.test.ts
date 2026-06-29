@@ -20,19 +20,6 @@
  */
 
 import { jest } from '@jest/globals'
-import type {
-  BorrowArgs,
-  FlashLoanArgs,
-  LiquidateArgs,
-  MigrateFromBlendArgs,
-  MultiplyArgs,
-  RepayArgs,
-  RepayDebtWithCollateralArgs,
-  SupplyArgs,
-  SwapCollateralArgs,
-  SwapDebtArgs,
-  WithdrawArgs,
-} from '@xoxno/types'
 import {
   Networks,
   Transaction,
@@ -53,7 +40,18 @@ import {
   buildStellarWithdrawBatchTx,
   buildStellarWithdrawTx,
   type StellarBuilderOptions,
+  type StellarFlashLoanArgs,
+  type StellarLiquidateArgs,
+  type StellarMigrateFromBlendArgs,
+  type StellarMultiplyArgs,
+  type StellarRepayArgs,
+  type StellarRepayDebtWithCollateralArgs,
+  type StellarSupplyArgs,
+  type StellarSwapCollateralArgs,
+  type StellarSwapDebtArgs,
   type StellarSwapStepsInput,
+  type StellarWithdrawArgs,
+  type StellarBorrowArgs,
 } from '../lending'
 
 // -----------------------------------------------------------------------------
@@ -136,91 +134,100 @@ const parseInvokedFunction = (
 // Fixtures — one per builder DTO
 // -----------------------------------------------------------------------------
 
-const supplyArgs: SupplyArgs = {
-  token: FIXTURE_USDC,
+// hub_id used across fixtures — 0 is the canonical hub. A non-zero hub on a
+// couple of fixtures guards the hub_id encoding path.
+const HUB = 0
+
+const supplyArgs: StellarSupplyArgs = {
+  hubId: HUB,
+  asset: FIXTURE_USDC,
   amount: '1000000000',
-  eModeCategory: 1,
+  spokeId: 1,
   accountNonce: 0,
 }
 
-const borrowArgs: BorrowArgs = {
-  token: FIXTURE_XLM,
+const borrowArgs: StellarBorrowArgs = {
+  hubId: HUB,
+  asset: FIXTURE_XLM,
   amount: '500000000',
   accountNonce: 42,
 }
 
-const withdrawArgs: WithdrawArgs = {
-  token: FIXTURE_USDC,
+const withdrawArgs: StellarWithdrawArgs = {
+  hubId: HUB,
+  asset: FIXTURE_USDC,
   amount: '250000000',
   accountNonce: 42,
 }
 
-const repayArgs: RepayArgs = {
-  token: FIXTURE_XLM,
+const repayArgs: StellarRepayArgs = {
+  hubId: HUB,
+  asset: FIXTURE_XLM,
   amount: '100000000',
   accountNonce: 42,
 }
 
-const liquidateArgs: LiquidateArgs = {
+const liquidateArgs: StellarLiquidateArgs = {
   accountNonce: 99,
   debtPayments: [
-    { token: FIXTURE_XLM, amount: '50000000' },
-    { token: FIXTURE_USDC, amount: '75000000' },
+    { hubId: HUB, asset: FIXTURE_XLM, amount: '50000000' },
+    { hubId: 1, asset: FIXTURE_USDC, amount: '75000000' },
   ],
 }
 
-const flashLoanArgs: FlashLoanArgs = {
+const flashLoanArgs: StellarFlashLoanArgs = {
+  hubId: HUB,
   asset: FIXTURE_USDC,
   amount: '999000000',
   receiver: FIXTURE_CONTROLLER,
   data: '0xdeadbeef',
 }
 
-const migrateFromBlendArgs: MigrateFromBlendArgs = {
+const migrateFromBlendArgs: StellarMigrateFromBlendArgs = {
   blendPool: FIXTURE_CONTROLLER,
   accountId: '0',
-  eModeCategory: 0,
+  spokeId: 0,
   collateralTokens: [FIXTURE_XLM],
   supplyTokens: [FIXTURE_USDC],
   debtCaps: [{ token: FIXTURE_USDC, cap: '200500000' }],
 }
 
-const multiplyArgs: MultiplyArgs = {
+const multiplyArgs: StellarMultiplyArgs = {
   accountNonce: 0,
-  eModeCategory: 2,
-  collateralToken: FIXTURE_USDC,
-  debtToken: FIXTURE_XLM,
+  spokeId: 2,
+  collateral: { hubId: HUB, asset: FIXTURE_USDC },
+  debt: { hubId: HUB, asset: FIXTURE_XLM },
   debtToFlashLoan: '200000000',
   mode: 1, // PositionMode::Multiply
   steps: FIXTURE_STEPS,
 }
 
-const multiplyWithInitialArgs: MultiplyArgs = {
+const multiplyWithInitialArgs: StellarMultiplyArgs = {
   ...multiplyArgs,
-  initialPayment: { token: FIXTURE_USDC, amount: '50000000' },
+  initialPayment: { hubId: HUB, asset: FIXTURE_USDC, amount: '50000000' },
   convertSwap: FIXTURE_STEPS,
 }
 
-const swapDebtArgs: SwapDebtArgs = {
+const swapDebtArgs: StellarSwapDebtArgs = {
   accountNonce: 42,
-  existingDebtToken: FIXTURE_XLM,
-  newDebtToken: FIXTURE_USDC,
+  existingDebt: { hubId: HUB, asset: FIXTURE_XLM },
+  newDebt: { hubId: 1, asset: FIXTURE_USDC },
   newDebtAmount: '300000000',
   steps: FIXTURE_STEPS,
 }
 
-const swapCollateralArgs: SwapCollateralArgs = {
+const swapCollateralArgs: StellarSwapCollateralArgs = {
   accountNonce: 42,
-  currentCollateral: FIXTURE_USDC,
-  newCollateral: FIXTURE_XLM,
+  current: { hubId: HUB, asset: FIXTURE_USDC },
+  newCollateral: { hubId: 1, asset: FIXTURE_XLM },
   fromAmount: '400000000',
   steps: FIXTURE_STEPS,
 }
 
-const repayDebtWithCollateralArgs: RepayDebtWithCollateralArgs = {
+const repayDebtWithCollateralArgs: StellarRepayDebtWithCollateralArgs = {
   accountNonce: 42,
-  collateralToken: FIXTURE_USDC,
-  debtToken: FIXTURE_XLM,
+  collateral: { hubId: HUB, asset: FIXTURE_USDC },
+  debt: { hubId: HUB, asset: FIXTURE_XLM },
   collateralAmount: '150000000',
   steps: FIXTURE_STEPS,
   closePosition: false,
@@ -240,15 +247,15 @@ describe('Stellar lending transaction builders — sanity', () => {
     {
       name: 'supply',
       expectedFn: 'supply',
-      // caller, account_id, e_mode_category, assets
+      // caller, account_id, spoke_id, assets
       expectedArgCount: 4,
       build: () => buildStellarSupplyTx(BASE_OPTS, supplyArgs),
     },
     {
       name: 'borrow',
       expectedFn: 'borrow',
-      // caller, account_id, borrows
-      expectedArgCount: 3,
+      // caller, account_id, borrows, to (None -> Void)
+      expectedArgCount: 4,
       build: () => buildStellarBorrowTx(BASE_OPTS, borrowArgs),
     },
     {
@@ -267,7 +274,11 @@ describe('Stellar lending transaction builders — sanity', () => {
         buildStellarWithdrawBatchTx(BASE_OPTS, {
           accountNonce: withdrawArgs.accountNonce,
           withdrawals: [
-            { token: withdrawArgs.token, amount: withdrawArgs.amount },
+            {
+              hubId: withdrawArgs.hubId,
+              asset: withdrawArgs.asset,
+              amount: withdrawArgs.amount,
+            },
           ],
           to: FIXTURE_CALLER,
         }),
@@ -296,7 +307,7 @@ describe('Stellar lending transaction builders — sanity', () => {
     {
       name: 'migrate_from_blend',
       expectedFn: 'migrate_from_blend',
-      // caller, account_id, e_mode, blend_pool, collateral, supply, debt_caps
+      // caller, account_id, spoke_id, blend_pool, collateral, supply, debt_caps
       expectedArgCount: 7,
       build: () =>
         buildStellarMigrateFromBlendTx(BASE_OPTS, migrateFromBlendArgs),
@@ -304,7 +315,7 @@ describe('Stellar lending transaction builders — sanity', () => {
     {
       name: 'multiply',
       expectedFn: 'multiply',
-      // caller, account_id, e_mode, collateral, debt_to_flash, debt_token, mode,
+      // caller, account_id, spoke_id, collateral, debt_to_flash, debt, mode,
       // swap, initial_payment (None → Void), convert_swap (None → Void)
       expectedArgCount: 10,
       build: () => buildStellarMultiplyTx(BASE_OPTS, multiplyArgs),
@@ -385,34 +396,35 @@ describe('Stellar lending transaction builders — sanity', () => {
 // -----------------------------------------------------------------------------
 
 describe('Stellar lending builders — input validation', () => {
-  it('supply defaults accountNonce to 0 and eModeCategory to 0 when omitted', () => {
+  it('supply defaults accountNonce to 0 and spokeId to 0 when omitted', () => {
     const a = buildStellarSupplyTx(BASE_OPTS, {
-      token: FIXTURE_USDC,
+      hubId: HUB,
+      asset: FIXTURE_USDC,
       amount: '1',
-    } as SupplyArgs)
+    })
     const b = buildStellarSupplyTx(BASE_OPTS, {
-      token: FIXTURE_USDC,
+      hubId: HUB,
+      asset: FIXTURE_USDC,
       amount: '1',
       accountNonce: 0,
-      eModeCategory: 0,
+      spokeId: 0,
     })
     expect(a.xdr).toBe(b.xdr)
   })
 
-  it('multiply defaults accountNonce to 0 when omitted', () => {
+  it('multiply defaults accountNonce and spokeId to 0 when omitted', () => {
     const a = buildStellarMultiplyTx(BASE_OPTS, {
-      eModeCategory: 0,
-      collateralToken: FIXTURE_USDC,
-      debtToken: FIXTURE_XLM,
+      collateral: { hubId: HUB, asset: FIXTURE_USDC },
+      debt: { hubId: HUB, asset: FIXTURE_XLM },
       debtToFlashLoan: '1',
       mode: 0,
       steps: FIXTURE_STEPS,
-    } as MultiplyArgs)
+    })
     const b = buildStellarMultiplyTx(BASE_OPTS, {
       accountNonce: 0,
-      eModeCategory: 0,
-      collateralToken: FIXTURE_USDC,
-      debtToken: FIXTURE_XLM,
+      spokeId: 0,
+      collateral: { hubId: HUB, asset: FIXTURE_USDC },
+      debt: { hubId: HUB, asset: FIXTURE_XLM },
       debtToFlashLoan: '1',
       mode: 0,
       steps: FIXTURE_STEPS,
@@ -429,7 +441,7 @@ describe('Stellar lending builders — input validation', () => {
           sourceSequence: FIXTURE_SEQUENCE,
           // no controllerAddress override, mainnet env not set in test
         },
-        { token: FIXTURE_USDC, amount: '1' } as SupplyArgs
+        { hubId: HUB, asset: FIXTURE_USDC, amount: '1' }
       )
     ).toThrow(/controller address not configured/)
   })
@@ -439,7 +451,7 @@ describe('Stellar lending builders — input validation', () => {
       buildStellarMultiplyTx(BASE_OPTS, {
         ...multiplyArgs,
         steps: 42,
-      } as unknown as MultiplyArgs)
+      } as unknown as StellarMultiplyArgs)
     ).toThrow(/steps.*opaque strategy bytes/)
   })
 
@@ -448,7 +460,7 @@ describe('Stellar lending builders — input validation', () => {
       buildStellarFlashLoanTx(BASE_OPTS, {
         ...flashLoanArgs,
         data: 42,
-      } as unknown as FlashLoanArgs)
+      } as unknown as StellarFlashLoanArgs)
     ).toThrow(/data.*hex string/)
   })
 })

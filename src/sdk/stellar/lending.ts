@@ -16,20 +16,6 @@
  * fee) before handing the XDR to the wallet to sign.
  */
 
-import type {
-  BorrowArgs,
-  FlashLoanArgs,
-  LiquidateArgs,
-  LiquidateDebtPayment,
-  MigrateFromBlendArgs,
-  MultiplyArgs,
-  RepayArgs,
-  RepayDebtWithCollateralArgs,
-  SupplyArgs,
-  SwapCollateralArgs,
-  SwapDebtArgs,
-  WithdrawArgs,
-} from '@xoxno/types'
 import { Account, BASE_FEE, Contract, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
 
 import {
@@ -42,10 +28,12 @@ import {
   asStellarBytes,
   asStellarStrategySwapBytes,
   bool,
+  hubAsset,
   i128,
   option,
-  tupleAddrAmount,
   tupleAddrAmountVec,
+  tupleHubAssetAmount,
+  tupleHubAssetAmountVec,
   u32,
   u64,
   vec,
@@ -148,193 +136,277 @@ export function buildTx(
 }
 
 // -----------------------------------------------------------------------------
-// Shared batch asset shape (Vec<(Address, i128)> on the controller)
+// Multi-hub asset shapes — the controller is keyed by `HubAssetKey { hub_id,
+// asset }`, so every batch entry carries an explicit `hubId` alongside the
+// token address. The same `asset` on two hubs is two isolated positions.
 // -----------------------------------------------------------------------------
 
-export interface StellarTokenAmount {
-  token: string
+/** A `(hub_id, asset)` coordinate — the `HubAssetKey` struct, builder-side. */
+export interface StellarHubAsset {
+  hubId: number
+  asset: string
+}
+
+/** A `HubAssetKey` paired with an i128 decimal-string amount. */
+export interface StellarHubAssetAmount extends StellarHubAsset {
   amount: string
+}
+
+export interface StellarSupplyArgs extends StellarHubAssetAmount {
+  /** Existing account id; omit / `0` opens a new account. */
+  accountNonce?: number
+  /** Risk spoke the (new) account binds to; defaults to the canonical spoke 0. */
+  spokeId?: number
 }
 
 export interface StellarSupplyBatchArgs {
   accountNonce?: number
-  eModeCategory?: number
-  assets: ReadonlyArray<StellarTokenAmount>
+  spokeId?: number
+  assets: ReadonlyArray<StellarHubAssetAmount>
+}
+
+export interface StellarBorrowArgs extends StellarHubAssetAmount {
+  accountNonce: number
+  /** Optional recipient override (`C...`/`G...`); debt is recorded on the account. */
+  to?: string
 }
 
 export interface StellarBorrowBatchArgs {
   accountNonce: number
-  borrows: ReadonlyArray<StellarTokenAmount>
+  borrows: ReadonlyArray<StellarHubAssetAmount>
+  to?: string
 }
 
-export interface StellarWithdrawBatchArgs {
+export interface StellarWithdrawArgs extends StellarHubAssetAmount {
   accountNonce: number
-  withdrawals: ReadonlyArray<StellarTokenAmount>
   /**
    * Optional recipient override (`C...` or `G...`). The pool pays the
    * withdrawn tokens to this address instead of the caller. Omit for the
    * standard flow — the contract arg is still sent, encoded as
-   * `Option::None` (ScVal void), which the controller resolves to the
-   * caller.
+   * `Option::None` (ScVal void), which the controller resolves to the caller.
    */
   to?: string
 }
 
+export interface StellarWithdrawBatchArgs {
+  accountNonce: number
+  withdrawals: ReadonlyArray<StellarHubAssetAmount>
+  to?: string
+}
+
+export interface StellarRepayArgs extends StellarHubAssetAmount {
+  accountNonce: number
+}
+
 export interface StellarRepayBatchArgs {
   accountNonce: number
-  payments: ReadonlyArray<StellarTokenAmount>
+  payments: ReadonlyArray<StellarHubAssetAmount>
+}
+
+export interface StellarLiquidateArgs {
+  accountNonce: number
+  debtPayments: ReadonlyArray<StellarHubAssetAmount>
+}
+
+export interface StellarFlashLoanArgs extends StellarHubAsset {
+  amount: string
+  receiver: string
+  data: string | Uint8Array
+}
+
+export interface StellarMultiplyArgs {
+  accountNonce?: number
+  spokeId?: number
+  collateral: StellarHubAsset
+  debtToFlashLoan: string
+  debt: StellarHubAsset
+  /** `PositionMode` repr(u32). */
+  mode: number
+  steps: StellarSwapStepsInput
+  initialPayment?: StellarHubAssetAmount
+  convertSwap?: StellarSwapStepsInput
+}
+
+export interface StellarSwapDebtArgs {
+  accountNonce: number
+  existingDebt: StellarHubAsset
+  newDebtAmount: string
+  newDebt: StellarHubAsset
+  steps: StellarSwapStepsInput
+}
+
+export interface StellarSwapCollateralArgs {
+  accountNonce: number
+  current: StellarHubAsset
+  fromAmount: string
+  newCollateral: StellarHubAsset
+  steps: StellarSwapStepsInput
+}
+
+export interface StellarRepayDebtWithCollateralArgs {
+  accountNonce: number
+  collateral: StellarHubAsset
+  collateralAmount: string
+  debt: StellarHubAsset
+  steps: StellarSwapStepsInput
+  closePosition: boolean
+}
+
+/**
+ * `migrate_from_blend` references the *Blend* pool's bare-`Address` assets, so
+ * collateral / supply / debt stay token-keyed; only the account's risk spoke
+ * (`spoke_id`) crosses on the XOXNO side.
+ */
+export interface StellarMigrateFromBlendArgs {
+  accountId: number | string
+  spokeId: number
+  blendPool: string
+  collateralTokens: ReadonlyArray<string>
+  supplyTokens: ReadonlyArray<string>
+  debtCaps: ReadonlyArray<{ token: string; cap: string }>
 }
 
 // -----------------------------------------------------------------------------
-// Builders — 10 entry points, 1 : 1 with the Stellar controller
+// Builders — 11 entry points, 1 : 1 with the multi-hub Stellar controller
 // -----------------------------------------------------------------------------
 
 /**
- * supply(caller, account_id: u64, e_mode_category: u32, assets: Vec<(Address, i128)>)
+ * supply(caller, account_id: u64, spoke_id: u32, assets: Vec<(HubAssetKey, i128)>)
  */
 export function buildStellarSupplyBatchTx(
   opts: StellarBuilderOptions,
   args: StellarSupplyBatchArgs
 ): BuiltStellarTx {
   const accountId = args.accountNonce ?? 0
-  const eModeCategory = args.eModeCategory ?? 0
-  const assets = tupleAddrAmountVec([...args.assets])
+  const spokeId = args.spokeId ?? 0
 
   return buildTx(opts, 'supply', [
     addr(opts.caller),
     u64(accountId),
-    u32(eModeCategory),
-    assets,
+    u32(spokeId),
+    tupleHubAssetAmountVec([...args.assets]),
   ])
 }
 
-/**
- * @xoxno/types `SupplyArgs` is a single-asset shape; the Stellar contract
- * expects a batch — we wrap the single asset in a 1-element Vec.
- */
+/** Single-asset `supply` — wraps the asset in a 1-element batch. */
 export function buildStellarSupplyTx(
   opts: StellarBuilderOptions,
-  args: SupplyArgs
+  args: StellarSupplyArgs
 ): BuiltStellarTx {
   return buildStellarSupplyBatchTx(opts, {
     accountNonce: args.accountNonce,
-    eModeCategory: args.eModeCategory,
-    assets: [{ token: args.token, amount: args.amount }],
+    spokeId: args.spokeId,
+    assets: [{ hubId: args.hubId, asset: args.asset, amount: args.amount }],
   })
 }
 
+/**
+ * borrow(caller, account_id: u64, borrows: Vec<(HubAssetKey, i128)>,
+ * to: Option<Address>) — `to` is always sent; absent means the caller
+ * receives the funds.
+ */
 export function buildStellarBorrowBatchTx(
   opts: StellarBuilderOptions,
   args: StellarBorrowBatchArgs
 ): BuiltStellarTx {
-  const borrows = tupleAddrAmountVec([...args.borrows])
-
   return buildTx(opts, 'borrow', [
     addr(opts.caller),
     u64(args.accountNonce),
-    borrows,
-  ])
-}
-
-/**
- * borrow(caller, account_id: u64, borrows: Vec<(Address, i128)>)
- */
-export function buildStellarBorrowTx(
-  opts: StellarBuilderOptions,
-  args: BorrowArgs
-): BuiltStellarTx {
-  return buildStellarBorrowBatchTx(opts, {
-    accountNonce: args.accountNonce,
-    borrows: [{ token: args.token, amount: args.amount }],
-  })
-}
-
-export function buildStellarWithdrawBatchTx(
-  opts: StellarBuilderOptions,
-  args: StellarWithdrawBatchArgs
-): BuiltStellarTx {
-  const withdrawals = tupleAddrAmountVec([...args.withdrawals])
-
-  return buildTx(opts, 'withdraw', [
-    addr(opts.caller),
-    u64(args.accountNonce),
-    withdrawals,
+    tupleHubAssetAmountVec([...args.borrows]),
     option(args.to, addr),
   ])
 }
 
-/**
- * withdraw(caller, account_id: u64, withdrawals: Vec<(Address, i128)>,
- * to: Option<Address>) — `to` is always sent; absent means the caller
- * receives the funds.
- */
-export function buildStellarWithdrawTx(
+/** Single-asset `borrow`. */
+export function buildStellarBorrowTx(
   opts: StellarBuilderOptions,
-  args: WithdrawArgs
+  args: StellarBorrowArgs
 ): BuiltStellarTx {
-  return buildStellarWithdrawBatchTx(opts, {
+  return buildStellarBorrowBatchTx(opts, {
     accountNonce: args.accountNonce,
-    withdrawals: [{ token: args.token, amount: args.amount }],
+    borrows: [{ hubId: args.hubId, asset: args.asset, amount: args.amount }],
+    to: args.to,
   })
 }
 
+/**
+ * withdraw(caller, account_id: u64, withdrawals: Vec<(HubAssetKey, i128)>,
+ * to: Option<Address>) — `to` is always sent; absent means the caller
+ * receives the funds.
+ */
+export function buildStellarWithdrawBatchTx(
+  opts: StellarBuilderOptions,
+  args: StellarWithdrawBatchArgs
+): BuiltStellarTx {
+  return buildTx(opts, 'withdraw', [
+    addr(opts.caller),
+    u64(args.accountNonce),
+    tupleHubAssetAmountVec([...args.withdrawals]),
+    option(args.to, addr),
+  ])
+}
+
+/** Single-asset `withdraw`. */
+export function buildStellarWithdrawTx(
+  opts: StellarBuilderOptions,
+  args: StellarWithdrawArgs
+): BuiltStellarTx {
+  return buildStellarWithdrawBatchTx(opts, {
+    accountNonce: args.accountNonce,
+    withdrawals: [{ hubId: args.hubId, asset: args.asset, amount: args.amount }],
+    to: args.to,
+  })
+}
+
+/**
+ * repay(caller, account_id: u64, payments: Vec<(HubAssetKey, i128)>)
+ */
 export function buildStellarRepayBatchTx(
   opts: StellarBuilderOptions,
   args: StellarRepayBatchArgs
 ): BuiltStellarTx {
-  const payments = tupleAddrAmountVec([...args.payments])
-
   return buildTx(opts, 'repay', [
     addr(opts.caller),
     u64(args.accountNonce),
-    payments,
+    tupleHubAssetAmountVec([...args.payments]),
   ])
 }
 
-/**
- * repay(caller, account_id: u64, payments: Vec<(Address, i128)>)
- */
+/** Single-asset `repay`. */
 export function buildStellarRepayTx(
   opts: StellarBuilderOptions,
-  args: RepayArgs
+  args: StellarRepayArgs
 ): BuiltStellarTx {
   return buildStellarRepayBatchTx(opts, {
     accountNonce: args.accountNonce,
-    payments: [{ token: args.token, amount: args.amount }],
+    payments: [{ hubId: args.hubId, asset: args.asset, amount: args.amount }],
   })
 }
 
 /**
- * liquidate(liquidator, account_id: u64, debt_payments: Vec<(Address, i128)>)
+ * liquidate(liquidator, account_id: u64, debt_payments: Vec<(HubAssetKey, i128)>)
  */
 export function buildStellarLiquidateTx(
   opts: StellarBuilderOptions,
-  args: LiquidateArgs
+  args: StellarLiquidateArgs
 ): BuiltStellarTx {
-  const debtPayments = tupleAddrAmountVec(
-    (args.debtPayments as LiquidateDebtPayment[]).map((p) => ({
-      token: p.token,
-      amount: p.amount,
-    }))
-  )
-
   return buildTx(opts, 'liquidate', [
     addr(opts.caller),
     u64(args.accountNonce),
-    debtPayments,
+    tupleHubAssetAmountVec([...args.debtPayments]),
   ])
 }
 
 /**
- * flash_loan(caller, asset, amount: i128, receiver, data: Bytes)
+ * flash_loan(caller, asset: HubAssetKey, amount: i128, receiver, data: Bytes)
  */
 export function buildStellarFlashLoanTx(
   opts: StellarBuilderOptions,
-  args: FlashLoanArgs
+  args: StellarFlashLoanArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'flash_loan', [
     addr(opts.caller),
-    addr(args.asset),
+    hubAsset(args.hubId, args.asset),
     i128(args.amount),
     addr(args.receiver),
     asStellarBytes(args.data),
@@ -345,7 +417,7 @@ export function buildStellarFlashLoanTx(
  * Build a `migrate_from_blend` controller invocation: atomically moves a Blend
  * V2 position (collateral + supply + debt) into XOXNO at zero flash-loan fee.
  *
- * ABI: `migrate_from_blend(caller, account_id, e_mode_category, blend_pool,
+ * ABI: `migrate_from_blend(caller, account_id, spoke_id, blend_pool,
  * collateral_assets, supply_assets, debt_caps: Vec<(Address, i128)>)`. Pass
  * `accountId = "0"` to open a new account. Each debt cap should slightly exceed
  * the live Blend debt — Blend refunds the excess, reconciled on-chain.
@@ -356,23 +428,25 @@ export function buildStellarFlashLoanTx(
  */
 export function buildStellarMigrateFromBlendTx(
   opts: StellarBuilderOptions,
-  args: MigrateFromBlendArgs
+  args: StellarMigrateFromBlendArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'migrate_from_blend', [
     addr(opts.caller),
     u64(args.accountId),
-    u32(args.eModeCategory),
+    u32(args.spokeId),
     addr(args.blendPool),
     vec(args.collateralTokens.map(addr)),
     vec(args.supplyTokens.map(addr)),
-    tupleAddrAmountVec(args.debtCaps.map((d) => ({ token: d.token, amount: d.cap }))),
+    tupleAddrAmountVec(
+      args.debtCaps.map((d) => ({ token: d.token, amount: d.cap }))
+    ),
   ])
 }
 
 /**
- * multiply(caller, account_id, e_mode_category, collateral_token,
- *          debt_to_flash_loan: i128, debt_token, mode: PositionMode,
- *          swap: Bytes, initial_payment: Option<(Address, i128)>,
+ * multiply(caller, account_id, spoke_id, collateral: HubAssetKey,
+ *          debt_to_flash_loan: i128, debt: HubAssetKey, mode: PositionMode,
+ *          swap: Bytes, initial_payment: Option<(HubAssetKey, i128)>,
  *          convert_swap: Option<Bytes>) -> u64
  *
  * `mode` is a repr(u32) `PositionMode` → encoded as `scvU32`. The two trailing
@@ -381,75 +455,78 @@ export function buildStellarMigrateFromBlendTx(
  */
 export function buildStellarMultiplyTx(
   opts: StellarBuilderOptions,
-  args: MultiplyArgs
+  args: StellarMultiplyArgs
 ): BuiltStellarTx {
   const accountId = args.accountNonce ?? 0
+  const spokeId = args.spokeId ?? 0
 
   return buildTx(opts, 'multiply', [
     addr(opts.caller),
     u64(accountId),
-    u32(args.eModeCategory),
-    addr(args.collateralToken),
+    u32(spokeId),
+    hubAsset(args.collateral.hubId, args.collateral.asset),
     i128(args.debtToFlashLoan),
-    addr(args.debtToken),
+    hubAsset(args.debt.hubId, args.debt.asset),
     u32(args.mode),
     asStellarStrategySwapBytes(args.steps),
-    option(args.initialPayment, (p) => tupleAddrAmount(p.token, p.amount)),
+    option(args.initialPayment, (p) =>
+      tupleHubAssetAmount(p.hubId, p.asset, p.amount)
+    ),
     option(args.convertSwap, asStellarStrategySwapBytes),
   ])
 }
 
 /**
- * swap_debt(caller, account_id, existing_debt_token, new_debt_amount: i128,
- *           new_debt_token, steps: Bytes)
+ * swap_debt(caller, account_id, existing_debt: HubAssetKey, amount: i128,
+ *           new_debt: HubAssetKey, swap: Bytes)
  */
 export function buildStellarSwapDebtTx(
   opts: StellarBuilderOptions,
-  args: SwapDebtArgs
+  args: StellarSwapDebtArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'swap_debt', [
     addr(opts.caller),
     u64(args.accountNonce),
-    addr(args.existingDebtToken),
+    hubAsset(args.existingDebt.hubId, args.existingDebt.asset),
     i128(args.newDebtAmount),
-    addr(args.newDebtToken),
+    hubAsset(args.newDebt.hubId, args.newDebt.asset),
     asStellarStrategySwapBytes(args.steps),
   ])
 }
 
 /**
- * swap_collateral(caller, account_id, current_collateral, from_amount: i128,
- *                 new_collateral, steps: Bytes)
+ * swap_collateral(caller, account_id, current: HubAssetKey, amount: i128,
+ *                 new: HubAssetKey, swap: Bytes)
  */
 export function buildStellarSwapCollateralTx(
   opts: StellarBuilderOptions,
-  args: SwapCollateralArgs
+  args: StellarSwapCollateralArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'swap_collateral', [
     addr(opts.caller),
     u64(args.accountNonce),
-    addr(args.currentCollateral),
+    hubAsset(args.current.hubId, args.current.asset),
     i128(args.fromAmount),
-    addr(args.newCollateral),
+    hubAsset(args.newCollateral.hubId, args.newCollateral.asset),
     asStellarStrategySwapBytes(args.steps),
   ])
 }
 
 /**
- * repay_debt_with_collateral(caller, account_id, collateral_token,
- *                            collateral_amount: i128, debt_token,
- *                            steps: Bytes, close_position: bool)
+ * repay_debt_with_collateral(caller, account_id, collateral: HubAssetKey,
+ *                            collateral_amount: i128, debt: HubAssetKey,
+ *                            swap: Bytes, close_position: bool)
  */
 export function buildStellarRepayDebtWithCollateralTx(
   opts: StellarBuilderOptions,
-  args: RepayDebtWithCollateralArgs
+  args: StellarRepayDebtWithCollateralArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'repay_debt_with_collateral', [
     addr(opts.caller),
     u64(args.accountNonce),
-    addr(args.collateralToken),
+    hubAsset(args.collateral.hubId, args.collateral.asset),
     i128(args.collateralAmount),
-    addr(args.debtToken),
+    hubAsset(args.debt.hubId, args.debt.asset),
     asStellarStrategySwapBytes(args.steps),
     bool(args.closePosition),
   ])
