@@ -1,6 +1,10 @@
 import { XOXNOClient } from '../../../utils/api'
 import {
+  getStellarAssets,
+  getStellarHubs,
   getStellarReserve,
+  getStellarReserves,
+  getStellarSpokes,
   getStellarAssetMarkets,
   stellarLendingRead,
 } from '../index'
@@ -10,7 +14,45 @@ describe('stellar lending read surface', () => {
   it('re-exports the read functions from the barrel', () => {
     expect(typeof getStellarReserve).toBe('function')
     expect(typeof getStellarAssetMarkets).toBe('function')
+    expect(typeof getStellarAssets).toBe('function')
+    expect(typeof getStellarHubs).toBe('function')
+    expect(typeof getStellarSpokes).toBe('function')
+    expect(typeof getStellarReserves).toBe('function')
     expect(typeof stellarLendingRead).toBe('function')
+  })
+
+  it('lists global rows: assets/hubs/spokes hit the base routes, reserves passes filters', async () => {
+    const captured: {
+      path?: string
+      opts?: { params?: Record<string, unknown> }
+    } = {}
+    const client = new XOXNOClient()
+    client.fetchWithTimeout = (async (
+      path: string,
+      opts: { params?: Record<string, unknown> }
+    ) => {
+      captured.path = path
+      captured.opts = opts
+      return []
+    }) as unknown as typeof client.fetchWithTimeout
+
+    const read = stellarLendingRead(client)
+
+    await read.assets()
+    expect(captured.path).toBe('/stellar-lending/assets')
+
+    await read.hubs()
+    expect(captured.path).toBe('/stellar-lending/hubs')
+
+    await read.spokes()
+    expect(captured.path).toBe('/stellar-lending/spokes')
+
+    await read.reserves()
+    expect(captured.path).toBe('/stellar-lending/reserves')
+    expect(captured.opts?.params).toEqual({})
+
+    await read.reserves({ hubId: 1, spokeId: 2, asset: 'CASSET' })
+    expect(captured.opts?.params).toEqual({ hubId: 1, spokeId: 2, asset: 'CASSET' })
   })
 
   it('binds a client and calls fetchWithTimeout with the right path + params', async () => {

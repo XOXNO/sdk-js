@@ -12,6 +12,12 @@
  * SDK uses.
  */
 
+import type {
+  StellarAssetListItem,
+  StellarHubListItem,
+  StellarReserveListItem,
+  StellarSpokeListItem,
+} from '@xoxno/types/stellar-lending'
 import type { OurRequestInit, XOXNOClient } from '../../utils/api'
 import type {
   StellarAccountPositions,
@@ -34,6 +40,48 @@ const BASE = '/stellar-lending'
 const GOVERNANCE_DEFAULT_TOP = 25
 
 const enc = encodeURIComponent
+
+/** Every asset, aggregated across hubs — rows for the Deposit/Borrow tables. */
+export const getStellarAssets = (
+  client: XOXNOClient,
+  init?: OurRequestInit
+): Promise<StellarAssetListItem[]> =>
+  client.fetchWithTimeout<StellarAssetListItem[]>(`${BASE}/assets`, init)
+
+/** Every hub, aggregated over its hub-assets — rows for the All Hubs table. */
+export const getStellarHubs = (
+  client: XOXNOClient,
+  init?: OurRequestInit
+): Promise<StellarHubListItem[]> =>
+  client.fetchWithTimeout<StellarHubListItem[]>(`${BASE}/hubs`, init)
+
+/** Every spoke, aggregated over its reserves — rows for the All Markets table. */
+export const getStellarSpokes = (
+  client: XOXNOClient,
+  init?: OurRequestInit
+): Promise<StellarSpokeListItem[]> =>
+  client.fetchWithTimeout<StellarSpokeListItem[]>(`${BASE}/spokes`, init)
+
+/**
+ * Reserve rows (asset in a spoke on a hub), optionally filtered. Filters are
+ * omitted from the query string when unset; api-v2 defaults `hubId`/`spokeId`
+ * to `-1` and `asset` to `''` (no filter).
+ */
+export const getStellarReserves = (
+  client: XOXNOClient,
+  params: { hubId?: number; spokeId?: number; asset?: string } = {},
+  init?: OurRequestInit
+): Promise<StellarReserveListItem[]> => {
+  const { hubId, spokeId, asset } = params
+  return client.fetchWithTimeout<StellarReserveListItem[]>(`${BASE}/reserves`, {
+    ...init,
+    params: {
+      ...(hubId !== undefined ? { hubId } : {}),
+      ...(spokeId !== undefined ? { spokeId } : {}),
+      ...(asset ? { asset } : {}),
+    },
+  })
+}
 
 /** Reserve detail: one asset, in one spoke, on one hub. */
 export const getStellarReserve = (
@@ -192,6 +240,13 @@ export const getStellarReserveGraph = (
  * client through every call.
  */
 export const stellarLendingRead = (client: XOXNOClient) => ({
+  assets: (init?: OurRequestInit) => getStellarAssets(client, init),
+  hubs: (init?: OurRequestInit) => getStellarHubs(client, init),
+  spokes: (init?: OurRequestInit) => getStellarSpokes(client, init),
+  reserves: (
+    params?: { hubId?: number; spokeId?: number; asset?: string },
+    init?: OurRequestInit
+  ) => getStellarReserves(client, params, init),
   reserve: (spokeId: number, hubId: number, asset: string, init?: OurRequestInit) =>
     getStellarReserve(client, spokeId, hubId, asset, init),
   reserveHolders: (
@@ -240,3 +295,14 @@ export const stellarLendingRead = (client: XOXNOClient) => ({
 export type StellarLendingRead = ReturnType<typeof stellarLendingRead>
 
 export * from './lending-read-types'
+
+// Global list-item row shapes returned by the list methods live in
+// `@xoxno/types`; re-export them here so consumers reach both the methods and
+// their return types from `@xoxno/sdk-js`.
+export type {
+  StellarApyRange,
+  StellarAssetListItem,
+  StellarHubListItem,
+  StellarReserveListItem,
+  StellarSpokeListItem,
+} from '@xoxno/types/stellar-lending'
