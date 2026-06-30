@@ -17,6 +17,7 @@ import type {
   StellarHubListItem,
   StellarReserveListItem,
   StellarSpokeListItem,
+  StellarUserActivityItem,
 } from '@xoxno/types/stellar-lending'
 import type { OurRequestInit, XOXNOClient } from '../../utils/api'
 import type {
@@ -157,6 +158,30 @@ export const getStellarUserPositions = (
     init
   )
 
+/**
+ * A user's lending action feed (newest first), paged. `skip`/`top` are omitted
+ * from the query string when unset; api-v2 defaults `skip` to `0` and `top` to
+ * `50` (capped at `200`).
+ */
+export const getStellarUserActivity = (
+  client: XOXNOClient,
+  owner: string,
+  params: { skip?: number; top?: number } = {},
+  init?: OurRequestInit
+): Promise<StellarUserActivityItem[]> => {
+  const { skip, top } = params
+  return client.fetchWithTimeout<StellarUserActivityItem[]>(
+    `${BASE}/users/${enc(owner)}/activity`,
+    {
+      ...init,
+      params: {
+        ...(skip !== undefined ? { skip } : {}),
+        ...(top !== undefined ? { top } : {}),
+      },
+    }
+  )
+}
+
 /** All positions for a single account (single-partition). */
 export const getStellarAccountPositions = (
   client: XOXNOClient,
@@ -268,6 +293,11 @@ export const stellarLendingRead = (client: XOXNOClient) => ({
     getStellarSpoke(client, spokeId, init),
   userPositions: (owner: string, init?: OurRequestInit) =>
     getStellarUserPositions(client, owner, init),
+  userActivity: (
+    owner: string,
+    params?: { skip?: number; top?: number },
+    init?: OurRequestInit
+  ) => getStellarUserActivity(client, owner, params, init),
   accountPositions: (accountId: string, init?: OurRequestInit) =>
     getStellarAccountPositions(client, accountId, init),
   governanceProposals: (
@@ -305,4 +335,5 @@ export type {
   StellarHubListItem,
   StellarReserveListItem,
   StellarSpokeListItem,
+  StellarUserActivityItem,
 } from '@xoxno/types/stellar-lending'
