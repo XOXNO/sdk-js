@@ -187,6 +187,7 @@ const migrateFromBlendArgs: StellarMigrateFromBlendArgs = {
   blendPool: FIXTURE_CONTROLLER,
   accountId: '0',
   spokeId: 0,
+  hubId: HUB,
   collateralTokens: [FIXTURE_XLM],
   supplyTokens: [FIXTURE_USDC],
   debtCaps: [{ token: FIXTURE_USDC, cap: '200500000' }],
@@ -307,8 +308,8 @@ describe('Stellar lending transaction builders — sanity', () => {
     {
       name: 'migrate_from_blend',
       expectedFn: 'migrate_from_blend',
-      // caller, account_id, spoke_id, blend_pool, collateral, supply, debt_caps
-      expectedArgCount: 7,
+      // caller, account_id, spoke_id, hub_id, blend_pool, collateral, supply, debt_caps
+      expectedArgCount: 8,
       build: () =>
         buildStellarMigrateFromBlendTx(BASE_OPTS, migrateFromBlendArgs),
     },

@@ -260,6 +260,7 @@ export interface StellarRepayDebtWithCollateralArgs {
 export interface StellarMigrateFromBlendArgs {
   accountId: number | string
   spokeId: number
+  hubId: number
   blendPool: string
   collateralTokens: ReadonlyArray<string>
   supplyTokens: ReadonlyArray<string>
@@ -434,6 +435,7 @@ export function buildStellarMigrateFromBlendTx(
     addr(opts.caller),
     u64(args.accountId),
     u32(args.spokeId),
+    u32(args.hubId),
     addr(args.blendPool),
     vec(args.collateralTokens.map(addr)),
     vec(args.supplyTokens.map(addr)),
