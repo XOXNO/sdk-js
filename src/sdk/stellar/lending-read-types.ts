@@ -12,12 +12,23 @@
  */
 
 import type {
+  StellarAssetPage,
+  StellarAssetPageGraphPoint,
+  StellarAssetPageGraphSeries,
+  StellarAssetPageMarket,
   StellarGovernanceProposalField,
   StellarGovernanceProposalKind,
   StellarGovernanceProposalStatus,
   StellarGovernanceProposalTarget,
   StellarInitialPaymentMultiplier,
 } from '@xoxno/types/stellar-lending'
+
+export type {
+  StellarAssetPage,
+  StellarAssetPageGraphPoint,
+  StellarAssetPageGraphSeries,
+  StellarAssetPageMarket,
+}
 
 // -----------------------------------------------------------------------------
 // Query selectors

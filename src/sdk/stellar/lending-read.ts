@@ -14,6 +14,7 @@
 
 import type {
   StellarAssetListItem,
+  StellarAssetPage,
   StellarHubListItem,
   StellarReserveListItem,
   StellarSpokeListItem,
@@ -118,6 +119,18 @@ export const getStellarAsset = (
   init?: OurRequestInit
 ): Promise<StellarAsset> =>
   client.fetchWithTimeout<StellarAsset>(`${BASE}/assets/${enc(asset)}`, init)
+
+/** Asset detail page: overview + deposit/borrow markets + spoke APY series. */
+export const getStellarAssetPage = (
+  client: XOXNOClient,
+  asset: string,
+  query: StellarMarketGraphQuery & { owner?: string },
+  init?: OurRequestInit
+): Promise<StellarAssetPage> =>
+  client.fetchWithTimeout<StellarAssetPage>(
+    `${BASE}/assets/${enc(asset)}/page`,
+    { ...init, params: { ...query } }
+  )
 
 /** Asset markets (per spoke/hub) for one side. */
 export const getStellarAssetMarkets = (
