@@ -115,6 +115,23 @@ const V2_FIXTURES: Fixture[] = [
     // Data is the entries Vec directly — price present, then absent.
     data: b64(vecV([marketEntry(ASSET_A, 1230000000000000000n), marketEntry(ASSET_B, null)])),
   },
+  {
+    topic: 'config:spoke',
+    topics: topicsFor('config', 'spoke'),
+    // Map-encoded, constructed here (postdates the captured JSON): the
+    // controller stamps the liquidation curve into the spoke at creation.
+    data: b64(
+      mapV({
+        spoke: mapV({
+          spoke_id: u32(3),
+          is_deprecated: xdr.ScVal.scvBool(false),
+          liquidation_target_hf_wad: i128(1020000000000000000n),
+          hf_for_max_bonus_wad: i128(510000000000000000n),
+          liquidation_bonus_factor_bps: u32(10000),
+        }),
+      })
+    ),
+  },
 ]
 
 const FIXTURES = [...(fixtures as Fixture[]), ...V2_FIXTURES]
@@ -131,9 +148,9 @@ const decodeFixture = (t: string) => {
 }
 
 describe('decodeStellarLendingEvent — real fixtures', () => {
-  it('has a decoder for all 20 lending events and decodes every fixture', () => {
-    expect(STELLAR_LENDING_TOPICS).toHaveLength(20)
-    expect(FIXTURES.length).toBeGreaterThanOrEqual(20)
+  it('has a decoder for all 21 lending events and decodes every fixture', () => {
+    expect(STELLAR_LENDING_TOPICS).toHaveLength(21)
+    expect(FIXTURES.length).toBeGreaterThanOrEqual(21)
     for (const f of FIXTURES) {
       const ev = decodeStellarLendingEvent(f.topics, f.data)
       expect(ev).not.toBeNull()
@@ -332,6 +349,16 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     if (limits.topic !== 'config:position_limits') throw new Error('narrow')
     expect(limits.data.maxSupplyPositions).toBe(16)
     expect(limits.data.maxBorrowPositions).toBe(8)
+  })
+
+  it('config:spoke — decodes the stamped liquidation curve', () => {
+    const ev = decodeFixture('config:spoke')
+    if (ev.topic !== 'config:spoke') throw new Error('narrow')
+    expect(ev.data.spokeId).toBe(3)
+    expect(ev.data.isDeprecated).toBe(false)
+    expect(ev.data.liquidationTargetHfWad).toBe('1020000000000000000')
+    expect(ev.data.healthFactorForMaxBonusWad).toBe('510000000000000000')
+    expect(ev.data.liquidationBonusFactorBps).toBe(10000)
   })
 
   it('config:approve_token — BytesN<32> wasm hash → 64-char hex', () => {

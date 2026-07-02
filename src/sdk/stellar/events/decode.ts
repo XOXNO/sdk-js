@@ -1,11 +1,13 @@
 /**
  * Decoders for the Stellar lending controller `#[contractevent]`s.
  *
- * The controller defines 20+ contractevents; this SDK decodes 20 of them plus the
- * pool's `strategy:fee`. The lone controller omission is `config:min_borrow_collateral` (a single global `i128` floor with
- * no indexing/UI consumer — the governance `SetMinBorrowCollateral` proposal
- * already surfaces the value), so `decodeStellarLendingEvent` returns `null` for
- * it like any other unhandled topic.
+ * The controller defines 20+ contractevents; this SDK decodes 21 of them plus the
+ * pool's `strategy:fee`. Controller omissions: `config:min_borrow_collateral`
+ * (a single global `i128` floor with no indexing/UI consumer — the governance
+ * `SetMinBorrowCollateral` proposal already surfaces the value) and
+ * `config:spoke_asset` / `config:remove_spoke_asset` (indexed by the
+ * az-functions pipeline's own decoders), so `decodeStellarLendingEvent`
+ * returns `null` for them like any other unhandled topic.
  *
  * The public API takes base64-XDR strings (`decodeStellarLendingEvent(topicsB64,
  * dataB64)`) and parses them with this SDK's bundled `@stellar/stellar-sdk`, so
@@ -391,10 +393,26 @@ const REGISTRY: Record<string, DecoderFn> = {
     topic: 'config:oracle_disabled',
     data: { asset: str(d.asset) },
   }),
+  'config:spoke': (d) => {
+    const s = d.spoke as Raw
+    return {
+      topic: 'config:spoke',
+      data: {
+        spokeId: num(s.spoke_id),
+        isDeprecated: Boolean(s.is_deprecated),
+        // Curve fields are stamped at spoke creation; events emitted by
+        // pre-stamp controllers lack them, so default to '0'.
+        liquidationTargetHfWad: dec(s.liquidation_target_hf_wad ?? 0),
+        healthFactorForMaxBonusWad: dec(s.hf_for_max_bonus_wad ?? 0),
+        liquidationBonusFactorBps: num(s.liquidation_bonus_factor_bps ?? 0),
+      },
+    }
+  },
 }
 
-/** Topic keys this SDK can decode (20 controller contractevents plus the pool's
- * `strategy:fee`; `config:min_borrow_collateral` is intentionally not decoded). */
+/** Topic keys this SDK can decode (21 controller contractevents plus the pool's
+ * `strategy:fee`; `config:min_borrow_collateral`, `config:spoke_asset`, and
+ * `config:remove_spoke_asset` are intentionally not decoded). */
 export const STELLAR_LENDING_TOPICS = Object.freeze(
   Object.keys(REGISTRY)
 ) as readonly string[]
