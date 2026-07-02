@@ -24,11 +24,12 @@ import type {
 } from '@xoxno/types/stellar-lending'
 
 export type {
+  StellarLendingContext,
   StellarAssetPage,
   StellarAssetPageGraphPoint,
   StellarAssetPageGraphSeries,
   StellarAssetPageMarket,
-}
+} from '@xoxno/types/stellar-lending'
 
 // -----------------------------------------------------------------------------
 // Query selectors

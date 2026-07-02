@@ -28,6 +28,7 @@ import type {
   StellarGovernanceProposalsPage,
   StellarHub,
   StellarLendingHoldersSide,
+  StellarLendingContext,
   StellarLendingMarketSide,
   StellarMarketGraph,
   StellarMarketGraphQuery,
@@ -42,6 +43,20 @@ const BASE = '/stellar-lending'
 const GOVERNANCE_DEFAULT_TOP = 25
 
 const enc = encodeURIComponent
+
+type StellarReservesParams = { hubId?: number; spokeId?: number; asset?: string }
+
+const isStellarReservesParams = (
+  value?: StellarReservesParams | OurRequestInit
+): value is StellarReservesParams =>
+  value === undefined || 'hubId' in value || 'spokeId' in value || 'asset' in value
+
+/** Aggregate context for Stellar lending landing/read surfaces. */
+export const getStellarLendingContext = (
+  client: XOXNOClient,
+  init?: OurRequestInit
+): Promise<StellarLendingContext> =>
+  client.fetchWithTimeout<StellarLendingContext>(`${BASE}/context`, init)
 
 /** Every asset, aggregated across hubs — rows for the Deposit/Borrow tables. */
 export const getStellarAssets = (
@@ -71,7 +86,7 @@ export const getStellarSpokes = (
  */
 export const getStellarReserves = (
   client: XOXNOClient,
-  params: { hubId?: number; spokeId?: number; asset?: string } = {},
+  params: StellarReservesParams = {},
   init?: OurRequestInit
 ): Promise<StellarReserveListItem[]> => {
   const { hubId, spokeId, asset } = params
@@ -278,13 +293,17 @@ export const getStellarReserveGraph = (
  * client through every call.
  */
 export const stellarLendingRead = (client: XOXNOClient) => ({
+  context: (init?: OurRequestInit) => getStellarLendingContext(client, init),
   assets: (init?: OurRequestInit) => getStellarAssets(client, init),
   hubs: (init?: OurRequestInit) => getStellarHubs(client, init),
   spokes: (init?: OurRequestInit) => getStellarSpokes(client, init),
   reserves: (
-    params?: { hubId?: number; spokeId?: number; asset?: string },
+    paramsOrInit?: StellarReservesParams | OurRequestInit,
     init?: OurRequestInit
-  ) => getStellarReserves(client, params, init),
+  ) =>
+    isStellarReservesParams(paramsOrInit)
+      ? getStellarReserves(client, paramsOrInit, init)
+      : getStellarReserves(client, {}, paramsOrInit),
   reserve: (spokeId: number, hubId: number, asset: string, init?: OurRequestInit) =>
     getStellarReserve(client, spokeId, hubId, asset, init),
   reserveHolders: (
