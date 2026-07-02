@@ -11,7 +11,6 @@
  */
 
 import type {
-  AssetConfigRawDto,
   InterestRateModelDto,
   MarketOracleConfigInputDto,
   MarketParamsRawDto,
@@ -28,10 +27,12 @@ import {
   addr,
   bool,
   bytesN,
+  hubAsset,
   i128,
   scStruct,
   str,
   sym,
+  tupleHubAssetAmountVec,
   u32,
   u64,
   vec,
@@ -62,15 +63,15 @@ const ASSET_REF_STRING = 'String'
 /** `InterestRateModel` — 8 RAY rates + reserve factor bps. */
 export const encodeInterestRateModel = (m: InterestRateModelDto): xdr.ScVal =>
   scStruct({
-    base_borrow_rate_ray: i128(m.baseBorrowRateRay),
-    max_borrow_rate_ray: i128(m.maxBorrowRateRay),
-    max_utilization_ray: i128(m.maxUtilizationRay),
-    mid_utilization_ray: i128(m.midUtilizationRay),
-    optimal_utilization_ray: i128(m.optimalUtilizationRay),
-    reserve_factor_bps: u32(m.reserveFactorBps),
-    slope1_ray: i128(m.slope1Ray),
-    slope2_ray: i128(m.slope2Ray),
-    slope3_ray: i128(m.slope3Ray),
+    base_borrow_rate: i128(m.baseBorrowRateRay),
+    max_borrow_rate: i128(m.maxBorrowRateRay),
+    max_utilization: i128(m.maxUtilizationRay),
+    mid_utilization: i128(m.midUtilizationRay),
+    optimal_utilization: i128(m.optimalUtilizationRay),
+    reserve_factor: u32(m.reserveFactorBps),
+    slope1: i128(m.slope1Ray),
+    slope2: i128(m.slope2Ray),
+    slope3: i128(m.slope3Ray),
   })
 
 /** `MarketParamsRaw` — `InterestRateModel` plus the pool asset identity. */
@@ -78,37 +79,19 @@ export const encodeMarketParamsRaw = (p: MarketParamsRawDto): xdr.ScVal =>
   scStruct({
     asset_decimals: u32(p.assetDecimals),
     asset_id: addr(p.assetId),
-    base_borrow_rate_ray: i128(p.baseBorrowRateRay),
+    base_borrow_rate: i128(p.baseBorrowRateRay),
     borrow_cap: i128(p.borrowCap),
-    max_borrow_rate_ray: i128(p.maxBorrowRateRay),
-    max_utilization_ray: i128(p.maxUtilizationRay),
-    mid_utilization_ray: i128(p.midUtilizationRay),
-    optimal_utilization_ray: i128(p.optimalUtilizationRay),
-    reserve_factor_bps: u32(p.reserveFactorBps),
-    slope1_ray: i128(p.slope1Ray),
-    slope2_ray: i128(p.slope2Ray),
-    slope3_ray: i128(p.slope3Ray),
+    flashloan_fee: u32(p.flashloanFeeBps),
+    is_flashloanable: bool(p.isFlashloanable),
+    max_borrow_rate: i128(p.maxBorrowRateRay),
+    max_utilization: i128(p.maxUtilizationRay),
+    mid_utilization: i128(p.midUtilizationRay),
+    optimal_utilization: i128(p.optimalUtilizationRay),
+    reserve_factor: u32(p.reserveFactorBps),
+    slope1: i128(p.slope1Ray),
+    slope2: i128(p.slope2Ray),
+    slope3: i128(p.slope3Ray),
     supply_cap: i128(p.supplyCap),
-  })
-
-/** `AssetConfigRaw` — risk flags and e-mode membership (hub caps live on pool params). */
-export const encodeAssetConfigRaw = (c: AssetConfigRawDto): xdr.ScVal =>
-  scStruct({
-    // The contract's `AssetConfigRaw` carries `asset_decimals`, but the value is
-    // derived on-chain and ignored on input: `create_liquidity_pool` copies it
-    // from the pool's `MarketParamsRaw` and `edit_asset_config` preserves the
-    // stored value. The field must still be present, or the 10-field struct
-    // decodes as a 9-entry map and traps host-side with `Object/UnexpectedSize`.
-    asset_decimals: u32(0),
-    e_mode_categories: vec(c.eModeCategories.map((id) => u32(id))),
-    flashloan_fee_bps: u32(c.flashloanFeeBps),
-    is_borrowable: bool(c.isBorrowable),
-    is_collateralizable: bool(c.isCollateralizable),
-    is_flashloanable: bool(c.isFlashloanable),
-    liquidation_bonus_bps: u32(c.liquidationBonusBps),
-    liquidation_fees_bps: u32(c.liquidationFeesBps),
-    liquidation_threshold_bps: u32(c.liquidationThresholdBps),
-    loan_to_value_bps: u32(c.loanToValueBps),
   })
 
 /** `PositionLimits` — per-account supply/borrow position caps. */
@@ -231,57 +214,38 @@ export interface TransferOwnershipArgs {
   newOwner: string
   liveUntilLedger: number
 }
-export interface EditAssetConfigArgs {
-  asset: string
-  config: AssetConfigRawDto
-}
-export interface EModeAssetArgs {
-  asset: string
-  categoryId: number
-  canCollateral: boolean
-  canBorrow: boolean
-  ltv: number
-  threshold: number
-  bonus: number
-  supplyCap: string
-  borrowCap: string
-}
 export interface UpdatePoolCapsArgs {
+  hubId: number
   asset: string
   supplyCap: string
   borrowCap: string
-}
-export interface RemoveEModeAssetArgs {
-  asset: string
-  categoryId: number
 }
 export interface ConfigureMarketOracleArgs {
+  hubId: number
   asset: string
   config: MarketOracleConfigInputDto
 }
 export interface EditOracleToleranceArgs {
   asset: string
-  tolerance: number
+  upperRatioBps: number
+  lowerRatioBps: number
 }
 export interface CreateLiquidityPoolArgs {
+  hubId: number
   asset: string
   params: MarketParamsRawDto
-  config: AssetConfigRawDto
 }
 export interface UpgradeLiquidityPoolParamsArgs {
+  hubId: number
   asset: string
   params: InterestRateModelDto
 }
-export interface UpgradeLiquidityPoolArgs {
-  asset: string
-  wasmHash: string
-}
 export interface RewardEntry {
-  token: string
+  hubId: number
+  asset: string
   amount: string
 }
 export interface UpdateAccountThresholdArgs {
-  asset: string
   hasRisks: boolean
   accountNonces: number[]
 }
@@ -380,17 +344,6 @@ export function buildStellarSetLiquidityPoolTemplateTx(
   return buildTx(opts, 'set_liquidity_pool_template', [bytesN(args.wasmHash)])
 }
 
-/** edit_asset_config(asset: Address, cfg: AssetConfigRaw) — #[only_owner] */
-export function buildStellarEditAssetConfigTx(
-  opts: StellarBuilderOptions,
-  args: EditAssetConfigArgs
-): BuiltStellarTx {
-  return buildTx(opts, 'edit_asset_config', [
-    addr(args.asset),
-    encodeAssetConfigRaw(args.config),
-  ])
-}
-
 /** set_position_limits(limits: PositionLimits) — #[only_owner] */
 export function buildStellarSetPositionLimitsTx(
   opts: StellarBuilderOptions,
@@ -399,77 +352,15 @@ export function buildStellarSetPositionLimitsTx(
   return buildTx(opts, 'set_position_limits', [encodePositionLimits(args)])
 }
 
-/** add_e_mode_category() -> u32 — #[only_owner]. Risk params are per-asset. */
-export function buildStellarAddEModeCategoryTx(
-  opts: StellarBuilderOptions
-): BuiltStellarTx {
-  return buildTx(opts, 'add_e_mode_category', [])
-}
-
-/** remove_e_mode_category(id: u32) — #[only_owner] */
-export function buildStellarRemoveEModeCategoryTx(
-  opts: StellarBuilderOptions,
-  args: { id: number }
-): BuiltStellarTx {
-  return buildTx(opts, 'remove_e_mode_category', [u32(args.id)])
-}
-
-// Encodes EModeAssetArgs as the single struct argument the controller's add /
-// edit e-mode entrypoints accept. Keys MUST be the Rust struct field names
-// (snake_case); scStruct sorts them into the scvMap the contract decodes.
-const encodeEModeAssetArgs = (a: EModeAssetArgs): xdr.ScVal =>
-  scStruct({
-    asset: addr(a.asset),
-    category_id: u32(a.categoryId),
-    can_collateral: bool(a.canCollateral),
-    can_borrow: bool(a.canBorrow),
-    ltv: u32(a.ltv),
-    threshold: u32(a.threshold),
-    bonus: u32(a.bonus),
-    supply_cap: i128(a.supplyCap),
-    borrow_cap: i128(a.borrowCap),
-  })
-
-/** add_asset_to_e_mode_category(EModeAssetArgs) — #[only_owner] */
-export function buildStellarAddAssetToEModeCategoryTx(
-  opts: StellarBuilderOptions,
-  args: EModeAssetArgs
-): BuiltStellarTx {
-  return buildTx(opts, 'add_asset_to_e_mode_category', [
-    encodeEModeAssetArgs(args),
-  ])
-}
-
-/** edit_asset_in_e_mode_category(EModeAssetArgs) — #[only_owner] */
-export function buildStellarEditAssetInEModeCategoryTx(
-  opts: StellarBuilderOptions,
-  args: EModeAssetArgs
-): BuiltStellarTx {
-  return buildTx(opts, 'edit_asset_in_e_mode_category', [
-    encodeEModeAssetArgs(args),
-  ])
-}
-
 /** update_pool_caps(asset, supply_cap, borrow_cap) — #[only_owner] */
 export function buildStellarUpdatePoolCapsTx(
   opts: StellarBuilderOptions,
   args: UpdatePoolCapsArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'update_pool_caps', [
-    addr(args.asset),
+    hubAsset(args.hubId, args.asset),
     i128(args.supplyCap),
     i128(args.borrowCap),
-  ])
-}
-
-/** remove_asset_from_e_mode(asset: Address, category_id: u32) — #[only_owner] */
-export function buildStellarRemoveAssetFromEModeTx(
-  opts: StellarBuilderOptions,
-  args: RemoveEModeAssetArgs
-): BuiltStellarTx {
-  return buildTx(opts, 'remove_asset_from_e_mode', [
-    addr(args.asset),
-    u32(args.categoryId),
   ])
 }
 
@@ -490,52 +381,50 @@ export function buildStellarRevokeTokenTx(
 }
 
 /** configure_market_oracle(caller, asset, cfg) — #[only_role(caller, "ORACLE")] */
-export function buildStellarConfigureMarketOracleTx(
+export function buildStellarSetMarketOracleConfigTx(
   opts: StellarBuilderOptions,
   args: ConfigureMarketOracleArgs
 ): BuiltStellarTx {
-  return buildTx(opts, 'configure_market_oracle', [
-    addr(opts.caller),
-    addr(args.asset),
+  return buildTx(opts, 'set_market_oracle_config', [
+    hubAsset(args.hubId, args.asset),
     encodeMarketOracleConfigInput(args.config),
   ])
 }
 
-/** edit_oracle_tolerance(caller, asset, tolerance) — #[only_role(caller, "ORACLE")] */
-export function buildStellarEditOracleToleranceTx(
+/** set_oracle_tolerance(asset, tolerance: OraclePriceFluctuation) — #[only_owner] */
+export function buildStellarSetOracleToleranceTx(
   opts: StellarBuilderOptions,
   args: EditOracleToleranceArgs
 ): BuiltStellarTx {
-  return buildTx(opts, 'edit_oracle_tolerance', [
-    addr(opts.caller),
+  return buildTx(opts, 'set_oracle_tolerance', [
     addr(args.asset),
-    u32(args.tolerance),
+    scStruct({
+      lower_ratio_bps: u32(args.lowerRatioBps),
+      upper_ratio_bps: u32(args.upperRatioBps),
+    }),
   ])
 }
 
-/** disable_token_oracle(caller, asset) — #[only_role(caller, "ORACLE")] */
+/** disable_token_oracle(asset) — #[only_owner] */
 export function buildStellarDisableTokenOracleTx(
   opts: StellarBuilderOptions,
   args: { asset: string }
 ): BuiltStellarTx {
-  return buildTx(opts, 'disable_token_oracle', [
-    addr(opts.caller),
-    addr(args.asset),
-  ])
+  return buildTx(opts, 'disable_token_oracle', [addr(args.asset)])
 }
 
 // -----------------------------------------------------------------------------
 // Router (router.rs)
 // -----------------------------------------------------------------------------
 
-/** update_indexes(caller, assets: Vec<Address>) — #[only_role(caller, "KEEPER")] */
+/** update_indexes(caller, assets: Vec<HubAssetKey>) */
 export function buildStellarUpdateIndexesTx(
   opts: StellarBuilderOptions,
-  args: { assets: string[] }
+  args: { assets: Array<{ hubId: number; asset: string }> }
 ): BuiltStellarTx {
   return buildTx(opts, 'update_indexes', [
     addr(opts.caller),
-    vec(args.assets.map((a) => addr(a))),
+    vec(args.assets.map((a) => hubAsset(a.hubId, a.asset))),
   ])
 }
 
@@ -550,59 +439,48 @@ export function buildStellarRenewAccountTx(
   ])
 }
 
-/** create_liquidity_pool(asset, params: MarketParamsRaw, config: AssetConfigRaw) -> Address — #[only_owner] */
+/** create_liquidity_pool(hub_id, asset, params: MarketParamsRaw) -> Address — #[only_owner] */
 export function buildStellarCreateLiquidityPoolTx(
   opts: StellarBuilderOptions,
   args: CreateLiquidityPoolArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'create_liquidity_pool', [
+    u32(args.hubId),
     addr(args.asset),
     encodeMarketParamsRaw(args.params),
-    encodeAssetConfigRaw(args.config),
   ])
 }
 
-/** upgrade_liquidity_pool_params(asset, params: InterestRateModel) — #[only_owner] */
+/** upgrade_liquidity_pool_params(hub_asset: HubAssetKey, params) — #[only_owner] */
 export function buildStellarUpgradeLiquidityPoolParamsTx(
   opts: StellarBuilderOptions,
   args: UpgradeLiquidityPoolParamsArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'upgrade_liquidity_pool_params', [
-    addr(args.asset),
+    hubAsset(args.hubId, args.asset),
     encodeInterestRateModel(args.params),
   ])
 }
 
-/** upgrade_liquidity_pool(asset, new_wasm_hash: BytesN<32>) — #[only_owner] */
-export function buildStellarUpgradeLiquidityPoolTx(
-  opts: StellarBuilderOptions,
-  args: UpgradeLiquidityPoolArgs
-): BuiltStellarTx {
-  return buildTx(opts, 'upgrade_liquidity_pool', [
-    addr(args.asset),
-    bytesN(args.wasmHash),
-  ])
-}
-
-/** claim_revenue(caller, assets: Vec<Address>) -> Vec<i128> — #[only_role(caller, "REVENUE")] */
+/** claim_revenue(caller, assets: Vec<HubAssetKey>) -> Vec<i128> */
 export function buildStellarClaimRevenueTx(
   opts: StellarBuilderOptions,
-  args: { assets: string[] }
+  args: { assets: Array<{ hubId: number; asset: string }> }
 ): BuiltStellarTx {
   return buildTx(opts, 'claim_revenue', [
     addr(opts.caller),
-    vec(args.assets.map((a) => addr(a))),
+    vec(args.assets.map((a) => hubAsset(a.hubId, a.asset))),
   ])
 }
 
-/** add_rewards(caller, rewards: Vec<(Address, i128)>) — #[only_role(caller, "REVENUE")] */
+/** add_rewards(caller, rewards: Vec<(HubAssetKey, i128)>) */
 export function buildStellarAddRewardsTx(
   opts: StellarBuilderOptions,
   args: { rewards: RewardEntry[] }
 ): BuiltStellarTx {
   return buildTx(opts, 'add_rewards', [
     addr(opts.caller),
-    vec(args.rewards.map((r) => vec([addr(r.token), i128(r.amount)]))),
+    tupleHubAssetAmountVec(args.rewards),
   ])
 }
 
@@ -613,7 +491,6 @@ export function buildStellarUpdateAccountThresholdTx(
 ): BuiltStellarTx {
   return buildTx(opts, 'update_account_threshold', [
     addr(opts.caller),
-    addr(args.asset),
     bool(args.hasRisks),
     vec(args.accountNonces.map((n) => u64(n))),
   ])

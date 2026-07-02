@@ -1,13 +1,13 @@
 /**
  * Decoders for the Stellar lending controller `#[contractevent]`s.
  *
- * The controller defines 20+ contractevents; this SDK decodes 21 of them plus the
- * pool's `strategy:fee`. Controller omissions: `config:min_borrow_collateral`
- * (a single global `i128` floor with no indexing/UI consumer — the governance
- * `SetMinBorrowCollateral` proposal already surfaces the value) and
- * `config:spoke_asset` / `config:remove_spoke_asset` (indexed by the
- * az-functions pipeline's own decoders), so `decodeStellarLendingEvent`
- * returns `null` for them like any other unhandled topic.
+ * Decodes the core protocol topics plus the pool's `strategy:fee`. Intentional
+ * omissions (decodeStellarLendingEvent returns `null` for them, like any other
+ * unhandled topic): `config:min_borrow_collateral` (a single global `i128`
+ * floor with no indexing/UI consumer), `config:spoke_asset` /
+ * `config:remove_spoke_asset` / `config:hub` / `config:approve_blend_pool` /
+ * `strategy:blend_migration` (indexed by the az-functions pipeline's own
+ * decoders).
  *
  * The public API takes base64-XDR strings (`decodeStellarLendingEvent(topicsB64,
  * dataB64)`) and parses them with this SDK's bundled `@stellar/stellar-sdk`, so
@@ -98,76 +98,68 @@ const vec = (v: unknown): readonly unknown[] => (Array.isArray(v) ? v : [])
 
 // ---- nested struct decoders -------------------------------------------------
 
-const decodeAssetConfig = (c: Raw) => ({
-  loanToValueBps: num(c.loan_to_value_bps),
-  liquidationThresholdBps: num(c.liquidation_threshold_bps),
-  liquidationBonusBps: num(c.liquidation_bonus_bps),
-  liquidationFeesBps: num(c.liquidation_fees_bps),
-  isCollateralizable: Boolean(c.is_collateralizable),
-  isBorrowable: Boolean(c.is_borrowable),
-  isFlashloanable: Boolean(c.is_flashloanable),
-  flashloanFeeBps: num(c.flashloan_fee_bps),
-  eModeCategories: ((c.e_mode_categories as unknown[]) ?? []).map(num),
-})
-
 const decodeMarketParams = (p: Raw) => ({
-  maxBorrowRateRay: dec(p.max_borrow_rate_ray),
-  baseBorrowRateRay: dec(p.base_borrow_rate_ray),
-  slope1Ray: dec(p.slope1_ray),
-  slope2Ray: dec(p.slope2_ray),
-  slope3Ray: dec(p.slope3_ray),
-  midUtilizationRay: dec(p.mid_utilization_ray),
-  optimalUtilizationRay: dec(p.optimal_utilization_ray),
-  maxUtilizationRay: optDec(p.max_utilization_ray),
-  reserveFactorBps: num(p.reserve_factor_bps),
+  maxBorrowRateRay: dec(p.max_borrow_rate),
+  baseBorrowRateRay: dec(p.base_borrow_rate),
+  slope1Ray: dec(p.slope1),
+  slope2Ray: dec(p.slope2),
+  slope3Ray: dec(p.slope3),
+  midUtilizationRay: dec(p.mid_utilization),
+  optimalUtilizationRay: dec(p.optimal_utilization),
+  maxUtilizationRay: dec(p.max_utilization),
+  reserveFactorBps: num(p.reserve_factor),
   supplyCap: dec(p.supply_cap),
   borrowCap: dec(p.borrow_cap),
-  assetId: optStr(p.asset_id),
-  assetDecimals: p.asset_decimals === undefined ? undefined : num(p.asset_decimals),
+  isFlashloanable: Boolean(p.is_flashloanable),
+  flashloanFeeBps: num(p.flashloan_fee),
+  assetId: str(p.asset_id),
+  assetDecimals: num(p.asset_decimals),
 })
 
 /**
- * Vec-encoded position delta. Deposit entries are arrays of 8
- * `[action, asset, scaled_amount_ray, index_ray, amount, liq_threshold_bps,
- * liq_bonus_bps, ltv_bps]`; borrow entries stop after `amount` (array of 5).
+ * Vec-encoded position delta. Deposit entries are arrays of 10
+ * `[action, hub_id, asset, scaled_amount_ray, index_ray, amount,
+ * liq_threshold_bps, liq_bonus_bps, ltv_bps, liq_fees_bps]`; borrow entries
+ * stop after `amount` (array of 6).
  */
 const decodePositionDelta = (e: readonly unknown[], pt: 'Deposit' | 'Borrow') => {
   const isBorrow = pt === 'Borrow'
   return {
     action: positionAction(e[0]),
     positionType: pt,
-    asset: str(e[1]),
-    scaledAmountRay: dec(e[2]),
-    indexRay: dec(e[3]),
-    amount: dec(e[4]),
+    hubId: num(e[1]),
+    asset: str(e[2]),
+    scaledAmountRay: dec(e[3]),
+    indexRay: dec(e[4]),
+    amount: dec(e[5]),
     // Borrow deltas carry no collateral risk params — surface undefined, not 0.
-    liquidationThresholdBps: isBorrow ? undefined : num(e[5]),
-    liquidationBonusBps: isBorrow ? undefined : num(e[6]),
-    loanToValueBps: isBorrow ? undefined : num(e[7]),
+    liquidationThresholdBps: isBorrow ? undefined : num(e[6]),
+    liquidationBonusBps: isBorrow ? undefined : num(e[7]),
+    loanToValueBps: isBorrow ? undefined : num(e[8]),
+    liquidationFeesBps: isBorrow ? undefined : num(e[9]),
   }
 }
 
-/** Vec-encoded account attributes: array of 3
- * `[owner, e_mode_category_id, mode]`. */
+/** Vec-encoded account attributes: array of 3 `[owner, spoke_id, mode]`. */
 const decodeAccountAttributes = (a: readonly unknown[]) => ({
   owner: str(a[0]),
-  eModeCategoryId: num(a[1]),
+  spokeId: num(a[1]),
   mode: positionMode(a[2]),
 })
 
 /** Vec-encoded market snapshot: array of 9
- * `[asset, timestamp_ms, supply_index, borrow_index, reserves, supplied,
- * borrowed, revenue, asset_price_wad?]`. */
+ * `[hub_id, asset, timestamp_ms, supply_index, borrow_index, cash, supplied,
+ * borrowed, revenue]`. */
 const decodeMarketSnapshot = (e: readonly unknown[]) => ({
-  asset: str(e[0]),
-  timestamp: num(e[1]),
-  supplyIndexRay: dec(e[2]),
-  borrowIndexRay: dec(e[3]),
-  reservesRay: dec(e[4]),
-  suppliedRay: dec(e[5]),
-  borrowedRay: dec(e[6]),
-  revenueRay: dec(e[7]),
-  assetPriceWad: optDec(e[8]),
+  hubId: num(e[0]),
+  asset: str(e[1]),
+  timestamp: num(e[2]),
+  supplyIndexRay: dec(e[3]),
+  borrowIndexRay: dec(e[4]),
+  cash: dec(e[5]),
+  suppliedRay: dec(e[6]),
+  borrowedRay: dec(e[7]),
+  revenueRay: dec(e[8]),
 })
 
 const decodeOracleSource = (o: Raw, prefix: 'primary' | 'anchor') => {
@@ -223,6 +215,7 @@ const REGISTRY: Record<string, DecoderFn> = {
   'market:create': (d) => ({
     topic: 'market:create',
     data: {
+      hubId: num(d.hub_id),
       baseAsset: str(d.base_asset),
       maxBorrowRate: dec(d.max_borrow_rate),
       baseBorrowRate: dec(d.base_borrow_rate),
@@ -231,25 +224,24 @@ const REGISTRY: Record<string, DecoderFn> = {
       slope3: dec(d.slope3),
       midUtilization: dec(d.mid_utilization),
       optimalUtilization: dec(d.optimal_utilization),
-      maxUtilization: optDec(d.max_utilization),
+      maxUtilization: dec(d.max_utilization),
       reserveFactor: num(d.reserve_factor),
       marketAddress: str(d.market_address),
-      config: decodeAssetConfig(d.config as Raw),
     },
   }),
   'market:params_update': (d) => ({
     topic: 'market:params_update',
     data: {
       asset: str(d.asset),
-      maxBorrowRateRay: dec(d.max_borrow_rate_ray),
-      baseBorrowRateRay: dec(d.base_borrow_rate_ray),
-      slope1Ray: dec(d.slope1_ray),
-      slope2Ray: dec(d.slope2_ray),
-      slope3Ray: dec(d.slope3_ray),
-      midUtilizationRay: dec(d.mid_utilization_ray),
-      optimalUtilizationRay: dec(d.optimal_utilization_ray),
-      maxUtilizationRay: optDec(d.max_utilization_ray),
-      reserveFactorBps: num(d.reserve_factor_bps),
+      maxBorrowRateRay: dec(d.max_borrow_rate),
+      baseBorrowRateRay: dec(d.base_borrow_rate),
+      slope1Ray: dec(d.slope1),
+      slope2Ray: dec(d.slope2),
+      slope3Ray: dec(d.slope3),
+      midUtilizationRay: dec(d.mid_utilization),
+      optimalUtilizationRay: dec(d.optimal_utilization),
+      maxUtilizationRay: dec(d.max_utilization),
+      reserveFactorBps: num(d.reserve_factor),
     },
   }),
   // Vec-encoded (ABI v2): data is the entries Vec directly, each an array of 9.
@@ -268,6 +260,7 @@ const REGISTRY: Record<string, DecoderFn> = {
         updates: vec(d).map((entry) => {
           const row = entry as Raw
           return {
+            hubId: num(row.hub_id),
             asset: str(row.asset),
             params: decodeMarketParams(row.params as Raw),
           }
@@ -293,16 +286,13 @@ const REGISTRY: Record<string, DecoderFn> = {
   'position:flash_loan': (d) => ({
     topic: 'position:flash_loan',
     data: {
+      hubId: num(d.hub_id),
       asset: str(d.asset),
       receiver: str(d.receiver),
       caller: str(d.caller),
       amount: dec(d.amount),
       fee: dec(d.fee),
     },
-  }),
-  'config:asset': (d) => ({
-    topic: 'config:asset',
-    data: { asset: str(d.asset), config: decodeAssetConfig(d.config as Raw) },
   }),
   'config:oracle': (d) => ({
     topic: 'config:oracle',
@@ -311,34 +301,14 @@ const REGISTRY: Record<string, DecoderFn> = {
       oracle: decodeOracleProvider(d.oracle as Raw),
     },
   }),
-  'config:emode_category': (d) => ({
-    topic: 'config:emode_category',
+  'position:liquidation': (d) => ({
+    topic: 'position:liquidation',
     data: {
-      category: {
-        categoryId: num((d.category as Raw).category_id),
-        isDeprecated: Boolean((d.category as Raw).is_deprecated),
-      },
+      liquidator: str(d.liquidator),
+      accountId: dec(d.account_id),
+      repaidUsdWad: dec(d.repaid_usd_wad),
+      bonusBps: dec(d.bonus_bps),
     },
-  }),
-  'config:emode_asset': (d) => ({
-    topic: 'config:emode_asset',
-    data: {
-      asset: str(d.asset),
-      config: {
-        isCollateralizable: Boolean((d.config as Raw).is_collateralizable),
-        isBorrowable: Boolean((d.config as Raw).is_borrowable),
-        loanToValueBps: num((d.config as Raw).loan_to_value_bps),
-        liquidationThresholdBps: num((d.config as Raw).liquidation_threshold_bps),
-        liquidationBonusBps: num((d.config as Raw).liquidation_bonus_bps),
-        supplyCap: dec((d.config as Raw).supply_cap),
-        borrowCap: dec((d.config as Raw).borrow_cap),
-      },
-      categoryId: num(d.category_id),
-    },
-  }),
-  'config:remove_emode_asset': (d) => ({
-    topic: 'config:remove_emode_asset',
-    data: { asset: str(d.asset), categoryId: num(d.category_id) },
   }),
   'debt:bad_debt': (d) => ({
     topic: 'debt:bad_debt',
@@ -360,6 +330,7 @@ const REGISTRY: Record<string, DecoderFn> = {
   'strategy:fee': (d) => ({
     topic: 'strategy:fee',
     data: {
+      hubId: num(d.hub_id),
       asset: str(d.asset),
       amount: dec(d.amount),
       fee: dec(d.fee),
@@ -400,19 +371,16 @@ const REGISTRY: Record<string, DecoderFn> = {
       data: {
         spokeId: num(s.spoke_id),
         isDeprecated: Boolean(s.is_deprecated),
-        // Curve fields are stamped at spoke creation; events emitted by
-        // pre-stamp controllers lack them, so default to '0'.
-        liquidationTargetHfWad: dec(s.liquidation_target_hf_wad ?? 0),
-        healthFactorForMaxBonusWad: dec(s.hf_for_max_bonus_wad ?? 0),
-        liquidationBonusFactorBps: num(s.liquidation_bonus_factor_bps ?? 0),
+        liquidationTargetHfWad: dec(s.liquidation_target_hf_wad),
+        healthFactorForMaxBonusWad: dec(s.hf_for_max_bonus_wad),
+        liquidationBonusFactorBps: num(s.liquidation_bonus_factor_bps),
       },
     }
   },
 }
 
-/** Topic keys this SDK can decode (21 controller contractevents plus the pool's
- * `strategy:fee`; `config:min_borrow_collateral`, `config:spoke_asset`, and
- * `config:remove_spoke_asset` are intentionally not decoded). */
+/** Topic keys this SDK can decode. See the module header for the intentional
+ * omissions. */
 export const STELLAR_LENDING_TOPICS = Object.freeze(
   Object.keys(REGISTRY)
 ) as readonly string[]

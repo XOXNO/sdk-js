@@ -16,22 +16,16 @@ import { Networks, Transaction, xdr as stellarXdr } from '@stellar/stellar-sdk'
 
 import {
   buildStellarAcceptOwnershipTx,
-  buildStellarAddAssetToEModeCategoryTx,
-  buildStellarAddEModeCategoryTx,
   buildStellarAddRewardsTx,
   buildStellarApproveTokenTx,
   buildStellarClaimRevenueTx,
-  buildStellarConfigureMarketOracleTx,
+  buildStellarSetMarketOracleConfigTx,
   buildStellarCreateLiquidityPoolTx,
   buildStellarDisableTokenOracleTx,
-  buildStellarEditAssetConfigTx,
-  buildStellarEditAssetInEModeCategoryTx,
-  buildStellarEditOracleToleranceTx,
+  buildStellarSetOracleToleranceTx,
   buildStellarGrantRoleTx,
   buildStellarMigrateTx,
   buildStellarPauseTx,
-  buildStellarRemoveAssetFromEModeTx,
-  buildStellarRemoveEModeCategoryTx,
   buildStellarRenewAccountTx,
   buildStellarRevokeRoleTx,
   buildStellarRevokeTokenTx,
@@ -46,7 +40,6 @@ import {
   buildStellarUpgradeControllerTx,
   buildStellarUpdatePoolCapsTx,
   buildStellarUpgradeLiquidityPoolParamsTx,
-  buildStellarUpgradeLiquidityPoolTx,
   type ConfigureMarketOracleArgs,
   type CreateLiquidityPoolArgs,
 } from '../admin'
@@ -94,6 +87,7 @@ const BASE_OPTS: StellarBuilderOptions = {
 // these structurally-correct fixtures cast their enum fields. The encoders
 // validate the runtime string values and the snapshots lock the bytes.
 const createPoolArgs = {
+  hubId: 1,
   asset: FIXTURE_USDC,
   params: {
     assetId: FIXTURE_USDC,
@@ -109,21 +103,13 @@ const createPoolArgs = {
     reserveFactorBps: 1000,
     supplyCap: '100000000000000',
     borrowCap: '100000000000000',
-  },
-  config: {
-    loanToValueBps: 7500,
-    liquidationThresholdBps: 8000,
-    liquidationBonusBps: 500,
-    liquidationFeesBps: 100,
-    isCollateralizable: true,
-    isBorrowable: true,
     isFlashloanable: true,
     flashloanFeeBps: 9,
-    eModeCategories: [1, 2],
   },
 } satisfies CreateLiquidityPoolArgs
 
 const configureOracleArgs = {
+  hubId: 1,
   asset: FIXTURE_USDC,
   config: {
     maxPriceStaleSeconds: 900,
@@ -259,62 +245,10 @@ const cases: Case[] = [
     build: () => buildStellarSetLiquidityPoolTemplateTx(BASE_OPTS, { wasmHash: FIXTURE_WASM_HASH }),
   },
   {
-    name: 'edit_asset_config',
-    expectedFn: 'edit_asset_config',
-    expectedArgCount: 2,
-    build: () => buildStellarEditAssetConfigTx(BASE_OPTS, { asset: FIXTURE_USDC, config: createPoolArgs.config }),
-  },
-  {
     name: 'set_position_limits',
     expectedFn: 'set_position_limits',
     expectedArgCount: 1,
     build: () => buildStellarSetPositionLimitsTx(BASE_OPTS, { maxBorrowPositions: 8, maxSupplyPositions: 16 }),
-  },
-  {
-    name: 'add_e_mode_category',
-    expectedFn: 'add_e_mode_category',
-    expectedArgCount: 0,
-    build: () => buildStellarAddEModeCategoryTx(BASE_OPTS),
-  },
-  {
-    name: 'remove_e_mode_category',
-    expectedFn: 'remove_e_mode_category',
-    expectedArgCount: 1,
-    build: () => buildStellarRemoveEModeCategoryTx(BASE_OPTS, { id: 1 }),
-  },
-  {
-    name: 'add_asset_to_e_mode_category',
-    expectedFn: 'add_asset_to_e_mode_category',
-    expectedArgCount: 1,
-    build: () =>
-      buildStellarAddAssetToEModeCategoryTx(BASE_OPTS, {
-        asset: FIXTURE_USDC,
-        categoryId: 1,
-        canCollateral: true,
-        canBorrow: false,
-        ltv: 9000,
-        threshold: 9500,
-        bonus: 200,
-        supplyCap: '0',
-        borrowCap: '0',
-      }),
-  },
-  {
-    name: 'edit_asset_in_e_mode_category',
-    expectedFn: 'edit_asset_in_e_mode_category',
-    expectedArgCount: 1,
-    build: () =>
-      buildStellarEditAssetInEModeCategoryTx(BASE_OPTS, {
-        asset: FIXTURE_USDC,
-        categoryId: 1,
-        canCollateral: true,
-        canBorrow: true,
-        ltv: 9000,
-        threshold: 9500,
-        bonus: 200,
-        supplyCap: '0',
-        borrowCap: '0',
-      }),
   },
   {
     name: 'update_pool_caps',
@@ -322,16 +256,11 @@ const cases: Case[] = [
     expectedArgCount: 3,
     build: () =>
       buildStellarUpdatePoolCapsTx(BASE_OPTS, {
+        hubId: 1,
         asset: FIXTURE_USDC,
         supplyCap: '100000000000000',
         borrowCap: '50000000000000',
       }),
-  },
-  {
-    name: 'remove_asset_from_e_mode',
-    expectedFn: 'remove_asset_from_e_mode',
-    expectedArgCount: 2,
-    build: () => buildStellarRemoveAssetFromEModeTx(BASE_OPTS, { asset: FIXTURE_USDC, categoryId: 1 }),
   },
   {
     name: 'approve_token',
@@ -346,22 +275,26 @@ const cases: Case[] = [
     build: () => buildStellarRevokeTokenTx(BASE_OPTS, { token: FIXTURE_USDC }),
   },
   {
-    name: 'configure_market_oracle',
-    expectedFn: 'configure_market_oracle',
-    expectedArgCount: 3,
-    build: () => buildStellarConfigureMarketOracleTx(BASE_OPTS, configureOracleArgs),
+    name: 'set_market_oracle_config',
+    expectedFn: 'set_market_oracle_config',
+    expectedArgCount: 2,
+    build: () => buildStellarSetMarketOracleConfigTx(BASE_OPTS, configureOracleArgs),
   },
   {
-    name: 'edit_oracle_tolerance',
-    expectedFn: 'edit_oracle_tolerance',
-    expectedArgCount: 3,
+    name: 'set_oracle_tolerance',
+    expectedFn: 'set_oracle_tolerance',
+    expectedArgCount: 2,
     build: () =>
-      buildStellarEditOracleToleranceTx(BASE_OPTS, { asset: FIXTURE_USDC, tolerance: 500 }),
+      buildStellarSetOracleToleranceTx(BASE_OPTS, {
+        asset: FIXTURE_USDC,
+        upperRatioBps: 10_500,
+        lowerRatioBps: 9_500,
+      }),
   },
   {
     name: 'disable_token_oracle',
     expectedFn: 'disable_token_oracle',
-    expectedArgCount: 2,
+    expectedArgCount: 1,
     build: () => buildStellarDisableTokenOracleTx(BASE_OPTS, { asset: FIXTURE_USDC }),
   },
   // router.rs
@@ -369,7 +302,13 @@ const cases: Case[] = [
     name: 'update_indexes',
     expectedFn: 'update_indexes',
     expectedArgCount: 2,
-    build: () => buildStellarUpdateIndexesTx(BASE_OPTS, { assets: [FIXTURE_USDC, FIXTURE_XLM] }),
+    build: () =>
+      buildStellarUpdateIndexesTx(BASE_OPTS, {
+        assets: [
+          { hubId: 1, asset: FIXTURE_USDC },
+          { hubId: 1, asset: FIXTURE_XLM },
+        ],
+      }),
   },
   {
     name: 'renew_account',
@@ -388,34 +327,39 @@ const cases: Case[] = [
     expectedFn: 'upgrade_liquidity_pool_params',
     expectedArgCount: 2,
     build: () =>
-      buildStellarUpgradeLiquidityPoolParamsTx(BASE_OPTS, { asset: FIXTURE_USDC, params: createPoolArgs.params }),
-  },
-  {
-    name: 'upgrade_liquidity_pool',
-    expectedFn: 'upgrade_liquidity_pool',
-    expectedArgCount: 2,
-    build: () => buildStellarUpgradeLiquidityPoolTx(BASE_OPTS, { asset: FIXTURE_USDC, wasmHash: FIXTURE_WASM_HASH }),
+      buildStellarUpgradeLiquidityPoolParamsTx(BASE_OPTS, {
+        hubId: 1,
+        asset: FIXTURE_USDC,
+        params: createPoolArgs.params,
+      }),
   },
   {
     name: 'claim_revenue',
     expectedFn: 'claim_revenue',
     expectedArgCount: 2,
-    build: () => buildStellarClaimRevenueTx(BASE_OPTS, { assets: [FIXTURE_USDC, FIXTURE_XLM] }),
+    build: () =>
+      buildStellarClaimRevenueTx(BASE_OPTS, {
+        assets: [
+          { hubId: 1, asset: FIXTURE_USDC },
+          { hubId: 1, asset: FIXTURE_XLM },
+        ],
+      }),
   },
   {
     name: 'add_rewards',
     expectedFn: 'add_rewards',
     expectedArgCount: 2,
     build: () =>
-      buildStellarAddRewardsTx(BASE_OPTS, { rewards: [{ token: FIXTURE_USDC, amount: '1000000' }] }),
+      buildStellarAddRewardsTx(BASE_OPTS, {
+        rewards: [{ hubId: 1, asset: FIXTURE_USDC, amount: '1000000' }],
+      }),
   },
   {
     name: 'update_account_threshold',
     expectedFn: 'update_account_threshold',
-    expectedArgCount: 4,
+    expectedArgCount: 3,
     build: () =>
       buildStellarUpdateAccountThresholdTx(BASE_OPTS, {
-        asset: FIXTURE_USDC,
         hasRisks: true,
         accountNonces: [1, 2, 3],
       }),
@@ -458,42 +402,30 @@ describe('Stellar lending admin builders', () => {
 // -----------------------------------------------------------------------------
 
 describe('complex struct encoding', () => {
-  it('AssetConfigRaw is an scvMap with 10 ascending-sorted keys', () => {
+  it('MarketParamsRaw is an scvMap with 15 ascending-sorted keys', () => {
     const parsed = parseInvoked(
       buildStellarCreateLiquidityPoolTx(BASE_OPTS, createPoolArgs).xdr
     )
-    // create_liquidity_pool(asset, params, config) → config is arg index 2.
+    // create_liquidity_pool(hub_id, asset, params) → params is arg index 2.
     const keys = mapKeys(parsed.args[2]!)
-    expect(keys).toHaveLength(10)
-    expect(isAscending(keys)).toBe(true)
-    expect(keys).toContain('e_mode_categories')
-    // `asset_decimals` is derived on-chain but must be present, or the contract's
-    // 10-field struct decodes as a 9-entry map and traps with Object/UnexpectedSize.
-    expect(keys).toContain('asset_decimals')
-    expect(keys).not.toContain('liquidationFeesBps') // snake_case only
-  })
-
-  it('MarketParamsRaw is an scvMap with 13 ascending-sorted keys', () => {
-    const parsed = parseInvoked(
-      buildStellarCreateLiquidityPoolTx(BASE_OPTS, createPoolArgs).xdr
-    )
-    const keys = mapKeys(parsed.args[1]!)
-    expect(keys).toHaveLength(13)
+    expect(keys).toHaveLength(15)
     expect(isAscending(keys)).toBe(true)
     expect(keys).toEqual(
       [
         'asset_decimals',
         'asset_id',
-        'base_borrow_rate_ray',
+        'base_borrow_rate',
         'borrow_cap',
-        'max_borrow_rate_ray',
-        'max_utilization_ray',
-        'mid_utilization_ray',
-        'optimal_utilization_ray',
-        'reserve_factor_bps',
-        'slope1_ray',
-        'slope2_ray',
-        'slope3_ray',
+        'flashloan_fee',
+        'is_flashloanable',
+        'max_borrow_rate',
+        'max_utilization',
+        'mid_utilization',
+        'optimal_utilization',
+        'reserve_factor',
+        'slope1',
+        'slope2',
+        'slope3',
         'supply_cap',
       ].sort()
     )
@@ -501,10 +433,10 @@ describe('complex struct encoding', () => {
 
   it('MarketOracleConfigInput is sorted; primary is a Reflector union, anchor is Some(RedStone)', () => {
     const parsed = parseInvoked(
-      buildStellarConfigureMarketOracleTx(BASE_OPTS, configureOracleArgs).xdr
+      buildStellarSetMarketOracleConfigTx(BASE_OPTS, configureOracleArgs).xdr
     )
-    // configure_market_oracle(caller, asset, cfg) → cfg is arg index 2.
-    const cfg = parsed.args[2]!
+    // set_market_oracle_config(hub_asset, cfg) → cfg is arg index 1.
+    const cfg = parsed.args[1]!
     const keys = mapKeys(cfg)
     expect(isAscending(keys)).toBe(true)
     expect(keys).toEqual([
@@ -546,36 +478,27 @@ describe('complex struct encoding', () => {
   })
 
   it('encodes each struct field at its correct ScVal width (i128 vs u64 vs u32 vs bool)', () => {
-    // AssetConfigRaw — bps are u32, caps/floors/ceilings are i128, flags are bool.
-    const acfg = parseInvoked(
-      buildStellarCreateLiquidityPoolTx(BASE_OPTS, createPoolArgs).xdr
-    ).args[2]!
-    const acfgEntries = acfg.map()!
-    const acfgField = (name: string) =>
-      acfgEntries.find((e) => e.key().sym().toString() === name)!.val()
-    expect(acfgField('loan_to_value_bps').switch().name).toBe('scvU32')
-    expect(acfgField('flashloan_fee_bps').switch().name).toBe('scvU32')
-    expect(acfgField('is_borrowable').switch().name).toBe('scvBool')
-    expect(acfgField('e_mode_categories').switch().name).toBe('scvVec')
-
-    // MarketParamsRaw — RAY rates are i128, decimals/reserve are u32, asset is address.
+    // MarketParamsRaw — RAY rates are i128, decimals/reserve are u32, asset is
+    // address, flash-loan flag is bool.
     const params = parseInvoked(
       buildStellarCreateLiquidityPoolTx(BASE_OPTS, createPoolArgs).xdr
-    ).args[1]!
+    ).args[2]!
     const pEntries = params.map()!
     const pField = (name: string) =>
       pEntries.find((e) => e.key().sym().toString() === name)!.val()
-    expect(pField('max_borrow_rate_ray').switch().name).toBe('scvI128')
-    expect(pField('reserve_factor_bps').switch().name).toBe('scvU32')
+    expect(pField('max_borrow_rate').switch().name).toBe('scvI128')
+    expect(pField('reserve_factor').switch().name).toBe('scvU32')
     expect(pField('asset_decimals').switch().name).toBe('scvU32')
     expect(pField('asset_id').switch().name).toBe('scvAddress')
     expect(pField('supply_cap').switch().name).toBe('scvI128')
     expect(pField('borrow_cap').switch().name).toBe('scvI128')
+    expect(pField('is_flashloanable').switch().name).toBe('scvBool')
+    expect(pField('flashloan_fee').switch().name).toBe('scvU32')
 
     // MarketOracleConfigInput — stale seconds are u64, tolerances u32, sanity i128.
     const cfg = parseInvoked(
-      buildStellarConfigureMarketOracleTx(BASE_OPTS, configureOracleArgs).xdr
-    ).args[2]!
+      buildStellarSetMarketOracleConfigTx(BASE_OPTS, configureOracleArgs).xdr
+    ).args[1]!
     const cEntries = cfg.map()!
     const cField = (name: string) =>
       cEntries.find((e) => e.key().sym().toString() === name)!.val()
@@ -587,6 +510,7 @@ describe('complex struct encoding', () => {
 
   it('anchor omitted → custom-option None tag', () => {
     const noAnchor = {
+      hubId: 1,
       asset: FIXTURE_USDC,
       config: {
         ...(configureOracleArgs.config as unknown as Record<string, unknown>),
@@ -595,9 +519,9 @@ describe('complex struct encoding', () => {
       },
     } as unknown as ConfigureMarketOracleArgs
     const parsed = parseInvoked(
-      buildStellarConfigureMarketOracleTx(BASE_OPTS, noAnchor).xdr
+      buildStellarSetMarketOracleConfigTx(BASE_OPTS, noAnchor).xdr
     )
-    const cfg = parsed.args[2]!
+    const cfg = parsed.args[1]!
     const anchor = cfg
       .map()!
       .find((e) => e.key().sym().toString() === 'anchor')!

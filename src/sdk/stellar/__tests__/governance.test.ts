@@ -78,6 +78,7 @@ describe('Stellar lending governance builders', () => {
         buildStellarProposeUpdatePoolCapsTx(
           BASE_OPTS,
           {
+            hubId: 1,
             asset: FIXTURE_USDC,
             supplyCap: '100000000000000',
             borrowCap: '50000000000000',
@@ -197,12 +198,13 @@ describe('Stellar lending governance builders', () => {
       )
     })
 
-    it('UpdatePoolCaps (struct field order: asset, borrow_cap, supply_cap)', () => {
+    it('UpdatePoolCaps (struct field order: borrow_cap, hub_asset, supply_cap)', () => {
       expect(
         opXdr(
           buildStellarProposeUpdatePoolCapsTx(
             BASE_OPTS,
             {
+              hubId: 1,
               asset: PARITY_ADDR,
               supplyCap: '100000000000000',
               borrowCap: '50000000000000',
@@ -211,7 +213,7 @@ describe('Stellar lending governance builders', () => {
           ).xdr
         )
       ).toBe(
-        'AAAAEAAAAAEAAAACAAAADwAAAA5VcGRhdGVQb29sQ2FwcwAAAAAAEQAAAAEAAAADAAAADwAAAAVhc3NldAAAAAAAABIAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAPAAAACmJvcnJvd19jYXAAAAAAAAoAAAAAAAAAAAAALXmIPSAAAAAADwAAAApzdXBwbHlfY2FwAAAAAAAKAAAAAAAAAAAAAFrzEHpAAA=='
+        'AAAAEAAAAAEAAAACAAAADwAAAA5VcGRhdGVQb29sQ2FwcwAAAAAAEQAAAAEAAAADAAAADwAAAApib3Jyb3dfY2FwAAAAAAAKAAAAAAAAAAAAAC15iD0gAAAAAA8AAAAJaHViX2Fzc2V0AAAAAAAAEQAAAAEAAAACAAAADwAAAAVhc3NldAAAAAAAABIAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAPAAAABmh1Yl9pZAAAAAAAAwAAAAEAAAAPAAAACnN1cHBseV9jYXAAAAAAAAoAAAAAAAAAAAAAWvMQekAA'
       )
     })
   })

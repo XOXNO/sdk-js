@@ -30,7 +30,6 @@ const sym = (s: string): xdr.ScVal => xdr.ScVal.scvSymbol(s)
 const u32 = (n: number): xdr.ScVal => xdr.ScVal.scvU32(n)
 const u64 = (n: bigint): xdr.ScVal => nativeToScVal(n, { type: 'u64' })
 const i128 = (n: bigint): xdr.ScVal => nativeToScVal(n, { type: 'i128' })
-const none = (): xdr.ScVal => xdr.ScVal.scvVoid()
 const vecV = (items: xdr.ScVal[]): xdr.ScVal => xdr.ScVal.scvVec(items)
 const mapV = (entries: Record<string, xdr.ScVal>): xdr.ScVal =>
   xdr.ScVal.scvMap(
@@ -51,10 +50,12 @@ const ASSET_B = Address.contract(Buffer.alloc(32, 2)).toString()
 
 const RAY = 10n ** 27n
 
-/** Deposit entry: array of 8 `[action, asset, scaled, index, amount, lt, lb, ltv]`. */
+/** Deposit entry: array of 10
+ * `[action, hub_id, asset, scaled, index, amount, lt, lb, ltv, liq_fees]`. */
 const depositEntry = (action: number, asset: string, amount: bigint): xdr.ScVal =>
   vecV([
     u32(action),
+    u32(1),
     addrV(asset),
     i128(amount * 10n ** 9n),
     i128(RAY),
@@ -62,15 +63,26 @@ const depositEntry = (action: number, asset: string, amount: bigint): xdr.ScVal 
     u32(8000),
     u32(500),
     u32(7500),
+    u32(100),
   ])
 
-/** Borrow entry: array of 5 `[action, asset, scaled, index, amount]`. */
+/** Borrow entry: array of 6 `[action, hub_id, asset, scaled, index, amount]`. */
 const borrowEntry = (action: number, asset: string, amount: bigint): xdr.ScVal =>
-  vecV([u32(action), addrV(asset), i128(amount * 10n ** 9n), i128(RAY), i128(amount)])
-
-/** Market entry: array of 9, trailing `asset_price_wad` is `Option<i128>`. */
-const marketEntry = (asset: string, priceWad: bigint | null): xdr.ScVal =>
   vecV([
+    u32(action),
+    u32(1),
+    addrV(asset),
+    i128(amount * 10n ** 9n),
+    i128(RAY),
+    i128(amount),
+  ])
+
+/** Market entry: array of 9
+ * `[hub_id, asset, ts, supply_index, borrow_index, cash, supplied, borrowed,
+ * revenue]`. */
+const marketEntry = (asset: string): xdr.ScVal =>
+  vecV([
+    u32(1),
     addrV(asset),
     u64(1718000000000n),
     i128(1050000000000000000000000000n),
@@ -79,7 +91,6 @@ const marketEntry = (asset: string, priceWad: bigint | null): xdr.ScVal =>
     i128(500n * RAY),
     i128(300n * RAY),
     i128(2n * RAY),
-    priceWad === null ? none() : i128(priceWad),
   ])
 
 const V2_FIXTURES: Fixture[] = [
@@ -112,8 +123,87 @@ const V2_FIXTURES: Fixture[] = [
   {
     topic: 'market:batch_state_update',
     topics: topicsFor('market', 'batch_state_update'),
-    // Data is the entries Vec directly — price present, then absent.
-    data: b64(vecV([marketEntry(ASSET_A, 1230000000000000000n), marketEntry(ASSET_B, null)])),
+    // Data is the entries Vec directly.
+    data: b64(vecV([marketEntry(ASSET_A), marketEntry(ASSET_B)])),
+  },
+  {
+    topic: 'market:create',
+    topics: topicsFor('market', 'create'),
+    data: b64(
+      mapV({
+        hub_id: u32(1),
+        base_asset: addrV(ASSET_A),
+        max_borrow_rate: i128(2000000000000000000000000000n),
+        base_borrow_rate: i128(10000000000000000000000000n),
+        slope1: i128(40000000000000000000000000n),
+        slope2: i128(80000000000000000000000000n),
+        slope3: i128(1000000000000000000000000000n),
+        mid_utilization: i128(450000000000000000000000000n),
+        optimal_utilization: i128(800000000000000000000000000n),
+        max_utilization: i128(950000000000000000000000000n),
+        reserve_factor: u32(1000),
+        market_address: addrV(ASSET_B),
+      })
+    ),
+  },
+  {
+    topic: 'market:params_update',
+    topics: topicsFor('market', 'params_update'),
+    data: b64(
+      mapV({
+        asset: addrV(ASSET_A),
+        max_borrow_rate: i128(2000000000000000000000000000n),
+        base_borrow_rate: i128(10000000000000000000000000n),
+        slope1: i128(40000000000000000000000000n),
+        slope2: i128(80000000000000000000000000n),
+        slope3: i128(1000000000000000000000000000n),
+        mid_utilization: i128(450000000000000000000000000n),
+        optimal_utilization: i128(800000000000000000000000000n),
+        max_utilization: i128(950000000000000000000000000n),
+        reserve_factor: u32(1000),
+      })
+    ),
+  },
+  {
+    topic: 'position:flash_loan',
+    topics: topicsFor('position', 'flash_loan'),
+    data: b64(
+      mapV({
+        hub_id: u32(2),
+        asset: addrV(ASSET_A),
+        receiver: addrV(ASSET_B),
+        caller: addrV(ASSET_B),
+        amount: i128(1000000000n),
+        fee: i128(900000n),
+      })
+    ),
+  },
+  {
+    topic: 'strategy:fee',
+    topics: topicsFor('strategy', 'fee'),
+    data: b64(
+      mapV({
+        hub_id: u32(2),
+        asset: addrV(ASSET_A),
+        amount: i128(1000000000n),
+        fee: i128(10000000n),
+        amount_sent: i128(990000000n),
+      })
+    ),
+  },
+  {
+    topic: 'position:liquidation',
+    topics: topicsFor('position', 'liquidation'),
+    data: b64(
+      mapV({
+        liquidator: xdr.ScVal.scvAddress(
+          Address.fromString(OWNER).toScAddress()
+        ),
+        account_id: u64(42n),
+        repaid_usd_wad: i128(125000000000000000000n),
+        bonus_bps: i128(350n),
+      })
+    ),
   },
   {
     topic: 'config:spoke',
@@ -148,9 +238,9 @@ const decodeFixture = (t: string) => {
 }
 
 describe('decodeStellarLendingEvent — real fixtures', () => {
-  it('has a decoder for all 21 lending events and decodes every fixture', () => {
-    expect(STELLAR_LENDING_TOPICS).toHaveLength(21)
-    expect(FIXTURES.length).toBeGreaterThanOrEqual(21)
+  it('has a decoder for all 18 lending events and decodes every fixture', () => {
+    expect(STELLAR_LENDING_TOPICS).toHaveLength(18)
+    expect(FIXTURES.length).toBeGreaterThanOrEqual(18)
     for (const f of FIXTURES) {
       const ev = decodeStellarLendingEvent(f.topics, f.data)
       expect(ev).not.toBeNull()
@@ -176,12 +266,12 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
   it('decodes bigints (i128/u64) as decimal strings, u32 as numbers', () => {
     const ev = decodeFixture('market:create')
     if (ev.topic !== 'market:create') throw new Error('narrow')
+    expect(ev.data.hubId).toBe(1)
     expect(ev.data.maxBorrowRate).toBe('2000000000000000000000000000')
     expect(ev.data.baseBorrowRate).toBe('10000000000000000000000000')
+    expect(ev.data.maxUtilization).toBe('950000000000000000000000000')
     expect(ev.data.reserveFactor).toBe(1000)
     expect(ev.data.baseAsset).toMatch(/^C[A-Z2-7]{55}$/)
-    expect(ev.data.config.eModeCategories).toEqual([1, 2])
-    expect(ev.data.config.liquidationFeesBps).toBe(100)
   })
 
   it('position:batch_update (vec ABI v2) — merges deposits then borrows, maps action strings', () => {
@@ -190,7 +280,7 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(ev.data.accountId).toBe('42')
     expect(ev.data.accountAttributes.owner).toBe(OWNER)
     expect(ev.data.accountAttributes.mode).toBe('Multiply')
-    expect(ev.data.accountAttributes.eModeCategoryId).toBe(1)
+    expect(ev.data.accountAttributes.spokeId).toBe(1)
 
     // Merged order: ALL deposit entries first (in order), then all borrows.
     expect(ev.data.updates).toHaveLength(4)
@@ -207,6 +297,7 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
       'liq_repay',
     ])
     const [deposit, deposit2, borrow] = ev.data.updates
+    expect(deposit!.hubId).toBe(1)
     expect(deposit!.asset).toBe(ASSET_A)
     expect(deposit2!.asset).toBe(ASSET_B)
     expect(deposit!.amount).toBe('1000000')
@@ -215,16 +306,16 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(deposit!.liquidationThresholdBps).toBe(8000)
     expect(deposit!.liquidationBonusBps).toBe(500)
     expect(deposit!.loanToValueBps).toBe(7500)
+    expect(deposit!.liquidationFeesBps).toBe(100)
 
+    expect(borrow!.hubId).toBe(1)
     expect(borrow!.asset).toBe(ASSET_B)
     expect(borrow!.amount).toBe('500000')
     // Borrow risk params are not applicable → undefined, NOT 0.
     expect(borrow!.liquidationThresholdBps).toBeUndefined()
     expect(borrow!.liquidationBonusBps).toBeUndefined()
     expect(borrow!.loanToValueBps).toBeUndefined()
-    // assetPriceWad left the position-delta wire format in ABI v2.
-    expect(Object.keys(deposit as object)).not.toContain('assetPriceWad')
-    expect(Object.keys(borrow as object)).not.toContain('assetPriceWad')
+    expect(borrow!.liquidationFeesBps).toBeUndefined()
   })
 
   it('position:batch_update — unknown action discriminant decodes as its decimal string', () => {
@@ -236,22 +327,21 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(ev.data.updates.map((u) => u.action)).toEqual(['99', 'supply'])
   })
 
-  it('market:batch_state_update (vec ABI v2) — price present and absent (null)', () => {
+  it('market:batch_state_update (vec ABI v2) — hub_id-keyed snapshots', () => {
     const ev = decodeFixture('market:batch_state_update')
     if (ev.topic !== 'market:batch_state_update') throw new Error('narrow')
     expect(ev.data.updates).toHaveLength(2)
-    const [withPrice, withoutPrice] = ev.data.updates
-    expect(withPrice!.asset).toBe(ASSET_A)
-    expect(withPrice!.timestamp).toBe(1718000000000)
-    expect(withPrice!.supplyIndexRay).toBe('1050000000000000000000000000')
-    expect(withPrice!.borrowIndexRay).toBe('1100000000000000000000000000')
-    expect(withPrice!.reservesRay).toBe((7n * RAY).toString())
-    expect(withPrice!.suppliedRay).toBe((500n * RAY).toString())
-    expect(withPrice!.borrowedRay).toBe((300n * RAY).toString())
-    expect(withPrice!.revenueRay).toBe((2n * RAY).toString())
-    expect(withPrice!.assetPriceWad).toBe('1230000000000000000')
-    expect(withoutPrice!.asset).toBe(ASSET_B)
-    expect(withoutPrice!.assetPriceWad).toBeUndefined()
+    const [first, second] = ev.data.updates
+    expect(first!.hubId).toBe(1)
+    expect(first!.asset).toBe(ASSET_A)
+    expect(first!.timestamp).toBe(1718000000000)
+    expect(first!.supplyIndexRay).toBe('1050000000000000000000000000')
+    expect(first!.borrowIndexRay).toBe('1100000000000000000000000000')
+    expect(first!.cash).toBe((7n * RAY).toString())
+    expect(first!.suppliedRay).toBe((500n * RAY).toString())
+    expect(first!.borrowedRay).toBe((300n * RAY).toString())
+    expect(first!.revenueRay).toBe((2n * RAY).toString())
+    expect(second!.asset).toBe(ASSET_B)
   })
 
   // Regression: `market:batch_params_update` is single-value — `data` is the
@@ -262,25 +352,30 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     const params = mapV({
       asset_decimals: u32(7),
       asset_id: addrV(ASSET_A),
-      base_borrow_rate_ray: i128(10000000000000000000000000n),
+      base_borrow_rate: i128(10000000000000000000000000n),
       borrow_cap: i128(50000000000000n),
-      max_borrow_rate_ray: i128(800000000000000000000000000n),
-      max_utilization_ray: i128(900000000000000000000000000n),
-      mid_utilization_ray: i128(500000000000000000000000000n),
-      optimal_utilization_ray: i128(800000000000000000000000000n),
-      reserve_factor_bps: u32(2000),
-      slope1_ray: i128(40000000000000000000000000n),
-      slope2_ray: i128(100000000000000000000000000n),
-      slope3_ray: i128(250000000000000000000000000n),
+      flashloan_fee: u32(9),
+      is_flashloanable: xdr.ScVal.scvBool(true),
+      max_borrow_rate: i128(800000000000000000000000000n),
+      max_utilization: i128(900000000000000000000000000n),
+      mid_utilization: i128(500000000000000000000000000n),
+      optimal_utilization: i128(800000000000000000000000000n),
+      reserve_factor: u32(2000),
+      slope1: i128(40000000000000000000000000n),
+      slope2: i128(100000000000000000000000000n),
+      slope3: i128(250000000000000000000000000n),
       supply_cap: i128(50000000000000n),
     })
-    const data = b64(vecV([mapV({ asset: addrV(ASSET_A), params })]))
+    const data = b64(
+      vecV([mapV({ asset: addrV(ASSET_A), hub_id: u32(1), params })])
+    )
     const ev = decodeStellarLendingEvent(
       topicsFor('market', 'batch_params_update'),
       data
     )
     if (!ev || ev.topic !== 'market:batch_params_update') throw new Error('narrow')
     expect(ev.data.updates).toHaveLength(1)
+    expect(ev.data.updates[0]!.hubId).toBe(1)
     expect(ev.data.updates[0]!.asset).toBe(ASSET_A)
     expect(ev.data.updates[0]!.params.supplyCap).toBe('50000000000000')
     expect(ev.data.updates[0]!.params.borrowCap).toBe('50000000000000')
@@ -292,10 +387,26 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
   it('decodes strategy:fee — i128 amounts as decimal strings', () => {
     const ev = decodeFixture('strategy:fee')
     if (ev.topic !== 'strategy:fee') throw new Error('narrow')
+    expect(ev.data.hubId).toBe(2)
     expect(ev.data.asset).toMatch(/^C[A-Z2-7]{55}$/)
     expect(ev.data.amount).toBe('1000000000')
     expect(ev.data.fee).toBe('10000000')
     expect(ev.data.amountSent).toBe('990000000')
+  })
+
+  it('position:flash_loan and position:liquidation decode hub/actor fields', () => {
+    const flash = decodeFixture('position:flash_loan')
+    if (flash.topic !== 'position:flash_loan') throw new Error('narrow')
+    expect(flash.data.hubId).toBe(2)
+    expect(flash.data.amount).toBe('1000000000')
+    expect(flash.data.fee).toBe('900000')
+
+    const liq = decodeFixture('position:liquidation')
+    if (liq.topic !== 'position:liquidation') throw new Error('narrow')
+    expect(liq.data.liquidator).toBe(OWNER)
+    expect(liq.data.accountId).toBe('42')
+    expect(liq.data.repaidUsdWad).toBe('125000000000000000000')
+    expect(liq.data.bonusBps).toBe('350')
   })
 
   it('config:oracle — reconstructs primary/anchor sources + tolerance', () => {

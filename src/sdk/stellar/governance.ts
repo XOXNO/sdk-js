@@ -36,17 +36,12 @@ import {
 } from '@stellar/stellar-sdk'
 
 import {
-  encodeAssetConfigRaw,
   encodeInterestRateModel,
   encodeMarketOracleConfigInput,
   encodeMarketParamsRaw,
   encodePositionLimits,
   type ConfigureMarketOracleArgs,
   type CreateLiquidityPoolArgs,
-  type EditAssetConfigArgs,
-  type EditOracleToleranceArgs,
-  type EModeAssetArgs,
-  type RemoveEModeAssetArgs,
   type RoleGrantArgs,
   type TransferOwnershipArgs,
   type UpdatePoolCapsArgs,
@@ -59,8 +54,8 @@ import {
 import type { BuiltStellarTx, StellarBuilderOptions } from './lending'
 import {
   addr,
-  bool,
   bytesN,
+  hubAsset,
   i128,
   scStruct,
   sym,
@@ -115,44 +110,25 @@ const adminOp = (variant: string, ...payload: xdr.ScVal[]): xdr.ScVal =>
 // names (snake_case); `scStruct` sorts them lexicographically into the `scvMap`
 // layout the contract decodes. Builder arg interfaces stay camelCase.
 
-const encodeEModeAssetArgs = (a: EModeAssetArgs): xdr.ScVal =>
-  scStruct({
-    asset: addr(a.asset),
-    category_id: u32(a.categoryId),
-    can_collateral: bool(a.canCollateral),
-    can_borrow: bool(a.canBorrow),
-    ltv: u32(a.ltv),
-    threshold: u32(a.threshold),
-    bonus: u32(a.bonus),
-    supply_cap: i128(a.supplyCap),
-    borrow_cap: i128(a.borrowCap),
-  })
-
 const encodePoolCapsArgs = (a: UpdatePoolCapsArgs): xdr.ScVal =>
   scStruct({
-    asset: addr(a.asset),
-    supply_cap: i128(a.supplyCap),
     borrow_cap: i128(a.borrowCap),
-  })
-
-const encodeRemoveAssetFromEModeArgs = (a: RemoveEModeAssetArgs): xdr.ScVal =>
-  scStruct({
-    asset: addr(a.asset),
-    category_id: u32(a.categoryId),
+    hub_asset: hubAsset(a.hubId, a.asset),
+    supply_cap: i128(a.supplyCap),
   })
 
 const encodeCreatePoolArgs = (a: CreateLiquidityPoolArgs): xdr.ScVal =>
   scStruct({
     asset: addr(a.asset),
+    hub_id: u32(a.hubId),
     params: encodeMarketParamsRaw(a.params),
-    config: encodeAssetConfigRaw(a.config),
   })
 
 const encodeUpgradePoolParamsArgs = (
   a: UpgradeLiquidityPoolParamsArgs
 ): xdr.ScVal =>
   scStruct({
-    asset: addr(a.asset),
+    hub_asset: hubAsset(a.hubId, a.asset),
     params: encodeInterestRateModel(a.params),
   })
 
@@ -164,11 +140,17 @@ const encodeTransferOwnershipArgs = (a: TransferOwnershipArgs): xdr.ScVal =>
 
 const encodeConfigureOracleArgs = (a: ConfigureMarketOracleArgs): xdr.ScVal =>
   scStruct({
-    asset: addr(a.asset),
     cfg: encodeMarketOracleConfigInput(a.config),
+    hub_asset: hubAsset(a.hubId, a.asset),
   })
 
-const encodeEditToleranceArgs = (a: EditOracleToleranceArgs): xdr.ScVal =>
+/** Governance derives the OraclePriceFluctuation on-chain from one bps value. */
+export interface EditOracleToleranceProposalArgs {
+  asset: string
+  tolerance: number
+}
+
+const encodeEditToleranceArgs = (a: EditOracleToleranceProposalArgs): xdr.ScVal =>
   scStruct({
     asset: addr(a.asset),
     tolerance: u32(a.tolerance),
@@ -239,9 +221,6 @@ const buildExecuteSelf = (
 // Builder argument shapes (SDK-local)
 // -----------------------------------------------------------------------------
 
-export interface RemoveEModeCategoryArgs {
-  id: number
-}
 export interface UpgradeArgs {
   wasmHash: string
 }
@@ -291,19 +270,6 @@ export function buildStellarProposeSetPoolTemplateTx(
   )
 }
 
-/** propose(EditAssetConfig(asset, cfg)) */
-export function buildStellarProposeEditAssetConfigTx(
-  opts: StellarBuilderOptions,
-  args: EditAssetConfigArgs,
-  salt: StellarGovernanceSalt
-): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    adminOp('EditAssetConfig', addr(args.asset), encodeAssetConfigRaw(args.config)),
-    salt
-  )
-}
-
 /** propose(SetPositionLimits(limits)) */
 export function buildStellarProposeSetPositionLimitsTx(
   opts: StellarBuilderOptions,
@@ -330,49 +296,6 @@ export function buildStellarProposeSetMinBorrowCollatTx(
   )
 }
 
-/** propose(AddEModeCategory) — risk params are per-asset */
-export function buildStellarProposeAddEModeCategoryTx(
-  opts: StellarBuilderOptions,
-  salt: StellarGovernanceSalt
-): BuiltStellarTx {
-  return buildPropose(opts, adminOp('AddEModeCategory'), salt)
-}
-
-/** propose(RemoveEModeCategory(id)) */
-export function buildStellarProposeRemoveEModeCategoryTx(
-  opts: StellarBuilderOptions,
-  args: RemoveEModeCategoryArgs,
-  salt: StellarGovernanceSalt
-): BuiltStellarTx {
-  return buildPropose(opts, adminOp('RemoveEModeCategory', u32(args.id)), salt)
-}
-
-/** propose(AddAssetToEModeCategory(EModeAssetArgs)) */
-export function buildStellarProposeAddAssetToEModeTx(
-  opts: StellarBuilderOptions,
-  args: EModeAssetArgs,
-  salt: StellarGovernanceSalt
-): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    adminOp('AddAssetToEModeCategory', encodeEModeAssetArgs(args)),
-    salt
-  )
-}
-
-/** propose(EditAssetInEModeCategory(EModeAssetArgs)) */
-export function buildStellarProposeEditAssetInEModeTx(
-  opts: StellarBuilderOptions,
-  args: EModeAssetArgs,
-  salt: StellarGovernanceSalt
-): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    adminOp('EditAssetInEModeCategory', encodeEModeAssetArgs(args)),
-    salt
-  )
-}
-
 /** propose(UpdatePoolCaps(PoolCapsArgs)) */
 export function buildStellarProposeUpdatePoolCapsTx(
   opts: StellarBuilderOptions,
@@ -382,19 +305,6 @@ export function buildStellarProposeUpdatePoolCapsTx(
   return buildPropose(
     opts,
     adminOp('UpdatePoolCaps', encodePoolCapsArgs(args)),
-    salt
-  )
-}
-
-/** propose(RemoveAssetFromEMode(RemoveAssetFromEModeArgs)) */
-export function buildStellarProposeRemoveAssetFromEModeTx(
-  opts: StellarBuilderOptions,
-  args: RemoveEModeAssetArgs,
-  salt: StellarGovernanceSalt
-): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    adminOp('RemoveAssetFromEMode', encodeRemoveAssetFromEModeArgs(args)),
     salt
   )
 }
@@ -551,7 +461,7 @@ export function buildStellarProposeConfigureMarketOracleTx(
 /** propose(EditOracleTolerance(EditToleranceArgs)) */
 export function buildStellarProposeEditOracleToleranceTx(
   opts: StellarBuilderOptions,
-  args: EditOracleToleranceArgs,
+  args: EditOracleToleranceProposalArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
   return buildPropose(
