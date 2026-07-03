@@ -617,6 +617,9 @@ sdk.liquid.egld.executeDelegate(...); // string
 // GET /liquid/egld/execute-undelegate
 sdk.liquid.egld.executeUndelegate(...); // string
 
+// GET /liquid/egld/execute-undelegate-providers
+sdk.liquid.egld.executeUndelegateProviders(...); // string
+
 // GET /liquid/egld/protocol-apr
 sdk.liquid.egld.protocolApr(...); // ProtocolAprType
 
@@ -751,6 +754,117 @@ sdk.stellar.tokens(...); // TokenDataDocHydrated[]
 
 // GET /stellar/aggregator/quote
 sdk.stellar.aggregator.quote(...); // SoroswapQuoteResponseDto
+
+// GET /stellar-lending/assets
+sdk.stellarLending.assets(...); // StellarAssetListItemDto[]
+
+// GET /stellar-lending/context
+sdk.stellarLending.context(...); // StellarLendingContextDto
+
+// GET /stellar-lending/hubs
+sdk.stellarLending.hubs(...); // StellarHubListItemDto[]
+
+// GET /stellar-lending/spokes
+sdk.stellarLending.spokes(...); // StellarSpokeListItemDto[]
+
+// GET /stellar-lending/reserves
+sdk.stellarLending.reserves(...); // StellarReserveListItemDto[]
+
+// GET /stellar-lending/reserves/:spokeId/:hubId/:asset
+sdk.stellarLending.reserves.spokeId("...").hubId("...").asset("...")(...); // ReserveDto
+
+// GET /stellar-lending/reserves/:spokeId/:hubId/:asset/holders
+sdk.stellarLending.reserves.spokeId("...").hubId("...").asset("...").holders(...); // TopHoldersDto
+
+// GET /stellar-lending/hubs/:hubId/holders
+sdk.stellarLending.hubs.hubId("...").holders(...); // TopHoldersDto
+
+// GET /stellar-lending/spokes/:spokeId/holders
+sdk.stellarLending.spokes.spokeId("...").holders(...); // TopHoldersDto
+
+// GET /stellar-lending/assets/:asset
+sdk.stellarLending.assets.asset("...")(...); // AssetDto
+
+// GET /stellar-lending/assets/:asset/page
+sdk.stellarLending.assets.asset("...").page(...); // AssetPageDto
+
+// GET /stellar-lending/assets/:asset/markets
+sdk.stellarLending.assets.asset("...").markets(...); // AssetMarketDto[]
+
+// GET /stellar-lending/hubs/:hubId
+sdk.stellarLending.hubs.hubId("...")(...); // HubDto
+
+// GET /stellar-lending/spokes/:spokeId
+sdk.stellarLending.spokes.spokeId("...")(...); // SpokeDto
+
+// GET /stellar-lending/users/:owner/positions
+sdk.stellarLending.users.owner("...").positions(...); // AccountPositionsDto
+
+// GET /stellar-lending/users/:owner/activity
+sdk.stellarLending.users.owner("...").activity(...); // StellarUserActivityItemDto[]
+
+// GET /stellar-lending/accounts/:accountId/positions
+sdk.stellarLending.accounts.accountId("...").positions(...); // AccountPositionsDto
+
+// GET /stellar-lending/governance/proposals
+sdk.stellarLending.governance.proposals(...); // GovernanceProposalsPageDto
+
+// GET /stellar-lending/assets/:asset/graph
+sdk.stellarLending.assets.asset("...").graph(...); // MarketGraphDto
+
+// GET /stellar-lending/hubs/:hubId/graph
+sdk.stellarLending.hubs.hubId("...").graph(...); // MarketGraphDto
+
+// GET /stellar-lending/spokes/:spokeId/graph
+sdk.stellarLending.spokes.spokeId("...").graph(...); // SpokeGraphDto
+
+// GET /stellar-lending/reserves/:spokeId/:hubId/:asset/graph
+sdk.stellarLending.reserves.spokeId("...").hubId("...").asset("...").graph(...); // MarketGraphDto
+
+// GET /stellar-lending/stats/history
+sdk.stellarLending.stats.history(...); // StellarStatsHistoryDto
+
+// GET /stellar-lending/pnl
+sdk.stellarLending.pnl(...); // StellarPositionsPnlDto
+
+// GET /stellar-lending/positions
+sdk.stellarLending.positions(...); // StellarPositionsRankDto
+
+// GET /stellar-lending/users/:accountId/history
+sdk.stellarLending.users.accountId("...").history(...); // UserHistoryDto
+
+// GET /stellar-lending/pnl/scope
+sdk.stellarLending.pnl.scope(...); // PnlByScopeDto
+
+// GET /stellar-lending/revenue
+sdk.stellarLending.revenue(...); // RevenueSeriesDto
+
+// GET /stellar-lending/revenue/fees
+sdk.stellarLending.revenue.fees(...); // FeeRevenueSeriesDto
+
+// GET /stellar-lending/participants
+sdk.stellarLending.participants(...); // ParticipantCountsDto
+
+// GET /stellar-lending/liquidations
+sdk.stellarLending.liquidations(...); // LiquidationsSeriesDto
+
+// GET /stellar-lending/liquidations/leaderboard
+sdk.stellarLending.liquidations.leaderboard(...); // LiquidationsLeaderboardDto
+
+// GET /stellar-lending/volume
+sdk.stellarLending.volume(...); // VolumeSeriesDto
+
+// GET /stellar-lending/active-users
+sdk.stellarLending.activeUsers(...); // ActiveUsersSeriesDto
+
+// GET /stellar-lending/distribution
+sdk.stellarLending.distribution(...); // HolderDistributionDto
+
+// GET /stellar-lending/rate-spread
+sdk.stellarLending.rateSpread(...); // RateSpreadSeriesDto
+
+// GET /stellar-lending/defillama
+sdk.stellarLending.defillama(...); // DefiLlamaDimensionsDto
 
 // GET /tokens
 sdk.tokens(...); // TokenDataDocHydrated[]

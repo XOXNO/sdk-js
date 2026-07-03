@@ -168,6 +168,8 @@ describe('Stellar lending governance builders', () => {
         asset: FIXTURE_USDC,
         canCollateral: true,
         canBorrow: false,
+        paused: false,
+        frozen: true,
         ltv: 6500,
         threshold: 7000,
         bonus: 700,
@@ -198,7 +200,7 @@ describe('Stellar lending governance builders', () => {
         expect(op.vec()![1]!.u32()).toBe(3)
       })
 
-      it('AddAssetToSpoke encodes SpokeAssetArgs with the 12 sorted wire keys', () => {
+      it('AddAssetToSpoke encodes SpokeAssetArgs with the 14 sorted wire keys', () => {
         const op = parseInvoked(
           buildStellarProposeAddAssetToSpokeTx(
             BASE_OPTS,
@@ -215,10 +217,12 @@ describe('Stellar lending governance builders', () => {
           'borrow_cap',
           'can_borrow',
           'can_collateral',
+          'frozen',
           'hub_id',
           'liquidation_fees',
           'ltv',
           'oracle_override',
+          'paused',
           'spoke_id',
           'supply_cap',
           'threshold',
@@ -228,6 +232,9 @@ describe('Stellar lending governance builders', () => {
         expect(field('supply_cap').switch().name).toBe('scvI128')
         expect(field('borrow_cap').switch().name).toBe('scvI128')
         expect(field('can_borrow').switch().name).toBe('scvBool')
+        // Per-listing incident flags carry through the wire encoding verbatim.
+        expect(field('paused').b()).toBe(false)
+        expect(field('frozen').b()).toBe(true)
         // oracle_override is always the None arm of MarketOracleConfigOption.
         expect(field('oracle_override').vec()![0]!.sym().toString()).toBe(
           'None'

@@ -150,6 +150,10 @@ export interface SpokeAssetArgs {
   asset: string
   canCollateral: boolean
   canBorrow: boolean
+  /** ADR 0011 per-listing incident flag: blocks supply/borrow/withdraw/repay. */
+  paused: boolean
+  /** ADR 0011 per-listing incident flag: blocks new supply/borrow, exits stay live. */
+  frozen: boolean
   ltv: number
   threshold: number
   bonus: number
@@ -171,7 +175,9 @@ const encodeSpokeAssetArgs = (a: SpokeAssetArgs): xdr.ScVal =>
     borrow_cap: i128(a.borrowCap),
     can_borrow: bool(a.canBorrow),
     can_collateral: bool(a.canCollateral),
+    frozen: bool(a.frozen),
     hub_id: u32(a.hubId),
+    paused: bool(a.paused),
     liquidation_fees: u32(a.liquidationFees),
     ltv: u32(a.ltv),
     oracle_override: vec([sym('None')]),
