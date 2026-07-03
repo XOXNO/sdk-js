@@ -11,7 +11,7 @@ import {
   buildStellarProposeDeployPoolTx,
   buildStellarProposeSetAggregatorTx,
   buildStellarProposeUpdateDelayTx,
-  buildStellarProposeUpdatePoolCapsTx,
+  buildStellarProposeUpgradePoolParamsTx,
 } from '../governance'
 import type { StellarBuilderOptions } from '../lending'
 
@@ -23,6 +23,18 @@ const FIXTURE_USDC =
   'CABQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGCK3'
 const FIXTURE_SEQUENCE = '123456789'
 const FIXTURE_SALT = 'ab'.repeat(32)
+
+const PARAMS_FIXTURE = {
+  maxBorrowRateRay: '2000000000000000000000000000',
+  baseBorrowRateRay: '10000000000000000000000000',
+  slope1Ray: '40000000000000000000000000',
+  slope2Ray: '80000000000000000000000000',
+  slope3Ray: '1000000000000000000000000000',
+  midUtilizationRay: '450000000000000000000000000',
+  optimalUtilizationRay: '800000000000000000000000000',
+  maxUtilizationRay: '950000000000000000000000000',
+  reserveFactorBps: 1000,
+}
 
 beforeAll(() => {
   jest.useFakeTimers({ now: new Date('2026-01-01T00:00:00Z') })
@@ -73,15 +85,14 @@ describe('Stellar lending governance builders', () => {
   // Every proposal routes through `propose(proposer, op: AdminOperation, salt)`:
   // arg0 = proposer Address, arg1 = the AdminOperation enum, arg2 = salt bytes.
   describe('propose — generic AdminOperation entrypoint', () => {
-    describe('UpdatePoolCaps (struct-payload variant)', () => {
+    describe('UpgradeLiquidityPoolParams (struct-payload variant)', () => {
       const build = () =>
-        buildStellarProposeUpdatePoolCapsTx(
+        buildStellarProposeUpgradePoolParamsTx(
           BASE_OPTS,
           {
             hubId: 1,
             asset: FIXTURE_USDC,
-            supplyCap: '100000000000000',
-            borrowCap: '50000000000000',
+            params: PARAMS_FIXTURE,
           },
           FIXTURE_SALT
         )
@@ -105,10 +116,10 @@ describe('Stellar lending governance builders', () => {
         expect(parsed.args[2]!.switch().name).toBe('scvBytes')
       })
 
-      it('wraps the UpdatePoolCaps variant with a struct payload', () => {
+      it('wraps the UpgradeLiquidityPoolParams variant with a struct payload', () => {
         const op = parseInvoked(built.xdr).args[1]!
-        expect(adminOpVariant(op)).toBe('UpdatePoolCaps')
-        // [symbol, PoolCapsArgs struct]
+        expect(adminOpVariant(op)).toBe('UpgradeLiquidityPoolParams')
+        // [symbol, UpgradePoolParamsArgs struct]
         expect(op.vec()).toHaveLength(2)
         expect(op.vec()![1]!.switch().name).toBe('scvMap')
       })
@@ -198,24 +209,6 @@ describe('Stellar lending governance builders', () => {
       )
     })
 
-    it('UpdatePoolCaps (struct field order: borrow_cap, hub_asset, supply_cap)', () => {
-      expect(
-        opXdr(
-          buildStellarProposeUpdatePoolCapsTx(
-            BASE_OPTS,
-            {
-              hubId: 1,
-              asset: PARITY_ADDR,
-              supplyCap: '100000000000000',
-              borrowCap: '50000000000000',
-            },
-            FIXTURE_SALT
-          ).xdr
-        )
-      ).toBe(
-        'AAAAEAAAAAEAAAACAAAADwAAAA5VcGRhdGVQb29sQ2FwcwAAAAAAEQAAAAEAAAADAAAADwAAAApib3Jyb3dfY2FwAAAAAAAKAAAAAAAAAAAAAC15iD0gAAAAAA8AAAAJaHViX2Fzc2V0AAAAAAAAEQAAAAEAAAACAAAADwAAAAVhc3NldAAAAAAAABIAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAPAAAABmh1Yl9pZAAAAAAAAwAAAAEAAAAPAAAACnN1cHBseV9jYXAAAAAAAAoAAAAAAAAAAAAAWvMQekAA'
-      )
-    })
   })
 
   // Governance-self ops execute through `execute_self(executor, op, salt)`:

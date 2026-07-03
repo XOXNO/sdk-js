@@ -80,7 +80,6 @@ export const encodeMarketParamsRaw = (p: MarketParamsRawDto): xdr.ScVal =>
     asset_decimals: u32(p.assetDecimals),
     asset_id: addr(p.assetId),
     base_borrow_rate: i128(p.baseBorrowRateRay),
-    borrow_cap: i128(p.borrowCap),
     flashloan_fee: u32(p.flashloanFeeBps),
     is_flashloanable: bool(p.isFlashloanable),
     max_borrow_rate: i128(p.maxBorrowRateRay),
@@ -91,7 +90,6 @@ export const encodeMarketParamsRaw = (p: MarketParamsRawDto): xdr.ScVal =>
     slope1: i128(p.slope1Ray),
     slope2: i128(p.slope2Ray),
     slope3: i128(p.slope3Ray),
-    supply_cap: i128(p.supplyCap),
   })
 
 /** `PositionLimits` — per-account supply/borrow position caps. */
@@ -213,12 +211,6 @@ export interface RoleGrantArgs {
 export interface TransferOwnershipArgs {
   newOwner: string
   liveUntilLedger: number
-}
-export interface UpdatePoolCapsArgs {
-  hubId: number
-  asset: string
-  supplyCap: string
-  borrowCap: string
 }
 export interface ConfigureMarketOracleArgs {
   hubId: number
@@ -350,18 +342,6 @@ export function buildStellarSetPositionLimitsTx(
   args: PositionLimitsDto
 ): BuiltStellarTx {
   return buildTx(opts, 'set_position_limits', [encodePositionLimits(args)])
-}
-
-/** update_pool_caps(asset, supply_cap, borrow_cap) — #[only_owner] */
-export function buildStellarUpdatePoolCapsTx(
-  opts: StellarBuilderOptions,
-  args: UpdatePoolCapsArgs
-): BuiltStellarTx {
-  return buildTx(opts, 'update_pool_caps', [
-    hubAsset(args.hubId, args.asset),
-    i128(args.supplyCap),
-    i128(args.borrowCap),
-  ])
 }
 
 /** approve_token(token: Address) — #[only_owner] */

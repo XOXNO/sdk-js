@@ -345,15 +345,13 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
   })
 
   // Regression: `market:batch_params_update` is single-value — `data` is the
-  // updates Vec directly. Reading `d.updates` yields [] and silently drops the
-  // supply/borrow caps (the only fields unique to this event), leaving indexed
-  // caps frozen at their create-time value.
-  it('market:batch_params_update (single-value Vec) — decodes supply/borrow caps', () => {
+  // updates Vec directly. Reading `d.updates` would yield [] and silently drop
+  // the rate-model updates, leaving indexed params frozen at create-time.
+  it('market:batch_params_update (single-value Vec) — decodes rate-model params', () => {
     const params = mapV({
       asset_decimals: u32(7),
       asset_id: addrV(ASSET_A),
       base_borrow_rate: i128(10000000000000000000000000n),
-      borrow_cap: i128(50000000000000n),
       flashloan_fee: u32(9),
       is_flashloanable: xdr.ScVal.scvBool(true),
       max_borrow_rate: i128(800000000000000000000000000n),
@@ -364,7 +362,6 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
       slope1: i128(40000000000000000000000000n),
       slope2: i128(100000000000000000000000000n),
       slope3: i128(250000000000000000000000000n),
-      supply_cap: i128(50000000000000n),
     })
     const data = b64(
       vecV([mapV({ asset: addrV(ASSET_A), hub_id: u32(1), params })])
@@ -377,8 +374,6 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(ev.data.updates).toHaveLength(1)
     expect(ev.data.updates[0]!.hubId).toBe(1)
     expect(ev.data.updates[0]!.asset).toBe(ASSET_A)
-    expect(ev.data.updates[0]!.params.supplyCap).toBe('50000000000000')
-    expect(ev.data.updates[0]!.params.borrowCap).toBe('50000000000000')
     expect(ev.data.updates[0]!.params.maxUtilizationRay).toBe(
       '900000000000000000000000000'
     )

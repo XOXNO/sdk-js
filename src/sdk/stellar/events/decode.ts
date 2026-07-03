@@ -108,8 +108,6 @@ const decodeMarketParams = (p: Raw) => ({
   optimalUtilizationRay: dec(p.optimal_utilization),
   maxUtilizationRay: dec(p.max_utilization),
   reserveFactorBps: num(p.reserve_factor),
-  supplyCap: dec(p.supply_cap),
-  borrowCap: dec(p.borrow_cap),
   isFlashloanable: Boolean(p.is_flashloanable),
   flashloanFeeBps: num(p.flashloan_fee),
   assetId: str(p.asset_id),

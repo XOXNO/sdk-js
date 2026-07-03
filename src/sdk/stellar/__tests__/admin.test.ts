@@ -38,7 +38,6 @@ import {
   buildStellarUpdateAccountThresholdTx,
   buildStellarUpdateIndexesTx,
   buildStellarUpgradeControllerTx,
-  buildStellarUpdatePoolCapsTx,
   buildStellarUpgradeLiquidityPoolParamsTx,
   type ConfigureMarketOracleArgs,
   type CreateLiquidityPoolArgs,
@@ -101,8 +100,6 @@ const createPoolArgs = {
     optimalUtilizationRay: '800000000000000000000000000',
     maxUtilizationRay: '950000000000000000000000000',
     reserveFactorBps: 1000,
-    supplyCap: '100000000000000',
-    borrowCap: '100000000000000',
     isFlashloanable: true,
     flashloanFeeBps: 9,
   },
@@ -251,18 +248,6 @@ const cases: Case[] = [
     build: () => buildStellarSetPositionLimitsTx(BASE_OPTS, { maxBorrowPositions: 8, maxSupplyPositions: 16 }),
   },
   {
-    name: 'update_pool_caps',
-    expectedFn: 'update_pool_caps',
-    expectedArgCount: 3,
-    build: () =>
-      buildStellarUpdatePoolCapsTx(BASE_OPTS, {
-        hubId: 1,
-        asset: FIXTURE_USDC,
-        supplyCap: '100000000000000',
-        borrowCap: '50000000000000',
-      }),
-  },
-  {
     name: 'approve_token',
     expectedFn: 'approve_token',
     expectedArgCount: 1,
@@ -402,20 +387,19 @@ describe('Stellar lending admin builders', () => {
 // -----------------------------------------------------------------------------
 
 describe('complex struct encoding', () => {
-  it('MarketParamsRaw is an scvMap with 15 ascending-sorted keys', () => {
+  it('MarketParamsRaw is an scvMap with 13 ascending-sorted keys', () => {
     const parsed = parseInvoked(
       buildStellarCreateLiquidityPoolTx(BASE_OPTS, createPoolArgs).xdr
     )
     // create_liquidity_pool(hub_id, asset, params) → params is arg index 2.
     const keys = mapKeys(parsed.args[2]!)
-    expect(keys).toHaveLength(15)
+    expect(keys).toHaveLength(13)
     expect(isAscending(keys)).toBe(true)
     expect(keys).toEqual(
       [
         'asset_decimals',
         'asset_id',
         'base_borrow_rate',
-        'borrow_cap',
         'flashloan_fee',
         'is_flashloanable',
         'max_borrow_rate',
@@ -426,7 +410,6 @@ describe('complex struct encoding', () => {
         'slope1',
         'slope2',
         'slope3',
-        'supply_cap',
       ].sort()
     )
   })
@@ -490,8 +473,6 @@ describe('complex struct encoding', () => {
     expect(pField('reserve_factor').switch().name).toBe('scvU32')
     expect(pField('asset_decimals').switch().name).toBe('scvU32')
     expect(pField('asset_id').switch().name).toBe('scvAddress')
-    expect(pField('supply_cap').switch().name).toBe('scvI128')
-    expect(pField('borrow_cap').switch().name).toBe('scvI128')
     expect(pField('is_flashloanable').switch().name).toBe('scvBool')
     expect(pField('flashloan_fee').switch().name).toBe('scvU32')
 

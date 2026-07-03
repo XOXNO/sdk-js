@@ -44,7 +44,6 @@ import {
   type CreateLiquidityPoolArgs,
   type RoleGrantArgs,
   type TransferOwnershipArgs,
-  type UpdatePoolCapsArgs,
   type UpgradeLiquidityPoolParamsArgs,
 } from './admin'
 import {
@@ -109,13 +108,6 @@ const adminOp = (variant: string, ...payload: xdr.ScVal[]): xdr.ScVal =>
 // Argument-struct encoders. The `scStruct` keys MUST be the Rust struct field
 // names (snake_case); `scStruct` sorts them lexicographically into the `scvMap`
 // layout the contract decodes. Builder arg interfaces stay camelCase.
-
-const encodePoolCapsArgs = (a: UpdatePoolCapsArgs): xdr.ScVal =>
-  scStruct({
-    borrow_cap: i128(a.borrowCap),
-    hub_asset: hubAsset(a.hubId, a.asset),
-    supply_cap: i128(a.supplyCap),
-  })
 
 const encodeCreatePoolArgs = (a: CreateLiquidityPoolArgs): xdr.ScVal =>
   scStruct({
@@ -292,19 +284,6 @@ export function buildStellarProposeSetMinBorrowCollatTx(
   return buildPropose(
     opts,
     adminOp('SetMinBorrowCollateralUsd', i128(args.floorWad)),
-    salt
-  )
-}
-
-/** propose(UpdatePoolCaps(PoolCapsArgs)) */
-export function buildStellarProposeUpdatePoolCapsTx(
-  opts: StellarBuilderOptions,
-  args: UpdatePoolCapsArgs,
-  salt: StellarGovernanceSalt
-): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    adminOp('UpdatePoolCaps', encodePoolCapsArgs(args)),
     salt
   )
 }

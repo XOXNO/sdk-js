@@ -180,12 +180,14 @@ export interface StellarReserve {
   suppliedShort: number
   borrowedShort: number
   availableLiquidityShort: number
+  isFlashloanable: boolean
+  flashloanFeeBps: number
+
+  // Caps (SpokeAsset — per-reserve spoke ceilings)
   supplyCapShort: number
   borrowCapShort: number
   depositCapFilledPct: number
   borrowCapFilledPct: number
-  isFlashloanable: boolean
-  flashloanFeeBps: number
 
   // Risk (SpokeAsset)
   collateralFactorBps: number
