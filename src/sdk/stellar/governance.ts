@@ -53,6 +53,7 @@ import {
 import type { BuiltStellarTx, StellarBuilderOptions } from './lending'
 import {
   addr,
+  bool,
   bytesN,
   hubAsset,
   i128,
@@ -134,6 +135,57 @@ const encodeConfigureOracleArgs = (a: ConfigureMarketOracleArgs): xdr.ScVal =>
   scStruct({
     cfg: encodeMarketOracleConfigInput(a.config),
     hub_asset: hubAsset(a.hubId, a.asset),
+  })
+
+/**
+ * `add_asset_to_spoke` / `edit_asset_in_spoke` payload: the per-(hub, spoke,
+ * asset) risk config. Caps are asset-native i128 decimal strings (0 =
+ * uncapped); ltv/threshold/bonus/liquidationFees are bps. The on-chain
+ * `oracle_override` is always encoded as `None` — a `Some` carries a fully
+ * resolved `MarketOracleConfig`, which no off-chain caller can safely build.
+ */
+export interface SpokeAssetArgs {
+  hubId: number
+  spokeId: number
+  asset: string
+  canCollateral: boolean
+  canBorrow: boolean
+  ltv: number
+  threshold: number
+  bonus: number
+  liquidationFees: number
+  supplyCap: string
+  borrowCap: string
+}
+
+export interface RemoveAssetFromSpokeArgs {
+  hubId: number
+  spokeId: number
+  asset: string
+}
+
+const encodeSpokeAssetArgs = (a: SpokeAssetArgs): xdr.ScVal =>
+  scStruct({
+    asset: addr(a.asset),
+    bonus: u32(a.bonus),
+    borrow_cap: i128(a.borrowCap),
+    can_borrow: bool(a.canBorrow),
+    can_collateral: bool(a.canCollateral),
+    hub_id: u32(a.hubId),
+    liquidation_fees: u32(a.liquidationFees),
+    ltv: u32(a.ltv),
+    oracle_override: vec([sym('None')]),
+    spoke_id: u32(a.spokeId),
+    supply_cap: i128(a.supplyCap),
+    threshold: u32(a.threshold),
+  })
+
+const encodeRemoveAssetFromSpokeArgs = (
+  a: RemoveAssetFromSpokeArgs
+): xdr.ScVal =>
+  scStruct({
+    hub_asset: hubAsset(a.hubId, a.asset),
+    spoke_id: u32(a.spokeId),
   })
 
 /** Governance derives the OraclePriceFluctuation on-chain from one bps value. */
@@ -271,6 +323,83 @@ export function buildStellarProposeSetPositionLimitsTx(
   return buildPropose(
     opts,
     adminOp('SetPositionLimits', encodePositionLimits(args)),
+    salt
+  )
+}
+
+/** propose(CreateHub) */
+export function buildStellarProposeCreateHubTx(
+  opts: StellarBuilderOptions,
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(opts, adminOp('CreateHub'), salt)
+}
+
+/** propose(AddSpoke) */
+export function buildStellarProposeAddSpokeTx(
+  opts: StellarBuilderOptions,
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(opts, adminOp('AddSpoke'), salt)
+}
+
+/** propose(RemoveSpoke(spoke_id)) */
+export function buildStellarProposeRemoveSpokeTx(
+  opts: StellarBuilderOptions,
+  args: { spokeId: number },
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(opts, adminOp('RemoveSpoke', u32(args.spokeId)), salt)
+}
+
+/** propose(AddAssetToSpoke(SpokeAssetArgs)) */
+export function buildStellarProposeAddAssetToSpokeTx(
+  opts: StellarBuilderOptions,
+  args: SpokeAssetArgs,
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(
+    opts,
+    adminOp('AddAssetToSpoke', encodeSpokeAssetArgs(args)),
+    salt
+  )
+}
+
+/** propose(EditAssetInSpoke(SpokeAssetArgs)) */
+export function buildStellarProposeEditAssetInSpokeTx(
+  opts: StellarBuilderOptions,
+  args: SpokeAssetArgs,
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(
+    opts,
+    adminOp('EditAssetInSpoke', encodeSpokeAssetArgs(args)),
+    salt
+  )
+}
+
+/** propose(RemoveAssetFromSpoke(RemoveAssetFromSpokeArgs)) */
+export function buildStellarProposeRemoveAssetFromSpokeTx(
+  opts: StellarBuilderOptions,
+  args: RemoveAssetFromSpokeArgs,
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(
+    opts,
+    adminOp('RemoveAssetFromSpoke', encodeRemoveAssetFromSpokeArgs(args)),
+    salt
+  )
+}
+
+/** propose(SetPositionManager(manager, is_active)) — tuple variant. */
+export function buildStellarProposeSetPositionManagerTx(
+  opts: StellarBuilderOptions,
+  args: { manager: string; isActive: boolean },
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(
+    opts,
+    adminOp('SetPositionManager', addr(args.manager), bool(args.isActive)),
     salt
   )
 }

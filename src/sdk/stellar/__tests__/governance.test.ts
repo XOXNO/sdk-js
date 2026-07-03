@@ -11,6 +11,12 @@ import {
   buildStellarProposeDeployPoolTx,
   buildStellarProposeSetAggregatorTx,
   buildStellarProposeUpdateDelayTx,
+  buildStellarProposeAddAssetToSpokeTx,
+  buildStellarProposeAddSpokeTx,
+  buildStellarProposeEditAssetInSpokeTx,
+  buildStellarProposeRemoveAssetFromSpokeTx,
+  buildStellarProposeRemoveSpokeTx,
+  buildStellarProposeSetPositionManagerTx,
   buildStellarProposeUpgradePoolParamsTx,
 } from '../governance'
 import type { StellarBuilderOptions } from '../lending'
@@ -152,6 +158,122 @@ describe('Stellar lending governance builders', () => {
 
       it('matches stored snapshot', () => {
         expect(build().xdr).toMatchSnapshot()
+      })
+    })
+
+    describe('Spoke admin ops', () => {
+      const SPOKE_ARGS = {
+        hubId: 1,
+        spokeId: 3,
+        asset: FIXTURE_USDC,
+        canCollateral: true,
+        canBorrow: false,
+        ltv: 6500,
+        threshold: 7000,
+        bonus: 700,
+        liquidationFees: 100,
+        supplyCap: '1000000000',
+        borrowCap: '0',
+      }
+
+      it('AddSpoke is a tag-only enum', () => {
+        const op = parseInvoked(
+          buildStellarProposeAddSpokeTx(BASE_OPTS, FIXTURE_SALT).xdr
+        ).args[1]!
+        expect(adminOpVariant(op)).toBe('AddSpoke')
+        expect(op.vec()).toHaveLength(1)
+      })
+
+      it('RemoveSpoke carries the spoke id as u32', () => {
+        const op = parseInvoked(
+          buildStellarProposeRemoveSpokeTx(
+            BASE_OPTS,
+            { spokeId: 3 },
+            FIXTURE_SALT
+          ).xdr
+        ).args[1]!
+        expect(adminOpVariant(op)).toBe('RemoveSpoke')
+        expect(op.vec()).toHaveLength(2)
+        expect(op.vec()![1]!.switch().name).toBe('scvU32')
+        expect(op.vec()![1]!.u32()).toBe(3)
+      })
+
+      it('AddAssetToSpoke encodes SpokeAssetArgs with the 12 sorted wire keys', () => {
+        const op = parseInvoked(
+          buildStellarProposeAddAssetToSpokeTx(
+            BASE_OPTS,
+            SPOKE_ARGS,
+            FIXTURE_SALT
+          ).xdr
+        ).args[1]!
+        expect(adminOpVariant(op)).toBe('AddAssetToSpoke')
+        const entries = op.vec()![1]!.map()!
+        const keys = entries.map((e) => e.key().sym().toString())
+        expect(keys).toEqual([
+          'asset',
+          'bonus',
+          'borrow_cap',
+          'can_borrow',
+          'can_collateral',
+          'hub_id',
+          'liquidation_fees',
+          'ltv',
+          'oracle_override',
+          'spoke_id',
+          'supply_cap',
+          'threshold',
+        ])
+        const field = (name: string) =>
+          entries.find((e) => e.key().sym().toString() === name)!.val()
+        expect(field('supply_cap').switch().name).toBe('scvI128')
+        expect(field('borrow_cap').switch().name).toBe('scvI128')
+        expect(field('can_borrow').switch().name).toBe('scvBool')
+        // oracle_override is always the None arm of MarketOracleConfigOption.
+        expect(field('oracle_override').vec()![0]!.sym().toString()).toBe(
+          'None'
+        )
+      })
+
+      it('EditAssetInSpoke reuses the SpokeAssetArgs payload', () => {
+        const op = parseInvoked(
+          buildStellarProposeEditAssetInSpokeTx(
+            BASE_OPTS,
+            SPOKE_ARGS,
+            FIXTURE_SALT
+          ).xdr
+        ).args[1]!
+        expect(adminOpVariant(op)).toBe('EditAssetInSpoke')
+        expect(op.vec()![1]!.switch().name).toBe('scvMap')
+      })
+
+      it('RemoveAssetFromSpoke wraps hub_asset + spoke_id', () => {
+        const op = parseInvoked(
+          buildStellarProposeRemoveAssetFromSpokeTx(
+            BASE_OPTS,
+            { hubId: 1, spokeId: 3, asset: FIXTURE_USDC },
+            FIXTURE_SALT
+          ).xdr
+        ).args[1]!
+        expect(adminOpVariant(op)).toBe('RemoveAssetFromSpoke')
+        const keys = op
+          .vec()![1]!
+          .map()!
+          .map((e) => e.key().sym().toString())
+        expect(keys).toEqual(['hub_asset', 'spoke_id'])
+      })
+
+      it('SetPositionManager is a two-field tuple variant', () => {
+        const op = parseInvoked(
+          buildStellarProposeSetPositionManagerTx(
+            BASE_OPTS,
+            { manager: FIXTURE_USDC, isActive: true },
+            FIXTURE_SALT
+          ).xdr
+        ).args[1]!
+        expect(adminOpVariant(op)).toBe('SetPositionManager')
+        expect(op.vec()).toHaveLength(3)
+        expect(op.vec()![1]!.switch().name).toBe('scvAddress')
+        expect(op.vec()![2]!.switch().name).toBe('scvBool')
       })
     })
 
