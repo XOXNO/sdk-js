@@ -45,6 +45,43 @@ export type StellarLendingHoldersSide = 'deposits' | 'borrows'
 // Asset
 // -----------------------------------------------------------------------------
 
+/** Oracle configuration for a Stellar asset. */
+export interface StellarAssetOracleConfig {
+  baseTokenId: string
+  quoteTokenSymbol: string
+  toleranceUpperBps: number
+  toleranceLowerBps: number
+  pricingMethod: number
+  oracleType: number
+  strategy: number
+  assetDecimals: number
+  maxPriceStaleSeconds: number
+  primaryProvider: number
+  primaryContract: string
+  primaryAsset: string | null
+  primarySymbol: string | null
+  primaryFeedId: string | null
+  primaryQuoteToken: string | null
+  primaryReadMode: number
+  primaryTwapRecords: number
+  primaryDecimals: number
+  primaryResolutionSeconds: number
+  primaryMaxStaleSeconds: number
+  anchorProvider: number | null
+  anchorContract: string | null
+  anchorAsset: string | null
+  anchorSymbol: string | null
+  anchorFeedId: string | null
+  anchorQuoteToken: string | null
+  anchorReadMode: number
+  anchorTwapRecords: number
+  anchorDecimals: number
+  anchorResolutionSeconds: number
+  anchorMaxStaleSeconds: number
+  minSanityPriceWad: string
+  maxSanityPriceWad: string
+}
+
 /** One (spoke, hub) market row for an asset's markets table. */
 export interface StellarAssetMarket {
   spokeId: number
@@ -79,6 +116,7 @@ export interface StellarAsset {
   maxSupplyApy: number
   minBorrowApy: number
   maxBorrowApy: number
+  oracleProvider?: StellarAssetOracleConfig
 }
 
 // -----------------------------------------------------------------------------
