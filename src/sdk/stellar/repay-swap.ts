@@ -1,32 +1,9 @@
-import type { StellarStrategyPayloadInput } from './scval-encode'
-
 /**
- * Placeholder aggregator route when `repay_debt_with_collateral` has
- * `collateral_token === debt_token`. The controller short-circuits and never
- * decodes the route, but the Soroban arg must still be valid `Bytes`.
+ * Empty strategy swap bytes for `repay_debt_with_collateral` when
+ * `collateral_token === debt_token`. The controller requires the swap payload
+ * to be genuinely empty in this case (`swap.is_empty()`) and reverts
+ * `InvalidPayments` if any route is supplied, even an unused placeholder.
  */
-export function buildSameTokenRepaySwapSteps(
-  token: string,
-  collateralAmount: string
-): StellarStrategyPayloadInput {
-  return {
-    paths: [
-      {
-        hops: [
-          {
-            amountOut: '0',
-            pool: token,
-            tokenIn: token,
-            tokenOut: token,
-            venue: 'Soroswap',
-          },
-        ],
-        splitPpm: 1_000_000,
-      },
-    ],
-    referralId: 0,
-    tokenIn: token,
-    tokenOut: token,
-    totalMinOut: collateralAmount,
-  }
+export function buildSameTokenRepaySwapSteps(): Uint8Array {
+  return new Uint8Array(0)
 }
