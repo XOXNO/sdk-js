@@ -287,6 +287,15 @@ const strategyBytes = (data: Uint8Array): xdr.ScVal => {
   return xdr.ScVal.scvBytes(buf)
 }
 
+/**
+ * Genuinely empty strategy swap bytes. Required by `repay_debt_with_collateral`
+ * and `swap_debt` when the collateral/borrowed asset is identical to the debt
+ * asset — the controller asserts `swap.is_empty()` in that case and reverts
+ * `InvalidPayments` if any route is supplied, even an unused placeholder.
+ */
+export const emptyStrategySwapBytes = (): xdr.ScVal =>
+  xdr.ScVal.scvBytes(Buffer.alloc(0))
+
 const decodeStrategyBytesString = (encoded: string): Buffer => {
   const trimmed = encoded.trim()
   if (trimmed.startsWith('0x')) {
@@ -337,7 +346,7 @@ export const asStellarStrategySwapBytes = (steps: unknown): xdr.ScVal => {
     return strategyBytes(decodeStrategyBytesString(steps))
   }
   if (steps instanceof Uint8Array) {
-    return strategyBytes(steps)
+    return steps.length === 0 ? emptyStrategySwapBytes() : strategyBytes(steps)
   }
   if (steps && typeof steps === 'object') {
     if (hasRouteXdr(steps)) {
@@ -347,8 +356,11 @@ export const asStellarStrategySwapBytes = (steps: unknown): xdr.ScVal => {
       return strategyBytes(decodeStrategyBytesString(steps.swapXdr))
     }
     if (hasBytes(steps)) {
-      return typeof steps.bytes === 'string'
-        ? strategyBytes(decodeStrategyBytesString(steps.bytes))
+      if (typeof steps.bytes === 'string') {
+        return strategyBytes(decodeStrategyBytesString(steps.bytes))
+      }
+      return steps.bytes.length === 0
+        ? emptyStrategySwapBytes()
         : strategyBytes(steps.bytes)
     }
     return encodeStrategyPayloadToBytes(asStellarStrategyPayload(steps))
