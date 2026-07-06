@@ -3,7 +3,14 @@
  * `collateral_token === debt_token`. The controller requires the swap payload
  * to be genuinely empty in this case (`swap.is_empty()`) and reverts
  * `InvalidPayments` if any route is supplied, even an unused placeholder.
+ *
+ * `token`/`collateralAmount` are accepted-but-ignored so existing callers of
+ * the old `(token, collateralAmount)` signature keep compiling; the swap
+ * payload is always empty regardless of their values.
  */
-export function buildSameTokenRepaySwapSteps(): Uint8Array {
+export function buildSameTokenRepaySwapSteps(
+  _token?: string,
+  _collateralAmount?: string
+): Uint8Array {
   return new Uint8Array(0)
 }

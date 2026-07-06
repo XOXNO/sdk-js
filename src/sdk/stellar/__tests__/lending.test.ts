@@ -502,4 +502,23 @@ describe('repay_debt_with_collateral — same-token', () => {
     expect(swapArg.switch().name).toBe('scvBytes')
     expect(swapArg.bytes().length).toBe(0)
   })
+
+  it('buildSameTokenRepaySwapSteps ignores legacy (token, collateralAmount) args for source compatibility', () => {
+    const steps = buildSameTokenRepaySwapSteps(FIXTURE_USDC, '150000000')
+    expect(steps).toBeInstanceOf(Uint8Array)
+    expect(steps.length).toBe(0)
+  })
+
+  it('encodes the swap arg as genuinely empty Bytes when steps is the { bytes } wrapper form', () => {
+    const built = buildStellarRepayDebtWithCollateralTx(BASE_OPTS, {
+      ...sameTokenArgs,
+      steps: { bytes: new Uint8Array(0) },
+    })
+    const tx = new Transaction(built.xdr, Networks.TESTNET)
+    const op = tx.operations[0] as unknown as { func: stellarXdr.HostFunction }
+    const args = op.func.invokeContract().args()
+    const swapArg = args[5]
+    expect(swapArg.switch().name).toBe('scvBytes')
+    expect(swapArg.bytes().length).toBe(0)
+  })
 })

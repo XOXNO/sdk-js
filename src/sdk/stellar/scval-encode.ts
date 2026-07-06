@@ -356,8 +356,11 @@ export const asStellarStrategySwapBytes = (steps: unknown): xdr.ScVal => {
       return strategyBytes(decodeStrategyBytesString(steps.swapXdr))
     }
     if (hasBytes(steps)) {
-      return typeof steps.bytes === 'string'
-        ? strategyBytes(decodeStrategyBytesString(steps.bytes))
+      if (typeof steps.bytes === 'string') {
+        return strategyBytes(decodeStrategyBytesString(steps.bytes))
+      }
+      return steps.bytes.length === 0
+        ? emptyStrategySwapBytes()
         : strategyBytes(steps.bytes)
     }
     return encodeStrategyPayloadToBytes(asStellarStrategyPayload(steps))
