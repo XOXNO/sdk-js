@@ -168,6 +168,20 @@ export interface RemoveAssetFromSpokeArgs {
   asset: string
 }
 
+/**
+ * `set_spoke_liquidation_curve` payload: overrides a spoke's Dutch-auction
+ * liquidation-bonus curve, replacing the defaults stamped at `add_spoke`.
+ * `targetHfWad`/`hfForMaxBonusWad` are WAD health-factor ratios (e.g.
+ * `'1020000000000000000'` == 1.02); `liquidationBonusFactorBps` scales the
+ * bonus increment and must not exceed 10000 (100%).
+ */
+export interface SpokeLiquidationCurveArgs {
+  spokeId: number
+  targetHfWad: string
+  hfForMaxBonusWad: string
+  liquidationBonusFactorBps: number
+}
+
 const encodeSpokeAssetArgs = (a: SpokeAssetArgs): xdr.ScVal =>
   scStruct({
     asset: addr(a.asset),
@@ -192,6 +206,16 @@ const encodeRemoveAssetFromSpokeArgs = (
   scStruct({
     hub_asset: hubAsset(a.hubId, a.asset),
     spoke_id: u32(a.spokeId),
+  })
+
+const encodeSpokeLiquidationCurveArgs = (
+  a: SpokeLiquidationCurveArgs
+): xdr.ScVal =>
+  scStruct({
+    hf_for_max_bonus_wad: i128(a.hfForMaxBonusWad),
+    liquidation_bonus_factor_bps: u32(a.liquidationBonusFactorBps),
+    spoke_id: u32(a.spokeId),
+    target_hf_wad: i128(a.targetHfWad),
   })
 
 /** Governance derives the OraclePriceFluctuation on-chain from one bps value. */
@@ -393,6 +417,22 @@ export function buildStellarProposeRemoveAssetFromSpokeTx(
   return buildPropose(
     opts,
     adminOp('RemoveAssetFromSpoke', encodeRemoveAssetFromSpokeArgs(args)),
+    salt
+  )
+}
+
+/** propose(SetSpokeLiquidationCurve(SpokeLiquidationCurveArgs)) */
+export function buildStellarProposeSetSpokeLiquidationCurveTx(
+  opts: StellarBuilderOptions,
+  args: SpokeLiquidationCurveArgs,
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(
+    opts,
+    adminOp(
+      'SetSpokeLiquidationCurve',
+      encodeSpokeLiquidationCurveArgs(args)
+    ),
     salt
   )
 }

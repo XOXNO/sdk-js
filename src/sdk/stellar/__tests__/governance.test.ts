@@ -17,6 +17,7 @@ import {
   buildStellarProposeRemoveAssetFromSpokeTx,
   buildStellarProposeRemoveSpokeTx,
   buildStellarProposeSetPositionManagerTx,
+  buildStellarProposeSetSpokeLiquidationCurveTx,
   buildStellarProposeUpgradePoolParamsTx,
 } from '../governance'
 import type { StellarBuilderOptions } from '../lending'
@@ -267,6 +268,39 @@ describe('Stellar lending governance builders', () => {
           .map()!
           .map((e) => e.key().sym().toString())
         expect(keys).toEqual(['hub_asset', 'spoke_id'])
+      })
+
+      it('SetSpokeLiquidationCurve encodes the 4 sorted wire keys', () => {
+        const op = parseInvoked(
+          buildStellarProposeSetSpokeLiquidationCurveTx(
+            BASE_OPTS,
+            {
+              spokeId: 3,
+              targetHfWad: '1020000000000000000',
+              hfForMaxBonusWad: '510000000000000000',
+              liquidationBonusFactorBps: 10000,
+            },
+            FIXTURE_SALT
+          ).xdr
+        ).args[1]!
+        expect(adminOpVariant(op)).toBe('SetSpokeLiquidationCurve')
+        const entries = op.vec()![1]!.map()!
+        const keys = entries.map((e) => e.key().sym().toString())
+        expect(keys).toEqual([
+          'hf_for_max_bonus_wad',
+          'liquidation_bonus_factor_bps',
+          'spoke_id',
+          'target_hf_wad',
+        ])
+        const field = (name: string) =>
+          entries.find((e) => e.key().sym().toString() === name)!.val()
+        expect(field('target_hf_wad').switch().name).toBe('scvI128')
+        expect(field('hf_for_max_bonus_wad').switch().name).toBe('scvI128')
+        expect(field('liquidation_bonus_factor_bps').switch().name).toBe(
+          'scvU32'
+        )
+        expect(field('liquidation_bonus_factor_bps').u32()).toBe(10000)
+        expect(field('spoke_id').u32()).toBe(3)
       })
 
       it('SetPositionManager is a two-field tuple variant', () => {

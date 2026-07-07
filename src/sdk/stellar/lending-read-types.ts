@@ -181,6 +181,7 @@ export interface StellarSpoke {
   connectedHubIds: number[]
   connectedHubCount: number
   liquidationTargetHfWad: string
+  healthFactorForMaxBonusWad: string
   liquidationBonusFactorBps: number
   markets: StellarSpokeMarket[]
 }
