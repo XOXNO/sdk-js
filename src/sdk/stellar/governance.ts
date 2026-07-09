@@ -542,19 +542,6 @@ export function buildStellarProposeUpgradePoolTx(
   return buildPropose(opts, adminOp('UpgradePool', bytesN(args.wasmHash)), salt)
 }
 
-/** propose(DisableTokenOracle(asset)) */
-export function buildStellarProposeDisableTokenOracleTx(
-  opts: StellarBuilderOptions,
-  args: { asset: string },
-  salt: StellarGovernanceSalt
-): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    adminOp('DisableTokenOracle', addr(args.asset)),
-    salt
-  )
-}
-
 /** propose(UpgradeController(hash)) */
 export function buildStellarProposeUpgradeControllerTx(
   opts: StellarBuilderOptions,

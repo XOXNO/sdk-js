@@ -21,7 +21,6 @@ import {
   buildStellarClaimRevenueTx,
   buildStellarSetMarketOracleConfigTx,
   buildStellarCreateLiquidityPoolTx,
-  buildStellarDisableTokenOracleTx,
   buildStellarSetOracleToleranceTx,
   buildStellarGrantRoleTx,
   buildStellarMigrateTx,
@@ -275,12 +274,6 @@ const cases: Case[] = [
         upperRatioBps: 10_500,
         lowerRatioBps: 9_500,
       }),
-  },
-  {
-    name: 'disable_token_oracle',
-    expectedFn: 'disable_token_oracle',
-    expectedArgCount: 1,
-    build: () => buildStellarDisableTokenOracleTx(BASE_OPTS, { asset: FIXTURE_USDC }),
   },
   // router.rs
   {

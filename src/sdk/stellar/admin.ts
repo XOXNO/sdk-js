@@ -385,14 +385,6 @@ export function buildStellarSetOracleToleranceTx(
   ])
 }
 
-/** disable_token_oracle(asset) — #[only_owner] */
-export function buildStellarDisableTokenOracleTx(
-  opts: StellarBuilderOptions,
-  args: { asset: string }
-): BuiltStellarTx {
-  return buildTx(opts, 'disable_token_oracle', [addr(args.asset)])
-}
-
 // -----------------------------------------------------------------------------
 // Router (router.rs)
 // -----------------------------------------------------------------------------
