@@ -51,6 +51,7 @@ const ORACLE_STRATEGY_U32: Record<string, number> = {
 }
 const PROVIDER_REFLECTOR = 'ReflectorSep40'
 const PROVIDER_REDSTONE = 'RedStonePriceFeed'
+const PROVIDER_XOXNO = 'XoxnoPriceFeed'
 const READ_MODE_TWAP = 'Twap'
 const ASSET_REF_STELLAR = 'Stellar'
 const ASSET_REF_SYMBOL = 'Symbol'
@@ -130,7 +131,7 @@ const encodeOracleReadMode = (
   return vec([sym('Spot')])
 }
 
-/** `OracleSourceConfigInput` data-enum — `Reflector(...)` | `RedStone(...)`. */
+/** `OracleSourceConfigInput` data-enum — `Reflector(...)` | `RedStone(...)` | `Xoxno(...)`. */
 export const encodeOracleSourceConfigInput = (
   src: OracleSourceConfigInputDto
 ): xdr.ScVal => {
@@ -148,17 +149,22 @@ export const encodeOracleSourceConfigInput = (
       }),
     ])
   }
-  if (provider === PROVIDER_REDSTONE) {
+  // RedStone and the first-party XOXNO adapter share a wire shape (contract +
+  // feed id + per-source staleness); only the variant symbol differs.
+  if (provider === PROVIDER_REDSTONE || provider === PROVIDER_XOXNO) {
+    const variant = provider === PROVIDER_REDSTONE ? 'RedStone' : 'Xoxno'
     if (typeof src.feedId !== 'string') {
-      throw new Error('Stellar builder: RedStone oracle source requires `feedId`')
+      throw new Error(
+        `Stellar builder: ${variant} oracle source requires \`feedId\``
+      )
     }
     if (typeof src.maxStaleSeconds !== 'number') {
       throw new Error(
-        'Stellar builder: RedStone oracle source requires `maxStaleSeconds`'
+        `Stellar builder: ${variant} oracle source requires \`maxStaleSeconds\``
       )
     }
     return vec([
-      sym('RedStone'),
+      sym(variant),
       scStruct({
         contract: addr(src.contract),
         feed_id: str(src.feedId),

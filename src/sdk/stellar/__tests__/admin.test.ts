@@ -453,6 +453,38 @@ describe('complex struct encoding', () => {
     expect(strategy.u32()).toBe(1)
   })
 
+  it('encodes a XoxnoPriceFeed source as the Xoxno union with the RedStone wire shape', () => {
+    const args = {
+      ...configureOracleArgs,
+      config: {
+        ...configureOracleArgs.config,
+        anchor: {
+          provider: 'XoxnoPriceFeed',
+          contract: FIXTURE_ORACLE2,
+          feedId: 'USDC',
+          readMode: 'Spot',
+          maxStaleSeconds: 600,
+        },
+      },
+    } as unknown as ConfigureMarketOracleArgs
+    const parsed = parseInvoked(
+      buildStellarSetMarketOracleConfigTx(BASE_OPTS, args).xdr
+    )
+    const cfg = parsed.args[1]!
+    const anchor = cfg
+      .map()!
+      .find((e) => e.key().sym().toString() === 'anchor')!
+      .val()
+    expect(anchor.vec()![0]!.sym().toString()).toBe('Some')
+    const anchorSource = anchor.vec()![1]!
+    expect(anchorSource.vec()![0]!.sym().toString()).toBe('Xoxno')
+    expect(mapKeys(anchorSource.vec()![1]!)).toEqual([
+      'contract',
+      'feed_id',
+      'max_stale_seconds',
+    ])
+  })
+
   it('encodes each struct field at its correct ScVal width (i128 vs u64 vs u32 vs bool)', () => {
     // MarketParamsRaw — RAY rates are i128, decimals/reserve are u32, asset is
     // address, flash-loan flag is bool.
