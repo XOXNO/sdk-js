@@ -2,12 +2,26 @@ import { mapSorobanError } from '../soroban-errors'
 
 describe('mapSorobanError', () => {
   it('maps a known SpokeError contract error', () => {
-    const raw = 'HostError: Error(Contract, #314)'
+    const raw = 'HostError: Error(Contract, #309)'
     expect(mapSorobanError(raw)).toEqual({
-      code: 314,
-      name: 'SpokeCapBelowUsage',
-      message: 'The new cap is below current usage on this spoke asset.',
+      code: 309,
+      name: 'SpokeAssetInUse',
+      message:
+        'This spoke asset still has live positions; drain usage before removal.',
     })
+  })
+
+  it('maps the unlisted-asset SpokeError', () => {
+    expect(mapSorobanError('Error(Contract, #307)')).toEqual({
+      code: 307,
+      name: 'AssetNotInSpoke',
+      message: 'This asset is not listed on the spoke.',
+    })
+  })
+
+  it('returns null for the retired SpokeCapBelowUsage code', () => {
+    // Code 314 was retired: caps may sit below live usage (ratchet-down).
+    expect(mapSorobanError('Error(Contract, #314)')).toBeNull()
   })
 
   it('maps a known OracleError contract error', () => {

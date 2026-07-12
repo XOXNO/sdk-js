@@ -391,6 +391,45 @@ export function buildStellarSetOracleToleranceTx(
   ])
 }
 
+/**
+ * set_spoke_asset_flags(spoke_id, hub_asset, paused, frozen) — #[only_owner].
+ * Flags-only listing edit; production callers route through the GUARDIAN-gated
+ * governance forwarder (`buildStellarGovernanceSetSpokeAssetFlagsImmediateTx`).
+ */
+export function buildStellarSetSpokeAssetFlagsTx(
+  opts: StellarBuilderOptions,
+  args: {
+    spokeId: number
+    hubId: number
+    asset: string
+    paused: boolean
+    frozen: boolean
+  }
+): BuiltStellarTx {
+  return buildTx(opts, 'set_spoke_asset_flags', [
+    u32(args.spokeId),
+    hubAsset(args.hubId, args.asset),
+    bool(args.paused),
+    bool(args.frozen),
+  ])
+}
+
+/**
+ * set_oracle_sanity_bounds(asset, min_wad, max_wad) — #[only_owner].
+ * Band-only oracle edit; production callers route through the ORACLE-gated
+ * governance forwarder (`buildStellarGovernanceSetOracleSanityBoundsImmediateTx`).
+ */
+export function buildStellarSetOracleSanityBoundsTx(
+  opts: StellarBuilderOptions,
+  args: { asset: string; minPriceWad: string; maxPriceWad: string }
+): BuiltStellarTx {
+  return buildTx(opts, 'set_oracle_sanity_bounds', [
+    addr(args.asset),
+    i128(args.minPriceWad),
+    i128(args.maxPriceWad),
+  ])
+}
+
 // -----------------------------------------------------------------------------
 // Router (router.rs)
 // -----------------------------------------------------------------------------

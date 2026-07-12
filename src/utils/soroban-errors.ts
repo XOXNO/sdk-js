@@ -26,9 +26,9 @@ const SOROBAN_ERROR_CATALOG: Record<number, { name: string; message: string }> =
   // SpokeError
   300: { name: 'SpokeNotFound', message: 'This spoke does not exist.' },
   301: { name: 'SpokeDeprecated', message: 'This spoke has been deprecated.' },
+  307: { name: 'AssetNotInSpoke', message: 'This asset is not listed on the spoke.' },
   308: { name: 'AssetAlreadyInSpoke', message: 'This asset is already listed in the spoke.' },
-  309: { name: 'SpokeAssetsLimitReached', message: 'This spoke has reached its asset limit.' },
-  314: { name: 'SpokeCapBelowUsage', message: 'The new cap is below current usage on this spoke asset.' },
+  309: { name: 'SpokeAssetInUse', message: 'This spoke asset still has live positions; drain usage before removal.' },
   315: { name: 'SpokeAssetPaused', message: 'This spoke asset is paused.' },
   316: { name: 'SpokeAssetFrozen', message: 'This spoke asset is frozen.' },
   // OracleError

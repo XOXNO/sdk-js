@@ -776,3 +776,102 @@ export function buildStellarGovernanceExecuteTransferGovOwnTx(
     salt
   )
 }
+
+// -----------------------------------------------------------------------------
+// Immediate role-gated operations — direct governance calls, no timelock
+// -----------------------------------------------------------------------------
+
+export interface SpokeAssetFlagsArgs {
+  spokeId: number
+  hubId: number
+  asset: string
+  paused: boolean
+  frozen: boolean
+}
+
+export interface OracleSanityBoundsArgs {
+  asset: string
+  /** New band floor, USD WAD (i128 as decimal string). */
+  minPriceWad: string
+  /** New band ceiling, USD WAD (i128 as decimal string). */
+  maxPriceWad: string
+}
+
+/**
+ * set_spoke_asset_flags(caller, spoke_id, hub_asset, paused, frozen) —
+ * GUARDIAN-gated, immediate. Flags-only per-listing incident brake: no risk
+ * params, caps, or oracle override travel with it. `caller = opts.caller`
+ * must hold GUARDIAN and sign.
+ */
+export function buildStellarGovernanceSetSpokeAssetFlagsImmediateTx(
+  opts: StellarBuilderOptions,
+  args: SpokeAssetFlagsArgs
+): BuiltStellarTx {
+  return buildGovernanceTx(opts, 'set_spoke_asset_flags', [
+    addr(opts.caller),
+    u32(args.spokeId),
+    hubAsset(args.hubId, args.asset),
+    bool(args.paused),
+    bool(args.frozen),
+  ])
+}
+
+/**
+ * set_oracle_sanity_bounds(caller, asset, min_wad, max_wad) — ORACLE-gated,
+ * immediate. Moves only the sanity band; the controller requires the new band
+ * to contain the current live price AND overlap the previous band (bands walk,
+ * never teleport). Reverts: InvalidSanityBounds (malformed or disjoint from
+ * the old band), SanityBoundViolated (live price outside the new band),
+ * PriceFeedStale (feed cannot prove containment). `caller = opts.caller` must
+ * hold ORACLE and sign.
+ */
+export function buildStellarGovernanceSetOracleSanityBoundsImmediateTx(
+  opts: StellarBuilderOptions,
+  args: OracleSanityBoundsArgs
+): BuiltStellarTx {
+  return buildGovernanceTx(opts, 'set_oracle_sanity_bounds', [
+    addr(opts.caller),
+    addr(args.asset),
+    i128(args.minPriceWad),
+    i128(args.maxPriceWad),
+  ])
+}
+
+/**
+ * create_hub(caller) — GUARDIAN-gated, immediate; returns the new hub id.
+ * The registry entry is inert until assets are listed through the timelocked
+ * path. Distinct from `buildStellarProposeCreateHubTx` (timelock).
+ */
+export function buildStellarGovernanceCreateHubImmediateTx(
+  opts: StellarBuilderOptions
+): BuiltStellarTx {
+  return buildGovernanceTx(opts, 'create_hub', [addr(opts.caller)])
+}
+
+/**
+ * add_spoke(caller) — GUARDIAN-gated, immediate; returns the new spoke id.
+ * Listings on it still ride the timelock. Distinct from
+ * `buildStellarProposeAddSpokeTx` (timelock).
+ */
+export function buildStellarGovernanceAddSpokeImmediateTx(
+  opts: StellarBuilderOptions
+): BuiltStellarTx {
+  return buildGovernanceTx(opts, 'add_spoke', [addr(opts.caller)])
+}
+
+/**
+ * revoke_role_immediate(account, role) — owner-gated emergency
+ * de-authorization; accepts only the immediate incident roles GUARDIAN and
+ * ORACLE (`InvalidRole` otherwise). Grants and PROPOSER/EXECUTOR/CANCELLER
+ * revocations stay timelocked. The tx source (`opts.caller`) must be the
+ * governance owner.
+ */
+export function buildStellarGovernanceRevokeRoleImmediateTx(
+  opts: StellarBuilderOptions,
+  args: RoleGrantArgs
+): BuiltStellarTx {
+  return buildGovernanceTx(opts, 'revoke_role_immediate', [
+    addr(args.account),
+    sym(args.role),
+  ])
+}
