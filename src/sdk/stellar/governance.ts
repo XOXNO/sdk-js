@@ -875,3 +875,28 @@ export function buildStellarGovernanceRevokeRoleImmediateTx(
     sym(args.role),
   ])
 }
+
+/**
+ * pause() — owner-gated, immediate protocol-wide brake. Forwards to the
+ * controller's `pause`, halting supply/borrow/strategy entrypoints across
+ * every market (exits and liquidation stay open). The tx source
+ * (`opts.caller`) must be the governance owner. Distinct from the
+ * controller-targeted `buildStellarPauseTx`, which an EOA cannot call because
+ * the controller's owner is the governance contract.
+ */
+export function buildStellarGovernancePauseTx(
+  opts: StellarBuilderOptions
+): BuiltStellarTx {
+  return buildGovernanceTx(opts, 'pause', [])
+}
+
+/**
+ * unpause() — owner-gated, immediate. Forwards to the controller's `unpause`,
+ * resuming the entrypoints halted by `pause`. The tx source (`opts.caller`)
+ * must be the governance owner.
+ */
+export function buildStellarGovernanceUnpauseTx(
+  opts: StellarBuilderOptions
+): BuiltStellarTx {
+  return buildGovernanceTx(opts, 'unpause', [])
+}
