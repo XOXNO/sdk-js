@@ -866,6 +866,9 @@ sdk.stellarLending.rateSpread(...); // RateSpreadSeriesDto
 // GET /stellar-lending/defillama
 sdk.stellarLending.defillama(...); // DefiLlamaDimensionsDto
 
+// GET /stellar-lending/live-state
+sdk.stellarLending.liveState(...); // StellarLendingLiveStateDto
+
 // GET /tokens
 sdk.tokens(...); // TokenDataDocHydrated[]
 

@@ -1893,5 +1893,9 @@
       "output": {} as SuccessDto,
       "body": {} as PerpEvent
     }
+  },
+  "/stellar-lending/live-state": {
+    "input": {},
+    "output": {} as StellarLendingLiveStateDto
   }
 }

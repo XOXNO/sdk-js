@@ -16,6 +16,7 @@ import type {
   StellarAssetListItem,
   StellarAssetPage,
   StellarHubListItem,
+  StellarLendingLiveStateDto,
   StellarReserveListItem,
   StellarSpokeListItem,
   StellarUserActivityItem,
@@ -57,6 +58,13 @@ export const getStellarLendingContext = (
   init?: OurRequestInit
 ): Promise<StellarLendingContext> =>
   client.fetchWithTimeout<StellarLendingContext>(`${BASE}/context`, init)
+
+/** Live per-hub indexes and controller borrow-collateral floor. */
+export const getStellarLendingLiveState = (
+  client: XOXNOClient,
+  init?: OurRequestInit
+): Promise<StellarLendingLiveStateDto> =>
+  client.fetchWithTimeout<StellarLendingLiveStateDto>(`${BASE}/live-state`, init)
 
 /** Every asset, aggregated across hubs — rows for the Deposit/Borrow tables. */
 export const getStellarAssets = (
@@ -294,6 +302,7 @@ export const getStellarReserveGraph = (
  */
 export const stellarLendingRead = (client: XOXNOClient) => ({
   context: (init?: OurRequestInit) => getStellarLendingContext(client, init),
+  liveState: (init?: OurRequestInit) => getStellarLendingLiveState(client, init),
   assets: (init?: OurRequestInit) => getStellarAssets(client, init),
   hubs: (init?: OurRequestInit) => getStellarHubs(client, init),
   spokes: (init?: OurRequestInit) => getStellarSpokes(client, init),

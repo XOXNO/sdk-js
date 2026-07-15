@@ -1,9 +1,11 @@
 import { XOXNOClient } from '../../../utils/api'
+import { buildSdk } from '../../index'
 import {
   getStellarAsset,
   getStellarAssets,
   getStellarHubs,
   getStellarLendingContext,
+  getStellarLendingLiveState,
   getStellarReserve,
   getStellarReserves,
   getStellarSpokes,
@@ -21,6 +23,7 @@ describe('stellar lending read surface', () => {
     expect(typeof getStellarSpokes).toBe('function')
     expect(typeof getStellarReserves).toBe('function')
     expect(typeof getStellarLendingContext).toBe('function')
+    expect(typeof getStellarLendingLiveState).toBe('function')
     expect(typeof stellarLendingRead).toBe('function')
   })
 
@@ -44,6 +47,9 @@ describe('stellar lending read surface', () => {
     await read.context()
     expect(captured.path).toBe('/stellar-lending/context')
 
+    await read.liveState()
+    expect(captured.path).toBe('/stellar-lending/live-state')
+
     await read.assets()
     expect(captured.path).toBe('/stellar-lending/assets')
 
@@ -64,6 +70,20 @@ describe('stellar lending read surface', () => {
     expect(captured.path).toBe('/stellar-lending/reserves')
     expect(captured.opts?.debug).toBe(true)
     expect(captured.opts?.params).toEqual({})
+  })
+
+  it('exposes the generated live-state route with response typing', async () => {
+    const client = new XOXNOClient()
+    let capturedPath = ''
+    client.fetchWithTimeout = (async (path: string) => {
+      capturedPath = path
+      return { indexes: [], minBorrowCollateralUsdWad: null }
+    }) as unknown as typeof client.fetchWithTimeout
+
+    const liveState = await buildSdk(client).stellarLending.liveState()
+
+    expect(capturedPath).toBe('/stellar-lending/live-state')
+    expect(liveState.minBorrowCollateralUsdWad).toBeNull()
   })
 
   it('binds a client and calls fetchWithTimeout with the right path + params', async () => {
