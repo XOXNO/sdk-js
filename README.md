@@ -761,6 +761,9 @@ sdk.stellarLending.assets(...); // StellarAssetListItemDto[]
 // GET /stellar-lending/context
 sdk.stellarLending.context(...); // StellarLendingContextDto
 
+// GET /stellar-lending/live-state
+sdk.stellarLending.liveState(...); // StellarLendingLiveStateDto
+
 // GET /stellar-lending/hubs
 sdk.stellarLending.hubs(...); // StellarHubListItemDto[]
 
@@ -865,9 +868,6 @@ sdk.stellarLending.rateSpread(...); // RateSpreadSeriesDto
 
 // GET /stellar-lending/defillama
 sdk.stellarLending.defillama(...); // DefiLlamaDimensionsDto
-
-// GET /stellar-lending/live-state
-sdk.stellarLending.liveState(...); // StellarLendingLiveStateDto
 
 // GET /tokens
 sdk.tokens(...); // TokenDataDocHydrated[]

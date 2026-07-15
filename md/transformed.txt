@@ -778,6 +778,10 @@
     "input": {},
     "output": {} as StellarLendingContextDto
   },
+  "/stellar-lending/live-state": {
+    "input": {},
+    "output": {} as StellarLendingLiveStateDto
+  },
   "/stellar-lending/hubs": {
     "input": {},
     "output": {} as StellarHubListItemDto[]
@@ -1893,9 +1897,5 @@
       "output": {} as SuccessDto,
       "body": {} as PerpEvent
     }
-  },
-  "/stellar-lending/live-state": {
-    "input": {},
-    "output": {} as StellarLendingLiveStateDto
   }
 }

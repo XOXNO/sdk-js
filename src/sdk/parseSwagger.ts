@@ -188,14 +188,49 @@ function parseSchema(curr: unknown, schemas: Record<string, unknown>): string {
 const alreadyChecked = new Set<string>([])
 const duplicates: string[] = []
 
+const releaseOverlayPaths = ['/stellar-lending/live-state'] as const
+const releaseOverlaySchemas = [
+  'StellarLendingLiveStateDto',
+  'StellarMarketIndexByHub',
+] as const
+
+function preserveReleaseOverlay(
+  fetched: Record<string, any>,
+  committed: Record<string, any>
+) {
+  fetched.paths ??= {}
+  fetched.components ??= {}
+  fetched.components.schemas ??= {}
+
+  for (const route of releaseOverlayPaths) {
+    if (!fetched.paths[route] && committed.paths?.[route]) {
+      fetched.paths[route] = committed.paths[route]
+    }
+  }
+
+  for (const schema of releaseOverlaySchemas) {
+    if (
+      !fetched.components.schemas[schema] &&
+      committed.components?.schemas?.[schema]
+    ) {
+      fetched.components.schemas[schema] = committed.components.schemas[schema]
+    }
+  }
+}
+
 async function parseSwagger() {
   const swaggerUrl = process.env.SWAGGER_URL ?? 'https://api.xoxno.com/swagger.yaml'
   const swaggerJsonPath = path.join(process.cwd(), './src/sdk/swagger.json')
+  const committed = JSON.parse(await readFile(swaggerJsonPath, 'utf8'))
 
   const response = await fetch(swaggerUrl).catch(() => undefined)
   let parsed = response?.ok ? parse(await response.text()) : undefined
 
   if (parsed?.paths) {
+    // Deployment and Cloudflare caches can briefly lag a package release.
+    // Keep only explicitly listed, committed additions until live Swagger
+    // exposes them; live definitions always win once present.
+    preserveReleaseOverlay(parsed, committed)
     await writeFile(swaggerJsonPath, JSON.stringify(parsed))
   } else {
     // A WAF challenge or outage on the swagger endpoint must not block SDK
@@ -204,7 +239,7 @@ async function parseSwagger() {
       `swagger fetch failed (${swaggerUrl} -> ${response?.status ?? 'network error'}); ` +
         'building from committed src/sdk/swagger.json'
     )
-    parsed = JSON.parse(await readFile(swaggerJsonPath, 'utf8'))
+    parsed = committed
   }
 
   const result: IRawSdk = {}
