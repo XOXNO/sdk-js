@@ -877,26 +877,28 @@ export function buildStellarGovernanceRevokeRoleImmediateTx(
 }
 
 /**
- * pause() — owner-gated, immediate protocol-wide brake. Forwards to the
- * controller's `pause`, halting supply/borrow/strategy entrypoints across
- * every market (exits and liquidation stay open). The tx source
- * (`opts.caller`) must be the governance owner. Distinct from the
- * controller-targeted `buildStellarPauseTx`, which an EOA cannot call because
- * the controller's owner is the governance contract.
+ * pause(caller) — GUARDIAN-gated, immediate protocol-wide brake. Forwards to
+ * the controller's `pause`, halting supply/borrow/strategy entrypoints across
+ * every market (exits and liquidation stay open). Halting is fail-safe, so the
+ * fast incident key acts without the owner online. `caller = opts.caller` must
+ * hold GUARDIAN and sign. Distinct from the controller-targeted
+ * `buildStellarPauseTx`, which an EOA cannot call because the controller's
+ * owner is the governance contract.
  */
 export function buildStellarGovernancePauseTx(
   opts: StellarBuilderOptions
 ): BuiltStellarTx {
-  return buildGovernanceTx(opts, 'pause', [])
+  return buildGovernanceTx(opts, 'pause', [addr(opts.caller)])
 }
 
 /**
- * unpause() — owner-gated, immediate. Forwards to the controller's `unpause`,
- * resuming the entrypoints halted by `pause`. The tx source (`opts.caller`)
- * must be the governance owner.
+ * propose(Unpause) — resuming the controller is risk-loosening, so unlike the
+ * GUARDIAN-immediate `pause` it rides the timelock as a Standard-delay
+ * governance proposal. `proposer = opts.caller` must hold PROPOSER and sign.
  */
-export function buildStellarGovernanceUnpauseTx(
-  opts: StellarBuilderOptions
+export function buildStellarProposeUnpauseTx(
+  opts: StellarBuilderOptions,
+  salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildGovernanceTx(opts, 'unpause', [])
+  return buildPropose(opts, adminOp('Unpause'), salt)
 }

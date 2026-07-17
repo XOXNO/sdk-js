@@ -18,6 +18,7 @@ import {
   buildStellarProposeRemoveSpokeTx,
   buildStellarProposeSetPositionManagerTx,
   buildStellarProposeSetSpokeLiquidationCurveTx,
+  buildStellarProposeUnpauseTx,
   buildStellarProposeUpgradePoolParamsTx,
 } from '../governance'
 import type { StellarBuilderOptions } from '../lending'
@@ -331,6 +332,20 @@ describe('Stellar lending governance builders', () => {
         expect(build().xdr).toMatchSnapshot()
       })
     })
+
+    describe('Unpause (unit variant)', () => {
+      const build = () => buildStellarProposeUnpauseTx(BASE_OPTS, FIXTURE_SALT)
+
+      it('encodes Unpause as a tag-only enum', () => {
+        const op = parseInvoked(build().xdr).args[1]!
+        expect(adminOpVariant(op)).toBe('Unpause')
+        expect(op.vec()).toHaveLength(1)
+      })
+
+      it('matches stored snapshot', () => {
+        expect(build().xdr).toMatchSnapshot()
+      })
+    })
   })
 
   // Byte-parity gate: the AdminOperation ScVal the SDK encodes MUST match the
@@ -347,6 +362,12 @@ describe('Stellar lending governance builders', () => {
     it('DeployPool', () => {
       expect(opXdr(buildStellarProposeDeployPoolTx(BASE_OPTS, FIXTURE_SALT).xdr)).toBe(
         'AAAAEAAAAAEAAAABAAAADwAAAApEZXBsb3lQb29sAAA='
+      )
+    })
+
+    it('Unpause', () => {
+      expect(opXdr(buildStellarProposeUnpauseTx(BASE_OPTS, FIXTURE_SALT).xdr)).toBe(
+        'AAAAEAAAAAEAAAABAAAADwAAAAdVbnBhdXNlAA=='
       )
     })
 
