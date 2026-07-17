@@ -57,6 +57,7 @@ import {
   bytesN,
   hubAsset,
   i128,
+  option,
   scStruct,
   sym,
   u32,
@@ -775,6 +776,64 @@ export function buildStellarGovernanceExecuteTransferGovOwnTx(
     adminOp('TransferGovOwnership', encodeTransferOwnershipArgs(args)),
     salt
   )
+}
+
+// -----------------------------------------------------------------------------
+// Recovery — owner-gated canceller-council reset. Direct entrypoints, NOT
+// `AdminOperation` — the contract exposes `propose_canceller_reset` /
+// `execute_canceller_reset` as their own methods, so these bypass
+// `buildPropose` / `buildExecuteSelf` and call `buildGovernanceTx` directly,
+// mirroring the immediate-op builders below. Still timelocked at the Recovery
+// delay (unlike the immediate section), just outside the `AdminOperation` enum.
+// -----------------------------------------------------------------------------
+
+export interface CancellerResetArgs {
+  /** New canceller council membership — replaces the existing set wholesale. */
+  newCancellers: string[]
+}
+
+export interface ExecuteCancellerResetArgs extends CancellerResetArgs {
+  /** Omitted leaves execution open (Soroban `Option::None`) to any account. */
+  executor?: string
+}
+
+const addressVec = (addresses: string[]): xdr.ScVal => vec(addresses.map(addr))
+
+/**
+ * propose_canceller_reset(new_cancellers, salt) — owner-only, non-vetoable
+ * council reset scheduled at the Recovery delay; direct entrypoint, not
+ * `AdminOperation`. `#[only_owner]` takes no `caller` param — the tx source
+ * (`opts.caller`) must be the governance owner and sign. Returns the
+ * operation id.
+ */
+export function buildStellarProposeCancellerResetTx(
+  opts: StellarBuilderOptions,
+  args: CancellerResetArgs,
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildGovernanceTx(opts, 'propose_canceller_reset', [
+    addressVec(args.newCancellers),
+    saltScVal(salt),
+  ])
+}
+
+/**
+ * execute_canceller_reset(executor, new_cancellers, salt) — executes a
+ * matured council reset; direct entrypoint, not `execute_self` /
+ * `AdminOperation`. `executor` omitted leaves execution open to any account;
+ * `newCancellers` and `salt` MUST match the values passed to
+ * `buildStellarProposeCancellerResetTx`.
+ */
+export function buildStellarExecuteCancellerResetTx(
+  opts: StellarBuilderOptions,
+  args: ExecuteCancellerResetArgs,
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildGovernanceTx(opts, 'execute_canceller_reset', [
+    option(args.executor, addr),
+    addressVec(args.newCancellers),
+    saltScVal(salt),
+  ])
 }
 
 // -----------------------------------------------------------------------------

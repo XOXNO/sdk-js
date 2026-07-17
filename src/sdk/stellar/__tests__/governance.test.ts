@@ -7,7 +7,9 @@ import { jest } from '@jest/globals'
 import { Networks, Transaction, xdr as stellarXdr } from '@stellar/stellar-sdk'
 
 import {
+  buildStellarExecuteCancellerResetTx,
   buildStellarGovernanceExecuteUpdateDelayTx,
+  buildStellarProposeCancellerResetTx,
   buildStellarProposeDeployPoolTx,
   buildStellarProposeSetAggregatorTx,
   buildStellarProposeUpdateDelayTx,
@@ -416,6 +418,94 @@ describe('Stellar lending governance builders', () => {
 
     it('matches stored snapshot', () => {
       expect(build().xdr).toMatchSnapshot()
+    })
+  })
+
+  // Recovery — owner-gated canceller-council reset. Direct entrypoints, NOT
+  // `AdminOperation`: `propose_canceller_reset` / `execute_canceller_reset`
+  // are their own methods, so args are NOT wrapped in the enum encoding used
+  // by `propose` / `execute_self` above.
+  describe('propose_canceller_reset — owner-only, direct entrypoint', () => {
+    const NEW_CANCELLERS = [FIXTURE_GOVERNANCE, FIXTURE_USDC]
+    const build = () =>
+      buildStellarProposeCancellerResetTx(
+        BASE_OPTS,
+        { newCancellers: NEW_CANCELLERS },
+        FIXTURE_SALT
+      )
+
+    let built: { xdr: string }
+    beforeAll(() => {
+      built = build()
+    })
+
+    it('returns non-empty base64 XDR', () => {
+      expect(typeof built.xdr).toBe('string')
+      expect(built.xdr.length).toBeGreaterThan(0)
+    })
+
+    it('calls propose_canceller_reset with [Vec<Address>, salt] — no AdminOperation wrapper', () => {
+      const parsed = parseInvoked(built.xdr)
+      expect(parsed.functionName).toBe('propose_canceller_reset')
+      expect(parsed.args).toHaveLength(2)
+      expect(parsed.args[0]!.switch().name).toBe('scvVec')
+      const elems = parsed.args[0]!.vec()!
+      expect(elems).toHaveLength(2)
+      expect(elems[0]!.switch().name).toBe('scvAddress')
+      expect(elems[1]!.switch().name).toBe('scvAddress')
+      expect(parsed.args[1]!.switch().name).toBe('scvBytes')
+    })
+
+    it('is deterministic', () => {
+      expect(build().xdr).toBe(built.xdr)
+    })
+
+    it('matches stored snapshot', () => {
+      expect(built.xdr).toMatchSnapshot()
+    })
+  })
+
+  describe('execute_canceller_reset — open executor, direct entrypoint', () => {
+    const NEW_CANCELLERS = [FIXTURE_GOVERNANCE, FIXTURE_USDC]
+    const build = () =>
+      buildStellarExecuteCancellerResetTx(
+        BASE_OPTS,
+        { newCancellers: NEW_CANCELLERS },
+        FIXTURE_SALT
+      )
+
+    let built: { xdr: string }
+    beforeAll(() => {
+      built = build()
+    })
+
+    it('calls execute_canceller_reset with [None, Vec<Address>, salt] when executor omitted', () => {
+      const parsed = parseInvoked(built.xdr)
+      expect(parsed.functionName).toBe('execute_canceller_reset')
+      expect(parsed.args).toHaveLength(3)
+      expect(parsed.args[0]!.switch().name).toBe('scvVoid')
+      expect(parsed.args[1]!.switch().name).toBe('scvVec')
+      expect(parsed.args[1]!.vec()).toHaveLength(2)
+      expect(parsed.args[2]!.switch().name).toBe('scvBytes')
+    })
+
+    it('encodes a present executor as a bare Address (Soroban Option::Some is unwrapped)', () => {
+      const parsed = parseInvoked(
+        buildStellarExecuteCancellerResetTx(
+          BASE_OPTS,
+          { executor: FIXTURE_CALLER, newCancellers: NEW_CANCELLERS },
+          FIXTURE_SALT
+        ).xdr
+      )
+      expect(parsed.args[0]!.switch().name).toBe('scvAddress')
+    })
+
+    it('is deterministic', () => {
+      expect(build().xdr).toBe(built.xdr)
+    })
+
+    it('matches stored snapshot', () => {
+      expect(built.xdr).toMatchSnapshot()
     })
   })
 })
