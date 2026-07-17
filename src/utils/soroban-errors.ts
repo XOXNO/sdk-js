@@ -31,6 +31,7 @@ const SOROBAN_ERROR_CATALOG: Record<number, { name: string; message: string }> =
   309: { name: 'SpokeAssetInUse', message: 'This spoke asset still has live positions; drain usage before removal.' },
   315: { name: 'SpokeAssetPaused', message: 'This spoke asset is paused.' },
   316: { name: 'SpokeAssetFrozen', message: 'This spoke asset is frozen.' },
+  317: { name: 'SpokeAssetFlagRelaxation', message: 'Guardian flag updates may only tighten; clearing a flag requires the timelocked edit.' },
   // OracleError
   220: { name: 'InvalidOracleBase', message: 'The oracle quote asset/market is missing or invalid.' },
   221: { name: 'InvalidOracleDecimals', message: 'The oracle decimals value is invalid.' },
