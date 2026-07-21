@@ -1,5 +1,6 @@
 /**
- * Decoders for the Stellar lending controller `#[contractevent]`s.
+ * Decoders for the Stellar lending `#[contractevent]`s (controller, pool, and
+ * the price-aggregator's `config:oracle`).
  *
  * Decodes the core protocol topics plus the pool's `strategy:fee`. Intentional
  * omissions (decodeStellarLendingEvent returns `null` for them, like any other
@@ -59,8 +60,6 @@ const num = (v: unknown): number => (typeof v === 'bigint' ? Number(v) : Number(
 const str = (v: unknown): string => String(v)
 const optDec = (v: unknown): string | undefined =>
   v === null || v === undefined ? undefined : dec(v)
-const optStr = (v: unknown): string | undefined =>
-  v === null || v === undefined ? undefined : str(v)
 const hex = (v: unknown): string =>
   v instanceof Uint8Array
     ? Buffer.from(v).toString('hex')
@@ -70,8 +69,11 @@ const hex = (v: unknown): string =>
 
 const POSITION_MODE = ['None', 'Multiply', 'Long', 'Short'] as const
 const ORACLE_STRATEGY = ['Single', 'PrimaryWithAnchor'] as const
-const ORACLE_PROVIDER = ['ReflectorSep40', 'RedStonePriceFeed'] as const
-const ORACLE_READ_MODE = ['Spot', 'Twap'] as const
+const ORACLE_PROVIDER = [
+  'ReflectorSep40',
+  'RedStonePriceFeed',
+  'XoxnoPriceFeed',
+] as const
 
 /** PositionAction u32 discriminant → legacy action string (frozen wire table). */
 const POSITION_ACTION = [
@@ -160,47 +162,94 @@ const decodeMarketSnapshot = (e: readonly unknown[]) => ({
   revenueRay: dec(e[8]),
 })
 
-const decodeOracleSource = (o: Raw, prefix: 'primary' | 'anchor') => {
-  const readMode = ORACLE_READ_MODE[num(o[`${prefix}_read_mode`])] ?? 'Spot'
-  const assetAddr = o[`${prefix}_asset`]
-  const symbol = o[`${prefix}_symbol`]
-  const asset =
-    assetAddr !== null && assetAddr !== undefined
-      ? { kind: 'Stellar', value: str(assetAddr) }
-      : symbol !== null && symbol !== undefined
-        ? { kind: 'Symbol', value: str(symbol) }
-        : undefined
+// `scValToNative` decodes Soroban enums to `[variantName, ...payload]` arrays
+// (unit variants in mixed enums decode to a 1-element array).
+const enumTag = (v: unknown): string => (Array.isArray(v) ? str(v[0]) : str(v))
+const enumVal = (v: unknown): unknown => (Array.isArray(v) ? v[1] : undefined)
+
+const ORACLE_PROVIDER_BY_TAG: Record<string, (typeof ORACLE_PROVIDER)[number]> = {
+  Reflector: 'ReflectorSep40',
+  RedStone: 'RedStonePriceFeed',
+  Xoxno: 'XoxnoPriceFeed',
+}
+
+/**
+ * `OracleSourceConfig` enum → normalized source + its quote token (Reflector
+ * `base: Quoted(addr)`; `undefined` = USD-quoted). Reflector sources carry the
+ * market-level staleness limit; RedStone/Xoxno carry their own.
+ */
+const decodeOracleSource = (sourceEnum: unknown, marketMaxStaleSeconds: number) => {
+  const tag = enumTag(sourceEnum)
+  const s = (enumVal(sourceEnum) ?? {}) as Raw
+  if (tag !== 'Reflector') {
+    return {
+      source: {
+        provider: ORACLE_PROVIDER_BY_TAG[tag] ?? 'RedStonePriceFeed',
+        contractAddress: str(s.contract),
+        asset: undefined,
+        feedId: str(s.feed_id),
+        readMode: 'Spot',
+        twapRecords: undefined,
+        decimals: num(s.decimals),
+        resolutionSeconds: 0,
+        maxStaleSeconds: num(s.max_stale_seconds),
+      },
+      quoteToken: undefined,
+    }
+  }
+  const readMode = enumTag(s.read_mode)
+  const assetRefKind = enumTag(s.asset)
   return {
-    provider: ORACLE_PROVIDER[num(o[`${prefix}_provider`])] ?? 'ReflectorSep40',
-    contractAddress: str(o[`${prefix}_contract`]),
-    asset,
-    feedId: optStr(o[`${prefix}_feed_id`]),
-    readMode,
-    twapRecords: readMode === 'Twap' ? num(o[`${prefix}_twap_records`]) : undefined,
-    decimals: num(o[`${prefix}_decimals`]),
-    resolutionSeconds: num(o[`${prefix}_resolution_seconds`]),
-    maxStaleSeconds: num(o[`${prefix}_max_stale_seconds`]),
+    source: {
+      provider: 'ReflectorSep40',
+      contractAddress: str(s.contract),
+      asset:
+        assetRefKind === 'Stellar' || assetRefKind === 'Symbol'
+          ? { kind: assetRefKind, value: str(enumVal(s.asset)) }
+          : undefined,
+      feedId: assetRefKind === 'String' ? str(enumVal(s.asset)) : undefined,
+      readMode,
+      twapRecords: readMode === 'Twap' ? num(enumVal(s.read_mode)) : undefined,
+      decimals: num(s.decimals),
+      resolutionSeconds: num(s.resolution_seconds),
+      maxStaleSeconds: marketMaxStaleSeconds,
+    },
+    quoteToken: enumTag(s.base) === 'Quoted' ? str(enumVal(s.base)) : undefined,
   }
 }
 
-const decodeOracleProvider = (o: Raw): StellarLendingOracleUpdateStruct => {
-  const hasAnchor = o.anchor_provider !== null && o.anchor_provider !== undefined
+/**
+ * `MarketOracleConfig` (the aggregator event's `config` field) → normalized
+ * oracle struct. `quoteTokenId` is always USD: the aggregator only prices to a
+ * USD root, quoted Reflector bases are repriced on-chain.
+ */
+const decodeOracleProvider = (
+  asset: string,
+  c: Raw
+): StellarLendingOracleUpdateStruct => {
+  const tolerance = (c.tolerance ?? {}) as Raw
+  const marketMaxStaleSeconds = num(c.max_price_stale_seconds)
+  const primary = decodeOracleSource(c.primary, marketMaxStaleSeconds)
+  const anchorEnum = enumTag(c.anchor) === 'Some' ? enumVal(c.anchor) : undefined
+  const anchor = anchorEnum
+    ? decodeOracleSource(anchorEnum, marketMaxStaleSeconds)
+    : undefined
   const oracle = {
-    baseTokenId: str(o.base_token_id),
-    quoteTokenId: str(o.quote_token_id),
+    baseTokenId: asset,
+    quoteTokenId: 'USD',
     tolerance: {
-      upperRatio: num(o.upper_ratio_bps ?? (o.tolerance as Raw)?.upper_ratio_bps),
-      lowerRatio: num(o.lower_ratio_bps ?? (o.tolerance as Raw)?.lower_ratio_bps),
+      upperRatio: num(tolerance.upper_ratio_bps),
+      lowerRatio: num(tolerance.lower_ratio_bps),
     },
-    assetDecimals: num(o.asset_decimals),
-    maxPriceStaleSeconds: num(o.max_price_stale_seconds),
-    strategy: ORACLE_STRATEGY[num(o.strategy)] ?? 'Single',
-    primary: decodeOracleSource(o, 'primary'),
-    anchor: hasAnchor ? decodeOracleSource(o, 'anchor') : undefined,
-    primaryQuoteToken: optStr(o.primary_quote_token),
-    anchorQuoteToken: optStr(o.anchor_quote_token),
-    minSanityPriceWad: optDec(o.min_sanity_price_wad),
-    maxSanityPriceWad: optDec(o.max_sanity_price_wad),
+    assetDecimals: num(c.asset_decimals),
+    maxPriceStaleSeconds: marketMaxStaleSeconds,
+    strategy: ORACLE_STRATEGY[num(c.strategy)] ?? 'Single',
+    primary: primary.source,
+    anchor: anchor?.source,
+    primaryQuoteToken: primary.quoteToken,
+    anchorQuoteToken: anchor?.quoteToken,
+    minSanityPriceWad: optDec(c.min_sanity_price_wad),
+    maxSanityPriceWad: optDec(c.max_sanity_price_wad),
   }
   return oracle as unknown as StellarLendingOracleUpdateStruct
 }
@@ -292,11 +341,12 @@ const REGISTRY: Record<string, DecoderFn> = {
       fee: dec(d.fee),
     },
   }),
+  // Emitted by the price-aggregator: `{asset, config: MarketOracleConfig}`.
   'config:oracle': (d) => ({
     topic: 'config:oracle',
     data: {
       asset: str(d.asset),
-      oracle: decodeOracleProvider(d.oracle as Raw),
+      oracle: decodeOracleProvider(str(d.asset), d.config as Raw),
     },
   }),
   'position:liquidation': (d) => ({

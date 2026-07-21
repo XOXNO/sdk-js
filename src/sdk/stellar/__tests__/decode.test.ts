@@ -93,7 +93,88 @@ const marketEntry = (asset: string): xdr.ScVal =>
     i128(2n * RAY),
   ])
 
+// ---- price-aggregator `config:oracle` fixtures -------------------------------
+// Wire shape: `{asset, config: MarketOracleConfig}`; sources/read modes/bases
+// are Soroban enums (`ScVec [Symbol(variant), payload?]`).
+
+const reflectorSource = (
+  contract: string,
+  asset: string,
+  readMode: xdr.ScVal,
+  quoted?: string
+): xdr.ScVal =>
+  vecV([
+    sym('Reflector'),
+    mapV({
+      contract: addrV(contract),
+      asset: vecV([sym('Stellar'), addrV(asset)]),
+      read_mode: readMode,
+      decimals: u32(14),
+      resolution_seconds: u32(300),
+      base: quoted ? vecV([sym('Quoted'), addrV(quoted)]) : vecV([sym('Usd')]),
+    }),
+  ])
+
+const redstoneSource = (tag: 'RedStone' | 'Xoxno', contract: string): xdr.ScVal =>
+  vecV([
+    sym(tag),
+    mapV({
+      contract: addrV(contract),
+      feed_id: xdr.ScVal.scvString('USDC'),
+      decimals: u32(8),
+      max_stale_seconds: u64(600n),
+    }),
+  ])
+
+const oracleConfigData = (
+  asset: string,
+  strategy: number,
+  primary: xdr.ScVal,
+  anchor?: xdr.ScVal
+): string =>
+  b64(
+    mapV({
+      asset: addrV(asset),
+      config: mapV({
+        asset_decimals: u32(7),
+        max_price_stale_seconds: u64(900n),
+        tolerance: mapV({ upper_ratio_bps: u32(10200), lower_ratio_bps: u32(9800) }),
+        strategy: u32(strategy),
+        primary,
+        anchor: anchor ? vecV([sym('Some'), anchor]) : vecV([sym('None')]),
+        min_sanity_price_wad: i128(900000000000000000n),
+        max_sanity_price_wad: i128(1100000000000000000n),
+      }),
+    })
+  )
+
 const V2_FIXTURES: Fixture[] = [
+  {
+    topic: 'config:oracle',
+    topics: topicsFor('config', 'oracle'),
+    // Reflector TWAP primary + Reflector spot anchor quoted in ASSET_B.
+    data: oracleConfigData(
+      ASSET_A,
+      1,
+      reflectorSource(ASSET_B, ASSET_A, vecV([sym('Twap'), u32(12)])),
+      reflectorSource(ASSET_B, ASSET_A, vecV([sym('Spot')]), ASSET_B)
+    ),
+  },
+  {
+    topic: 'config:oracle_redstone_anchor',
+    topics: topicsFor('config', 'oracle'),
+    data: oracleConfigData(
+      ASSET_A,
+      1,
+      reflectorSource(ASSET_B, ASSET_A, vecV([sym('Twap'), u32(12)])),
+      redstoneSource('RedStone', ASSET_B)
+    ),
+  },
+  {
+    topic: 'config:oracle_xoxno_single',
+    topics: topicsFor('config', 'oracle'),
+    data: oracleConfigData(ASSET_A, 0, redstoneSource('Xoxno', ASSET_B)),
+  },
   {
     topic: 'position:batch_update',
     topics: topicsFor('position', 'batch_update'),
@@ -407,21 +488,29 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
   it('config:oracle — reconstructs primary/anchor sources + tolerance', () => {
     const ev = decodeFixture('config:oracle')
     if (ev.topic !== 'config:oracle') throw new Error('narrow')
+    expect(ev.data.asset).toBe(ASSET_A)
     const o = ev.data.oracle
+    expect(o.baseTokenId).toBe(ASSET_A)
     expect(o.strategy).toBe('PrimaryWithAnchor')
     expect(o.quoteTokenId).toBe('USD')
     expect(o.assetDecimals).toBe(7)
     expect(o.maxPriceStaleSeconds).toBe(900)
-    // TODO(oracle-failclosed): single band; exact values pending fixture regen post-redeploy.
-    expect(typeof o.tolerance.upperRatio).toBe('number')
-    expect(typeof o.tolerance.lowerRatio).toBe('number')
+    expect(o.tolerance.upperRatio).toBe(10200)
+    expect(o.tolerance.lowerRatio).toBe(9800)
     expect(o.primary.provider).toBe('ReflectorSep40')
+    expect(o.primary.asset).toEqual({ kind: 'Stellar', value: ASSET_A })
     expect(o.primary.readMode).toBe('Twap')
     expect(o.primary.twapRecords).toBe(12)
     expect(o.primary.decimals).toBe(14)
+    // Reflector legs carry the market-level staleness limit.
+    expect(o.primary.maxStaleSeconds).toBe(900)
+    expect(o.primaryQuoteToken).toBeUndefined()
     expect(o.anchor).toBeDefined()
     expect(o.anchor!.readMode).toBe('Spot')
     expect(o.anchor!.twapRecords).toBeUndefined()
+    expect(o.anchorQuoteToken).toBe(ASSET_B)
+    expect(o.minSanityPriceWad).toBe('900000000000000000')
+    expect(o.maxSanityPriceWad).toBe('1100000000000000000')
   })
 
   it('config:oracle with a RedStone anchor — exercises the RedStone decode branch', () => {
@@ -440,6 +529,20 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(o.anchor!.twapRecords).toBeUndefined()
     expect(o.anchor!.maxStaleSeconds).toBe(600)
     expect(o.anchor!.decimals).toBe(8)
+  })
+
+  it('config:oracle with a Xoxno single source — maps the XoxnoPriceFeed provider', () => {
+    const f = byTopic('config:oracle_xoxno_single')
+    const ev = decodeStellarLendingEvent(f.topics, f.data)
+    expect(ev).not.toBeNull()
+    if (ev!.topic !== 'config:oracle') throw new Error('narrow')
+    const o = ev.data.oracle
+    expect(o.strategy).toBe('Single')
+    expect(o.primary.provider).toBe('XoxnoPriceFeed')
+    expect(o.primary.feedId).toBe('USDC')
+    expect(o.primary.maxStaleSeconds).toBe(600)
+    expect(o.anchor).toBeUndefined()
+    expect(o.anchorQuoteToken).toBeUndefined()
   })
 
   it('decodes single-field / batch events that serialize as a wrapping ScMap', () => {
