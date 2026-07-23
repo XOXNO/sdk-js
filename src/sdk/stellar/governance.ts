@@ -332,19 +332,6 @@ export function buildStellarProposeSetAccumulatorTx(
   )
 }
 
-/** propose(SetLiquidityPoolTemplate(hash)) */
-export function buildStellarProposeSetPoolTemplateTx(
-  opts: StellarBuilderOptions,
-  args: { wasmHash: string },
-  salt: StellarGovernanceSalt
-): BuiltStellarTx {
-  return buildPropose(
-    opts,
-    adminOp('SetLiquidityPoolTemplate', bytesN(args.wasmHash)),
-    salt
-  )
-}
-
 /** propose(SetPositionLimits(limits)) */
 export function buildStellarProposeSetPositionLimitsTx(
   opts: StellarBuilderOptions,
@@ -526,12 +513,13 @@ export function buildStellarProposeUpgradePoolParamsTx(
   )
 }
 
-/** propose(DeployPool) */
+/** propose(DeployPool(hash)) */
 export function buildStellarProposeDeployPoolTx(
   opts: StellarBuilderOptions,
+  args: { wasmHash: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(opts, adminOp('DeployPool'), salt)
+  return buildPropose(opts, adminOp('DeployPool', bytesN(args.wasmHash)), salt)
 }
 
 /** propose(UpgradePool(hash)) */

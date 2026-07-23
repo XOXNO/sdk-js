@@ -334,14 +334,6 @@ export function buildStellarSetAccumulatorTx(
   return buildTx(opts, 'set_accumulator', [addr(args.accumulator)])
 }
 
-/** set_liquidity_pool_template(hash: BytesN<32>) — #[only_owner] */
-export function buildStellarSetLiquidityPoolTemplateTx(
-  opts: StellarBuilderOptions,
-  args: { wasmHash: string }
-): BuiltStellarTx {
-  return buildTx(opts, 'set_liquidity_pool_template', [bytesN(args.wasmHash)])
-}
-
 /** set_position_limits(limits: PositionLimits) — #[only_owner] */
 export function buildStellarSetPositionLimitsTx(
   opts: StellarBuilderOptions,

@@ -33,6 +33,7 @@ const FIXTURE_USDC =
   'CABQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGCK3'
 const FIXTURE_SEQUENCE = '123456789'
 const FIXTURE_SALT = 'ab'.repeat(32)
+const FIXTURE_WASM_HASH = 'ab'.repeat(32)
 
 const PARAMS_FIXTURE = {
   maxBorrowRateRay: '2000000000000000000000000000',
@@ -321,13 +322,14 @@ describe('Stellar lending governance builders', () => {
       })
     })
 
-    describe('DeployPool (unit variant)', () => {
-      const build = () => buildStellarProposeDeployPoolTx(BASE_OPTS, FIXTURE_SALT)
+    describe('DeployPool (hash variant)', () => {
+      const build = () =>
+        buildStellarProposeDeployPoolTx(BASE_OPTS, { wasmHash: FIXTURE_WASM_HASH }, FIXTURE_SALT)
 
-      it('encodes DeployPool as a tag-only enum', () => {
+      it('encodes DeployPool with a BytesN payload', () => {
         const op = parseInvoked(build().xdr).args[1]!
         expect(adminOpVariant(op)).toBe('DeployPool')
-        expect(op.vec()).toHaveLength(1)
+        expect(op.vec()).toHaveLength(2)
       })
 
       it('matches stored snapshot', () => {
@@ -362,8 +364,16 @@ describe('Stellar lending governance builders', () => {
       parseInvoked(xdrB64).args[1]!.toXDR('base64')
 
     it('DeployPool', () => {
-      expect(opXdr(buildStellarProposeDeployPoolTx(BASE_OPTS, FIXTURE_SALT).xdr)).toBe(
-        'AAAAEAAAAAEAAAABAAAADwAAAApEZXBsb3lQb29sAAA='
+      expect(
+        opXdr(
+          buildStellarProposeDeployPoolTx(
+            BASE_OPTS,
+            { wasmHash: FIXTURE_WASM_HASH },
+            FIXTURE_SALT
+          ).xdr
+        )
+      ).toBe(
+        'AAAAEAAAAAEAAAACAAAADwAAAApEZXBsb3lQb29sAAAAAAANAAAAIKurq6urq6urq6urq6urq6urq6urq6urq6urq6urq6ur'
       )
     })
 

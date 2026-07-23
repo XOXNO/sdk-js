@@ -30,7 +30,6 @@ import {
   buildStellarRevokeTokenTx,
   buildStellarSetAccumulatorTx,
   buildStellarSetAggregatorTx,
-  buildStellarSetLiquidityPoolTemplateTx,
   buildStellarSetPositionLimitsTx,
   buildStellarTransferOwnershipTx,
   buildStellarUnpauseTx,
@@ -233,12 +232,6 @@ const cases: Case[] = [
     expectedFn: 'set_accumulator',
     expectedArgCount: 1,
     build: () => buildStellarSetAccumulatorTx(BASE_OPTS, { accumulator: FIXTURE_XLM }),
-  },
-  {
-    name: 'set_liquidity_pool_template',
-    expectedFn: 'set_liquidity_pool_template',
-    expectedArgCount: 1,
-    build: () => buildStellarSetLiquidityPoolTemplateTx(BASE_OPTS, { wasmHash: FIXTURE_WASM_HASH }),
   },
   {
     name: 'set_position_limits',

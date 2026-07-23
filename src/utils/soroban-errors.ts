@@ -9,7 +9,7 @@ const SOROBAN_ERROR_CATALOG: Record<number, { name: string; message: string }> =
   2: { name: 'AssetAlreadySupported', message: 'This asset is already supported.' },
   3: { name: 'InvalidTicker', message: 'Invalid asset ticker.' },
   6: { name: 'InvalidAsset', message: 'Invalid asset address.' },
-  10: { name: 'InvalidPoolTemplate', message: 'The liquidity pool template hash is invalid.' },
+  10: { name: 'InvalidWasmHash', message: 'The WASM hash is empty or invalid.' },
   11: { name: 'InvalidExchangeSrc', message: 'The oracle configuration is invalid.' },
   12: { name: 'PairNotActive', message: 'No oracle is configured for this asset.' },
   32: { name: 'OwnerNotSet', message: 'The contract owner has not been set.' },
