@@ -506,6 +506,18 @@ sdk.faucet.POST(...); // SuccessDto
 // GET /hatom/user/:address
 sdk.hatom.user.address("...")(...); // UserInfo
 
+// GET /integrations/lending/stellar
+sdk.integrations.lending.stellar(...); // DefillamaLendingExport
+
+// GET /integrations/lending/stellar/history
+sdk.integrations.lending.stellar.history(...); // DefillamaLendingHistoryExport
+
+// GET /integrations/lending/stellar/revenue
+sdk.integrations.lending.stellar.revenue(...); // DefillamaLendingRevenueExport
+
+// GET /integrations/lending/stellar/active-users
+sdk.integrations.lending.stellar.activeUsers(...); // StellarLendingUserStatsExport
+
 // GET /launchpad/:scAddress/shareholders/royalties
 sdk.launchpad.scAddress("...").shareholders.royalties(...); // ShareholderDto[]
 

@@ -188,11 +188,40 @@ function parseSchema(curr: unknown, schemas: Record<string, unknown>): string {
 const alreadyChecked = new Set<string>([])
 const duplicates: string[] = []
 
-const releaseOverlayPaths = ['/stellar-lending/live-state'] as const
+const releaseOverlayPaths = [
+  '/stellar-lending/live-state',
+  '/integrations/lending/stellar',
+  '/integrations/lending/stellar/history',
+  '/integrations/lending/stellar/revenue',
+  '/integrations/lending/stellar/active-users',
+] as const
 const releaseOverlaySchemas = [
   'StellarLendingLiveStateDto',
   'StellarMarketIndexByHub',
+  'DefillamaLendingMarketExport',
+  'DefillamaLendingHubMarketExport',
+  'DefillamaLendingSpokeMarketExport',
+  'DefillamaLendingExportSummary',
+  'DefillamaLendingExportMethodology',
+  'DefillamaLendingExport',
+  'DefillamaLendingHistoryMarketExport',
+  'DefillamaLendingHistoryPointExport',
+  'DefillamaLendingHistoryExport',
+  'DefillamaLendingRevenuePointExport',
+  'DefillamaLendingRevenueMarketPointExport',
+  'DefillamaLendingRevenueMethodology',
+  'DefillamaLendingRevenueExport',
+  'StellarLendingUserStatsExport',
 ] as const
+
+function responseHasJsonSchema(pathItem: Record<string, any> | undefined): boolean {
+  const get = pathItem?.get
+  if (!get?.responses) return false
+  const first = Object.values(get.responses)[0] as
+    | { content?: { 'application/json'?: { schema?: unknown } } }
+    | undefined
+  return Boolean(first?.content?.['application/json']?.schema)
+}
 
 function preserveReleaseOverlay(
   fetched: Record<string, any>,
@@ -203,8 +232,12 @@ function preserveReleaseOverlay(
   fetched.components.schemas ??= {}
 
   for (const route of releaseOverlayPaths) {
-    if (!fetched.paths[route] && committed.paths?.[route]) {
-      fetched.paths[route] = committed.paths[route]
+    const committedPath = committed.paths?.[route]
+    if (!committedPath) continue
+    // Keep committed path when live is missing OR live has no typed JSON schema
+    // (Nest @ApiResponse without `type` publishes description-only 200s).
+    if (!fetched.paths[route] || !responseHasJsonSchema(fetched.paths[route])) {
+      fetched.paths[route] = committedPath
     }
   }
 

@@ -421,6 +421,22 @@
     "input": {} as {returnAsUsd?: boolean},
     "output": {} as Record<string, number>
   },
+  "/integrations/lending/stellar": {
+    "input": {},
+    "output": {} as DefillamaLendingExport
+  },
+  "/integrations/lending/stellar/history": {
+    "input": {} as {startTime: string, endTime: string, bin?: string, token?: string},
+    "output": {} as DefillamaLendingHistoryExport
+  },
+  "/integrations/lending/stellar/revenue": {
+    "input": {} as {startTime: string, endTime: string},
+    "output": {} as DefillamaLendingRevenueExport
+  },
+  "/integrations/lending/stellar/active-users": {
+    "input": {} as {startTime: string, endTime: string},
+    "output": {} as StellarLendingUserStatsExport
+  },
   "/nft/query": {
     "input": {} as {filter: PublicOnly<NftDocFilter>, continuationToken?: string},
     "output": {} as NftPaginated&{ continuationToken?: string }
