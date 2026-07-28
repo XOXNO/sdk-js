@@ -166,37 +166,11 @@ describe('stellar lending read surface', () => {
       minBorrowApy: 0.02,
       maxBorrowApy: 0.08,
       oracleProvider: {
-        baseTokenId: 'base-id',
-        quoteTokenSymbol: 'USD',
-        toleranceUpperBps: 100,
-        toleranceLowerBps: 100,
-        pricingMethod: 1,
-        oracleType: 2,
-        strategy: 3,
-        assetDecimals: 18,
+        assetDecimals: 7,
         maxPriceStaleSeconds: 3600,
-        primaryProvider: 1,
-        primaryContract: 'CA...',
-        primaryAsset: 'CASSET',
-        primarySymbol: 'CASSET',
-        primaryFeedId: 'feed-1',
-        primaryQuoteToken: 'USD',
-        primaryReadMode: 1,
-        primaryTwapRecords: 5,
-        primaryDecimals: 18,
-        primaryResolutionSeconds: 300,
-        primaryMaxStaleSeconds: 3600,
-        anchorProvider: 2,
-        anchorContract: 'CA2...',
-        anchorAsset: 'CASSET2',
-        anchorSymbol: 'CASSET2',
-        anchorFeedId: 'feed-2',
-        anchorQuoteToken: 'USD',
-        anchorReadMode: 1,
-        anchorTwapRecords: 5,
-        anchorDecimals: 18,
-        anchorResolutionSeconds: 300,
-        anchorMaxStaleSeconds: 3600,
+        sources: [],
+        tolerance: { upperRatioBps: 10500, lowerRatioBps: 9524 },
+        independence: 'RequireDisjoint',
         minSanityPriceWad: '500000000000000000',
         maxSanityPriceWad: '2000000000000000000',
       },
@@ -206,7 +180,7 @@ describe('stellar lending read surface', () => {
     const asset = await getStellarAsset(client, 'CASSET')
     expect(asset).toBe(assetSample)
     expect(asset.oracleProvider).toBeDefined()
-    expect(asset.oracleProvider?.baseTokenId).toBe('base-id')
-    expect(asset.oracleProvider?.quoteTokenSymbol).toBe('USD')
+    expect(asset.oracleProvider?.assetDecimals).toBe(7)
+    expect(asset.oracleProvider?.independence).toBe('RequireDisjoint')
   })
 })

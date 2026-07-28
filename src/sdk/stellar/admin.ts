@@ -11,17 +11,21 @@
  */
 
 import type {
+  AssetOracleConfigInputDto,
+  ConfigureAssetOracleArgsDto,
+  EditOracleToleranceArgsDto,
   InterestRateModelDto,
-  MarketOracleConfigInputDto,
   MarketParamsRawDto,
-  OracleSourceConfigInputDto,
   PositionLimitsDto,
 } from '@xoxno/types'
-
-// String-enum shapes referenced via the DTOs' field types, since `@xoxno/types`
-// does not re-export those enums on its top-level surface.
-type OracleAssetRefInput = NonNullable<OracleSourceConfigInputDto['asset']>
-type OracleReadModeInput = OracleSourceConfigInputDto['readMode']
+import type {
+  StellarAssetOracle,
+  StellarFeedSource,
+  StellarIndependencePolicy,
+  StellarPriceKey,
+  StellarPriceSource,
+  StellarProviderRef,
+} from '@xoxno/types/stellar-lending'
 
 import {
   addr,
@@ -39,23 +43,6 @@ import {
 } from './scval-encode'
 import { buildTx, type BuiltStellarTx, type StellarBuilderOptions } from './lending'
 import { xdr } from '@stellar/stellar-sdk'
-
-// -----------------------------------------------------------------------------
-// Enum string-value constants — the runtime values of the `@xoxno/types` string
-// enums, referenced without importing them at runtime.
-// -----------------------------------------------------------------------------
-
-const ORACLE_STRATEGY_U32: Record<string, number> = {
-  Single: 0,
-  PrimaryWithAnchor: 1,
-}
-const PROVIDER_REFLECTOR = 'ReflectorSep40'
-const PROVIDER_REDSTONE = 'RedStonePriceFeed'
-const PROVIDER_XOXNO = 'XoxnoPriceFeed'
-const READ_MODE_TWAP = 'Twap'
-const ASSET_REF_STELLAR = 'Stellar'
-const ASSET_REF_SYMBOL = 'Symbol'
-const ASSET_REF_STRING = 'String'
 
 // -----------------------------------------------------------------------------
 // Complex struct / union encoders
@@ -100,111 +87,189 @@ export const encodePositionLimits = (l: PositionLimitsDto): xdr.ScVal =>
     max_supply_positions: u32(l.maxSupplyPositions),
   })
 
-/** `OracleAssetRef` data-enum — `Stellar(Address)` | `Symbol(Symbol)` | `String(String)`. */
-const encodeOracleAssetRef = (ref: OracleAssetRefInput): xdr.ScVal => {
-  const kind = ref.kind as string
-  switch (kind) {
-    case ASSET_REF_STELLAR:
-      return vec([sym('Stellar'), addr(ref.value)])
-    case ASSET_REF_SYMBOL:
-      return vec([sym('Symbol'), sym(ref.value)])
-    case ASSET_REF_STRING:
-      return vec([sym('String'), str(ref.value)])
-    default:
-      throw new Error(`Stellar builder: unknown oracle asset ref kind "${kind}"`)
-  }
+/** On-chain `PriceKey` — `{ Token: "C…" }` or `{ Ref: "BTC" }`. */
+export const encodePriceKey = (key: StellarPriceKey | Record<string, string>): xdr.ScVal => {
+  if ('Token' in key && key.Token) return vec([sym('Token'), addr(key.Token)])
+  if ('Ref' in key && key.Ref) return vec([sym('Ref'), sym(key.Ref)])
+  throw new Error(`Stellar builder: PriceKey must be { Token } or { Ref }, got ${JSON.stringify(key)}`)
 }
 
-/** `OracleReadMode` data-enum — `Spot` | `Twap(u32 records)`. */
-const encodeOracleReadMode = (
-  readMode: OracleReadModeInput,
-  twapRecords: number | undefined
-): xdr.ScVal => {
-  if ((readMode as string) === READ_MODE_TWAP) {
-    if (typeof twapRecords !== 'number') {
-      throw new Error(
-        'Stellar builder: oracle source with Twap read mode requires `twapRecords`'
-      )
-    }
-    return vec([sym('Twap'), u32(twapRecords)])
-  }
-  return vec([sym('Spot')])
+const encodeOracleAssetRef = (asset: Record<string, string>): xdr.ScVal => {
+  if ('Stellar' in asset) return vec([sym('Stellar'), addr(asset.Stellar)])
+  if ('Symbol' in asset) return vec([sym('Symbol'), sym(asset.Symbol)])
+  if ('String' in asset) return vec([sym('String'), str(asset.String)])
+  throw new Error(`Stellar builder: unknown OracleAssetRef ${JSON.stringify(asset)}`)
 }
 
-/** `OracleSourceConfigInput` data-enum — `Reflector(...)` | `RedStone(...)` | `Xoxno(...)`. */
-export const encodeOracleSourceConfigInput = (
-  src: OracleSourceConfigInputDto
-): xdr.ScVal => {
-  const provider = src.provider as string
-  if (provider === PROVIDER_REFLECTOR) {
-    if (!src.asset) {
-      throw new Error('Stellar builder: Reflector oracle source requires `asset`')
+const encodeOracleReadMode = (mode: unknown): xdr.ScVal => {
+  if (mode === 'Spot') return vec([sym('Spot')])
+  if (mode && typeof mode === 'object' && 'Twap' in (mode as object)) {
+    return vec([sym('Twap'), u32(Number((mode as { Twap: number }).Twap))])
+  }
+  throw new Error(`Stellar builder: unknown OracleReadMode ${JSON.stringify(mode)}`)
+}
+
+const encodeProviderKind = (kind: string): xdr.ScVal => {
+  if (kind === 'Reflector' || kind === 'RedStone' || kind === 'Xoxno') {
+    return vec([sym(kind)])
+  }
+  throw new Error(`Stellar builder: unknown ProviderKind "${kind}"`)
+}
+
+const encodeFeedNature = (nature: string): xdr.ScVal => {
+  if (nature === 'Market' || nature === 'Fundamental') return vec([sym(nature)])
+  throw new Error(`Stellar builder: unknown FeedNature "${nature}"`)
+}
+
+const encodeProviderRef = (provider: StellarProviderRef | Record<string, unknown>): xdr.ScVal => {
+  if ('Reflector' in provider) {
+    const r = provider.Reflector as {
+      contract: string
+      asset: Record<string, string>
+      readMode: unknown
     }
     return vec([
       sym('Reflector'),
       scStruct({
-        asset: encodeOracleAssetRef(src.asset),
-        contract: addr(src.contract),
-        read_mode: encodeOracleReadMode(src.readMode, src.twapRecords),
+        asset: encodeOracleAssetRef(r.asset),
+        contract: addr(r.contract),
+        read_mode: encodeOracleReadMode(r.readMode),
       }),
     ])
   }
-  // RedStone and the first-party XOXNO adapter share a wire shape (contract +
-  // feed id + per-source staleness); only the variant symbol differs.
-  if (provider === PROVIDER_REDSTONE || provider === PROVIDER_XOXNO) {
-    const variant = provider === PROVIDER_REDSTONE ? 'RedStone' : 'Xoxno'
-    if (typeof src.feedId !== 'string') {
-      throw new Error(
-        `Stellar builder: ${variant} oracle source requires \`feedId\``
-      )
-    }
-    if (typeof src.maxStaleSeconds !== 'number') {
-      throw new Error(
-        `Stellar builder: ${variant} oracle source requires \`maxStaleSeconds\``
-      )
+  if ('MultiFeed' in provider) {
+    const m = provider.MultiFeed as {
+      contract: string
+      feedId: string
+      kind: string
+      nature: string
     }
     return vec([
-      sym(variant),
+      sym('MultiFeed'),
       scStruct({
-        contract: addr(src.contract),
-        feed_id: str(src.feedId),
-        max_stale_seconds: u64(src.maxStaleSeconds),
+        contract: addr(m.contract),
+        feed_id: str(m.feedId),
+        kind: encodeProviderKind(m.kind),
+        nature: encodeFeedNature(m.nature),
       }),
     ])
   }
-  throw new Error(`Stellar builder: unknown oracle provider "${provider}"`)
+  throw new Error(`Stellar builder: unknown ProviderRef ${JSON.stringify(provider)}`)
+}
+
+const encodeFeedSource = (feed: StellarFeedSource | Record<string, unknown>): xdr.ScVal => {
+  const f = feed as StellarFeedSource
+  return scStruct({
+    decimals: u32(f.decimals),
+    max_stale_seconds: u64(f.maxStaleSeconds),
+    provider: encodeProviderRef(f.provider),
+  })
+}
+
+const encodePriceSource = (source: StellarPriceSource | Record<string, unknown>): xdr.ScVal => {
+  if ('Feed' in source) {
+    return vec([sym('Feed'), encodeFeedSource(source.Feed as StellarFeedSource)])
+  }
+  if ('Scaled' in source) {
+    const s = source.Scaled as {
+      factor: StellarFeedSource
+      quote: StellarPriceKey
+      minFactorWad: string
+      maxFactorWad: string
+    }
+    return vec([
+      sym('Scaled'),
+      scStruct({
+        factor: encodeFeedSource(s.factor),
+        max_factor_wad: i128(s.maxFactorWad),
+        min_factor_wad: i128(s.minFactorWad),
+        quote: encodePriceKey(s.quote),
+      }),
+    ])
+  }
+  if ('LpShare' in source) {
+    const s = source.LpShare as {
+      pool: string
+      kind: string
+      keyA: StellarPriceKey
+      keyB: StellarPriceKey
+      reserveADecimals: number
+      reserveBDecimals: number
+      shareDecimals: number
+    }
+    return vec([
+      sym('LpShare'),
+      scStruct({
+        key_a: encodePriceKey(s.keyA),
+        key_b: encodePriceKey(s.keyB),
+        kind: vec([sym(s.kind || 'ConstantProduct')]),
+        pool: addr(s.pool),
+        reserve_a_decimals: u32(s.reserveADecimals),
+        reserve_b_decimals: u32(s.reserveBDecimals),
+        share_decimals: u32(s.shareDecimals),
+      }),
+    ])
+  }
+  throw new Error(`Stellar builder: unknown PriceSource ${JSON.stringify(source)}`)
+}
+
+const encodeIndependence = (policy: StellarIndependencePolicy | string | Record<string, unknown>): xdr.ScVal => {
+  if (policy === 'RequireDisjoint') return vec([sym('RequireDisjoint')])
+  if (policy && typeof policy === 'object' && 'AllowShared' in policy) {
+    const domains = (policy as { AllowShared: { kind: string; contract: string }[] }).AllowShared
+    return vec([
+      sym('AllowShared'),
+      vec(
+        domains.map((d) =>
+          scStruct({
+            contract: addr(d.contract),
+            kind: encodeProviderKind(d.kind),
+          })
+        )
+      ),
+    ])
+  }
+  throw new Error(`Stellar builder: unknown IndependencePolicy ${JSON.stringify(policy)}`)
 }
 
 /**
- * `OracleSourceConfigInputOption` — the contract's CUSTOM `None`/`Some` tagged
- * union (NOT a Soroban `Option`), so it encodes as `scvVec([sym("None")])` or
- * `scvVec([sym("Some"), <source>])`.
+ * Encode on-chain `AssetOracle`. Accepts either the swagger DTO
+ * (`toleranceBps` + sources) or a full `StellarAssetOracle` with tolerance
+ * upper/lower bps (lower is derived as reciprocal when only bps is given).
  */
-const encodeOracleSourceConfigInputOption = (
-  anchor: OracleSourceConfigInputDto | undefined
-): xdr.ScVal =>
-  anchor === undefined || anchor === null
-    ? vec([sym('None')])
-    : vec([sym('Some'), encodeOracleSourceConfigInput(anchor)])
-
-/** `MarketOracleConfigInput` — strategy + primary/anchor sources + sanity bounds. */
-export const encodeMarketOracleConfigInput = (
-  cfg: MarketOracleConfigInputDto
+export const encodeAssetOracle = (
+  cfg: AssetOracleConfigInputDto | StellarAssetOracle | Record<string, unknown>
 ): xdr.ScVal => {
-  const strategy = ORACLE_STRATEGY_U32[cfg.strategy as string]
-  if (strategy === undefined) {
-    throw new Error(`Stellar builder: unknown oracle strategy "${cfg.strategy}"`)
+  const c = cfg as Record<string, unknown>
+  const sources = (c.sources as unknown[]) ?? []
+  let upper: number
+  let lower: number
+  if (typeof c.toleranceBps === 'number') {
+    upper = 10_000 + c.toleranceBps
+    // reciprocal lower ≈ floor(1e8 / upper) style half-up is on-chain; SDK uses
+    // symmetric inverse for proposal input (governance may re-derive via view).
+    lower = Math.max(1, Math.floor((10_000 * 10_000) / upper))
+  } else {
+    const tol = (c.tolerance ?? {}) as { upperRatioBps?: number; lowerRatioBps?: number }
+    upper = Number(tol.upperRatioBps)
+    lower = Number(tol.lowerRatioBps)
   }
   return scStruct({
-    anchor: encodeOracleSourceConfigInputOption(cfg.anchor),
-    max_price_stale_seconds: u64(cfg.maxPriceStaleSeconds),
-    max_sanity_price_wad: i128(cfg.maxSanityPriceWad),
-    min_sanity_price_wad: i128(cfg.minSanityPriceWad),
-    primary: encodeOracleSourceConfigInput(cfg.primary),
-    strategy: u32(strategy),
-    tolerance_bps: u32(cfg.toleranceBps),
+    asset_decimals: u32(Number(c.assetDecimals)),
+    independence: encodeIndependence(c.independence as StellarIndependencePolicy),
+    max_price_stale_seconds: u64(Number(c.maxPriceStaleSeconds)),
+    max_sanity_price_wad: i128(String(c.maxSanityPriceWad)),
+    min_sanity_price_wad: i128(String(c.minSanityPriceWad)),
+    sources: vec(sources.map((s) => encodePriceSource(s as StellarPriceSource))),
+    tolerance: scStruct({
+      lower_ratio_bps: u32(lower),
+      upper_ratio_bps: u32(upper),
+    }),
   })
 }
+
+/** @deprecated Use {@link encodeAssetOracle}. */
+export const encodeMarketOracleConfigInput = encodeAssetOracle
 
 // -----------------------------------------------------------------------------
 // Builder argument shapes (SDK-local — the on-chain structs live in @xoxno/types)
@@ -218,16 +283,14 @@ export interface TransferOwnershipArgs {
   newOwner: string
   liveUntilLedger: number
 }
-export interface ConfigureMarketOracleArgs {
-  hubId: number
-  asset: string
-  config: MarketOracleConfigInputDto
-}
-export interface EditOracleToleranceArgs {
-  asset: string
-  upperRatioBps: number
-  lowerRatioBps: number
-}
+/** Governance / aggregator `ConfigureAssetOracle` args. */
+export type ConfigureAssetOracleArgs = ConfigureAssetOracleArgsDto
+
+/** @deprecated Alias — use ConfigureAssetOracleArgs. */
+export type ConfigureMarketOracleArgs = ConfigureAssetOracleArgs
+
+/** Edit dual-source tolerance (PriceKey + bps). */
+export type EditOracleToleranceArgs = EditOracleToleranceArgsDto
 export interface CreateLiquidityPoolArgs {
   hubId: number
   asset: string
@@ -318,13 +381,24 @@ export function buildStellarAcceptOwnershipTx(
 // Config (config.rs)
 // -----------------------------------------------------------------------------
 
-/** set_aggregator(addr: Address) — #[only_owner] */
-export function buildStellarSetAggregatorTx(
+/** set_swap_aggregator(addr: Address) — #[only_owner] */
+export function buildStellarSetSwapAggregatorTx(
   opts: StellarBuilderOptions,
   args: { aggregator: string }
 ): BuiltStellarTx {
-  return buildTx(opts, 'set_aggregator', [addr(args.aggregator)])
+  return buildTx(opts, 'set_swap_aggregator', [addr(args.aggregator)])
 }
+
+/** set_price_aggregator(addr: Address) — #[only_owner] */
+export function buildStellarSetPriceAggregatorTx(
+  opts: StellarBuilderOptions,
+  args: { aggregator: string }
+): BuiltStellarTx {
+  return buildTx(opts, 'set_price_aggregator', [addr(args.aggregator)])
+}
+
+/** @deprecated Use buildStellarSetSwapAggregatorTx. */
+export const buildStellarSetAggregatorTx = buildStellarSetSwapAggregatorTx
 
 /** set_accumulator(addr: Address) — #[only_owner] */
 export function buildStellarSetAccumulatorTx(
@@ -342,43 +416,59 @@ export function buildStellarSetPositionLimitsTx(
   return buildTx(opts, 'set_position_limits', [encodePositionLimits(args)])
 }
 
-/** approve_token(token: Address) — #[only_owner] */
-export function buildStellarApproveTokenTx(
+/** approve_blend_pool(pool: Address) — #[only_owner] */
+export function buildStellarApproveBlendPoolTx(
   opts: StellarBuilderOptions,
-  args: { token: string }
+  args: { pool: string }
 ): BuiltStellarTx {
-  return buildTx(opts, 'approve_token', [addr(args.token)])
+  return buildTx(opts, 'approve_blend_pool', [addr(args.pool)])
 }
 
-/** revoke_token(token: Address) — #[only_owner] */
-export function buildStellarRevokeTokenTx(
+/** revoke_blend_pool(pool: Address) — #[only_owner] */
+export function buildStellarRevokeBlendPoolTx(
   opts: StellarBuilderOptions,
-  args: { token: string }
+  args: { pool: string }
 ): BuiltStellarTx {
-  return buildTx(opts, 'revoke_token', [addr(args.token)])
+  return buildTx(opts, 'revoke_blend_pool', [addr(args.pool)])
 }
 
-/** configure_market_oracle(caller, asset, cfg) — #[only_role(caller, "ORACLE")] */
-export function buildStellarSetMarketOracleConfigTx(
+/** @deprecated Use buildStellarApproveBlendPoolTx. */
+export const buildStellarApproveTokenTx = buildStellarApproveBlendPoolTx
+/** @deprecated Use buildStellarRevokeBlendPoolTx. */
+export const buildStellarRevokeTokenTx = buildStellarRevokeBlendPoolTx
+
+/**
+ * Direct price-aggregator `set_oracle(key, oracle)` — owner only (governance
+ * contract address as tx source after deploy). Prefer governance propose path
+ * in production.
+ */
+export function buildStellarSetOracleTx(
   opts: StellarBuilderOptions,
-  args: ConfigureMarketOracleArgs
+  args: ConfigureAssetOracleArgs
 ): BuiltStellarTx {
-  return buildTx(opts, 'set_market_oracle_config', [
-    hubAsset(args.hubId, args.asset),
-    encodeMarketOracleConfigInput(args.config),
+  return buildTx(opts, 'set_oracle', [
+    encodePriceKey(args.key),
+    encodeAssetOracle(args.oracle),
   ])
 }
 
-/** set_oracle_tolerance(asset, tolerance: OraclePriceFluctuation) — #[only_owner] */
+/** @deprecated Use buildStellarSetOracleTx. */
+export const buildStellarSetMarketOracleConfigTx = buildStellarSetOracleTx
+
+/** price-aggregator `set_tolerance(key, OracleTolerance)` — owner only. */
 export function buildStellarSetOracleToleranceTx(
   opts: StellarBuilderOptions,
-  args: EditOracleToleranceArgs
+  args: EditOracleToleranceArgs & { upperRatioBps?: number; lowerRatioBps?: number }
 ): BuiltStellarTx {
-  return buildTx(opts, 'set_oracle_tolerance', [
-    addr(args.asset),
+  const bps = args.toleranceBps
+  const upper = args.upperRatioBps ?? 10_000 + bps
+  const lower =
+    args.lowerRatioBps ?? Math.max(1, Math.floor((10_000 * 10_000) / upper))
+  return buildTx(opts, 'set_tolerance', [
+    encodePriceKey(args.key),
     scStruct({
-      lower_ratio_bps: u32(args.lowerRatioBps),
-      upper_ratio_bps: u32(args.upperRatioBps),
+      lower_ratio_bps: u32(lower),
+      upper_ratio_bps: u32(upper),
     }),
   ])
 }

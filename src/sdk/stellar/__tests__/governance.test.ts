@@ -144,7 +144,7 @@ describe('Stellar lending governance builders', () => {
       })
     })
 
-    describe('SetAggregator (single Address variant)', () => {
+    describe('SetSwapAggregator (single Address variant)', () => {
       // Built inside `it` so the outer `beforeAll` fake timers are active and
       // the tx timebounds (hence the snapshot) are deterministic.
       const build = () =>
@@ -156,7 +156,7 @@ describe('Stellar lending governance builders', () => {
 
       it('wraps SetAggregator with an Address payload', () => {
         const op = parseInvoked(build().xdr).args[1]!
-        expect(adminOpVariant(op)).toBe('SetAggregator')
+        expect(adminOpVariant(op)).toBe('SetSwapAggregator')
         expect(op.vec()).toHaveLength(2)
         expect(op.vec()![1]!.switch().name).toBe('scvAddress')
       })
@@ -391,7 +391,7 @@ describe('Stellar lending governance builders', () => {
       ).toBe('AAAAEAAAAAEAAAACAAAADwAAAA5VcGRhdGVHb3ZEZWxheQAAAAAAAwAAhwA=')
     })
 
-    it('SetAggregator(addr)', () => {
+    it('SetSwapAggregator(addr)', () => {
       expect(
         opXdr(
           buildStellarProposeSetAggregatorTx(
@@ -401,7 +401,7 @@ describe('Stellar lending governance builders', () => {
           ).xdr
         )
       ).toBe(
-        'AAAAEAAAAAEAAAACAAAADwAAAA1TZXRBZ2dyZWdhdG9yAAAAAAAAEgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ=='
+        'AAAAEAAAAAEAAAACAAAADwAAABFTZXRTd2FwQWdncmVnYXRvcgAAAAAAABIAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE='
       )
     })
 

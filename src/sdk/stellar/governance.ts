@@ -36,10 +36,12 @@ import {
 } from '@stellar/stellar-sdk'
 
 import {
+  encodeAssetOracle,
   encodeInterestRateModel,
-  encodeMarketOracleConfigInput,
   encodeMarketParamsRaw,
   encodePositionLimits,
+  encodePriceKey,
+  type ConfigureAssetOracleArgs,
   type ConfigureMarketOracleArgs,
   type CreateLiquidityPoolArgs,
   type RoleGrantArgs,
@@ -132,18 +134,17 @@ const encodeTransferOwnershipArgs = (a: TransferOwnershipArgs): xdr.ScVal =>
     live_until_ledger: u32(a.liveUntilLedger),
   })
 
-const encodeConfigureOracleArgs = (a: ConfigureMarketOracleArgs): xdr.ScVal =>
+const encodeConfigureAssetOracleArgs = (a: ConfigureAssetOracleArgs): xdr.ScVal =>
   scStruct({
-    cfg: encodeMarketOracleConfigInput(a.config),
-    hub_asset: hubAsset(a.hubId, a.asset),
+    key: encodePriceKey(a.key),
+    oracle: encodeAssetOracle(a.oracle),
   })
 
 /**
  * `add_asset_to_spoke` / `edit_asset_in_spoke` payload: the per-(hub, spoke,
  * asset) risk config. Caps are asset-native i128 decimal strings (0 =
- * uncapped); ltv/threshold/bonus/liquidationFees are bps. The on-chain
- * `oracle_override` is always encoded as `None` — a `Some` carries a fully
- * resolved `MarketOracleConfig`, which no off-chain caller can safely build.
+ * uncapped); ltv/threshold/bonus/liquidationFees are bps. Oracle config is
+ * asset-level on the price-aggregator, not per-spoke.
  */
 export interface SpokeAssetArgs {
   hubId: number
@@ -219,15 +220,16 @@ const encodeSpokeLiquidationCurveArgs = (
     target_hf_wad: i128(a.targetHfWad),
   })
 
-/** Governance derives the OraclePriceFluctuation on-chain from one bps value. */
+/** Governance derives the OracleTolerance band on-chain from one bps value. */
 export interface EditOracleToleranceProposalArgs {
-  asset: string
+  /** PriceKey: `{ Token: "C…" }` or `{ Ref: "BTC" }`. */
+  key: Record<string, string>
   tolerance: number
 }
 
 const encodeEditToleranceArgs = (a: EditOracleToleranceProposalArgs): xdr.ScVal =>
   scStruct({
-    asset: addr(a.asset),
+    key: encodePriceKey(a.key),
     tolerance: u32(a.tolerance),
   })
 
@@ -310,14 +312,35 @@ export interface UpdateDelayArgs {
 // CONTROLLER-targeted proposers — proposer + AdminOperation + salt
 // -----------------------------------------------------------------------------
 
-/** propose(SetAggregator(addr)) */
-export function buildStellarProposeSetAggregatorTx(
+/** propose(SetSwapAggregator(addr)) */
+export function buildStellarProposeSetSwapAggregatorTx(
   opts: StellarBuilderOptions,
   args: { aggregator: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
-  return buildPropose(opts, adminOp('SetAggregator', addr(args.aggregator)), salt)
+  return buildPropose(
+    opts,
+    adminOp('SetSwapAggregator', addr(args.aggregator)),
+    salt
+  )
 }
+
+/** propose(SetPriceAggregator(addr)) — Sensitive-tier self-op. */
+export function buildStellarProposeSetPriceAggregatorTx(
+  opts: StellarBuilderOptions,
+  args: { aggregator: string },
+  salt: StellarGovernanceSalt
+): BuiltStellarTx {
+  return buildPropose(
+    opts,
+    adminOp('SetPriceAggregator', addr(args.aggregator)),
+    salt
+  )
+}
+
+/** @deprecated Use buildStellarProposeSetSwapAggregatorTx. */
+export const buildStellarProposeSetAggregatorTx =
+  buildStellarProposeSetSwapAggregatorTx
 
 /** propose(SetAccumulator(addr)) */
 export function buildStellarProposeSetAccumulatorTx(
@@ -571,22 +594,26 @@ export function buildStellarProposeTransferCtrlOwnershipTx(
 }
 
 /**
- * propose(ConfigureMarketOracle(ConfigureOracleArgs))
+ * propose(ConfigureAssetOracle(ConfigureAssetOracleArgs))
  *
- * The SDK passes the oracle INPUT args verbatim; the contract resolves the
- * input to a resolved config at propose time (do NOT resolve in the SDK).
+ * Pass PriceKey + AssetOracle input; governance resolves asset_decimals for
+ * Token keys at propose time.
  */
-export function buildStellarProposeConfigureMarketOracleTx(
+export function buildStellarProposeConfigureAssetOracleTx(
   opts: StellarBuilderOptions,
-  args: ConfigureMarketOracleArgs,
+  args: ConfigureAssetOracleArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
   return buildPropose(
     opts,
-    adminOp('ConfigureMarketOracle', encodeConfigureOracleArgs(args)),
+    adminOp('ConfigureAssetOracle', encodeConfigureAssetOracleArgs(args)),
     salt
   )
 }
+
+/** @deprecated Use buildStellarProposeConfigureAssetOracleTx. */
+export const buildStellarProposeConfigureMarketOracleTx =
+  buildStellarProposeConfigureAssetOracleTx
 
 /** propose(EditOracleTolerance(EditToleranceArgs)) */
 export function buildStellarProposeEditOracleToleranceTx(

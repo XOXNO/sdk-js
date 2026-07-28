@@ -17,17 +17,17 @@ import { Networks, Transaction, xdr as stellarXdr } from '@stellar/stellar-sdk'
 import {
   buildStellarAcceptOwnershipTx,
   buildStellarAddRewardsTx,
-  buildStellarApproveTokenTx,
+  buildStellarApproveBlendPoolTx,
   buildStellarClaimRevenueTx,
-  buildStellarSetMarketOracleConfigTx,
   buildStellarCreateLiquidityPoolTx,
   buildStellarSetOracleToleranceTx,
+  buildStellarSetOracleTx,
   buildStellarGrantRoleTx,
   buildStellarMigrateTx,
   buildStellarPauseTx,
   buildStellarRenewAccountTx,
   buildStellarRevokeRoleTx,
-  buildStellarRevokeTokenTx,
+  buildStellarRevokeBlendPoolTx,
   buildStellarSetAccumulatorTx,
   buildStellarSetAggregatorTx,
   buildStellarSetPositionLimitsTx,
@@ -104,26 +104,41 @@ const createPoolArgs = {
 } satisfies CreateLiquidityPoolArgs
 
 const configureOracleArgs = {
-  hubId: 1,
-  asset: FIXTURE_USDC,
-  config: {
+  key: { Token: FIXTURE_USDC },
+  oracle: {
+    assetDecimals: 7,
     maxPriceStaleSeconds: 900,
     toleranceBps: 500,
-    strategy: 'PrimaryWithAnchor',
-    primary: {
-      provider: 'ReflectorSep40',
-      contract: FIXTURE_ORACLE,
-      asset: { kind: 'Stellar', value: FIXTURE_USDC },
-      readMode: 'Twap',
-      twapRecords: 12,
-    },
-    anchor: {
-      provider: 'RedStonePriceFeed',
-      contract: FIXTURE_ORACLE2,
-      feedId: 'USDC',
-      readMode: 'Spot',
-      maxStaleSeconds: 600,
-    },
+    independence: 'RequireDisjoint',
+    sources: [
+      {
+        Feed: {
+          provider: {
+            Reflector: {
+              contract: FIXTURE_ORACLE,
+              asset: { Stellar: FIXTURE_USDC },
+              readMode: { Twap: 12 },
+            },
+          },
+          decimals: 14,
+          maxStaleSeconds: 900,
+        },
+      },
+      {
+        Feed: {
+          provider: {
+            MultiFeed: {
+              contract: FIXTURE_ORACLE2,
+              feedId: 'USDC',
+              kind: 'RedStone',
+              nature: 'Fundamental',
+            },
+          },
+          decimals: 8,
+          maxStaleSeconds: 600,
+        },
+      },
+    ],
     minSanityPriceWad: '900000000000000000',
     maxSanityPriceWad: '1100000000000000000',
   },
@@ -222,8 +237,8 @@ const cases: Case[] = [
   },
   // config.rs
   {
-    name: 'set_aggregator',
-    expectedFn: 'set_aggregator',
+    name: 'set_swap_aggregator',
+    expectedFn: 'set_swap_aggregator',
     expectedArgCount: 1,
     build: () => buildStellarSetAggregatorTx(BASE_OPTS, { aggregator: FIXTURE_XLM }),
   },
@@ -240,30 +255,31 @@ const cases: Case[] = [
     build: () => buildStellarSetPositionLimitsTx(BASE_OPTS, { maxBorrowPositions: 8, maxSupplyPositions: 16 }),
   },
   {
-    name: 'approve_token',
-    expectedFn: 'approve_token',
+    name: 'approve_blend_pool',
+    expectedFn: 'approve_blend_pool',
     expectedArgCount: 1,
-    build: () => buildStellarApproveTokenTx(BASE_OPTS, { token: FIXTURE_USDC }),
+    build: () => buildStellarApproveBlendPoolTx(BASE_OPTS, { pool: FIXTURE_USDC }),
   },
   {
-    name: 'revoke_token',
-    expectedFn: 'revoke_token',
+    name: 'revoke_blend_pool',
+    expectedFn: 'revoke_blend_pool',
     expectedArgCount: 1,
-    build: () => buildStellarRevokeTokenTx(BASE_OPTS, { token: FIXTURE_USDC }),
+    build: () => buildStellarRevokeBlendPoolTx(BASE_OPTS, { pool: FIXTURE_USDC }),
   },
   {
-    name: 'set_market_oracle_config',
-    expectedFn: 'set_market_oracle_config',
+    name: 'set_oracle',
+    expectedFn: 'set_oracle',
     expectedArgCount: 2,
-    build: () => buildStellarSetMarketOracleConfigTx(BASE_OPTS, configureOracleArgs),
+    build: () => buildStellarSetOracleTx(BASE_OPTS, configureOracleArgs),
   },
   {
-    name: 'set_oracle_tolerance',
-    expectedFn: 'set_oracle_tolerance',
+    name: 'set_tolerance',
+    expectedFn: 'set_tolerance',
     expectedArgCount: 2,
     build: () =>
       buildStellarSetOracleToleranceTx(BASE_OPTS, {
-        asset: FIXTURE_USDC,
+        key: { Token: FIXTURE_USDC },
+        toleranceBps: 500,
         upperRatioBps: 10_500,
         lowerRatioBps: 9_500,
       }),
@@ -400,82 +416,75 @@ describe('complex struct encoding', () => {
     )
   })
 
-  it('MarketOracleConfigInput is sorted; primary is a Reflector union, anchor is Some(RedStone)', () => {
+  it('AssetOracle is sorted; sources are Feed(Reflector) + Feed(MultiFeed)', () => {
     const parsed = parseInvoked(
-      buildStellarSetMarketOracleConfigTx(BASE_OPTS, configureOracleArgs).xdr
+      buildStellarSetOracleTx(BASE_OPTS, configureOracleArgs).xdr
     )
-    // set_market_oracle_config(hub_asset, cfg) → cfg is arg index 1.
+    // set_oracle(key, oracle) → oracle is arg index 1.
     const cfg = parsed.args[1]!
     const keys = mapKeys(cfg)
     expect(isAscending(keys)).toBe(true)
     expect(keys).toEqual([
-      'anchor',
+      'asset_decimals',
+      'independence',
       'max_price_stale_seconds',
       'max_sanity_price_wad',
       'min_sanity_price_wad',
-      'primary',
-      'strategy',
-      'tolerance_bps',
+      'sources',
+      'tolerance',
     ])
 
     const entries = cfg.map()!
     const byKey = (name: string) =>
       entries.find((e) => e.key().sym().toString() === name)!.val()
 
-    // primary: scvVec([sym('Reflector'), <struct>])
-    const primary = byKey('primary')
-    expect(primary.switch().name).toBe('scvVec')
-    expect(primary.vec()![0]!.sym().toString()).toBe('Reflector')
-    expect(mapKeys(primary.vec()![1]!)).toEqual(['asset', 'contract', 'read_mode'])
+    const sources = byKey('sources')
+    expect(sources.switch().name).toBe('scvVec')
+    expect(sources.vec()!.length).toBe(2)
+    expect(sources.vec()![0]!.vec()![0]!.sym().toString()).toBe('Feed')
+    expect(sources.vec()![1]!.vec()![0]!.sym().toString()).toBe('Feed')
 
-    // anchor: scvVec([sym('Some'), scvVec([sym('RedStone'), <struct>])])
-    const anchor = byKey('anchor')
-    expect(anchor.switch().name).toBe('scvVec')
-    expect(anchor.vec()![0]!.sym().toString()).toBe('Some')
-    const anchorSource = anchor.vec()![1]!
-    expect(anchorSource.vec()![0]!.sym().toString()).toBe('RedStone')
-    expect(mapKeys(anchorSource.vec()![1]!)).toEqual([
-      'contract',
-      'feed_id',
-      'max_stale_seconds',
-    ])
-
-    // strategy: PrimaryWithAnchor → scvU32(1)
-    const strategy = byKey('strategy')
-    expect(strategy.switch().name).toBe('scvU32')
-    expect(strategy.u32()).toBe(1)
+    const independence = byKey('independence')
+    expect(independence.vec()![0]!.sym().toString()).toBe('RequireDisjoint')
   })
 
-  it('encodes a XoxnoPriceFeed source as the Xoxno union with the RedStone wire shape', () => {
+  it('encodes MultiFeed kind Xoxno under sources', () => {
     const args = {
-      ...configureOracleArgs,
-      config: {
-        ...configureOracleArgs.config,
-        anchor: {
-          provider: 'XoxnoPriceFeed',
-          contract: FIXTURE_ORACLE2,
-          feedId: 'USDC',
-          readMode: 'Spot',
-          maxStaleSeconds: 600,
-        },
+      key: { Token: FIXTURE_USDC },
+      oracle: {
+        ...configureOracleArgs.oracle,
+        sources: [
+          {
+            Feed: {
+              provider: {
+                MultiFeed: {
+                  contract: FIXTURE_ORACLE2,
+                  feedId: 'USDC',
+                  kind: 'Xoxno',
+                  nature: 'Fundamental',
+                },
+              },
+              decimals: 8,
+              maxStaleSeconds: 600,
+            },
+          },
+        ],
       },
     } as unknown as ConfigureMarketOracleArgs
-    const parsed = parseInvoked(
-      buildStellarSetMarketOracleConfigTx(BASE_OPTS, args).xdr
-    )
+    const parsed = parseInvoked(buildStellarSetOracleTx(BASE_OPTS, args).xdr)
     const cfg = parsed.args[1]!
-    const anchor = cfg
+    const sources = cfg
       .map()!
-      .find((e) => e.key().sym().toString() === 'anchor')!
+      .find((e) => e.key().sym().toString() === 'sources')!
       .val()
-    expect(anchor.vec()![0]!.sym().toString()).toBe('Some')
-    const anchorSource = anchor.vec()![1]!
-    expect(anchorSource.vec()![0]!.sym().toString()).toBe('Xoxno')
-    expect(mapKeys(anchorSource.vec()![1]!)).toEqual([
-      'contract',
-      'feed_id',
-      'max_stale_seconds',
-    ])
+    const feed = sources.vec()![0]!
+    expect(feed.vec()![0]!.sym().toString()).toBe('Feed')
+    const provider = feed
+      .vec()![1]!
+      .map()!
+      .find((e) => e.key().sym().toString() === 'provider')!
+      .val()
+    expect(provider.vec()![0]!.sym().toString()).toBe('MultiFeed')
   })
 
   it('encodes each struct field at its correct ScVal width (i128 vs u64 vs u32 vs bool)', () => {
@@ -494,38 +503,33 @@ describe('complex struct encoding', () => {
     expect(pField('is_flashloanable').switch().name).toBe('scvBool')
     expect(pField('flashloan_fee').switch().name).toBe('scvU32')
 
-    // MarketOracleConfigInput — stale seconds are u64, tolerances u32, sanity i128.
+    // AssetOracle — stale seconds are u64, sanity i128.
     const cfg = parseInvoked(
-      buildStellarSetMarketOracleConfigTx(BASE_OPTS, configureOracleArgs).xdr
+      buildStellarSetOracleTx(BASE_OPTS, configureOracleArgs).xdr
     ).args[1]!
     const cEntries = cfg.map()!
     const cField = (name: string) =>
       cEntries.find((e) => e.key().sym().toString() === name)!.val()
     expect(cField('max_price_stale_seconds').switch().name).toBe('scvU64')
-    expect(cField('tolerance_bps').switch().name).toBe('scvU32')
     expect(cField('min_sanity_price_wad').switch().name).toBe('scvI128')
     expect(cField('max_sanity_price_wad').switch().name).toBe('scvI128')
+    expect(cField('asset_decimals').switch().name).toBe('scvU32')
   })
 
-  it('anchor omitted → custom-option None tag', () => {
-    const noAnchor = {
-      hubId: 1,
-      asset: FIXTURE_USDC,
-      config: {
-        ...(configureOracleArgs.config as unknown as Record<string, unknown>),
-        strategy: 'Single',
-        anchor: undefined,
+  it('single-source oracle encodes one Feed only', () => {
+    const single = {
+      key: { Token: FIXTURE_USDC },
+      oracle: {
+        ...configureOracleArgs.oracle,
+        sources: [configureOracleArgs.oracle.sources[0]],
       },
     } as unknown as ConfigureMarketOracleArgs
-    const parsed = parseInvoked(
-      buildStellarSetMarketOracleConfigTx(BASE_OPTS, noAnchor).xdr
-    )
+    const parsed = parseInvoked(buildStellarSetOracleTx(BASE_OPTS, single).xdr)
     const cfg = parsed.args[1]!
-    const anchor = cfg
+    const sources = cfg
       .map()!
-      .find((e) => e.key().sym().toString() === 'anchor')!
+      .find((e) => e.key().sym().toString() === 'sources')!
       .val()
-    expect(anchor.vec()![0]!.sym().toString()).toBe('None')
-    expect(anchor.vec()).toHaveLength(1)
+    expect(sources.vec()!.length).toBe(1)
   })
 })

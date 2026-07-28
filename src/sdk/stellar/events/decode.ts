@@ -1,14 +1,11 @@
 /**
  * Decoders for the Stellar lending `#[contractevent]`s (controller, pool, and
- * the price-aggregator's `config:oracle`).
+ * the price-aggregator's `config:asset_oracle`).
  *
- * Decodes the core protocol topics plus the pool's `strategy:fee`. Intentional
- * omissions (decodeStellarLendingEvent returns `null` for them, like any other
- * unhandled topic): `config:min_borrow_collateral` (a single global `i128`
- * floor with no indexing/UI consumer), `config:spoke_asset` /
- * `config:remove_spoke_asset` / `config:hub` / `config:approve_blend_pool` /
- * `strategy:blend_migration` (indexed by the az-functions pipeline's own
- * decoders).
+ * Decodes core protocol topics plus pool `strategy:fee` and live controller
+ * config topics used by the indexer. Intentional omissions still return
+ * `null`: `config:spoke_asset` / `config:remove_spoke_asset` / `config:hub` /
+ * `strategy:blend_migration` (handled by az-functions own decoders).
  *
  * The public API takes base64-XDR strings (`decodeStellarLendingEvent(topicsB64,
  * dataB64)`) and parses them with this SDK's bundled `@stellar/stellar-sdk`, so
@@ -68,13 +65,6 @@ const hex = (v: unknown): string =>
       : String(v)
 
 const POSITION_MODE = ['None', 'Multiply', 'Long', 'Short'] as const
-const ORACLE_STRATEGY = ['Single', 'PrimaryWithAnchor'] as const
-const ORACLE_PROVIDER = [
-  'ReflectorSep40',
-  'RedStonePriceFeed',
-  'XoxnoPriceFeed',
-] as const
-
 /** PositionAction u32 discriminant → legacy action string (frozen wire table). */
 const POSITION_ACTION = [
   'supply',
@@ -90,6 +80,8 @@ const POSITION_ACTION = [
   'rp_col_wd',
   'rp_col_r',
   'close_wd',
+  'migrate',
+  'rp_col_net',
 ] as const
 
 const positionMode = (v: unknown): 'None' | 'Multiply' | 'Long' | 'Short' =>
@@ -167,91 +159,39 @@ const decodeMarketSnapshot = (e: readonly unknown[]) => ({
 const enumTag = (v: unknown): string => (Array.isArray(v) ? str(v[0]) : str(v))
 const enumVal = (v: unknown): unknown => (Array.isArray(v) ? v[1] : undefined)
 
-const ORACLE_PROVIDER_BY_TAG: Record<string, (typeof ORACLE_PROVIDER)[number]> = {
-  Reflector: 'ReflectorSep40',
-  RedStone: 'RedStonePriceFeed',
-  Xoxno: 'XoxnoPriceFeed',
+/** Decode on-chain `PriceKey` → `{ Token }` / `{ Ref }`. */
+const decodePriceKey = (key: unknown): Record<string, string> => {
+  const tag = enumTag(key)
+  if (tag === 'Token') return { Token: str(enumVal(key)) }
+  if (tag === 'Ref') return { Ref: str(enumVal(key)) }
+  // scValToNative may already yield a map
+  if (key && typeof key === 'object' && !Array.isArray(key)) {
+    const o = key as Raw
+    if (o.Token !== undefined) return { Token: str(o.Token) }
+    if (o.Ref !== undefined) return { Ref: str(o.Ref) }
+  }
+  return { Token: str(key) }
 }
 
 /**
- * `OracleSourceConfig` enum → normalized source + its quote token (Reflector
- * `base: Quoted(addr)`; `undefined` = USD-quoted). Reflector sources carry the
- * market-level staleness limit; RedStone/Xoxno carry their own.
+ * `AssetOracle` (price-aggregator event `oracle` field) → API struct.
+ * Sources stay as raw decoded objects (Feed / Scaled / LpShare) so consumers
+ * can re-encode without losing shape.
  */
-const decodeOracleSource = (sourceEnum: unknown, marketMaxStaleSeconds: number) => {
-  const tag = enumTag(sourceEnum)
-  const s = (enumVal(sourceEnum) ?? {}) as Raw
-  if (tag !== 'Reflector') {
-    return {
-      source: {
-        provider: ORACLE_PROVIDER_BY_TAG[tag] ?? 'RedStonePriceFeed',
-        contractAddress: str(s.contract),
-        asset: undefined,
-        feedId: str(s.feed_id),
-        readMode: 'Spot',
-        twapRecords: undefined,
-        decimals: num(s.decimals),
-        resolutionSeconds: 0,
-        maxStaleSeconds: num(s.max_stale_seconds),
-      },
-      quoteToken: undefined,
-    }
-  }
-  const readMode = enumTag(s.read_mode)
-  const assetRefKind = enumTag(s.asset)
-  return {
-    source: {
-      provider: 'ReflectorSep40',
-      contractAddress: str(s.contract),
-      asset:
-        assetRefKind === 'Stellar' || assetRefKind === 'Symbol'
-          ? { kind: assetRefKind, value: str(enumVal(s.asset)) }
-          : undefined,
-      feedId: assetRefKind === 'String' ? str(enumVal(s.asset)) : undefined,
-      readMode,
-      twapRecords: readMode === 'Twap' ? num(enumVal(s.read_mode)) : undefined,
-      decimals: num(s.decimals),
-      resolutionSeconds: num(s.resolution_seconds),
-      maxStaleSeconds: marketMaxStaleSeconds,
-    },
-    quoteToken: enumTag(s.base) === 'Quoted' ? str(enumVal(s.base)) : undefined,
-  }
-}
-
-/**
- * `MarketOracleConfig` (the aggregator event's `config` field) → normalized
- * oracle struct. `quoteTokenId` is always USD: the aggregator only prices to a
- * USD root, quoted Reflector bases are repriced on-chain.
- */
-const decodeOracleProvider = (
-  asset: string,
-  c: Raw
-): StellarLendingOracleUpdateStruct => {
+const decodeAssetOracle = (c: Raw): StellarLendingOracleUpdateStruct => {
   const tolerance = (c.tolerance ?? {}) as Raw
-  const marketMaxStaleSeconds = num(c.max_price_stale_seconds)
-  const primary = decodeOracleSource(c.primary, marketMaxStaleSeconds)
-  const anchorEnum = enumTag(c.anchor) === 'Some' ? enumVal(c.anchor) : undefined
-  const anchor = anchorEnum
-    ? decodeOracleSource(anchorEnum, marketMaxStaleSeconds)
-    : undefined
-  const oracle = {
-    baseTokenId: asset,
-    quoteTokenId: 'USD',
+  return {
+    assetDecimals: num(c.asset_decimals),
+    maxPriceStaleSeconds: num(c.max_price_stale_seconds),
+    sources: vec(c.sources).map((s) => s as Record<string, unknown>),
     tolerance: {
       upperRatio: num(tolerance.upper_ratio_bps),
       lowerRatio: num(tolerance.lower_ratio_bps),
     },
-    assetDecimals: num(c.asset_decimals),
-    maxPriceStaleSeconds: marketMaxStaleSeconds,
-    strategy: ORACLE_STRATEGY[num(c.strategy)] ?? 'Single',
-    primary: primary.source,
-    anchor: anchor?.source,
-    primaryQuoteToken: primary.quoteToken,
-    anchorQuoteToken: anchor?.quoteToken,
-    minSanityPriceWad: optDec(c.min_sanity_price_wad),
-    maxSanityPriceWad: optDec(c.max_sanity_price_wad),
-  }
-  return oracle as unknown as StellarLendingOracleUpdateStruct
+    independence: c.independence as string | Record<string, unknown>,
+    minSanityPriceWad: dec(c.min_sanity_price_wad),
+    maxSanityPriceWad: dec(c.max_sanity_price_wad),
+  } as StellarLendingOracleUpdateStruct
 }
 
 // ---- registry: dispatch key → decoder producing a typed union member --------
@@ -341,12 +281,20 @@ const REGISTRY: Record<string, DecoderFn> = {
       fee: dec(d.fee),
     },
   }),
-  // Emitted by the price-aggregator: `{asset, config: MarketOracleConfig}`.
+  // Live price-aggregator: `{ key: PriceKey, oracle: AssetOracle }`.
+  'config:asset_oracle': (d) => ({
+    topic: 'config:asset_oracle',
+    data: {
+      key: decodePriceKey(d.key),
+      oracle: decodeAssetOracle(d.oracle as Raw),
+    },
+  }),
+  // Legacy pre-composable payload (historical ledgers only).
   'config:oracle': (d) => ({
     topic: 'config:oracle',
     data: {
       asset: str(d.asset),
-      oracle: decodeOracleProvider(str(d.asset), d.config as Raw),
+      oracle: decodeAssetOracle((d.config ?? d.oracle) as Raw),
     },
   }),
   'position:liquidation': (d) => ({
@@ -385,9 +333,24 @@ const REGISTRY: Record<string, DecoderFn> = {
       amountSent: dec(d.amount_sent),
     },
   }),
+  'config:approve_blend_pool': (d) => ({
+    topic: 'config:approve_blend_pool',
+    data: {
+      pool: str(d.pool ?? d.blend_pool ?? d.token),
+      approved: Boolean(d.approved ?? d.is_approved ?? true),
+    },
+  }),
   'config:approve_token': (d) => ({
     topic: 'config:approve_token',
-    data: { wasmHash: hex(d.wasm_hash), approved: Boolean(d.approved) },
+    data: { wasmHash: hex(d.wasm_hash ?? d.pool), approved: Boolean(d.approved) },
+  }),
+  'config:swap_aggregator': (d) => ({
+    topic: 'config:swap_aggregator',
+    data: { aggregator: str(d.aggregator ?? d.swap_aggregator) },
+  }),
+  'config:price_aggregator': (d) => ({
+    topic: 'config:price_aggregator',
+    data: { aggregator: str(d.aggregator ?? d.price_aggregator) },
   }),
   'config:aggregator': (d) => ({
     topic: 'config:aggregator',
@@ -406,6 +369,14 @@ const REGISTRY: Record<string, DecoderFn> = {
     data: {
       maxSupplyPositions: num(d.max_supply_positions),
       maxBorrowPositions: num(d.max_borrow_positions),
+    },
+  }),
+  'config:min_borrow_collateral': (d) => ({
+    topic: 'config:min_borrow_collateral',
+    data: {
+      minBorrowCollateralUsdWad: dec(
+        d.min_borrow_collateral_usd_wad ?? d.floor_wad ?? d.value
+      ),
     },
   }),
   'config:oracle_disabled': (d) => ({
