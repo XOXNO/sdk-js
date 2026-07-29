@@ -12,6 +12,8 @@
  */
 
 import type {
+  AssetDto,
+  ReserveDto,
   StellarAssetOracle,
   StellarAssetPage,
   StellarAssetPageGraphPoint,
@@ -66,25 +68,8 @@ export interface StellarAssetMarket {
   isBorrowable: boolean
 }
 
-/** Asset overview header: identity + protocol-wide aggregates + APY ranges. */
-export interface StellarAsset {
-  asset: string
-  symbol: string
-  name: string
-  decimals: number
-  usdPriceWad: string
-  usdPriceShort: number
-  totalDepositsUsd: string
-  totalBorrowsUsd: string
-  availableLiquidityUsd: string
-  hubCount: number
-  reserveCount: number
-  minSupplyApy: number
-  maxSupplyApy: number
-  minBorrowApy: number
-  maxBorrowApy: number
-  oracleProvider?: StellarAssetOracleConfig
-}
+/** Asset overview header: shared API contract. */
+export type StellarAsset = AssetDto
 
 // -----------------------------------------------------------------------------
 // Hub
@@ -170,51 +155,8 @@ export interface StellarReserveIrmCurve {
   reserveFactorBps: number
 }
 
-/**
- * Reserve detail page: one asset, in one spoke, on one hub. Merges liquidity
- * truth (HubAsset), risk truth (SpokeAsset) and the spoke's liquidation curve.
- */
-export interface StellarReserve {
-  spokeId: number
-  hubId: number
-  asset: string
-
-  // Liquidity (HubAsset)
-  supplyApy: number
-  borrowApy: number
-  utilization: number
-  suppliedShort: number
-  borrowedShort: number
-  availableLiquidityShort: number
-  isFlashloanable: boolean
-  flashloanFeeBps: number
-
-  // Caps (SpokeAsset — per-reserve spoke ceilings)
-  supplyCapShort: number
-  borrowCapShort: number
-  depositCapFilledPct: number
-  borrowCapFilledPct: number
-
-  // Risk (SpokeAsset)
-  collateralFactorBps: number
-  liquidationThresholdBps: number
-  liquidationPenaltyBps: number
-  liquidationFeesBps: number
-  isCollateralizable: boolean
-  isBorrowable: boolean
-  paused: boolean
-  frozen: boolean
-  useAsCollateral: boolean
-
-  // Spoke liquidation curve
-  targetHealthFactorWad: string
-  healthFactorForMaxBonusWad: string
-  liquidationBonusFactorBps: number
-
-  irm: StellarReserveIrmCurve
-  supportedCollateral: string[]
-  borrowable: string[]
-}
+/** Reserve detail page: shared API contract. */
+export type StellarReserve = ReserveDto
 
 // -----------------------------------------------------------------------------
 // Top holders
