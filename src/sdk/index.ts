@@ -10,6 +10,13 @@ import { coveredMethods, type ICoveredMethods } from './utils'
 // Additive re-export — no overlap with the auto-generated read SDK.
 export * from './stellar'
 
+// `SDKTags` is the union of API route tags, used by consumers to constrain
+// cache-tag helpers (xoxno-ui's `getTag`). It was defined in ./types but never
+// re-exported, and the package `exports` map allows only "." and
+// "./stellar-lending", so deep imports cannot reach it either — leaving it
+// unreachable from '@xoxno/sdk-js' despite being part of the intended surface.
+export type { SDKTags } from './types'
+
 const kebabToCamel = (s: string) =>
   s.replace(/-([a-z])/g, (_, c) => c.toUpperCase())
 
