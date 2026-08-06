@@ -142,9 +142,11 @@ const encodeConfigureAssetOracleArgs = (a: ConfigureAssetOracleArgs): xdr.ScVal 
 
 /**
  * `add_asset_to_spoke` / `edit_asset_in_spoke` payload: the per-(hub, spoke,
- * asset) risk config. Caps are asset-native i128 decimal strings (0 =
- * uncapped); ltv/threshold/bonus/liquidationFees are bps. Oracle config is
- * asset-level on the price-aggregator, not per-spoke.
+ * asset) risk config. Caps are asset-native i128 decimal strings and are
+ * always enforced ceilings — there is no "unlimited" sentinel, and `'0'` means
+ * the asset accepts nothing on that side. ltv/threshold/bonus/liquidationFees
+ * are bps. Oracle config is asset-level on the price-aggregator, not
+ * per-spoke.
  */
 export interface SpokeAssetArgs {
   hubId: number
