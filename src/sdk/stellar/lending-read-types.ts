@@ -289,3 +289,74 @@ export interface StellarMarketGraphQuery {
   /** Bin width as a timespan string (e.g. `1h`, `1d`). */
   bin: string
 }
+
+// -----------------------------------------------------------------------------
+// Protocol state
+// -----------------------------------------------------------------------------
+
+/**
+ * Config and admin state for one deployed contract, event-sourced by the
+ * indexer from that contract's own config, pause, ownership and admin events.
+ *
+ * Every field is optional-by-absence: a contract only populates what its own
+ * events carry, so a governance row leaves the controller fields null and vice
+ * versa. `paused` is null until a pause or unpause has actually been observed,
+ * which is materially different from a confirmed `false`.
+ */
+export interface StellarContractConfig {
+  contractAddress: string
+  wasmHash: string | null
+  accumulator: string | null
+  swapAggregator: string | null
+  priceAggregator: string | null
+  maxSupplyPositions: number | null
+  maxBorrowPositions: number | null
+  /** Raw 18-decimal WAD. */
+  minBorrowCollateralUsdWad: string | null
+  paused: boolean | null
+  /** Governance timelock delay, in ledgers. */
+  minDelayLedgers: number | null
+  owner: string | null
+  pendingOwner: string | null
+  admin: string | null
+  pendingAdmin: string | null
+  pendingAdminLiveUntilLedger: number | null
+  ledger: number
+  updatedAt: number
+}
+
+/**
+ * One access-control grant. Revocation flips `granted` rather than removing the
+ * row, so a revoked grant stays queryable.
+ */
+export interface StellarContractRole {
+  contractAddress: string
+  /** On-chain role symbol, e.g. `ORACLE`, `PROPOSER`. */
+  role: string
+  account: string
+  granted: boolean
+  caller: string | null
+  ledger: number
+  updatedAt: number
+}
+
+/**
+ * One position-authorization grant. A delegate may act on the owner's position,
+ * so this is security-relevant state rather than display metadata.
+ */
+export interface StellarAccountDelegate {
+  accountId: number
+  owner: string
+  delegate: string
+  granted: boolean
+  ledger: number
+  updatedAt: number
+}
+
+/** Approval state for one Blend pool, kept after revocation as `approved: false`. */
+export interface StellarBlendPool {
+  pool: string
+  approved: boolean
+  ledger: number
+  updatedAt: number
+}

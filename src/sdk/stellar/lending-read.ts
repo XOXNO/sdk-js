@@ -23,9 +23,13 @@ import type {
 } from '@xoxno/types/stellar-lending'
 import type { OurRequestInit, XOXNOClient } from '../../utils/api'
 import type {
+  StellarAccountDelegate,
   StellarAccountPositions,
   StellarAsset,
   StellarAssetMarket,
+  StellarBlendPool,
+  StellarContractConfig,
+  StellarContractRole,
   StellarGovernanceProposalsPage,
   StellarHub,
   StellarLendingHoldersSide,
@@ -300,9 +304,81 @@ export const getStellarReserveGraph = (
  * sites read `read.reserve(spokeId, hubId, asset)` instead of threading the
  * client through every call.
  */
+
+/**
+ * Config and admin state for every watched contract, or for one address.
+ *
+ * Event-sourced by the indexer rather than read live from the chain, so this is
+ * also where `minBorrowCollateralUsdWad`, position limits and the aggregator
+ * addresses come from — `liveState` no longer needs an RPC round-trip for them.
+ */
+export const getStellarProtocolConfig = (
+  client: XOXNOClient,
+  init?: OurRequestInit
+): Promise<StellarContractConfig[]> =>
+  client.fetchWithTimeout<StellarContractConfig[]>(
+    `${BASE}/protocol-config`,
+    init
+  )
+
+/** Config and admin state for a single contract address. */
+export const getStellarContractConfig = (
+  client: XOXNOClient,
+  contractAddress: string,
+  init?: OurRequestInit
+): Promise<StellarContractConfig> =>
+  client.fetchWithTimeout<StellarContractConfig>(
+    `${BASE}/protocol-config/${enc(contractAddress)}`,
+    init
+  )
+
+/**
+ * Access-control grants, optionally narrowed to one contract. Revoked grants
+ * are included with `granted: false` — filter client-side when only current
+ * holders matter.
+ */
+export const getStellarContractRoles = (
+  client: XOXNOClient,
+  contractAddress?: string,
+  init?: OurRequestInit
+): Promise<StellarContractRole[]> =>
+  client.fetchWithTimeout<StellarContractRole[]>(
+    contractAddress
+      ? `${BASE}/roles?contractAddress=${enc(contractAddress)}`
+      : `${BASE}/roles`,
+    init
+  )
+
+/** Position-authorization grants for one account, including revoked ones. */
+export const getStellarAccountDelegates = (
+  client: XOXNOClient,
+  accountId: number,
+  init?: OurRequestInit
+): Promise<StellarAccountDelegate[]> =>
+  client.fetchWithTimeout<StellarAccountDelegate[]>(
+    `${BASE}/accounts/${enc(String(accountId))}/delegates`,
+    init
+  )
+
+/** Blend pool approval state, including pools whose approval was revoked. */
+export const getStellarBlendPools = (
+  client: XOXNOClient,
+  init?: OurRequestInit
+): Promise<StellarBlendPool[]> =>
+  client.fetchWithTimeout<StellarBlendPool[]>(`${BASE}/blend-pools`, init)
+
 export const stellarLendingRead = (client: XOXNOClient) => ({
   context: (init?: OurRequestInit) => getStellarLendingContext(client, init),
   liveState: (init?: OurRequestInit) => getStellarLendingLiveState(client, init),
+  protocolConfig: (init?: OurRequestInit) =>
+    getStellarProtocolConfig(client, init),
+  contractConfig: (contractAddress: string, init?: OurRequestInit) =>
+    getStellarContractConfig(client, contractAddress, init),
+  contractRoles: (contractAddress?: string, init?: OurRequestInit) =>
+    getStellarContractRoles(client, contractAddress, init),
+  accountDelegates: (accountId: number, init?: OurRequestInit) =>
+    getStellarAccountDelegates(client, accountId, init),
+  blendPools: (init?: OurRequestInit) => getStellarBlendPools(client, init),
   assets: (init?: OurRequestInit) => getStellarAssets(client, init),
   hubs: (init?: OurRequestInit) => getStellarHubs(client, init),
   spokes: (init?: OurRequestInit) => getStellarSpokes(client, init),
