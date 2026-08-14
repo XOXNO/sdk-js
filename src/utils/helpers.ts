@@ -18,6 +18,10 @@ export const isAddressValid = (address: string): boolean => {
     ? (address.startsWith('erd1') && address.length === 62) ||
         /^0x[a-fA-F0-9]{40,64}$/.test(address) ||
         /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address) ||
-        /^G[A-Z2-7]{55}$/.test(address) // Stellar
+        // Stellar strkey: `G` = ed25519 account, `C` = Soroban contract.
+        // Contracts hold balances, positions and profiles just like accounts,
+        // and the route builder runs every `:address` param through here — so
+        // rejecting `C` blocked all contract-account endpoints client-side.
+        /^[GC][A-Z2-7]{55}$/.test(address)
     : false
 }
