@@ -65,7 +65,16 @@ const hex = (v: unknown): string =>
       : String(v)
 
 const POSITION_MODE = ['None', 'Multiply', 'Long', 'Short'] as const
-/** PositionAction u32 discriminant → legacy action string (frozen wire table). */
+/**
+ * PositionAction u32 discriminant → legacy action string (frozen wire table).
+ * Index IS the on-chain discriminant, so entries may only be appended.
+ *
+ * `liq_seize` (5) and `liq_credit` (15) are two halves of ONE share-credit
+ * seizure and must never be summed together: `liq_seize` is the liquidated
+ * account's debit, **gross** of the protocol fee, and `liq_credit` is the
+ * receiving account's credit, **net** of it (the fee is the difference).
+ * `SeizeMode::Transfer` emits only `liq_seize`, also gross.
+ */
 const POSITION_ACTION = [
   'supply',
   'borrow',
@@ -82,6 +91,7 @@ const POSITION_ACTION = [
   'close_wd',
   'migrate',
   'rp_col_net',
+  'liq_credit',
 ] as const
 
 const positionMode = (v: unknown): 'None' | 'Multiply' | 'Long' | 'Short' =>
@@ -256,6 +266,13 @@ const REGISTRY: Record<string, DecoderFn> = {
     }) as Extract<StellarLendingDecodedEvent, { topic: 'market:batch_params_update' }>,
   // Vec-encoded (ABI v2): data = [account_id, attributes, deposits, borrows].
   // `updates` merges all deposit entries first, then all borrow entries.
+  //
+  // One event = one account. A `SeizeMode::Credit` liquidation emits TWO of
+  // these — the liquidated account first, then the receiving account (supply
+  // side only, legs whose net credit is zero omitted). Consumers must not
+  // assume one batch per liquidation, and a `Credit(0)` receiver is announced
+  // ONLY through the second batch's `accountAttributes`: there is no
+  // account-creation event to discover it from.
   'position:batch_update': (d) => {
     const v = vec(d)
     return {
@@ -297,6 +314,10 @@ const REGISTRY: Record<string, DecoderFn> = {
       oracle: decodeAssetOracle((d.config ?? d.oracle) as Raw),
     },
   }),
+  // `repaidUsdWad` is the repayment the pool MEASURED, not the planned one:
+  // net of any overpayment refunded and of any shortfall from an
+  // under-delivering debt token, so it agrees with the batch's `liq_repay`
+  // legs. The event carries no seizure or protocol-fee figure at all.
   'position:liquidation': (d) => ({
     topic: 'position:liquidation',
     data: {

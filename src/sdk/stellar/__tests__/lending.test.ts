@@ -22,6 +22,8 @@
 import { jest } from '@jest/globals'
 import {
   Networks,
+  ScInt,
+  scValToNative,
   Transaction,
   xdr as stellarXdr,
 } from '@stellar/stellar-sdk'
@@ -39,6 +41,7 @@ import {
   buildStellarSwapDebtTx,
   buildStellarWithdrawBatchTx,
   buildStellarWithdrawTx,
+  decodeStellarLiquidateReturn,
   type StellarBuilderOptions,
   type StellarFlashLoanArgs,
   type StellarLiquidateArgs,
@@ -176,6 +179,11 @@ const liquidateArgs: StellarLiquidateArgs = {
   ],
 }
 
+const liquidateCreditArgs: StellarLiquidateArgs = {
+  ...liquidateArgs,
+  seizeMode: { Credit: 0 },
+}
+
 const flashLoanArgs: StellarFlashLoanArgs = {
   hubId: HUB,
   asset: FIXTURE_USDC,
@@ -295,9 +303,17 @@ describe('Stellar lending transaction builders — sanity', () => {
     {
       name: 'liquidate',
       expectedFn: 'liquidate',
-      // liquidator, account_id, debt_payments
-      expectedArgCount: 3,
+      // liquidator, account_id, debt_payments, seize_mode
+      expectedArgCount: 4,
       build: () => buildStellarLiquidateTx(BASE_OPTS, liquidateArgs),
+    },
+    {
+      name: 'liquidate (share-credit into a new account)',
+      expectedFn: 'liquidate',
+      // same arity; seize_mode is Credit(0) instead of Transfer
+      expectedArgCount: 4,
+      build: () =>
+        buildStellarLiquidateTx(BASE_OPTS, liquidateCreditArgs),
     },
     {
       name: 'flash_loan',
@@ -464,6 +480,93 @@ describe('Stellar lending builders — input validation', () => {
         data: 42,
       } as unknown as StellarFlashLoanArgs)
     ).toThrow(/data.*hex string/)
+  })
+})
+
+// -----------------------------------------------------------------------------
+// liquidate — SeizeMode encoding + u64 return decoding
+// -----------------------------------------------------------------------------
+
+/**
+ * `SeizeMode` is a Soroban `#[contracttype]` enum, so both arms serialize as
+ * `scvVec([scvSymbol(Variant), ...payload])` — `Transfer` is symbol-only,
+ * `Credit` appends the receiving account id as a `u64`.
+ */
+describe('liquidate — SeizeMode', () => {
+  const seizeModeArg = (built: { xdr: string }): stellarXdr.ScVal => {
+    const tx = new Transaction(built.xdr, Networks.TESTNET)
+    const op = tx.operations[0] as unknown as { func: stellarXdr.HostFunction }
+    // liquidator, account_id, debt_payments, seize_mode
+    return op.func.invokeContract().args()[3]!
+  }
+
+  it('defaults to the Transfer arm when seizeMode is omitted', () => {
+    const arg = seizeModeArg(buildStellarLiquidateTx(BASE_OPTS, liquidateArgs))
+    expect(arg.switch().name).toBe('scvVec')
+    const elems = arg.vec()!
+    expect(elems).toHaveLength(1)
+    expect(elems[0]!.sym().toString()).toBe('Transfer')
+  })
+
+  it("omitting seizeMode is identical to passing 'Transfer'", () => {
+    expect(buildStellarLiquidateTx(BASE_OPTS, liquidateArgs).xdr).toBe(
+      buildStellarLiquidateTx(BASE_OPTS, {
+        ...liquidateArgs,
+        seizeMode: 'Transfer',
+      }).xdr
+    )
+  })
+
+  it('encodes Credit(0) as the symbol plus a u64 payload', () => {
+    const arg = seizeModeArg(
+      buildStellarLiquidateTx(BASE_OPTS, liquidateCreditArgs)
+    )
+    const elems = arg.vec()!
+    expect(elems).toHaveLength(2)
+    expect(elems[0]!.sym().toString()).toBe('Credit')
+    expect(elems[1]!.switch().name).toBe('scvU64')
+    expect(scValToNative(elems[1]!)).toBe(0n)
+  })
+
+  it('carries a non-zero receiving account id through as u64', () => {
+    const arg = seizeModeArg(
+      buildStellarLiquidateTx(BASE_OPTS, {
+        ...liquidateArgs,
+        seizeMode: { Credit: '4294967296' },
+      })
+    )
+    expect(scValToNative(arg.vec()![1]!)).toBe(4294967296n)
+  })
+
+  it('rejects a malformed seize mode at the SDK boundary', () => {
+    expect(() =>
+      buildStellarLiquidateTx(BASE_OPTS, {
+        ...liquidateArgs,
+        seizeMode: 'Credit',
+      } as unknown as StellarLiquidateArgs)
+    ).toThrow(/SeizeMode must be/)
+    expect(() =>
+      buildStellarLiquidateTx(BASE_OPTS, {
+        ...liquidateArgs,
+        seizeMode: { Credit: 1.5 },
+      })
+    ).toThrow(/integer u64/)
+  })
+
+  it('decodes the u64 return value (0 = Transfer, else the receiver id)', () => {
+    const encode = (v: string) => new ScInt(v).toU64().toXDR('base64')
+    expect(decodeStellarLiquidateReturn(encode('0'))).toBe('0')
+    expect(decodeStellarLiquidateReturn(encode('77'))).toBe('77')
+    // u64 beyond Number.MAX_SAFE_INTEGER must survive as an exact string.
+    expect(decodeStellarLiquidateReturn(encode('18446744073709551615'))).toBe(
+      '18446744073709551615'
+    )
+  })
+
+  it('rejects a return value that is not a u64', () => {
+    expect(() =>
+      decodeStellarLiquidateReturn(stellarXdr.ScVal.scvVoid().toXDR('base64'))
+    ).toThrow(/must be a u64/)
   })
 })
 

@@ -122,6 +122,7 @@ describe('stellar lending read surface', () => {
       isBorrowable: false,
       paused: false,
       frozen: false,
+      noSeize: false,
       useAsCollateral: false,
       targetHealthFactorWad: '0',
       healthFactorForMaxBonusWad: '0',

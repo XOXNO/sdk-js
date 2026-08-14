@@ -55,7 +55,17 @@ export function syntheticEventOrder(baseEventOrder: number, childIndex = 0): num
 
 /**
  * Map a position-delta `action` symbol to its `XoxnoLendingActivity` value.
- * The tag list is authoritative in `rs-lending-xlm common/src/events.rs`.
+ * The tag list is authoritative in `rs-lending-xlm
+ * contracts/controller/src/events/mod.rs` (`PositionAction`).
+ *
+ * `liq_credit` is deliberately NOT `lendingLiquidateSeizeCollateral`. That
+ * activity renders as "Liquidated by / Liquidation", and a share-credit leg
+ * lands on the *liquidator's* receiving account, which was not liquidated —
+ * so it maps to the plain position update instead. It also keeps a
+ * protocol-wide sum over `lendingLiquidateSeizeCollateral` from
+ * double-counting the same seizure twice (gross on the liquidated account,
+ * net on the receiver). The raw `liq_credit` / `liq_seize` strings stay on
+ * the delta itself, so the two legs remain distinguishable downstream.
  */
 export function mapStellarPositionActivityType(
   action?: string
@@ -65,6 +75,8 @@ export function mapStellarPositionActivityType(
       return 'lendingLiquidateRepayDebt'
     case 'liq_seize':
       return 'lendingLiquidateSeizeCollateral'
+    case 'liq_credit':
+      return 'lendingUpdateAccountPosition'
     case 'param_upd':
       return 'lendingUpdateAccountParameters'
     default:

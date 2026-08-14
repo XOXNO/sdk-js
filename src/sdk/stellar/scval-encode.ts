@@ -189,6 +189,44 @@ export const tupleHubAssetAmountVec = (
   )
 
 /**
+ * How a liquidator takes delivery of seized collateral — the Soroban
+ * `SeizeMode` enum.
+ *
+ *   - `'Transfer'` — the pool withdraws the collateral and pays the liquidator
+ *     in underlying tokens, withholding the protocol fee from the transfer.
+ *   - `{ Credit: accountId }` — the seized *supply shares* are credited to a
+ *     controller account instead. `0` opens a fresh account owned by the
+ *     liquidator and bound to the liquidated account's spoke; any other id must
+ *     already exist, be owned by (or delegated to) the liquidator, sit in the
+ *     same spoke, and be in `PositionMode::Normal`.
+ */
+export type StellarSeizeModeInput = 'Transfer' | { Credit: number | string }
+
+/**
+ * Encode `SeizeMode`. Soroban serializes a `#[contracttype]` enum as
+ * `scvVec([scvSymbol(Variant), ...payload])` — the void variant carries only
+ * the symbol, `Credit` appends its `u64`. Same shape as `OracleReadMode`
+ * (`Spot` / `Twap(u32)`) in `admin.ts`.
+ */
+export const seizeMode = (mode: StellarSeizeModeInput): xdr.ScVal => {
+  if (mode === 'Transfer') return vec([sym('Transfer')])
+  if (mode && typeof mode === 'object' && 'Credit' in mode) {
+    const id = mode.Credit
+    // `0` is the "open a fresh account" sentinel, so only reject genuinely
+    // unrepresentable ids here; `u64()` rejects negatives and overflow.
+    if (typeof id === 'number' && !Number.isInteger(id)) {
+      throw new Error(
+        `Stellar builder: SeizeMode Credit account id must be an integer u64, got ${id}`
+      )
+    }
+    return vec([sym('Credit'), u64(id)])
+  }
+  throw new Error(
+    `Stellar builder: SeizeMode must be 'Transfer' or { Credit: accountId }, got ${JSON.stringify(mode)}`
+  )
+}
+
+/**
  * Encode a Soroban `struct` — at the XDR level, structs are maps with
  * `Symbol` keys in **lexicographic order** of field names.
  */

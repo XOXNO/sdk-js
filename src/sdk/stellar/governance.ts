@@ -154,10 +154,21 @@ export interface SpokeAssetArgs {
   asset: string
   canCollateral: boolean
   canBorrow: boolean
-  /** ADR 0011 per-listing incident flag: blocks supply/borrow/withdraw/repay. */
+  /**
+   * ADR 0008 per-listing incident flag: blocks every *user* verb on the
+   * listing, including the debt leg of a liquidation that names this asset.
+   */
   paused: boolean
-  /** ADR 0011 per-listing incident flag: blocks new supply/borrow, exits stay live. */
+  /** ADR 0008 per-listing incident flag: blocks new exposure, exits stay live. */
   frozen: boolean
+  /**
+   * ADR 0008 per-listing incident flag: blocks only the liquidation *seizure*
+   * leg (`SpokeAssetSeizureHalted`, 318), and nothing else. Deliberately not
+   * folded into `paused`: seizure is pro-rata over an account's whole
+   * collateral, so gating it on a user-activity halt would turn one paused
+   * listing into a protocol-wide liquidation halt.
+   */
+  noSeize: boolean
   ltv: number
   threshold: number
   bonus: number
@@ -186,6 +197,9 @@ export interface SpokeLiquidationCurveArgs {
   liquidationBonusFactorBps: number
 }
 
+// Keys MUST be exactly the Rust `SpokeAssetArgs` fields — a Soroban struct
+// decodes from an ScMap whose key set matches the declaration exactly, so a
+// stale extra key fails the whole proposal at decode time.
 const encodeSpokeAssetArgs = (a: SpokeAssetArgs): xdr.ScVal =>
   scStruct({
     asset: addr(a.asset),
@@ -198,7 +212,7 @@ const encodeSpokeAssetArgs = (a: SpokeAssetArgs): xdr.ScVal =>
     paused: bool(a.paused),
     liquidation_fees: u32(a.liquidationFees),
     ltv: u32(a.ltv),
-    oracle_override: vec([sym('None')]),
+    no_seize: bool(a.noSeize),
     spoke_id: u32(a.spokeId),
     supply_cap: i128(a.supplyCap),
     threshold: u32(a.threshold),
@@ -863,6 +877,8 @@ export interface SpokeAssetFlagsArgs {
   asset: string
   paused: boolean
   frozen: boolean
+  /** Halts only the liquidation seizure leg for this listing (error 318). */
+  noSeize: boolean
 }
 
 export interface OracleSanityBoundsArgs {
@@ -874,10 +890,14 @@ export interface OracleSanityBoundsArgs {
 }
 
 /**
- * set_spoke_asset_flags(caller, spoke_id, hub_asset, paused, frozen) —
- * GUARDIAN-gated, immediate. Flags-only per-listing incident brake: no risk
- * params, caps, or oracle override travel with it. `caller = opts.caller`
- * must hold GUARDIAN and sign.
+ * set_spoke_asset_flags(caller, spoke_id, hub_asset, paused, frozen, no_seize)
+ * — GUARDIAN-gated, immediate. Flags-only per-listing incident brake: no risk
+ * params or caps travel with it. `caller = opts.caller` must hold GUARDIAN and
+ * sign.
+ *
+ * All three flags are one-way ratchets on this path — the guardian may only
+ * set them true. Clearing any of them requires the timelocked
+ * `EditAssetInSpoke` proposal.
  */
 export function buildStellarGovernanceSetSpokeAssetFlagsImmediateTx(
   opts: StellarBuilderOptions,
@@ -889,6 +909,7 @@ export function buildStellarGovernanceSetSpokeAssetFlagsImmediateTx(
     hubAsset(args.hubId, args.asset),
     bool(args.paused),
     bool(args.frozen),
+    bool(args.noSeize),
   ])
 }
 

@@ -9,6 +9,7 @@ import { Networks, Transaction, xdr as stellarXdr } from '@stellar/stellar-sdk'
 import {
   buildStellarExecuteCancellerResetTx,
   buildStellarGovernanceExecuteUpdateDelayTx,
+  buildStellarGovernanceSetSpokeAssetFlagsImmediateTx,
   buildStellarProposeCancellerResetTx,
   buildStellarProposeDeployPoolTx,
   buildStellarProposeSetAggregatorTx,
@@ -175,6 +176,7 @@ describe('Stellar lending governance builders', () => {
         canBorrow: false,
         paused: false,
         frozen: true,
+        noSeize: true,
         ltv: 6500,
         threshold: 7000,
         bonus: 700,
@@ -206,6 +208,10 @@ describe('Stellar lending governance builders', () => {
       })
 
       it('AddAssetToSpoke encodes SpokeAssetArgs with the 14 sorted wire keys', () => {
+        // The key set must equal the Rust `SpokeAssetArgs` fields exactly —
+        // `no_seize` is present, and `oracle_override` is gone (the field was
+        // deleted from the contract when the price-aggregator became the sole
+        // oracle surface).
         const op = parseInvoked(
           buildStellarProposeAddAssetToSpokeTx(
             BASE_OPTS,
@@ -226,7 +232,7 @@ describe('Stellar lending governance builders', () => {
           'hub_id',
           'liquidation_fees',
           'ltv',
-          'oracle_override',
+          'no_seize',
           'paused',
           'spoke_id',
           'supply_cap',
@@ -240,10 +246,7 @@ describe('Stellar lending governance builders', () => {
         // Per-listing incident flags carry through the wire encoding verbatim.
         expect(field('paused').b()).toBe(false)
         expect(field('frozen').b()).toBe(true)
-        // oracle_override is always the None arm of MarketOracleConfigOption.
-        expect(field('oracle_override').vec()![0]!.sym().toString()).toBe(
-          'None'
-        )
+        expect(field('no_seize').b()).toBe(true)
       })
 
       it('EditAssetInSpoke reuses the SpokeAssetArgs payload', () => {
@@ -405,6 +408,34 @@ describe('Stellar lending governance builders', () => {
       )
     })
 
+  })
+
+  // GUARDIAN-gated immediate forwarder — NOT a proposal, so it invokes the
+  // setter directly on governance:
+  // set_spoke_asset_flags(caller, spoke_id, hub_asset, paused, frozen, no_seize)
+  describe('set_spoke_asset_flags — immediate guardian path', () => {
+    const built = () =>
+      buildStellarGovernanceSetSpokeAssetFlagsImmediateTx(BASE_OPTS, {
+        spokeId: 3,
+        hubId: 1,
+        asset: FIXTURE_USDC,
+        paused: false,
+        frozen: false,
+        noSeize: true,
+      })
+
+    it('sends the three flags positionally after caller/spoke/hub_asset', () => {
+      const { functionName, args } = parseInvoked(built().xdr)
+      expect(functionName).toBe('set_spoke_asset_flags')
+      expect(args).toHaveLength(6)
+      expect(args[0]!.switch().name).toBe('scvAddress')
+      expect(args[1]!.u32()).toBe(3)
+      expect(args[2]!.switch().name).toBe('scvMap')
+      expect(args[3]!.b()).toBe(false)
+      expect(args[4]!.b()).toBe(false)
+      // no_seize is last — a swap with `frozen` would halt the wrong leg.
+      expect(args[5]!.b()).toBe(true)
+    })
   })
 
   // Governance-self ops execute through `execute_self(executor, op, salt)`:

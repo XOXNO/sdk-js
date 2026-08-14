@@ -474,9 +474,11 @@ export function buildStellarSetOracleToleranceTx(
 }
 
 /**
- * set_spoke_asset_flags(spoke_id, hub_asset, paused, frozen) — #[only_owner].
- * Flags-only listing edit; production callers route through the GUARDIAN-gated
- * governance forwarder (`buildStellarGovernanceSetSpokeAssetFlagsImmediateTx`).
+ * set_spoke_asset_flags(spoke_id, hub_asset, paused, frozen, no_seize) —
+ * #[only_owner]. Flags-only listing edit; production callers route through the
+ * GUARDIAN-gated governance forwarder
+ * (`buildStellarGovernanceSetSpokeAssetFlagsImmediateTx`). Every flag is a
+ * one-way ratchet here: clearing one requires the timelocked spoke-asset edit.
  */
 export function buildStellarSetSpokeAssetFlagsTx(
   opts: StellarBuilderOptions,
@@ -486,6 +488,8 @@ export function buildStellarSetSpokeAssetFlagsTx(
     asset: string
     paused: boolean
     frozen: boolean
+    /** Halts only the liquidation seizure leg for this listing (error 318). */
+    noSeize: boolean
   }
 ): BuiltStellarTx {
   return buildTx(opts, 'set_spoke_asset_flags', [
@@ -493,6 +497,7 @@ export function buildStellarSetSpokeAssetFlagsTx(
     hubAsset(args.hubId, args.asset),
     bool(args.paused),
     bool(args.frozen),
+    bool(args.noSeize),
   ])
 }
 

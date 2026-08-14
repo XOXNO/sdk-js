@@ -16,7 +16,14 @@
  * fee) before handing the XDR to the wallet to sign.
  */
 
-import { Account, BASE_FEE, Contract, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
+import {
+  Account,
+  BASE_FEE,
+  Contract,
+  scValToNative,
+  TransactionBuilder,
+  xdr,
+} from '@stellar/stellar-sdk'
 
 import {
   getStellarLendingController,
@@ -31,12 +38,14 @@ import {
   hubAsset,
   i128,
   option,
+  seizeMode,
   tupleAddrAmountVec,
   tupleHubAssetAmount,
   tupleHubAssetAmountVec,
   u32,
   u64,
   vec,
+  type StellarSeizeModeInput,
   type StellarStrategySwapHopInput,
   type StellarStrategySwapInput,
   type StellarStrategySwapPathInput,
@@ -99,7 +108,7 @@ export interface BuiltStellarTx {
 export type StellarSwapStepsInput = StellarStrategySwapInput
 export type StellarSwapHopInput = StellarStrategySwapHopInput
 export type StellarSwapPathInput = StellarStrategySwapPathInput
-export type { StellarSwapVenue } from './scval-encode'
+export type { StellarSeizeModeInput, StellarSwapVenue } from './scval-encode'
 
 // -----------------------------------------------------------------------------
 // Transaction assembly
@@ -206,6 +215,13 @@ export interface StellarRepayBatchArgs {
 export interface StellarLiquidateArgs {
   accountNonce: number
   debtPayments: ReadonlyArray<StellarHubAssetAmount>
+  /**
+   * How the liquidator takes delivery of the seized collateral. Defaults to
+   * `'Transfer'` — the pool pays out underlying tokens, which is the only
+   * behaviour the pre-`SeizeMode` ABI had. `{ Credit: 0 }` opens a fresh
+   * receiving account; `{ Credit: id }` credits an existing one.
+   */
+  seizeMode?: StellarSeizeModeInput
 }
 
 export interface StellarFlashLoanArgs extends StellarHubAsset {
@@ -385,7 +401,13 @@ export function buildStellarRepayTx(
 }
 
 /**
- * liquidate(liquidator, account_id: u64, debt_payments: Vec<(HubAssetKey, i128)>)
+ * liquidate(liquidator, account_id: u64, debt_payments: Vec<(HubAssetKey, i128)>,
+ *           seize_mode: SeizeMode) -> u64
+ *
+ * The `u64` return is the account credited with the seized supply shares under
+ * `SeizeMode::Credit` (freshly opened when `Credit(0)` was passed), and `0`
+ * under `SeizeMode::Transfer`. Read it from the simulation / tx result with
+ * `decodeStellarLiquidateReturn`.
  */
 export function buildStellarLiquidateTx(
   opts: StellarBuilderOptions,
@@ -395,7 +417,27 @@ export function buildStellarLiquidateTx(
     addr(opts.caller),
     u64(args.accountNonce),
     tupleHubAssetAmountVec([...args.debtPayments]),
+    seizeMode(args.seizeMode ?? 'Transfer'),
   ])
+}
+
+/**
+ * Decode `liquidate`'s `u64` return value from its base64 XDR — the receiving
+ * account id, as a decimal string. `'0'` means `SeizeMode::Transfer` (the
+ * liquidator was paid in underlying tokens, no account was touched).
+ *
+ * Takes base64 XDR (as Soroban RPC delivers `returnValue` / `result.retval`)
+ * so no live `xdr.ScVal` crosses the consumer boundary — same contract as
+ * `decodeStellarLendingEvent`. Hold a parsed ScVal? Pass `toBase64Xdr(scv)`.
+ */
+export function decodeStellarLiquidateReturn(returnValueB64: string): string {
+  const native = scValToNative(xdr.ScVal.fromXDR(returnValueB64, 'base64'))
+  if (typeof native === 'bigint' || typeof native === 'number') {
+    return native.toString()
+  }
+  throw new Error(
+    `Stellar builder: liquidate return value must be a u64, got ${typeof native}`
+  )
 }
 
 /**

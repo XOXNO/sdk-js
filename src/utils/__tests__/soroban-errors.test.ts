@@ -19,6 +19,17 @@ describe('mapSorobanError', () => {
     })
   })
 
+  it('maps the seizure-halt SpokeError distinctly from SpokeAssetPaused', () => {
+    expect(mapSorobanError('Error(Contract, #318)')).toEqual({
+      code: 318,
+      name: 'SpokeAssetSeizureHalted',
+      message: 'Liquidation seizure is halted for this spoke asset.',
+    })
+    expect(mapSorobanError('Error(Contract, #315)')!.name).toBe(
+      'SpokeAssetPaused'
+    )
+  })
+
   it('returns null for the retired SpokeCapBelowUsage code', () => {
     // Code 314 was retired: caps may sit below live usage (ratchet-down).
     expect(mapSorobanError('Error(Contract, #314)')).toBeNull()

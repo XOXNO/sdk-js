@@ -39,6 +39,11 @@ describe('Stellar lending activity-id primitives', () => {
     expect(mapStellarPositionActivityType('liq_seize')).toBe(
       'lendingLiquidateSeizeCollateral'
     )
+    // The share-credit receiver leg is NOT a "liquidated by" activity — the
+    // receiving account is the liquidator's, not the liquidated one's.
+    expect(mapStellarPositionActivityType('liq_credit')).toBe(
+      'lendingUpdateAccountPosition'
+    )
     expect(mapStellarPositionActivityType('param_upd')).toBe(
       'lendingUpdateAccountParameters'
     )

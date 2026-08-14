@@ -202,6 +202,21 @@ const V2_FIXTURES: Fixture[] = [
     ),
   },
   {
+    // The SECOND batch a `SeizeMode::Credit` liquidation emits: the receiving
+    // account, supply side only, tagged `LiqCredit` (15) rather than
+    // `LiqSeize` (5) because the amount is net of the protocol fee.
+    topic: 'position:batch_update_liq_credit',
+    topics: topicsFor('position', 'batch_update'),
+    data: b64(
+      vecV([
+        u64(43n),
+        vecV([addrV(OWNER), u32(1), u32(0)]),
+        vecV([depositEntry(15, ASSET_A, 940000n)]),
+        vecV([]),
+      ])
+    ),
+  },
+  {
     topic: 'market:batch_state_update',
     topics: topicsFor('market', 'batch_state_update'),
     // Data is the entries Vec directly.
@@ -406,6 +421,22 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(ev.data.accountId).toBe('7')
     expect(ev.data.accountAttributes.mode).toBe('None')
     expect(ev.data.updates.map((u) => u.action)).toEqual(['99', 'supply'])
+  })
+
+  it('position:batch_update — LiqCredit (15) decodes as its own tag, not liq_seize', () => {
+    const f = byTopic('position:batch_update_liq_credit')
+    const ev = decodeStellarLendingEvent(f.topics, f.data)
+    if (ev?.topic !== 'position:batch_update') throw new Error('narrow')
+    // The receiving account is a second, separate batch — different account id
+    // from the liquidated one, supply side only.
+    expect(ev.data.accountId).toBe('43')
+    expect(ev.data.updates).toHaveLength(1)
+    const credit = ev.data.updates[0]!
+    expect(credit.action).toBe('liq_credit')
+    expect(credit.action).not.toBe('liq_seize')
+    expect(credit.positionType).toBe('Deposit')
+    // Net of the protocol fee: gross seizure 1000000 → 940000 credited.
+    expect(credit.amount).toBe('940000')
   })
 
   it('market:batch_state_update (vec ABI v2) — hub_id-keyed snapshots', () => {
