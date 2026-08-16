@@ -7,8 +7,6 @@
  * on its top-level type surface.
  */
 
-/** Synthetic NFT collection ticker for Stellar lending accounts. */
-export const XOXNO_LENDING_STELLAR_TICKER = 'XLENDXLM-a7c9f3'
 
 /**
  * A child delta's contribution to `eventOrder`: `base * STRIDE + childIndex`.
@@ -25,14 +23,17 @@ export type StellarLendingActivityType =
   | 'lendingUpdateAccountParameters'
 
 /**
- * Synthetic NFT identifier for a Stellar lending account, e.g.
- * `XLENDXLM-a7c9f3-2a` for account 42. The u64 account id is rendered as
- * even-length lowercase hex.
+ * NFT identifier for a Stellar lending account: the position-NFT contract
+ * address with the decimal account id (== token id) appended, e.g.
+ * `CDVN5…LPSY-42`. The account IS an on-chain NFT since the NFT-ownership
+ * protocol; the collection is the contract itself and there is no synthetic
+ * ticker or hex encoding anymore.
  */
-export function buildStellarLendingIdentifier(accountId: string): string {
-  const hex = BigInt(accountId).toString(16)
-  const padded = hex.length % 2 === 0 ? hex : `0${hex}`
-  return `${XOXNO_LENDING_STELLAR_TICKER}-${padded}`
+export function buildStellarLendingIdentifier(
+  positionNftContract: string,
+  accountId: string,
+): string {
+  return `${positionNftContract}-${BigInt(accountId).toString(10)}`
 }
 
 /**

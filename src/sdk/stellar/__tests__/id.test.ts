@@ -3,21 +3,21 @@
  */
 
 import {
-  XOXNO_LENDING_STELLAR_TICKER,
   buildStellarLendingIdentifier,
   extractEventOrder,
   mapStellarPositionActivityType,
   syntheticEventOrder,
 } from '../events/id'
 
+const NFT = 'CDVN5JU675MEDPVRPCYC45AHFC275UH57WEU5OTFE4WFGZBNN7HTLPSY'
+
 describe('Stellar lending activity-id primitives', () => {
-  it('buildStellarLendingIdentifier renders even-length lowercase hex', () => {
-    expect(buildStellarLendingIdentifier('42')).toBe('XLENDXLM-a7c9f3-2a')
-    expect(buildStellarLendingIdentifier('5')).toBe('XLENDXLM-a7c9f3-05')
-    expect(buildStellarLendingIdentifier('255')).toBe('XLENDXLM-a7c9f3-ff')
-    expect(buildStellarLendingIdentifier('256')).toBe('XLENDXLM-a7c9f3-0100')
-    expect(buildStellarLendingIdentifier('0')).toBe('XLENDXLM-a7c9f3-00')
-    expect(XOXNO_LENDING_STELLAR_TICKER).toBe('XLENDXLM-a7c9f3')
+  it('buildStellarLendingIdentifier appends the decimal account id to the contract', () => {
+    expect(buildStellarLendingIdentifier(NFT, '42')).toBe(`${NFT}-42`)
+    expect(buildStellarLendingIdentifier(NFT, '5')).toBe(`${NFT}-5`)
+    expect(buildStellarLendingIdentifier(NFT, '4294967295')).toBe(
+      `${NFT}-4294967295`,
+    )
   })
 
   it('extractEventOrder parses the index segment of a Soroban event id', () => {
