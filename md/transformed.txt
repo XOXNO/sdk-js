@@ -262,7 +262,7 @@
     "output": {} as string[]
   },
   "/tokens/usd-price": {
-    "input": {} as {identifier?: string[], cache?: boolean},
+    "input": {} as {identifier?: string[], chain?: ActivityChain[], cache?: boolean},
     "output": {} as Record<string, number>
   },
   "/tokens/egld/fiat-price": {
@@ -406,11 +406,11 @@
     "output": {} as LendingPositionStatus[]
   },
   "/lending/leaderboard/liquidate": {
-    "input": {},
+    "input": {} as {chain?: ActivityChain[]},
     "output": {} as LendingPositionStatus[]
   },
   "/lending/leaderboard/clean-bad-debt": {
-    "input": {},
+    "input": {} as {chain?: ActivityChain[]},
     "output": {} as LendingPositionStatus[]
   },
   "/lending/stats": {
@@ -798,6 +798,10 @@
     "input": {},
     "output": {} as StellarLendingLiveStateDto
   },
+  "/stellar-lending/markets/detailed": {
+    "input": {},
+    "output": {} as StellarDetailedMarketDto[]
+  },
   "/stellar-lending/hubs": {
     "input": {},
     "output": {} as StellarHubListItemDto[]
@@ -885,6 +889,14 @@
   "/stellar-lending/pnl": {
     "input": {} as {accountId: string},
     "output": {} as StellarPositionsPnlDto
+  },
+  "/stellar-lending/campaign/leaderboard": {
+    "input": {} as {skip?: number, top?: number},
+    "output": {} as StellarCampaignLeaderboardDto
+  },
+  "/stellar-lending/campaign/me": {
+    "input": {} as {owner: string},
+    "output": {} as StellarCampaignMeDto
   },
   "/stellar-lending/positions": {
     "input": {} as {token?: string, orderBy?: string, orderDirection?: string, skip?: number, top?: number},
@@ -1786,7 +1798,7 @@
   },
   "/user/blend/:address": {
     "input": {},
-    "output": {} as BlendUserPosition
+    "output": {} as BlendUserPosition[]
   },
   "/stellar/aggregator/quote": {
     "input": {} as {assetIn: string, assetOut: string, amount: string, tradeType: string, network: string, slippageBps?: number, parts?: number, maxHops?: number},

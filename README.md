@@ -776,6 +776,9 @@ sdk.stellarLending.context(...); // StellarLendingContextDto
 // GET /stellar-lending/live-state
 sdk.stellarLending.liveState(...); // StellarLendingLiveStateDto
 
+// GET /stellar-lending/markets/detailed
+sdk.stellarLending.markets.detailed(...); // StellarDetailedMarketDto[]
+
 // GET /stellar-lending/hubs
 sdk.stellarLending.hubs(...); // StellarHubListItemDto[]
 
@@ -841,6 +844,12 @@ sdk.stellarLending.stats.history(...); // StellarStatsHistoryDto
 
 // GET /stellar-lending/pnl
 sdk.stellarLending.pnl(...); // StellarPositionsPnlDto
+
+// GET /stellar-lending/campaign/leaderboard
+sdk.stellarLending.campaign.leaderboard(...); // StellarCampaignLeaderboardDto
+
+// GET /stellar-lending/campaign/me
+sdk.stellarLending.campaign.me(...); // StellarCampaignMeDto
 
 // GET /stellar-lending/positions
 sdk.stellarLending.positions(...); // StellarPositionsRankDto
@@ -1173,5 +1182,5 @@ sdk.user.me.event.badge(...); // string
 sdk.user.me.event.badge.payload(...); // BageQRData
 
 // GET /user/blend/:address
-sdk.user.blend.address("...")(...); // BlendUserPosition
+sdk.user.blend.address("...")(...); // BlendUserPosition[]
 ```
