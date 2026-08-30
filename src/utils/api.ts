@@ -111,11 +111,25 @@ export class XOXNOClient {
     const Authorization =
       authHeader === 'Bearer undefined' ? undefined : authHeader
 
+    // A GET/HEAD has no body, so Content-Type describes nothing — but in a
+    // browser it is the difference between a "simple" CORS request and one
+    // that needs a preflight. `application/json` is not on the CORS-safelist,
+    // so setting it here made every unauthenticated GET cost an extra OPTIONS
+    // round trip to the origin (~180k/week, 17% of all API requests, ~200ms
+    // each, none of them cacheable at the edge).
+    //
+    // Authenticated calls still preflight — Authorization is not safelisted
+    // either — and that is unavoidable. This only stops charging public reads
+    // for a header that carries no meaning on a bodyless request.
+    const hasBody = method !== 'GET' && method !== 'HEAD' && method !== 'PUT'
+
     const allHeaders = {
       ...headers,
+      // Both are forbidden header names: browsers drop them silently, so they
+      // only ever apply to server-side (Node) callers.
       Referer: 'https://xoxno.sdk',
       'User-Agent': 'XOXNO/1.0/SDK',
-      ...(method === 'PUT' ? {} : { 'Content-Type': 'application/json' }),
+      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
       ...(Authorization ? { Authorization } : {}),
     }
 
