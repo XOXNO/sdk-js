@@ -289,6 +289,10 @@
     "input": {} as {before: string, after: string, bin: string},
     "output": {} as AnalyticsMarketplaceUniqueUsers[]
   },
+  "/integrations/liquid-staking/multiversx/revenue": {
+    "input": {} as {startTime: string, endTime: string},
+    "output": {} as EgldLiquidStakingRevenueExport
+  },
   "/liquid/egld/rate": {
     "input": {},
     "output": {} as RateType
@@ -424,6 +428,22 @@
   "/integrations/lending/stellar": {
     "input": {},
     "output": {} as DefillamaLendingExport
+  },
+  "/integrations/lending/multiversx": {
+    "input": {},
+    "output": {} as MvxDefillamaExport
+  },
+  "/integrations/lending/multiversx/revenue": {
+    "input": {} as {startTime: string, endTime: string},
+    "output": {} as MvxRevenueExport
+  },
+  "/integrations/lending/multiversx/liquidations": {
+    "input": {} as {startTime: string, endTime: string, bin?: string},
+    "output": {} as MvxLiquidationsExport
+  },
+  "/integrations/lending/multiversx/active-users": {
+    "input": {} as {startTime: string, endTime: string},
+    "output": {} as MvxUserStatsExport
   },
   "/integrations/lending/stellar/history": {
     "input": {} as {startTime: string, endTime: string, bin?: string, token?: string},

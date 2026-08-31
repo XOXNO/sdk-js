@@ -506,8 +506,23 @@ sdk.faucet.POST(...); // SuccessDto
 // GET /hatom/user/:address
 sdk.hatom.user.address("...")(...); // UserInfo
 
+// GET /integrations/liquid-staking/multiversx/revenue
+sdk.integrations.liquidStaking.multiversx.revenue(...); // EgldLiquidStakingRevenueExport
+
 // GET /integrations/lending/stellar
 sdk.integrations.lending.stellar(...); // DefillamaLendingExport
+
+// GET /integrations/lending/multiversx
+sdk.integrations.lending.multiversx(...); // MvxDefillamaExport
+
+// GET /integrations/lending/multiversx/revenue
+sdk.integrations.lending.multiversx.revenue(...); // MvxRevenueExport
+
+// GET /integrations/lending/multiversx/liquidations
+sdk.integrations.lending.multiversx.liquidations(...); // MvxLiquidationsExport
+
+// GET /integrations/lending/multiversx/active-users
+sdk.integrations.lending.multiversx.activeUsers(...); // MvxUserStatsExport
 
 // GET /integrations/lending/stellar/history
 sdk.integrations.lending.stellar.history(...); // DefillamaLendingHistoryExport
