@@ -1,362 +1,64 @@
-/**
- * Stellar lending read-API response shapes.
- *
- * These interfaces mirror the api-v2 `stellar-lending` response DTOs 1:1. The
- * SDK never imports from api-v2, so the shapes are duplicated here by hand. Doc
- * field types that already live in `@xoxno/types/stellar-lending` (governance
- * enums + proposal fields, the initial-payment multiplier) are imported rather
- * than re-declared.
- *
- * Numeric `*Wad`/`*Ray`/`*ScaledRay` fields cross the wire as decimal strings
- * (1e18 / 1e27 fixed-point); `*Short` fields are already human-readable numbers.
- */
+/** Public reader aliases. All response fields come from the generated API contract. */
+import type * as Api from './lending-api-types'
+import type { endpoints } from '../swagger'
 
-import type {
-  AssetDto,
-  ReserveDto,
-  StellarAssetOracle,
-  StellarAssetPage,
-  StellarAssetPageGraphPoint,
-  StellarAssetPageGraphSeries,
-  StellarAssetPageMarket,
-  StellarGovernanceProposalField,
-  StellarGovernanceProposalKind,
-  StellarGovernanceProposalStatus,
-  StellarGovernanceProposalTarget,
-  StellarInitialPaymentMultiplier,
-} from '@xoxno/types/stellar-lending'
+export * from './lending-api-types'
+export type { StellarApyRange } from '@xoxno/types/stellar-lending'
+export type { StellarAssetOracle as StellarAssetOracleConfig } from '@xoxno/types/stellar-lending'
 
-export type {
-  StellarLendingContext,
-  StellarAssetPage,
-  StellarAssetPageGraphPoint,
-  StellarAssetPageGraphSeries,
-  StellarAssetPageMarket,
-} from '@xoxno/types/stellar-lending'
+export type StellarLendingContext = Api.StellarLendingContextDto
+export type StellarAsset = Api.AssetDto
+export type StellarAssetMarket = Api.AssetMarketDto
+export type StellarHubAssetRow = Api.HubAssetDto
+export type StellarHub = Api.HubDto
+export type StellarSpokeMarket = Api.SpokeMarketDto
+export type StellarSpoke = Api.SpokeDto
+export type StellarReserveIrmCurve = Api.ReserveIrmCurveDto
+export type StellarReserve = Api.ReserveDto
+export type StellarTopHolder = Api.TopHolderDto
+export type StellarTopHolders = Api.TopHoldersDto
+export type StellarAccountPosition = Api.AccountPositionDto
+export type StellarAccountPositions = Api.AccountPositionsDto
+export type StellarGovernanceProposal = Api.GovernanceProposalDto
+export type StellarGovernanceProposalsPage = Api.GovernanceProposalsPageDto
+export type StellarMarketGraphPoint = Api.MarketGraphPointDto
+export type StellarFeeGraphPoint = Api.FeeGraphPointDto
+export type StellarMarketGraph = Api.MarketGraphDto
+export type StellarSpokeGraph = Api.SpokeGraphDto
+export type StellarSpokeGraphPoint = Api.SpokeGraphPointDto
+export type StellarAssetPage = Api.AssetPageDto
+export type StellarAssetPageMarket = Api.AssetMarketDto
+export type StellarAssetPageGraphPoint = Api.AssetPageGraphPointDto
+export type StellarAssetPageGraphSeries = Api.AssetPageGraphSeriesDto
+export type StellarAssetListItem = Api.StellarAssetListItemDto
+export type StellarHubListItem = Api.StellarHubListItemDto
+export type StellarSpokeListItem = Api.StellarSpokeListItemDto
+export type StellarReserveListItem = Api.StellarReserveListItemDto
+export type StellarUserActivityItem = Api.StellarUserActivityItemDto
 
-// -----------------------------------------------------------------------------
-// Query selectors
-// -----------------------------------------------------------------------------
-
-/** Side selector for an asset's markets table. */
+/** Asset-market action selector. */
 export type StellarLendingMarketSide = 'deposit' | 'borrow'
-
-/** Side selector for a reserve's top-holders list. */
+/** Holder-list balance selector. Also used by holder distribution. */
 export type StellarLendingHoldersSide = 'deposits' | 'borrows'
-
-// -----------------------------------------------------------------------------
-// Asset
-// -----------------------------------------------------------------------------
-
-/** Composable AssetOracle persisted on an asset (from @xoxno/types). */
-export type StellarAssetOracleConfig = StellarAssetOracle
-
-/** One (spoke, hub) market row for an asset's markets table. */
-export interface StellarAssetMarket {
-  spokeId: number
-  hubId: number
-  asset: string
-  supplyApy: number
-  borrowApy: number
-  utilization: number
-  suppliedShort: number
-  borrowedShort: number
-  availableLiquidityShort: number
-  collateralFactorBps: number
-  liquidationThresholdBps: number
-  isCollateralizable: boolean
-  isBorrowable: boolean
-}
-
-/** Asset overview header: shared API contract. */
-export type StellarAsset = AssetDto
-
-// -----------------------------------------------------------------------------
-// Hub
-// -----------------------------------------------------------------------------
-
-/** One asset's liquidity on a hub, rendered as a hub opportunity row. */
-export interface StellarHubAssetRow {
-  hubId: number
-  asset: string
-  supplyApy: number
-  borrowApy: number
-  utilization: number
-  suppliedShort: number
-  borrowedShort: number
-  availableLiquidityShort: number
-  isFlashloanable: boolean
-}
-
-/** Hub overview: header totals + per-asset liquidity opportunities. */
-export interface StellarHub {
-  hubId: number
-  isActive: boolean
-  name: string | null
-  totalDepositsUsd: string
-  totalBorrowsUsd: string
-  availableLiquidityUsd: string
-  utilization: number
-  assetCount: number
-  assets: StellarHubAssetRow[]
-}
-
-// -----------------------------------------------------------------------------
-// Spoke
-// -----------------------------------------------------------------------------
-
-/** One reserve row within a spoke (risk truth joined with hub liquidity). */
-export interface StellarSpokeMarket {
-  spokeId: number
-  hubId: number
-  asset: string
-  supplyApy: number
-  borrowApy: number
-  utilization: number
-  availableLiquidityShort: number
-  collateralFactorBps: number
-  liquidationThresholdBps: number
-  isCollateralizable: boolean
-  isBorrowable: boolean
-  paused: boolean
-  frozen: boolean
-}
-
-/** Spoke overview: header totals, connected hubs, and per-reserve market table. */
-export interface StellarSpoke {
-  spokeId: number
-  isDeprecated: boolean
-  name: string | null
-  totalDepositsUsd: string
-  totalBorrowsUsd: string
-  assetCount: number
-  connectedHubIds: number[]
-  connectedHubCount: number
-  liquidationTargetHfWad: string
-  healthFactorForMaxBonusWad: string
-  liquidationBonusFactorBps: number
-  markets: StellarSpokeMarket[]
-}
-
-// -----------------------------------------------------------------------------
-// Reserve
-// -----------------------------------------------------------------------------
-
-/** Interest-rate-model curve (ray-scaled), sourced from the HubAsset doc. */
-export interface StellarReserveIrmCurve {
-  baseRateRay: string
-  slope1Ray: string
-  slope2Ray: string
-  slope3Ray: string
-  optimalUtilizationRay: string
-  midUtilizationRay: string
-  maxUtilizationRay: string
-  maxBorrowRateRay: string
-  reserveFactorBps: number
-}
-
-/** Reserve detail page: shared API contract. */
-export type StellarReserve = ReserveDto
-
-// -----------------------------------------------------------------------------
-// Top holders
-// -----------------------------------------------------------------------------
-
-export interface StellarTopHolder {
-  owner: string
-  accountId: string
-  scaledRay: string
-  amountShort: number
-  sharePct: number
-}
-
-/** Top holders of a reserve, for one side (deposits or borrows). */
-export interface StellarTopHolders {
-  spokeId: number
-  hubId: number
-  asset: string
-  side: StellarLendingHoldersSide
-  totalScaledRay: string
-  holders: StellarTopHolder[]
-}
-
-// -----------------------------------------------------------------------------
-// Positions
-// -----------------------------------------------------------------------------
-
-/** One account's position in one reserve. */
-export interface StellarAccountPosition {
-  accountId: string
-  owner: string
-  spokeId: number
-  hubId: number
-  asset: string
-  positionMode: number
-  supplyScaledRay: string
-  borrowScaledRay: string
-  supplyIndexRay: string | null
-  borrowIndexRay: string | null
-  entryLtvBps: number
-  entryLiquidationThresholdBps: number
-  entryLiquidationBonusBps: number
-  entryLiquidationFeesBps: number
-  initialPaymentMultiplier: StellarInitialPaymentMultiplier | null
-  updatedAt: number
-  ledger: number
-}
-
-/** All positions for an owner (cross-spoke/hub portfolio) or one account. */
-export interface StellarAccountPositions {
-  positions: StellarAccountPosition[]
-}
-
-// -----------------------------------------------------------------------------
-// Governance
-// -----------------------------------------------------------------------------
-
-/** A timelock governance proposal on the Stellar lending governance contract. */
-export interface StellarGovernanceProposal {
-  operationId: string
-  kind: StellarGovernanceProposalKind
-  status: StellarGovernanceProposalStatus
-  target: StellarGovernanceProposalTarget
-  targetAddress: string
-  functionName: string
-  summary: string
-  fields: StellarGovernanceProposalField[]
-  assetAddress?: string
-  assetSymbol?: string
-  proposer: string
-  scheduledLedger: number
-  readyLedger: number
-  delayLedgers: number
-  expiresLedger: number
-  executedLedger?: number
-  cancelledLedger?: number
-  scheduledAt: number
-  executedAt?: number
-  cancelledAt?: number
-  scheduledTxHash: string
-  executedTxHash?: string
-  cancelledTxHash?: string
-}
-
-/** Cursor-paginated page of governance proposals. */
-export interface StellarGovernanceProposalsPage {
-  resources: StellarGovernanceProposal[]
-  hasMoreResults: boolean
-  continuationToken: string
-}
-
-// -----------------------------------------------------------------------------
-// Graphs
-// -----------------------------------------------------------------------------
-
-/** One binned market-snapshot point for a graph series. */
-export interface StellarMarketGraphPoint {
-  timestamp: string
-  hubId: number
-  spokeId: number | null
-  token: string
-  supplyApy: number
-  borrowApy: number
-  utilization: number
-  totalDepositsUsd: number
-  totalBorrowsUsd: number
-  availableLiquidityUsd: number
-  usdPrice: number
-}
-
-/** One binned activity-derived fee/flash point. */
-export interface StellarFeeGraphPoint {
-  timestamp: string
-  feeShort: number
-  usd: number
-}
-
-/** A market-history graph: binned snapshot points (+ optional fee series). */
-export interface StellarMarketGraph {
-  points: StellarMarketGraphPoint[]
-  fees?: StellarFeeGraphPoint[]
-}
-
-/** Time-window + bin selector shared by every graph read. */
+/** Time window for API charts. Dates are ISO-8601; bin examples: 1h, 1d. */
 export interface StellarMarketGraphQuery {
-  /** Inclusive window start (ISO-8601). */
+  /** Window start. */
   from: string
-  /** Exclusive window end (ISO-8601). */
+  /** Window end. */
   to: string
-  /** Bin width as a timespan string (e.g. `1h`, `1d`). */
+  /** Kusto timespan, for example 1h or 1d. */
   bin: string
 }
-
-// -----------------------------------------------------------------------------
-// Protocol state
-// -----------------------------------------------------------------------------
-
-/**
- * Config and admin state for one deployed contract, event-sourced by the
- * indexer from that contract's own config, pause, ownership and admin events.
- *
- * Every field is optional-by-absence: a contract only populates what its own
- * events carry, so a governance row leaves the controller fields null and vice
- * versa. `paused` is null until a pause or unpause has actually been observed,
- * which is materially different from a confirmed `false`.
- */
-export interface StellarContractConfig {
-  contractAddress: string
-  wasmHash: string | null
-  accumulator: string | null
-  swapAggregator: string | null
-  priceAggregator: string | null
-  maxSupplyPositions: number | null
-  maxBorrowPositions: number | null
-  /** Raw 18-decimal WAD. */
-  minBorrowCollateralUsdWad: string | null
-  paused: boolean | null
-  /** Governance timelock delay, in ledgers. */
-  minDelayLedgers: number | null
-  owner: string | null
-  pendingOwner: string | null
-  admin: string | null
-  pendingAdmin: string | null
-  pendingAdminLiveUntilLedger: number | null
-  ledger: number
-  updatedAt: number
-}
-
-/**
- * One access-control grant. Revocation flips `granted` rather than removing the
- * row, so a revoked grant stays queryable.
- */
-export interface StellarContractRole {
-  contractAddress: string
-  /** On-chain role symbol, e.g. `ORACLE`, `PROPOSER`. */
-  role: string
-  account: string
-  granted: boolean
-  caller: string | null
-  ledger: number
-  updatedAt: number
-}
-
-/**
- * One position-authorization grant. A delegate may act on the owner's position,
- * so this is security-relevant state rather than display metadata.
- */
-export interface StellarAccountDelegate {
-  accountId: number
-  owner: string
-  delegate: string
-  granted: boolean
-  ledger: number
-  updatedAt: number
-}
-
-/** Approval state for one Blend pool, kept after revocation as `approved: false`. */
-export interface StellarBlendPool {
-  pool: string
-  approved: boolean
-  ledger: number
-  updatedAt: number
-}
+export type StellarReservesParams = (typeof endpoints)['/stellar-lending/reserves']['input']
+export type StellarActivityQuery = (typeof endpoints)['/stellar-lending/users/:owner/activity']['input']
+export type StellarActivityPageQuery = (typeof endpoints)['/stellar-lending/users/:owner/activity/page']['input']
+export type StellarGovernanceQuery = (typeof endpoints)['/stellar-lending/governance/proposals']['input']
+export type StellarPositionsQuery = (typeof endpoints)['/stellar-lending/positions']['input']
+export type StellarRevenueQuery = (typeof endpoints)['/stellar-lending/revenue']['input']
+export type StellarFeeRevenueQuery = (typeof endpoints)['/stellar-lending/revenue/fees']['input']
+export type StellarParticipantsQuery = (typeof endpoints)['/stellar-lending/participants']['input']
+export type StellarLiquidationsQuery = (typeof endpoints)['/stellar-lending/liquidations']['input']
+export type StellarLiquidationsLeaderboardQuery = (typeof endpoints)['/stellar-lending/liquidations/leaderboard']['input']
+export type StellarVolumeQuery = (typeof endpoints)['/stellar-lending/volume']['input']
+export type StellarDistributionQuery = (typeof endpoints)['/stellar-lending/distribution']['input']
+export type StellarRateSpreadQuery = (typeof endpoints)['/stellar-lending/rate-spread']['input']

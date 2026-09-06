@@ -27,6 +27,7 @@
  * — though each entry is itself an ScMap.
  */
 
+import { Buffer } from 'buffer'
 import { scValToNative, xdr } from '@stellar/stellar-sdk'
 import type {
   StellarLendingDecodedEvent,
@@ -55,8 +56,6 @@ const dec = (v: unknown): string =>
   typeof v === 'bigint' || typeof v === 'number' ? v.toString() : String(v)
 const num = (v: unknown): number => (typeof v === 'bigint' ? Number(v) : Number(v))
 const str = (v: unknown): string => String(v)
-const optDec = (v: unknown): string | undefined =>
-  v === null || v === undefined ? undefined : dec(v)
 const hex = (v: unknown): string =>
   v instanceof Uint8Array
     ? Buffer.from(v).toString('hex')

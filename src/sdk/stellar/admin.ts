@@ -41,7 +41,11 @@ import {
   u64,
   vec,
 } from './scval-encode'
-import { buildTx, type BuiltStellarTx, type StellarBuilderOptions } from './lending'
+import {
+  buildTx,
+  type BuiltStellarTx,
+  type StellarLendingBuilderOptions,
+} from './lending'
 import { xdr } from '@stellar/stellar-sdk'
 
 // -----------------------------------------------------------------------------
@@ -308,7 +312,7 @@ export interface RewardEntry {
 }
 export interface UpdateAccountThresholdArgs {
   hasRisks: boolean
-  accountNonces: number[]
+  accountNonces: Array<number | string>
 }
 
 // -----------------------------------------------------------------------------
@@ -317,7 +321,7 @@ export interface UpdateAccountThresholdArgs {
 
 /** upgrade(new_wasm_hash: BytesN<32>) */
 export function buildStellarUpgradeControllerTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: { wasmHash: string }
 ): BuiltStellarTx {
   return buildTx(opts, 'upgrade', [bytesN(args.wasmHash)])
@@ -325,27 +329,27 @@ export function buildStellarUpgradeControllerTx(
 
 /** migrate(new_version: u32) */
 export function buildStellarMigrateTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: { newVersion: number }
 ): BuiltStellarTx {
   return buildTx(opts, 'migrate', [u32(args.newVersion)])
 }
 
 /** pause() */
-export function buildStellarPauseTx(opts: StellarBuilderOptions): BuiltStellarTx {
+export function buildStellarPauseTx(opts: StellarLendingBuilderOptions): BuiltStellarTx {
   return buildTx(opts, 'pause', [])
 }
 
 /** unpause() */
 export function buildStellarUnpauseTx(
-  opts: StellarBuilderOptions
+  opts: StellarLendingBuilderOptions
 ): BuiltStellarTx {
   return buildTx(opts, 'unpause', [])
 }
 
 /** grant_role(account: Address, role: Symbol) */
 export function buildStellarGrantRoleTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: RoleGrantArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'grant_role', [addr(args.account), sym(args.role)])
@@ -353,7 +357,7 @@ export function buildStellarGrantRoleTx(
 
 /** revoke_role(account: Address, role: Symbol) */
 export function buildStellarRevokeRoleTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: RoleGrantArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'revoke_role', [addr(args.account), sym(args.role)])
@@ -361,7 +365,7 @@ export function buildStellarRevokeRoleTx(
 
 /** transfer_ownership(new_owner: Address, live_until_ledger: u32) */
 export function buildStellarTransferOwnershipTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: TransferOwnershipArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'transfer_ownership', [
@@ -372,7 +376,7 @@ export function buildStellarTransferOwnershipTx(
 
 /** accept_ownership() */
 export function buildStellarAcceptOwnershipTx(
-  opts: StellarBuilderOptions
+  opts: StellarLendingBuilderOptions
 ): BuiltStellarTx {
   return buildTx(opts, 'accept_ownership', [])
 }
@@ -383,7 +387,7 @@ export function buildStellarAcceptOwnershipTx(
 
 /** set_swap_aggregator(addr: Address) — #[only_owner] */
 export function buildStellarSetSwapAggregatorTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: { aggregator: string }
 ): BuiltStellarTx {
   return buildTx(opts, 'set_swap_aggregator', [addr(args.aggregator)])
@@ -391,7 +395,7 @@ export function buildStellarSetSwapAggregatorTx(
 
 /** set_price_aggregator(addr: Address) — #[only_owner] */
 export function buildStellarSetPriceAggregatorTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: { aggregator: string }
 ): BuiltStellarTx {
   return buildTx(opts, 'set_price_aggregator', [addr(args.aggregator)])
@@ -402,7 +406,7 @@ export const buildStellarSetAggregatorTx = buildStellarSetSwapAggregatorTx
 
 /** set_accumulator(addr: Address) — #[only_owner] */
 export function buildStellarSetAccumulatorTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: { accumulator: string }
 ): BuiltStellarTx {
   return buildTx(opts, 'set_accumulator', [addr(args.accumulator)])
@@ -410,7 +414,7 @@ export function buildStellarSetAccumulatorTx(
 
 /** set_position_limits(limits: PositionLimits) — #[only_owner] */
 export function buildStellarSetPositionLimitsTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: PositionLimitsDto
 ): BuiltStellarTx {
   return buildTx(opts, 'set_position_limits', [encodePositionLimits(args)])
@@ -418,7 +422,7 @@ export function buildStellarSetPositionLimitsTx(
 
 /** approve_blend_pool(pool: Address) — #[only_owner] */
 export function buildStellarApproveBlendPoolTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: { pool: string }
 ): BuiltStellarTx {
   return buildTx(opts, 'approve_blend_pool', [addr(args.pool)])
@@ -426,7 +430,7 @@ export function buildStellarApproveBlendPoolTx(
 
 /** revoke_blend_pool(pool: Address) — #[only_owner] */
 export function buildStellarRevokeBlendPoolTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: { pool: string }
 ): BuiltStellarTx {
   return buildTx(opts, 'revoke_blend_pool', [addr(args.pool)])
@@ -443,7 +447,7 @@ export const buildStellarRevokeTokenTx = buildStellarRevokeBlendPoolTx
  * in production.
  */
 export function buildStellarSetOracleTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: ConfigureAssetOracleArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'set_oracle', [
@@ -457,7 +461,7 @@ export const buildStellarSetMarketOracleConfigTx = buildStellarSetOracleTx
 
 /** price-aggregator `set_tolerance(key, OracleTolerance)` — owner only. */
 export function buildStellarSetOracleToleranceTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: EditOracleToleranceArgs & { upperRatioBps?: number; lowerRatioBps?: number }
 ): BuiltStellarTx {
   const bps = args.toleranceBps
@@ -481,7 +485,7 @@ export function buildStellarSetOracleToleranceTx(
  * one-way ratchet here: clearing one requires the timelocked spoke-asset edit.
  */
 export function buildStellarSetSpokeAssetFlagsTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: {
     spokeId: number
     hubId: number
@@ -507,7 +511,7 @@ export function buildStellarSetSpokeAssetFlagsTx(
  * governance forwarder (`buildStellarGovernanceSetOracleSanityBoundsImmediateTx`).
  */
 export function buildStellarSetOracleSanityBoundsTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: { asset: string; minPriceWad: string; maxPriceWad: string }
 ): BuiltStellarTx {
   return buildTx(opts, 'set_oracle_sanity_bounds', [
@@ -523,7 +527,7 @@ export function buildStellarSetOracleSanityBoundsTx(
 
 /** update_indexes(caller, assets: Vec<HubAssetKey>) */
 export function buildStellarUpdateIndexesTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: { assets: Array<{ hubId: number; asset: string }> }
 ): BuiltStellarTx {
   return buildTx(opts, 'update_indexes', [
@@ -534,8 +538,8 @@ export function buildStellarUpdateIndexesTx(
 
 /** renew_account(caller, account_id: u64) */
 export function buildStellarRenewAccountTx(
-  opts: StellarBuilderOptions,
-  args: { accountNonce: number }
+  opts: StellarLendingBuilderOptions,
+  args: { accountNonce: number | string }
 ): BuiltStellarTx {
   return buildTx(opts, 'renew_account', [
     addr(opts.caller),
@@ -545,7 +549,7 @@ export function buildStellarRenewAccountTx(
 
 /** create_liquidity_pool(hub_id, asset, params: MarketParamsRaw) -> Address — #[only_owner] */
 export function buildStellarCreateLiquidityPoolTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: CreateLiquidityPoolArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'create_liquidity_pool', [
@@ -557,7 +561,7 @@ export function buildStellarCreateLiquidityPoolTx(
 
 /** upgrade_liquidity_pool_params(hub_asset: HubAssetKey, params) — #[only_owner] */
 export function buildStellarUpgradeLiquidityPoolParamsTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: UpgradeLiquidityPoolParamsArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'upgrade_liquidity_pool_params', [
@@ -568,7 +572,7 @@ export function buildStellarUpgradeLiquidityPoolParamsTx(
 
 /** claim_revenue(caller, assets: Vec<HubAssetKey>) -> Vec<i128> */
 export function buildStellarClaimRevenueTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: { assets: Array<{ hubId: number; asset: string }> }
 ): BuiltStellarTx {
   return buildTx(opts, 'claim_revenue', [
@@ -579,7 +583,7 @@ export function buildStellarClaimRevenueTx(
 
 /** add_rewards(caller, rewards: Vec<(HubAssetKey, i128)>) */
 export function buildStellarAddRewardsTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: { rewards: RewardEntry[] }
 ): BuiltStellarTx {
   return buildTx(opts, 'add_rewards', [
@@ -590,7 +594,7 @@ export function buildStellarAddRewardsTx(
 
 /** update_account_threshold(caller, asset, has_risks, account_ids: Vec<u64>) — #[only_role(caller, "KEEPER")] */
 export function buildStellarUpdateAccountThresholdTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: UpdateAccountThresholdArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'update_account_threshold', [

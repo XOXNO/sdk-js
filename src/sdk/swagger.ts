@@ -1,5 +1,6 @@
-import type { PublicOnly,RateType,LoginAccessDto,LoginRequestDto,UserNetworkInfoDto,UserTokenInventoryResponseDto,UserProfileDoc,UserProfileEditDto,UserProfileDto,UserSettingsDoc,NotificationPreferencesPostDto,SetEmailDto,SetPhoneDto,UserBillingDetails,VerifyEmailDto,TradesilvaniaSignature,SuccessDto,CreatorProfileDto,CreatorProfileDoc,CreatorProfileEditDto,CollectionStatsFilter,CollectionStatsPaginated,CheckLikeStatusResponseDto,UserFavoriteResponseDto,TokenDataDocHydrated,XoxnoInfo,XoxnoLiquidStatsDto,AnalyticsMarketplaceUniqueUsers,EgldLiquidStakingRevenueExport,ProtocolAprType,ProviderDto,DelegationDataOutput,LendingMarketProfile,LendingMarketProfileFilter,LendingMarketProfileQuery,LendingGovernanceProposalFilter,LendingGovernanceProposalQuery,LendingGovernanceProposalDoc,LendingAccountProfile,LendingIndexesDto,LendingAccountPnl,LendingAccountSummary,LendingEModeCategoryProfile,LendingMarketAnalyticsGraph,LendingStatsHistory,LendingMarketAverageGraph,LendingPositionStatus,LendingOverallStats,DefillamaLendingExport,MvxDefillamaExport,MvxRevenueExport,MvxLiquidationsExport,MvxUserStatsExport,DefillamaLendingHistoryExport,DefillamaLendingRevenueExport,StellarLendingUserStatsExport,NftDocFilter,NftPaginated,LikeNftDto,InventorySummaryDtoHydrated,NftOfferPaginated,NftOfferDocFilter,NftOfferDocHydrated,ValueFp,TraitInfo,CollectionRanksDTO,ListingsResponseDto,NftDocHydrated,SignDataDto,SignWithdrawDto,SignAcceptGlobalOfferDto,SignMintDto,NftDocFull,CollectionProfileDoc,CollectionProfileEditDto,FloorPriceDto,PinnedCollectionDto,CollectionMintProfileDocHydrated,CollectionPinnedStatusDto,FollowCollectionDto,CollectionProfileFilter,CollectionProfilePaginated,CollectionMintProfileFilter,CollectionMintProfilePaginated,CollectionMintProfileDocWithStages,CollectionHoldersDto,CollectionHoldersExportDto,CollectionOwnerDto,CollectionStatsDocHydrated,CollectionOffersFilter,GlobalOfferPaginated,CreatorDetailsDto,ShareholderDto,StakingSummary,StakingPoolDoc,StakingEditDto,OwnedCollectionsDto,UserStakingSummaryDto,StakingCreatorDoc,StakingUserPoolNfts,StakingExploreDtoHydrated,OwnedServicesDto,FilterQueryDto,GlobalSearchResourcesPaginated,LendingNftAttributes,LendingTokenPriceDto,StellarAssetListItemDto,StellarLendingContextDto,StellarLendingLiveStateDto,StellarDetailedMarketDto,StellarHubListItemDto,StellarSpokeListItemDto,StellarReserveListItemDto,ReserveDto,TopHoldersDto,AssetDto,AssetPageDto,AssetMarketDto,HubDto,SpokeDto,AccountPositionsDto,StellarUserActivityItemDto,GovernanceProposalsPageDto,MarketGraphDto,SpokeGraphDto,StellarStatsHistoryDto,StellarPositionsPnlDto,StellarCampaignLeaderboardDto,StellarCampaignMeDto,StellarPositionsRankDto,UserHistoryDto,PnlByScopeDto,RevenueSeriesDto,FeeRevenueSeriesDto,ParticipantCountsDto,LiquidationsSeriesDto,LiquidationsLeaderboardDto,VolumeSeriesDto,ActiveUsersSeriesDto,HolderDistributionDto,RateSpreadSeriesDto,DefiLlamaDimensionsDto,NotificationPaginated,PushNotificationCountResponse,NotificationDoc,MobileDeviceDoc,MobileDeviceRegistrationDto,PushNotificationResponse,PushNotificationDoc,NotificationSuccessResponseDto,EventNotificationDto,CreatorMarketingNotificationDto,StellarChallengeResponseDto,Web2UserDoc,SuccessWithMessageDto,NativeWalletDto,SwitchWalletDto,Web2WalletDto,Web2UserShardsDto,NftActivityFilter,NftActivityPaginated,NftActivityDocHydrated,VolumeGraph,AnalyticsVolumeDto,UserAnalyticsDto,GlobalAnalyticsOverviewResponseDto,UserStatsDto,AirdropDtoHydrated,TransactionDetailed,TransactionProcessStatus,TransactionCostData,TransactionCreate,TransactionSendResult,ChatMessageDocHydrated,SendChatMessageDto,UserConversationPaginated,ChatMessagePaginated,GlobalConversationSummaryDto,UserBlockPaginated,WebSocketTokenDto,UserInfo,EventProfile,EventProfileCreateDto,EventProfileEditDto,EventProfileFilter,EventProfileQuery,EventRegistrationResponseDto,EventGuestRegistrationDto,EventTicketProfileDoc,EventTicketProfileCreateDto,EventTicketProfileEditDto,EventStageProfileDoc,EventStageProfileCreateDto,EventStageProfileEditDto,TicketPricesResponse,TicketCalculationRequestDto,DiscountCodeValidationResponse,EventInvitationDoc,EventInvitationCreateDto,EventInvitationFilter,EventInvitationQuery,EventInvitation,EventAcceptInvitation,EventClaimInvitationDto,EventVoucherFilter,EventVoucherQuery,EventQuestionDoc,EventQuestionCreateDto,EventQuestionEditDto,EventGuestFilter,EventGuestProfileQuery,EventGuestProfile,EventGuestExport,EventUserRole,EventUserRoleCreateDto,EventUserRoleEditDto,EventUserRoleDoc,BageQRData,TicketValidationResult,EventCheckInQR,EventVoucherDoc,EventVoucherCreateDto,EventVoucherEditDto,ManualCheckInDto,AnsweredQuestionWithDetails,EventGuestApproveDto,EventCountGroupedByCountry,EventReferralConfigDoc,EventReferralConfigCreateDto,EventReferralConfigEditDto,EventReferralConfigFilter,EventReferralConfigPaginated,EventReferralDoc,EventReferralCreateDto,EventReferralEditDto,EventReferralFilter,EventReferralPaginated,BlendUserPosition,SoroswapQuoteResponseDto,PerpOrderResponse,BarDto,SymbolInfoDto,PerpCoinExtended,PerpSpotCoinExtended,PerpCoinExtendedSlim,PerpLegalCheck,PerpSpotCoinExtendedSlim,L2BookPerpResponseSingle,TradesPerpResponseSingle,ActiveSpotAssetCtx,ActivePerpAssetCtx,PerpEvent } from '@xoxno/types';
+import type { PublicOnly,RateType,LoginAccessDto,LoginRequestDto,UserNetworkInfoDto,UserTokenInventoryResponseDto,UserProfileDoc,UserProfileEditDto,UserProfileDto,UserSettingsDoc,NotificationPreferencesPostDto,SetEmailDto,SetPhoneDto,UserBillingDetails,VerifyEmailDto,TradesilvaniaSignature,SuccessDto,CreatorProfileDto,CreatorProfileDoc,CreatorProfileEditDto,CollectionStatsFilter,CollectionStatsPaginated,CheckLikeStatusResponseDto,UserFavoriteResponseDto,TokenDataDocHydrated,XoxnoInfo,XoxnoLiquidStatsDto,AnalyticsMarketplaceUniqueUsers,EgldLiquidStakingRevenueExport,ProtocolAprType,ProviderDto,DelegationDataOutput,LendingMarketProfile,LendingMarketProfileFilter,LendingMarketProfileQuery,LendingGovernanceProposalFilter,LendingGovernanceProposalQuery,LendingGovernanceProposalDoc,LendingAccountProfile,LendingIndexesDto,LendingAccountPnl,LendingAccountSummary,LendingEModeCategoryProfile,LendingMarketAnalyticsGraph,LendingStatsHistory,LendingMarketAverageGraph,LendingPositionStatus,LendingOverallStats,DefillamaLendingExport,MvxDefillamaExport,MvxRevenueExport,MvxLiquidationsExport,MvxUserStatsExport,DefillamaLendingHistoryExport,DefillamaLendingRevenueExport,StellarLendingUserStatsExport,NftDocFilter,NftPaginated,LikeNftDto,InventorySummaryDtoHydrated,NftOfferPaginated,NftOfferDocFilter,NftOfferDocHydrated,ValueFp,TraitInfo,CollectionRanksDTO,ListingsResponseDto,NftDocHydrated,SignDataDto,SignWithdrawDto,SignAcceptGlobalOfferDto,SignMintDto,NftDocFull,CollectionProfileDoc,CollectionProfileEditDto,FloorPriceDto,PinnedCollectionDto,CollectionMintProfileDocHydrated,CollectionPinnedStatusDto,FollowCollectionDto,CollectionProfileFilter,CollectionProfilePaginated,CollectionMintProfileFilter,CollectionMintProfilePaginated,CollectionMintProfileDocWithStages,CollectionHoldersDto,CollectionHoldersExportDto,CollectionOwnerDto,CollectionStatsDocHydrated,CollectionOffersFilter,GlobalOfferPaginated,CreatorDetailsDto,ShareholderDto,StakingSummary,StakingPoolDoc,StakingEditDto,OwnedCollectionsDto,UserStakingSummaryDto,StakingCreatorDoc,StakingUserPoolNfts,StakingExploreDtoHydrated,OwnedServicesDto,FilterQueryDto,GlobalSearchResourcesPaginated,LendingNftAttributes,LendingTokenPriceDto,NotificationPaginated,PushNotificationCountResponse,NotificationDoc,MobileDeviceDoc,MobileDeviceRegistrationDto,PushNotificationResponse,PushNotificationDoc,NotificationSuccessResponseDto,EventNotificationDto,CreatorMarketingNotificationDto,StellarChallengeResponseDto,Web2UserDoc,SuccessWithMessageDto,NativeWalletDto,SwitchWalletDto,Web2WalletDto,Web2UserShardsDto,NftActivityFilter,NftActivityPaginated,NftActivityDocHydrated,VolumeGraph,AnalyticsVolumeDto,UserAnalyticsDto,GlobalAnalyticsOverviewResponseDto,UserStatsDto,AirdropDtoHydrated,TransactionDetailed,TransactionProcessStatus,TransactionCostData,TransactionCreate,TransactionSendResult,ChatMessageDocHydrated,SendChatMessageDto,UserConversationPaginated,ChatMessagePaginated,GlobalConversationSummaryDto,UserBlockPaginated,WebSocketTokenDto,UserInfo,EventProfile,EventProfileCreateDto,EventProfileEditDto,EventProfileFilter,EventProfileQuery,EventRegistrationResponseDto,EventGuestRegistrationDto,EventTicketProfileDoc,EventTicketProfileCreateDto,EventTicketProfileEditDto,EventStageProfileDoc,EventStageProfileCreateDto,EventStageProfileEditDto,TicketPricesResponse,TicketCalculationRequestDto,DiscountCodeValidationResponse,EventInvitationDoc,EventInvitationCreateDto,EventInvitationFilter,EventInvitationQuery,EventInvitation,EventAcceptInvitation,EventClaimInvitationDto,EventVoucherFilter,EventVoucherQuery,EventQuestionDoc,EventQuestionCreateDto,EventQuestionEditDto,EventGuestFilter,EventGuestProfileQuery,EventGuestProfile,EventGuestExport,EventUserRole,EventUserRoleCreateDto,EventUserRoleEditDto,EventUserRoleDoc,BageQRData,TicketValidationResult,EventCheckInQR,EventVoucherDoc,EventVoucherCreateDto,EventVoucherEditDto,ManualCheckInDto,AnsweredQuestionWithDetails,EventGuestApproveDto,EventCountGroupedByCountry,EventReferralConfigDoc,EventReferralConfigCreateDto,EventReferralConfigEditDto,EventReferralConfigFilter,EventReferralConfigPaginated,EventReferralDoc,EventReferralCreateDto,EventReferralEditDto,EventReferralFilter,EventReferralPaginated,BlendUserPosition,SoroswapQuoteResponseDto,PerpOrderResponse,BarDto,SymbolInfoDto,PerpCoinExtended,PerpSpotCoinExtended,PerpCoinExtendedSlim,PerpLegalCheck,PerpSpotCoinExtendedSlim,L2BookPerpResponseSingle,TradesPerpResponseSingle,ActiveSpotAssetCtx,ActivePerpAssetCtx,PerpEvent } from '@xoxno/types';
 import type { ActivityChain,TokenCategory,LendingPositionOrderByColumn,KustoOrderDirection,OfferType,StakingStatus,UserStatsOrderByColumn } from '@xoxno/types/enums';
+import type * as StellarApi from './stellar/lending-api-types';
 export const endpoints = {
   "/liquid/xoxno/rate": {
     "input": {},
@@ -810,167 +811,167 @@ export const endpoints = {
   },
   "/stellar-lending/assets": {
     "input": {},
-    "output": {} as StellarAssetListItemDto[]
+    "output": {} as Array<StellarApi.StellarAssetListItemDto>
   },
   "/stellar-lending/context": {
     "input": {},
-    "output": {} as StellarLendingContextDto
+    "output": {} as StellarApi.StellarLendingContextDto
   },
   "/stellar-lending/live-state": {
     "input": {},
-    "output": {} as StellarLendingLiveStateDto
+    "output": {} as StellarApi.StellarLendingLiveStateDto
   },
   "/stellar-lending/markets/detailed": {
     "input": {},
-    "output": {} as StellarDetailedMarketDto[]
+    "output": {} as Array<StellarApi.StellarDetailedMarketDto>
   },
   "/stellar-lending/hubs": {
     "input": {},
-    "output": {} as StellarHubListItemDto[]
+    "output": {} as Array<StellarApi.StellarHubListItemDto>
   },
   "/stellar-lending/spokes": {
     "input": {},
-    "output": {} as StellarSpokeListItemDto[]
+    "output": {} as Array<StellarApi.StellarSpokeListItemDto>
   },
   "/stellar-lending/reserves": {
     "input": {} as {hubId?: number, spokeId?: number, asset?: string},
-    "output": {} as StellarReserveListItemDto[]
+    "output": {} as Array<StellarApi.StellarReserveListItemDto>
   },
   "/stellar-lending/reserves/:spokeId/:hubId/:asset": {
     "input": {},
-    "output": {} as ReserveDto
+    "output": {} as StellarApi.ReserveDto
   },
   "/stellar-lending/reserves/:spokeId/:hubId/:asset/holders": {
-    "input": {} as {side: string},
-    "output": {} as TopHoldersDto
+    "input": {} as {side: "deposits" | "borrows"},
+    "output": {} as StellarApi.TopHoldersDto
   },
   "/stellar-lending/hubs/:hubId/holders": {
-    "input": {} as {side: string},
-    "output": {} as TopHoldersDto
+    "input": {} as {side: "deposits" | "borrows"},
+    "output": {} as StellarApi.TopHoldersDto
   },
   "/stellar-lending/spokes/:spokeId/holders": {
-    "input": {} as {side: string},
-    "output": {} as TopHoldersDto
+    "input": {} as {side: "deposits" | "borrows"},
+    "output": {} as StellarApi.TopHoldersDto
   },
   "/stellar-lending/assets/:asset": {
     "input": {},
-    "output": {} as AssetDto
+    "output": {} as StellarApi.AssetDto
   },
   "/stellar-lending/assets/:asset/page": {
     "input": {} as {from: string, to: string, bin: string, owner?: string},
-    "output": {} as AssetPageDto
+    "output": {} as StellarApi.AssetPageDto
   },
   "/stellar-lending/assets/:asset/markets": {
-    "input": {} as {side: string},
-    "output": {} as AssetMarketDto[]
+    "input": {} as {side: "deposit" | "borrow"},
+    "output": {} as Array<StellarApi.AssetMarketDto>
   },
   "/stellar-lending/hubs/:hubId": {
     "input": {},
-    "output": {} as HubDto
+    "output": {} as StellarApi.HubDto
   },
   "/stellar-lending/spokes/:spokeId": {
     "input": {},
-    "output": {} as SpokeDto
+    "output": {} as StellarApi.SpokeDto
   },
   "/stellar-lending/users/:owner/positions": {
     "input": {},
-    "output": {} as AccountPositionsDto
+    "output": {} as StellarApi.AccountPositionsDto
   },
   "/stellar-lending/users/:owner/activity": {
     "input": {} as {skip?: number, top?: number},
-    "output": {} as StellarUserActivityItemDto[]
+    "output": {} as Array<StellarApi.StellarUserActivityItemDto>
   },
   "/stellar-lending/accounts/:accountId/positions": {
     "input": {},
-    "output": {} as AccountPositionsDto
+    "output": {} as StellarApi.AccountPositionsDto
   },
   "/stellar-lending/governance/proposals": {
     "input": {} as {top?: number, continuationToken?: string},
-    "output": {} as GovernanceProposalsPageDto
+    "output": {} as StellarApi.GovernanceProposalsPageDto
   },
   "/stellar-lending/assets/:asset/graph": {
     "input": {} as {from: string, to: string, bin: string},
-    "output": {} as MarketGraphDto
+    "output": {} as StellarApi.MarketGraphDto
   },
   "/stellar-lending/hubs/:hubId/graph": {
     "input": {} as {from: string, to: string, bin: string},
-    "output": {} as MarketGraphDto
+    "output": {} as StellarApi.MarketGraphDto
   },
   "/stellar-lending/spokes/:spokeId/graph": {
     "input": {} as {from: string, to: string, bin: string},
-    "output": {} as SpokeGraphDto
+    "output": {} as StellarApi.SpokeGraphDto
   },
   "/stellar-lending/reserves/:spokeId/:hubId/:asset/graph": {
     "input": {} as {from: string, to: string, bin: string},
-    "output": {} as MarketGraphDto
+    "output": {} as StellarApi.MarketGraphDto
   },
   "/stellar-lending/stats/history": {
     "input": {} as {from: string, to: string, bin: string},
-    "output": {} as StellarStatsHistoryDto
+    "output": {} as StellarApi.StellarStatsHistoryDto
   },
   "/stellar-lending/pnl": {
     "input": {} as {accountId: string},
-    "output": {} as StellarPositionsPnlDto
+    "output": {} as StellarApi.StellarPositionsPnlDto
   },
   "/stellar-lending/campaign/leaderboard": {
     "input": {} as {skip?: number, top?: number},
-    "output": {} as StellarCampaignLeaderboardDto
+    "output": {} as StellarApi.StellarCampaignLeaderboardDto
   },
   "/stellar-lending/campaign/me": {
     "input": {} as {owner: string},
-    "output": {} as StellarCampaignMeDto
+    "output": {} as StellarApi.StellarCampaignMeDto
   },
   "/stellar-lending/positions": {
-    "input": {} as {token?: string, orderBy?: string, orderDirection?: string, skip?: number, top?: number},
-    "output": {} as StellarPositionsRankDto
+    "input": {} as {token?: string, orderBy?: "Supplied" | "Borrowed" | "HealthFactor", orderDirection?: "asc" | "desc", skip?: number, top?: number},
+    "output": {} as StellarApi.StellarPositionsRankDto
   },
   "/stellar-lending/users/:accountId/history": {
     "input": {} as {from: string, to: string, bin: string},
-    "output": {} as UserHistoryDto
+    "output": {} as StellarApi.UserHistoryDto
   },
   "/stellar-lending/pnl/scope": {
-    "input": {} as {scope: string},
-    "output": {} as PnlByScopeDto
+    "input": {} as {scope: "asset" | "hub" | "protocol"},
+    "output": {} as StellarApi.PnlByScopeDto
   },
   "/stellar-lending/revenue": {
-    "input": {} as {from: string, to: string, bin: string, scope?: string},
-    "output": {} as RevenueSeriesDto
+    "input": {} as {from: string, to: string, bin: string, scope?: "asset" | "hub" | "protocol"},
+    "output": {} as StellarApi.RevenueSeriesDto
   },
   "/stellar-lending/revenue/fees": {
     "input": {} as {from: string, to: string, bin: string, hubId?: number},
-    "output": {} as FeeRevenueSeriesDto
+    "output": {} as StellarApi.FeeRevenueSeriesDto
   },
   "/stellar-lending/participants": {
     "input": {} as {hubId?: number, spokeId?: number, token?: string},
-    "output": {} as ParticipantCountsDto
+    "output": {} as StellarApi.ParticipantCountsDto
   },
   "/stellar-lending/liquidations": {
     "input": {} as {from: string, to: string, bin: string, hubId?: number},
-    "output": {} as LiquidationsSeriesDto
+    "output": {} as StellarApi.LiquidationsSeriesDto
   },
   "/stellar-lending/liquidations/leaderboard": {
     "input": {} as {top?: number, hubId?: number, token?: string},
-    "output": {} as LiquidationsLeaderboardDto
+    "output": {} as StellarApi.LiquidationsLeaderboardDto
   },
   "/stellar-lending/volume": {
     "input": {} as {from: string, to: string, bin: string, hubId?: number, token?: string},
-    "output": {} as VolumeSeriesDto
+    "output": {} as StellarApi.VolumeSeriesDto
   },
   "/stellar-lending/active-users": {
     "input": {} as {from: string, to: string, bin: string},
-    "output": {} as ActiveUsersSeriesDto
+    "output": {} as StellarApi.ActiveUsersSeriesDto
   },
   "/stellar-lending/distribution": {
-    "input": {} as {hubId?: number, spokeId?: number, token?: string, side?: string},
-    "output": {} as HolderDistributionDto
+    "input": {} as {hubId?: number, spokeId?: number, token?: string, side?: "deposits" | "borrows"},
+    "output": {} as StellarApi.HolderDistributionDto
   },
   "/stellar-lending/rate-spread": {
     "input": {} as {from: string, to: string, bin: string, hubId?: number, token?: string},
-    "output": {} as RateSpreadSeriesDto
+    "output": {} as StellarApi.RateSpreadSeriesDto
   },
   "/stellar-lending/defillama": {
     "input": {} as {from: string, to: string, bin: string},
-    "output": {} as DefiLlamaDimensionsDto
+    "output": {} as StellarApi.DefiLlamaDimensionsDto
   },
   "/user/notifications": {
     "input": {} as {skip?: number, top?: number, continuationToken?: string},
@@ -1947,5 +1948,13 @@ export const endpoints = {
       "output": {} as SuccessDto,
       "body": {} as PerpEvent
     }
+  },
+  "/stellar-lending/users/:owner/assets/:asset/balance": {
+    "input": {},
+    "output": {} as StellarApi.StellarWalletBalanceDto
+  },
+  "/stellar-lending/users/:owner/activity/page": {
+    "input": {} as {top?: number, continuationToken?: string},
+    "output": {} as StellarApi.StellarActivityPageDto
   }
 } as const;

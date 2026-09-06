@@ -1,129 +1,94 @@
-/**
- * Stellar Soroban contract addresses + Soroban RPC + quote-server config
- * per network.
- *
- * Addresses are env-sourced so ops can rotate mainnet/testnet deployments
- * without a code change. Defaults fall back to empty strings so a missing
- * env surfaces as a clear "not configured" error at call time rather than
- * silently pointing at the wrong contract.
- */
-
+/** Stellar network identifiers understood by the Soroban transaction builders. */
 export type StellarNetwork = 'mainnet' | 'testnet'
 
-/**
- * Stellar lending controller contract addresses per network.
- * Env vars:
- *   - STELLAR_LENDING_CONTROLLER_MAINNET
- *   - STELLAR_LENDING_CONTROLLER_TESTNET
- */
-export const STELLAR_LENDING_CONTROLLER: Record<StellarNetwork, string> = {
-  mainnet: process.env.STELLAR_LENDING_CONTROLLER_MAINNET ?? '',
-  testnet: process.env.STELLAR_LENDING_CONTROLLER_TESTNET ?? '',
-}
+/** Stable keys for the Stellar network deployment manifest. */
+export type StellarNetworkId = 'stellarMainnet' | 'stellarTestnet'
 
 /**
- * Stellar aggregator router contract addresses per network.
- * Targets `execute_strategy(sender, total_in, swap_xdr)` for direct
- * (non-lending) swaps.
- * Env vars:
- *   - STELLAR_AGGREGATOR_ROUTER_MAINNET
- *   - STELLAR_AGGREGATOR_ROUTER_TESTNET
- */
-export const STELLAR_AGGREGATOR_ROUTER: Record<StellarNetwork, string> = {
-  mainnet: process.env.STELLAR_AGGREGATOR_ROUTER_MAINNET ?? '',
-  testnet: process.env.STELLAR_AGGREGATOR_ROUTER_TESTNET ?? '',
-}
-
-/**
- * Stellar governance (timelock) contract addresses per network. Owns the
- * controller's admin surface: PROPOSER-gated `propose_*` scheduling and the
- * open `execute` / `execute_*` lifecycle.
- * Env vars:
- *   - STELLAR_GOVERNANCE_MAINNET
- *   - STELLAR_GOVERNANCE_TESTNET
- */
-export const STELLAR_GOVERNANCE: Record<StellarNetwork, string> = {
-  mainnet: process.env.STELLAR_GOVERNANCE_MAINNET ?? '',
-  testnet: process.env.STELLAR_GOVERNANCE_TESTNET ?? '',
-}
-
-/**
- * Default Soroban RPC URLs per network.
- * Overridable at runtime via the `sorobanRpcUrl` option on each builder.
- */
-export const STELLAR_SOROBAN_RPC_URL: Record<StellarNetwork, string> = {
-  mainnet: 'https://soroban-rpc.stellar.org',
-  testnet: 'https://soroban-testnet.stellar.org',
-}
-
-/**
- * Stellar aggregator quote-server base URLs per network. The quote server
- * exposes `GET /api/v1/tokens` and `GET /api/v1/quote`.
+ * Public XOXNO Stellar deployment metadata.
  *
- * Env vars:
- *   - STELLAR_QUOTE_URL_MAINNET
- *   - STELLAR_QUOTE_URL_TESTNET
+ * The API URL is deliberately absent: it belongs to `XOXNOClientOptions` and
+ * may use a different host from the chain infrastructure. Consumers choose a
+ * manifest entry by network and may pass its addresses/URLs to their own
+ * transaction and RPC clients.
  */
-export const STELLAR_QUOTE_URL: Record<StellarNetwork, string> = {
-  mainnet:
-    process.env.STELLAR_QUOTE_URL_MAINNET ??
-    'https://stellar-swap.xoxno.com',
-  testnet:
-    process.env.STELLAR_QUOTE_URL_TESTNET ??
-    'https://testnet-stellar-swap.xoxno.com',
+export interface StellarDeployment {
+  readonly name: StellarNetwork
+  readonly passphrase: string
+  readonly horizonUrl: string
+  readonly sorobanRpcUrl: string
+  readonly quoteUrl: string
+  readonly explorerNetwork: 'public' | 'testnet'
+  readonly aquariusApiUrl: string
+  readonly aquariusRouter: string
+  readonly lendingController: string
+  readonly aggregatorRouter: string
+  readonly governance: string
+  readonly priceAggregator: string
+  readonly positionNftContract: string
+}
+
+/**
+ * XOXNO's supported Stellar deployments. Keep this table in the SDK so UI
+ * and integrators use the same network, RPC, quote-server, and contract IDs.
+ * It contains no environment or runtime discovery logic.
+ */
+export const STELLAR_NETWORKS = {
+  stellarMainnet: {
+    name: 'mainnet',
+    passphrase: 'Public Global Stellar Network ; September 2015',
+    horizonUrl: 'https://horizon.stellar.org',
+    sorobanRpcUrl: 'https://stellar-gateway.xoxno.com',
+    quoteUrl: 'https://stellar-swap.xoxno.com',
+    explorerNetwork: 'public',
+    aquariusApiUrl: 'https://amm-api.aqua.network',
+    aquariusRouter: 'CBQDHNBFBZYE4MKPWBSJOPIYLW4SFSXAXUTSXJN76GNKYVYPCKWC6QUK',
+    lendingController:
+      'CAUCMIN5KSXEVZ7NMXR3LZATGD5EFIEUI5XWTFLYRO2R5OTXI22WE5JX',
+    aggregatorRouter:
+      'CCVENFSVCBYDHVOACFZXMNNYVOZ3LKXPZYU5LUI4N7KTXOKRVYD7F3TR',
+    governance: 'CC44PEQW7HSEPKAZ5ZRPH2JS5M5KVJXCUBLJ2ZX4E3WCDKMNFILHC2AD',
+    priceAggregator: 'CBGUF2G2Q7HCVCWYISDXBHPVBGMYNXA7PG2VET66YBZX6IKOOV27NSMV',
+    positionNftContract:
+      'CAWCSG77AY2W24QZ6ZXLHZU4UXEFHZBM6EI4A4IF7JB5CTY4XND3TI6C',
+  },
+  stellarTestnet: {
+    name: 'testnet',
+    passphrase: 'Test SDF Network ; September 2015',
+    horizonUrl: 'https://horizon-testnet.stellar.org',
+    sorobanRpcUrl: 'https://stellar-testnet-gateway.xoxno.com',
+    quoteUrl: 'https://testnet-stellar-swap.xoxno.com',
+    explorerNetwork: 'testnet',
+    aquariusApiUrl: 'https://amm-api-testnet.aqua.network',
+    aquariusRouter: 'CBCFTQSPDBAIZ6R6PJQKSQWKNKWH2QIV3I4J72SHWBIK3ADRRAM5A6GD',
+    lendingController:
+      'CCXRWJ6SIU2WPFEGLFGJVITPL57QAYIMIO6OAM2NBGNDQSSCK2FFV3F3',
+    aggregatorRouter:
+      'CDNTWMWW2WGYTKIZTJYNGNVQQZI4KTC5BQRZ3275KESRX5T4O3AYECL5',
+    governance: 'CDS33JDOYH3F3FL4QUQ6DV4WKHML2AKHF4LADTZ57FRUAEBTE7NMY5FQ',
+    priceAggregator: 'CAALOOTIDXCX7D7FMQIBSSAJLPKOM3GMXS4UUSTDIG42JCRRJHOPUHOP',
+    positionNftContract:
+      'CDVN5JU675MEDPVRPCYC45AHFC275UH57WEU5OTFE4WFGZBNN7HTLPSY',
+  },
+} as const satisfies Record<StellarNetworkId, StellarDeployment>
+
+/** Lowercase alias for consumers that prefer the UI's existing naming. */
+export const stellarNetworks = STELLAR_NETWORKS
+
+/** Resolve a deployment from the network name used by transaction builders. */
+export function getStellarDeployment(
+  network: StellarNetwork
+): StellarDeployment {
+  return STELLAR_NETWORKS[
+    network === 'testnet' ? 'stellarTestnet' : 'stellarMainnet'
+  ]
 }
 
 /**
  * Stellar network passphrases (Soroban tx signing domain separator).
  * These are fixed by the Stellar network itself and must not be overridden.
  */
-export const STELLAR_NETWORK_PASSPHRASE: Record<StellarNetwork, string> = {
-  mainnet: 'Public Global Stellar Network ; September 2015',
-  testnet: 'Test SDF Network ; September 2015',
-}
-
-/**
- * Assert a controller address is configured for the target network.
- * Throws early with a clear message rather than building an XDR that
- * points at `""`.
- */
-export function getStellarLendingController(network: StellarNetwork): string {
-  const addr = STELLAR_LENDING_CONTROLLER[network]
-  if (!addr) {
-    throw new Error(
-      `Stellar lending controller address not configured for network "${network}". ` +
-        `Set STELLAR_LENDING_CONTROLLER_${network.toUpperCase()} env var.`
-    )
-  }
-  return addr
-}
-
-/**
- * Assert an aggregator router address is configured for the target network.
- * Used by `buildStellarExecuteStrategyTx` for direct user -> router swaps.
- */
-export function getStellarAggregatorRouter(network: StellarNetwork): string {
-  const addr = STELLAR_AGGREGATOR_ROUTER[network]
-  if (!addr) {
-    throw new Error(
-      `Stellar aggregator router address not configured for network "${network}". ` +
-        `Set STELLAR_AGGREGATOR_ROUTER_${network.toUpperCase()} env var.`
-    )
-  }
-  return addr
-}
-
-/**
- * Assert a governance address is configured for the target network. Used by
- * the governance `propose_*` / `execute` / `execute_*` builders.
- */
-export function getStellarGovernance(network: StellarNetwork): string {
-  const addr = STELLAR_GOVERNANCE[network]
-  if (!addr) {
-    throw new Error(
-      `Stellar governance address not configured for network "${network}". ` +
-        `Set STELLAR_GOVERNANCE_${network.toUpperCase()} env var.`
-    )
-  }
-  return addr
-}
+export const STELLAR_NETWORK_PASSPHRASE = {
+  mainnet: STELLAR_NETWORKS.stellarMainnet.passphrase,
+  testnet: STELLAR_NETWORKS.stellarTestnet.passphrase,
+} as const satisfies Record<StellarNetwork, string>

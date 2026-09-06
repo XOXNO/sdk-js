@@ -7,6 +7,7 @@
  */
 
 import { Address, ScInt, xdr } from '@stellar/stellar-sdk'
+import { Buffer } from 'buffer'
 
 /**
  * On-chain swap venues, validated at runtime for a caller-supplied venue.
@@ -103,8 +104,12 @@ export type StellarSwapStepsInput = StellarStrategySwapInput
 export const addr = (a: string): xdr.ScVal => new Address(a).toScVal()
 export const i128 = (s: string): xdr.ScVal => new ScInt(s).toI128()
 export const u32 = (n: number): xdr.ScVal => xdr.ScVal.scvU32(n)
-export const u64 = (n: number | string): xdr.ScVal =>
-  new ScInt(typeof n === 'string' ? n : n.toString()).toU64()
+export const u64 = (n: number | string): xdr.ScVal => {
+  if (typeof n === 'number' && !Number.isSafeInteger(n)) {
+    throw new Error('Stellar builder: u64 numbers must be safe integers; pass a decimal string for larger values')
+  }
+  return new ScInt(typeof n === 'string' ? n : n.toString()).toU64()
+}
 export const bool = (b: boolean): xdr.ScVal => xdr.ScVal.scvBool(b)
 export const str = (s: string): xdr.ScVal => xdr.ScVal.scvString(s)
 export const sym = (s: string): xdr.ScVal => xdr.ScVal.scvSymbol(s)
@@ -511,9 +516,10 @@ export const asStellarStrategyPayload = (
     )
   }
   const candidate = steps as Partial<StellarStrategyPayloadInput>
-  if (!Array.isArray(candidate.paths) || candidate.paths.length === 0) {
+  if (!Array.isArray(candidate.paths) ||
+      (candidate.paths.length === 0 && !candidate.burnPool && !candidate.mintPool)) {
     throw new Error(
-      'Stellar builder: `steps.paths` must be a non-empty array of strategy paths'
+      'Stellar builder: `steps.paths` needs a strategy path or a liquidity burn/mint operation'
     )
   }
   if (typeof candidate.tokenIn !== 'string') {

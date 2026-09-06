@@ -8,6 +8,15 @@ npm install @xoxno/sdk-js
 
 ## Basic usage
 
+For Stellar lending, start with the [integration guide](md/stellar-lending.md)
+and [checked example](examples/stellar-lending.ts). They cover typed market
+discovery and unsigned XDR preparation, wallet signing, submission and confirmation.
+Generate focused API documentation with `npm run docs:stellar`.
+`XOXNOClient` requires an application-supplied `apiUrl`; the SDK does not read
+environment variables or select an API deployment for you.
+For Stellar infrastructure, use the exported `STELLAR_NETWORKS` manifest and
+pass its selected RPC, quote-server and contract values to your host clients.
+
 ```typescript
 $1
 ```

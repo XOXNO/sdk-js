@@ -8,6 +8,8 @@ import {
   buildStellarSupplyTx,
   buildStellarBorrowTx,
   buildStellarMultiplyTx,
+  getStellarDeployment,
+  STELLAR_NETWORKS,
 } from '../index'
 
 describe('stellar-lending subpath barrel', () => {
@@ -15,5 +17,12 @@ describe('stellar-lending subpath barrel', () => {
     expect(typeof buildStellarSupplyTx).toBe('function')
     expect(typeof buildStellarBorrowTx).toBe('function')
     expect(typeof buildStellarMultiplyTx).toBe('function')
+  })
+
+  it('re-exports the canonical Stellar deployment manifest', () => {
+    expect(STELLAR_NETWORKS.stellarMainnet.name).toBe('mainnet')
+    expect(STELLAR_NETWORKS.stellarTestnet.name).toBe('testnet')
+    expect(STELLAR_NETWORKS.stellarMainnet.lendingController).toMatch(/^C[A-Z2-7]{55}$/)
+    expect(getStellarDeployment('testnet')).toBe(STELLAR_NETWORKS.stellarTestnet)
   })
 })

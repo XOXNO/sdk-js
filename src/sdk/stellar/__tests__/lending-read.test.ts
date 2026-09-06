@@ -15,6 +15,15 @@ import {
 import type { StellarAsset, StellarReserve } from '../index'
 
 describe('stellar lending read surface', () => {
+  it('requires an explicit API URL and normalizes its trailing slash', () => {
+    expect(() => new XOXNOClient({ apiUrl: '   ' })).toThrow(
+      'XOXNOClient: apiUrl is required'
+    )
+    expect(new XOXNOClient({ apiUrl: ' https://example.invalid/ ' }).apiUrl).toBe(
+      'https://example.invalid'
+    )
+  })
+
   it('re-exports the read functions from the barrel', () => {
     expect(typeof getStellarReserve).toBe('function')
     expect(typeof getStellarAssetMarkets).toBe('function')
@@ -32,7 +41,7 @@ describe('stellar lending read surface', () => {
       path?: string
       opts?: { params?: Record<string, unknown>; debug?: boolean }
     } = {}
-    const client = new XOXNOClient()
+    const client = new XOXNOClient({ apiUrl: 'https://example.invalid' })
     client.fetchWithTimeout = (async (
       path: string,
       opts: { params?: Record<string, unknown> }
@@ -73,7 +82,7 @@ describe('stellar lending read surface', () => {
   })
 
   it('exposes the generated live-state route with response typing', async () => {
-    const client = new XOXNOClient()
+    const client = new XOXNOClient({ apiUrl: 'https://example.invalid' })
     let capturedPath = ''
     client.fetchWithTimeout = (async (path: string) => {
       capturedPath = path
@@ -88,7 +97,7 @@ describe('stellar lending read surface', () => {
 
   it('binds a client and calls fetchWithTimeout with the right path + params', async () => {
     const captured: { path?: string; opts?: { params?: Record<string, unknown> } } = {}
-    const client = new XOXNOClient()
+    const client = new XOXNOClient({ apiUrl: 'https://example.invalid' })
     const sample: StellarReserve = {
       spokeId: 1,
       hubId: 2,
@@ -104,6 +113,7 @@ describe('stellar lending read surface', () => {
       depositsUsd: 0,
       borrowsUsd: 0,
       availableLiquidityUsd: 0,
+      hubPool: { suppliedShort: 0, borrowedShort: 0, depositsUsd: 0, borrowsUsd: 0 },
       supplyCap: '0',
       borrowCap: '0',
       supplyCapShort: 0,
@@ -158,7 +168,7 @@ describe('stellar lending read surface', () => {
   })
 
   it('getStellarAsset parses oracle provider config', async () => {
-    const client = new XOXNOClient()
+    const client = new XOXNOClient({ apiUrl: 'https://example.invalid' })
     const assetSample: StellarAsset = {
       asset: 'CASSET:CA...',
       symbol: 'CASSET',
@@ -166,7 +176,9 @@ describe('stellar lending read surface', () => {
       decimals: 18,
       usdPrice: 1,
       totalDepositsUsd: 1_000_000,
+      totalDepositsNative: 1_000_000,
       totalBorrowsUsd: 500_000,
+      totalBorrowsNative: 500_000,
       availableLiquidityUsd: 500_000,
       hubCount: 1,
       reserveCount: 2,

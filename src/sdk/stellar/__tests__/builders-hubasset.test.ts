@@ -15,7 +15,7 @@ import { Networks, Transaction, xdr } from '@stellar/stellar-sdk'
 import {
   buildStellarBorrowTx,
   buildStellarSupplyTx,
-  type StellarBuilderOptions,
+  type StellarLendingBuilderOptions,
 } from '../lending'
 
 const FIXTURE_CALLER =
@@ -25,7 +25,7 @@ const FIXTURE_CONTROLLER =
 const FIXTURE_USDC =
   'CABQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGCK3'
 
-const BASE_OPTS: StellarBuilderOptions = {
+const BASE_OPTS: StellarLendingBuilderOptions = {
   network: 'testnet',
   caller: FIXTURE_CALLER,
   sourceSequence: '123456789',

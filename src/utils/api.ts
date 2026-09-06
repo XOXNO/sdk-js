@@ -1,6 +1,4 @@
 import {
-  API_URL,
-  API_URL_DEV,
   DR_SC,
   FM_SC,
   KG_SC,
@@ -24,6 +22,16 @@ export type OurRequestInit = Omit<RequestInit, 'body' | 'headers'> & {
   headers?: SafeHeaders
   debug?: boolean
 }
+
+/**
+ * Host-supplied configuration for {@link XOXNOClient}.
+ *
+ * The SDK does not read environment variables or choose an API deployment.
+ * Always pass the API base URL from the application configuration. `chain`
+ * selects the MultiversX contract set used by generated endpoints; Stellar
+ * transaction builders take their own explicit network and contract options.
+ */
+export type XOXNOClientOptions = { chain?: Chain; apiUrl: string } & OurRequestInit
 
 type IInit = OurRequestInit & {
   cache?: RequestCache
@@ -50,13 +58,13 @@ export class XOXNOClient {
     P2P_SC: string
   }
 
-  constructor({
-    chain = Chain.MAINNET,
-    apiUrl = API_URL,
-    ...init
-  }: { chain?: Chain; apiUrl?: string } & OurRequestInit = {}) {
-    this.apiUrl =
-      apiUrl ?? { [Chain.MAINNET]: API_URL, [Chain.DEVNET]: API_URL_DEV }[chain]
+  /** Create a client bound to one application-selected API deployment. */
+  constructor(options: XOXNOClientOptions) {
+    if (!options?.apiUrl?.trim()) {
+      throw new Error('XOXNOClient: apiUrl is required')
+    }
+    const { chain = Chain.MAINNET, apiUrl, ...init } = options
+    this.apiUrl = apiUrl.trim().replace(/\/$/, '')
     this.chain = chain
     this.init = init
     this.config =
@@ -134,9 +142,10 @@ export class XOXNOClient {
     }
 
     const query = Object.entries(params ?? {})
+      .filter(([, value]) => value !== undefined)
       .flatMap(([key, value]) => {
         if (Array.isArray(value)) {
-          return value.map((v) => `${key}=${encodeURIComponent(v)}`)
+          return value.filter((v) => v !== undefined).map((v) => `${key}=${encodeURIComponent(v)}`)
         } else {
           return `${key}=${encodeURIComponent(value)}`
         }

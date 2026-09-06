@@ -42,7 +42,7 @@ import {
   buildStellarWithdrawBatchTx,
   buildStellarWithdrawTx,
   decodeStellarLiquidateReturn,
-  type StellarBuilderOptions,
+  type StellarLendingBuilderOptions,
   type StellarFlashLoanArgs,
   type StellarLiquidateArgs,
   type StellarMigrateFromBlendArgs,
@@ -88,7 +88,7 @@ afterAll(() => {
   jest.useRealTimers()
 })
 
-const BASE_OPTS: StellarBuilderOptions = {
+const BASE_OPTS: StellarLendingBuilderOptions = {
   network: 'testnet',
   caller: FIXTURE_CALLER,
   sourceSequence: FIXTURE_SEQUENCE,
@@ -195,7 +195,7 @@ const flashLoanArgs: StellarFlashLoanArgs = {
 const migrateFromBlendArgs: StellarMigrateFromBlendArgs = {
   blendPool: FIXTURE_CONTROLLER,
   accountId: '0',
-  spokeId: 0,
+  spokeId: 1,
   hubId: HUB,
   collateralTokens: [FIXTURE_XLM],
   supplyTokens: [FIXTURE_USDC],
@@ -414,33 +414,35 @@ describe('Stellar lending transaction builders — sanity', () => {
 // -----------------------------------------------------------------------------
 
 describe('Stellar lending builders — input validation', () => {
-  it('supply defaults accountNonce to 0 and spokeId to 0 when omitted', () => {
+  it('supply defaults only accountNonce to 0', () => {
     const a = buildStellarSupplyTx(BASE_OPTS, {
       hubId: HUB,
       asset: FIXTURE_USDC,
       amount: '1',
+      spokeId: 1,
     })
     const b = buildStellarSupplyTx(BASE_OPTS, {
       hubId: HUB,
       asset: FIXTURE_USDC,
       amount: '1',
       accountNonce: 0,
-      spokeId: 0,
+      spokeId: 1,
     })
     expect(a.xdr).toBe(b.xdr)
   })
 
-  it('multiply defaults accountNonce and spokeId to 0 when omitted', () => {
+  it('multiply defaults only accountNonce to 0', () => {
     const a = buildStellarMultiplyTx(BASE_OPTS, {
       collateral: { hubId: HUB, asset: FIXTURE_USDC },
       debt: { hubId: HUB, asset: FIXTURE_XLM },
       debtToFlashLoan: '1',
       mode: 0,
       steps: FIXTURE_STEPS,
+      spokeId: 1,
     })
     const b = buildStellarMultiplyTx(BASE_OPTS, {
       accountNonce: 0,
-      spokeId: 0,
+      spokeId: 1,
       collateral: { hubId: HUB, asset: FIXTURE_USDC },
       debt: { hubId: HUB, asset: FIXTURE_XLM },
       debtToFlashLoan: '1',
@@ -450,18 +452,26 @@ describe('Stellar lending builders — input validation', () => {
     expect(a.xdr).toBe(b.xdr)
   })
 
-  it('throws when controller address is not configured', () => {
+  it('throws when controller address is not supplied', () => {
     expect(() =>
       buildStellarSupplyTx(
         {
           network: 'mainnet',
           caller: FIXTURE_CALLER,
           sourceSequence: FIXTURE_SEQUENCE,
-          // no controllerAddress override, mainnet env not set in test
+          controllerAddress: '',
         },
-        { hubId: HUB, asset: FIXTURE_USDC, amount: '1' }
+        { spokeId: 1, hubId: HUB, asset: FIXTURE_USDC, amount: '1' }
       )
-    ).toThrow(/controller address not configured/)
+    ).toThrow(/controllerAddress is required/)
+  })
+
+  it.each([undefined, 0, -1, 1.5, NaN, 0x100000000])('rejects invalid spoke %s before building supply or multiply', (spokeId) => {
+    const supply = { spokeId, hubId: HUB, asset: FIXTURE_USDC, amount: '1' }
+    for (const accountNonce of [0, 7]) {
+      expect(() => buildStellarSupplyTx(BASE_OPTS, { ...supply, accountNonce } as StellarSupplyArgs)).toThrow(/spokeId/)
+      expect(() => buildStellarMultiplyTx(BASE_OPTS, { ...multiplyArgs, accountNonce, spokeId } as StellarMultiplyArgs)).toThrow(/spokeId/)
+    }
   })
 
   it('throws on invalid steps shape', () => {
@@ -624,4 +634,15 @@ describe('repay_debt_with_collateral — same-token', () => {
     expect(swapArg.switch().name).toBe('scvBytes')
     expect(swapArg.bytes().length).toBe(0)
   })
+})
+
+it('preserves full u64 account IDs supplied as strings and rejects unsafe numeric IDs', () => {
+  const accountNonce = '18446744073709551615'
+  const built = buildStellarSupplyTx(BASE_OPTS, { ...supplyArgs, accountNonce })
+  const tx = new Transaction(built.xdr, Networks.TESTNET)
+  const op = tx.operations[0] as unknown as { func: stellarXdr.HostFunction }
+  expect(op.func.invokeContract().args()[1].u64().toString()).toBe(accountNonce)
+  expect(() => buildStellarSupplyTx(BASE_OPTS, {
+    ...supplyArgs, accountNonce: Number.MAX_SAFE_INTEGER + 1,
+  })).toThrow(/safe integers/)
 })

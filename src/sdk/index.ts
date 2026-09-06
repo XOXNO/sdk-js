@@ -113,16 +113,31 @@ function makeLeafHandler(
       cache,
       next,
       debug,
+      signal,
+      credentials,
+      mode,
+      redirect,
+      referrer,
+      referrerPolicy,
+      integrity,
+      keepalive,
+      priority,
+      window,
       continuationToken,
       ...params
     } = extraArgsConv
 
     const Authorization = auth ? `Bearer ${auth}` : undefined
 
+    // Stellar cursor endpoints declare a query parameter. Other API families
+    // retain the legacy header convention.
+    if (rawPath.startsWith('/stellar-lending/') && continuationToken !== undefined) {
+      params.continuationToken = continuationToken
+    }
     const headersData = {
       ...(headers as HeadersInit),
       ...(Authorization ? { Authorization } : {}),
-      ...(continuationToken
+      ...(continuationToken && !rawPath.startsWith('/stellar-lending/')
         ? { 'X-Continuation-Token': String(continuationToken) }
         : {}),
     }
@@ -136,6 +151,10 @@ function makeLeafHandler(
       headers: headersData,
       cache,
       debug,
+      ...Object.fromEntries(Object.entries({
+        signal, credentials, mode, redirect, referrer, referrerPolicy,
+        integrity, keepalive, priority, window,
+      }).filter(([, value]) => value !== undefined)),
       ...(hydratedNext ? { next: hydratedNext } : {}),
     })
   }

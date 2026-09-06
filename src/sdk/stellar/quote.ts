@@ -17,8 +17,7 @@ import type {
   StellarAggregatorQuoteResponseDto,
   StellarTokenKind,
 } from '@xoxno/types'
-
-import { STELLAR_QUOTE_URL, type StellarNetwork } from './contracts'
+import type { StellarNetwork } from './contracts'
 
 /**
  * Resolved token entry returned by the quote server's tokens endpoint.
@@ -39,10 +38,10 @@ export interface StellarQuoteToken {
 }
 
 export interface StellarQuoteFetchOptions {
-  /** Network selects which base URL to hit. */
-  network: StellarNetwork
-  /** Override the resolved base URL (useful for tests / preview). */
-  baseUrl?: string
+  /** Quote-server base URL selected by the host application. */
+  baseUrl: string
+  /** @deprecated The URL is explicit; network is retained for source compatibility. */
+  network?: StellarNetwork
   /** Per-call fetch options (signal, headers, etc.). */
   fetchOptions?: RequestInit
 }
@@ -62,9 +61,6 @@ const buildUrl = (
   return url.toString()
 }
 
-const resolveBase = (opts: StellarQuoteFetchOptions): string =>
-  opts.baseUrl ?? STELLAR_QUOTE_URL[opts.network]
-
 /**
  * Fetch a route quote from the Stellar aggregator quote server.
  *
@@ -72,22 +68,31 @@ const resolveBase = (opts: StellarQuoteFetchOptions): string =>
  * `amountOut`. Reverse mode: pass `amountOut` to compute the minimum
  * `amountIn` that delivers at least that output.
  *
- * Pass both `sender` (G-strkey) and `router` (C-strkey) to receive a
- * ready-to-sign envelope under `transaction.envelopeXdr`. The caller
- * must still run `simulateTransaction` to attach Soroban resource fees
- * before signing.
+ * For lending strategies, pass the quote's `routeXdr` to the builder's
+ * `steps`. Amounts are token base-unit decimal strings. Requote after changes
+ * to amount, direction or slippage; preparation is the execution check.
+ *
+ * Passing both `sender` (G...) and `router` (C...) may return a direct-swap
+ * envelope under `transaction.envelopeXdr`. Prepare it before wallet signing.
+ * @param request - Exactly one of amountIn or amountOut; optional referralId is forwarded unchanged.
+ * @param opts - Quote-server URL and optional fetch options supplied by the host.
+ * @returns Quote estimates and opaque route bytes; does not execute a swap.
+ * @category Strategy quotes
  */
 export async function getStellarAggregatorQuote(
   request: StellarAggregatorQuoteRequestDto,
   opts: StellarQuoteFetchOptions
 ): Promise<StellarAggregatorQuoteResponseDto> {
+  if (!opts.baseUrl) {
+    throw new Error('Stellar quote baseUrl is required')
+  }
   if ((request.amountIn == null) === (request.amountOut == null)) {
     throw new Error(
       'getStellarAggregatorQuote: exactly one of `amountIn` or `amountOut` must be provided'
     )
   }
 
-  const url = buildUrl(resolveBase(opts), 'api/v1/quote', {
+  const url = buildUrl(opts.baseUrl, 'api/v1/quote', {
     from: request.from,
     to: request.to,
     amountIn: request.amountIn,
@@ -98,6 +103,7 @@ export async function getStellarAggregatorQuote(
     includePaths: request.includePaths,
     sender: request.sender,
     router: request.router,
+    referralId: request.referralId,
     platform: request.platform,
     fresh: request.fresh,
   })
@@ -115,11 +121,15 @@ export async function getStellarAggregatorQuote(
 /**
  * List tokens currently indexed by the quote server. Useful to populate
  * pickers or validate that a user-supplied token has on-chain liquidity.
+ * @category Strategy quotes
  */
 export async function getStellarQuoteTokens(
   opts: StellarQuoteFetchOptions
 ): Promise<StellarQuoteToken[]> {
-  const url = buildUrl(resolveBase(opts), 'api/v1/tokens')
+  if (!opts.baseUrl) {
+    throw new Error('Stellar quote baseUrl is required')
+  }
+  const url = buildUrl(opts.baseUrl, 'api/v1/tokens')
   const res = await fetch(url, opts.fetchOptions)
   if (!res.ok) {
     const body = await res.text().catch(() => '')

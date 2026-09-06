@@ -1,4 +1,5 @@
 import { Account, Contract, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
+import { Buffer } from 'buffer'
 
 import { STELLAR_NETWORK_PASSPHRASE, type StellarNetwork } from './contracts'
 import type { BuiltStellarTx, StellarBuilderOptions } from './lending'

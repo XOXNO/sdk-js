@@ -1,6 +1,3 @@
-export const API_URL = 'https://api.xoxno.com'
-export const API_URL_DEV = 'https://devnet-api.xoxno.com'
-
 export const XOXNO_SC =
   'erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8'
 export const FM_SC =

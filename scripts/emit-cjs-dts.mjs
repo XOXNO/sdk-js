@@ -9,14 +9,15 @@
 //
 // `dts-bundle-generator` (the previous fix, see git history) crashes on
 // stellar-sdk v16's `xdr.ScVal` types, so we cannot bundle. Instead we copy the
-// per-file declarations verbatim into `dist/cjs/` and drop a
+// per-file declarations (with NodeNext-compatible imports) into `dist/cjs/` and drop a
 // `{"type":"commonjs"}` marker there: the nearest package.json makes Node/TS
 // interpret that whole subtree as CommonJS, so the identical declarations now
 // resolve their relative re-exports as CJS. `exports["."].require.types` points
 // at `dist/cjs/index.d.ts`; the ESM `import` condition keeps using `dist/`.
 
-import { readdirSync, mkdirSync, copyFileSync, writeFileSync, statSync } from 'node:fs'
+import { readdirSync, mkdirSync, readFileSync, writeFileSync, statSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
+import ts from 'typescript'
 
 const DIST = 'dist'
 const CJS_DIR = join(DIST, 'cjs')
@@ -32,13 +33,40 @@ function walk(dir, onFile) {
 
 mkdirSync(CJS_DIR, { recursive: true })
 
+// NodeNext requires explicit .js specifiers in ESM declarations. TypeScript
+// resolves them to the corresponding .d.ts; directory barrels need /index.js.
+function resolveEsmImports(file) {
+  const source = readFileSync(file, 'utf8')
+  const ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true)
+  const edits = []
+  function visit(node) {
+    const specifier = ts.isImportDeclaration(node) || ts.isExportDeclaration(node)
+      ? node.moduleSpecifier
+      : ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)
+        ? node.argument.literal : undefined
+    if (specifier && ts.isStringLiteral(specifier) && /^\.\.?\//.test(specifier.text)) {
+      const target = join(dirname(file), specifier.text)
+      const suffix = existsSync(`${target}.d.ts`) ? '.js'
+        : existsSync(join(target, 'index.d.ts')) ? '/index.js' : ''
+      if (suffix) edits.push([specifier.getStart(ast) + 1, specifier.getEnd() - 1, specifier.text + suffix])
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(ast)
+  return edits.sort((a, b) => b[0] - a[0]).reduce(
+    (text, [start, end, value]) => text.slice(0, start) + value + text.slice(end), source,
+  )
+}
+
 let copied = 0
 walk(DIST, (file) => {
   if (!file.endsWith('.d.ts')) return
   const rel = file.slice(DIST.length + 1) // path relative to dist/
   const out = join(CJS_DIR, rel)
   mkdirSync(dirname(out), { recursive: true })
-  copyFileSync(file, out)
+  const declaration = resolveEsmImports(file)
+  writeFileSync(file, declaration)
+  writeFileSync(out, declaration)
   copied++
 })
 

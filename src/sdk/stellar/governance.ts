@@ -1,7 +1,7 @@
 /**
  * Stellar lending governance (timelock) transaction builders. Each builder
  * returns an unsigned `BuiltStellarTx` XDR targeting the governance contract
- * (`opts.governanceAddress`, or env via `getStellarGovernance(network)`).
+ * selected explicitly by `opts.governanceAddress`.
  *
  * Flow:
  *   - An admin holding the PROPOSER role calls the single `propose(proposer,
@@ -26,6 +26,7 @@
  * XDR still needs `rpc.Server.prepareTransaction` before signing.
  */
 
+import { Buffer } from 'buffer'
 import type { PositionLimitsDto } from '@xoxno/types'
 import {
   Account,
@@ -42,17 +43,16 @@ import {
   encodePositionLimits,
   encodePriceKey,
   type ConfigureAssetOracleArgs,
-  type ConfigureMarketOracleArgs,
   type CreateLiquidityPoolArgs,
   type RoleGrantArgs,
   type TransferOwnershipArgs,
   type UpgradeLiquidityPoolParamsArgs,
 } from './admin'
-import {
-  getStellarGovernance,
-  STELLAR_NETWORK_PASSPHRASE,
-} from './contracts'
-import type { BuiltStellarTx, StellarBuilderOptions } from './lending'
+import { STELLAR_NETWORK_PASSPHRASE } from './contracts'
+import type {
+  BuiltStellarTx,
+  StellarGovernanceBuilderOptions,
+} from './lending'
 import {
   addr,
   bool,
@@ -265,13 +265,14 @@ const encodeRoleArgs = (a: RoleGrantArgs): xdr.ScVal =>
  * of the controller address. RPC-free + deterministic.
  */
 function buildGovernanceTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   method: string,
   params: xdr.ScVal[]
 ): BuiltStellarTx {
-  const governanceId =
-    opts.governanceAddress ?? getStellarGovernance(opts.network)
-  const contract = new Contract(governanceId)
+  if (!opts.governanceAddress) {
+    throw new Error('Stellar governanceAddress is required')
+  }
+  const contract = new Contract(opts.governanceAddress)
 
   const source = new Account(opts.caller, opts.sourceSequence)
 
@@ -291,7 +292,7 @@ function buildGovernanceTx(
  * `AdminOperation`, then `salt`. The caller must hold PROPOSER and sign the tx.
  */
 const buildPropose = (
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   op: xdr.ScVal,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx =>
@@ -304,7 +305,7 @@ const buildPropose = (
  * rejects `target == governance` to avoid self-reentry).
  */
 const buildExecuteSelf = (
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   op: xdr.ScVal,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx =>
@@ -330,7 +331,7 @@ export interface UpdateDelayArgs {
 
 /** propose(SetSwapAggregator(addr)) */
 export function buildStellarProposeSetSwapAggregatorTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { aggregator: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -343,7 +344,7 @@ export function buildStellarProposeSetSwapAggregatorTx(
 
 /** propose(SetPriceAggregator(addr)) — Sensitive-tier self-op. */
 export function buildStellarProposeSetPriceAggregatorTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { aggregator: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -360,7 +361,7 @@ export const buildStellarProposeSetAggregatorTx =
 
 /** propose(SetAccumulator(addr)) */
 export function buildStellarProposeSetAccumulatorTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { accumulator: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -373,7 +374,7 @@ export function buildStellarProposeSetAccumulatorTx(
 
 /** propose(SetPositionLimits(limits)) */
 export function buildStellarProposeSetPositionLimitsTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: PositionLimitsDto,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -386,7 +387,7 @@ export function buildStellarProposeSetPositionLimitsTx(
 
 /** propose(CreateHub) */
 export function buildStellarProposeCreateHubTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
   return buildPropose(opts, adminOp('CreateHub'), salt)
@@ -394,7 +395,7 @@ export function buildStellarProposeCreateHubTx(
 
 /** propose(AddSpoke) */
 export function buildStellarProposeAddSpokeTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
   return buildPropose(opts, adminOp('AddSpoke'), salt)
@@ -402,7 +403,7 @@ export function buildStellarProposeAddSpokeTx(
 
 /** propose(RemoveSpoke(spoke_id)) */
 export function buildStellarProposeRemoveSpokeTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { spokeId: number },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -411,7 +412,7 @@ export function buildStellarProposeRemoveSpokeTx(
 
 /** propose(AddAssetToSpoke(SpokeAssetArgs)) */
 export function buildStellarProposeAddAssetToSpokeTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: SpokeAssetArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -424,7 +425,7 @@ export function buildStellarProposeAddAssetToSpokeTx(
 
 /** propose(EditAssetInSpoke(SpokeAssetArgs)) */
 export function buildStellarProposeEditAssetInSpokeTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: SpokeAssetArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -437,7 +438,7 @@ export function buildStellarProposeEditAssetInSpokeTx(
 
 /** propose(RemoveAssetFromSpoke(RemoveAssetFromSpokeArgs)) */
 export function buildStellarProposeRemoveAssetFromSpokeTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: RemoveAssetFromSpokeArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -450,7 +451,7 @@ export function buildStellarProposeRemoveAssetFromSpokeTx(
 
 /** propose(SetSpokeLiquidationCurve(SpokeLiquidationCurveArgs)) */
 export function buildStellarProposeSetSpokeLiquidationCurveTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: SpokeLiquidationCurveArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -466,7 +467,7 @@ export function buildStellarProposeSetSpokeLiquidationCurveTx(
 
 /** propose(SetPositionManager(manager, is_active)) — tuple variant. */
 export function buildStellarProposeSetPositionManagerTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { manager: string; isActive: boolean },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -479,7 +480,7 @@ export function buildStellarProposeSetPositionManagerTx(
 
 /** propose(SetMinBorrowCollateralUsd(floor_wad)) */
 export function buildStellarProposeSetMinBorrowCollatTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { floorWad: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -492,7 +493,7 @@ export function buildStellarProposeSetMinBorrowCollatTx(
 
 /** propose(ApproveToken(token)) */
 export function buildStellarProposeApproveTokenTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { token: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -501,7 +502,7 @@ export function buildStellarProposeApproveTokenTx(
 
 /** propose(RevokeToken(token)) */
 export function buildStellarProposeRevokeTokenTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { token: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -510,7 +511,7 @@ export function buildStellarProposeRevokeTokenTx(
 
 /** propose(ApproveBlendPool(pool)) */
 export function buildStellarProposeApproveBlendPoolTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { pool: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -519,7 +520,7 @@ export function buildStellarProposeApproveBlendPoolTx(
 
 /** propose(RevokeBlendPool(pool)) */
 export function buildStellarProposeRevokeBlendPoolTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { pool: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -528,7 +529,7 @@ export function buildStellarProposeRevokeBlendPoolTx(
 
 /** propose(CreateLiquidityPool(CreatePoolArgs)) */
 export function buildStellarProposeCreateLiquidityPoolTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: CreateLiquidityPoolArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -541,7 +542,7 @@ export function buildStellarProposeCreateLiquidityPoolTx(
 
 /** propose(UpgradeLiquidityPoolParams(UpgradePoolParamsArgs)) */
 export function buildStellarProposeUpgradePoolParamsTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: UpgradeLiquidityPoolParamsArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -554,7 +555,7 @@ export function buildStellarProposeUpgradePoolParamsTx(
 
 /** propose(DeployPool(hash)) */
 export function buildStellarProposeDeployPoolTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { wasmHash: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -563,7 +564,7 @@ export function buildStellarProposeDeployPoolTx(
 
 /** propose(UpgradePool(hash)) */
 export function buildStellarProposeUpgradePoolTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: { wasmHash: string },
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -572,7 +573,7 @@ export function buildStellarProposeUpgradePoolTx(
 
 /** propose(UpgradeController(hash)) */
 export function buildStellarProposeUpgradeControllerTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: UpgradeArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -585,7 +586,7 @@ export function buildStellarProposeUpgradeControllerTx(
 
 /** propose(MigrateController(new_version)) */
 export function buildStellarProposeMigrateControllerTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: MigrateArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -598,7 +599,7 @@ export function buildStellarProposeMigrateControllerTx(
 
 /** propose(TransferCtrlOwnership(TransferOwnershipArgs)) */
 export function buildStellarProposeTransferCtrlOwnershipTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: TransferOwnershipArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -616,7 +617,7 @@ export function buildStellarProposeTransferCtrlOwnershipTx(
  * Token keys at propose time.
  */
 export function buildStellarProposeConfigureAssetOracleTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: ConfigureAssetOracleArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -633,7 +634,7 @@ export const buildStellarProposeConfigureMarketOracleTx =
 
 /** propose(EditOracleTolerance(EditToleranceArgs)) */
 export function buildStellarProposeEditOracleToleranceTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: EditOracleToleranceProposalArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -650,7 +651,7 @@ export function buildStellarProposeEditOracleToleranceTx(
 
 /** propose(UpgradeGov(hash)) */
 export function buildStellarProposeGovernanceUpgradeTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: UpgradeArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -659,7 +660,7 @@ export function buildStellarProposeGovernanceUpgradeTx(
 
 /** propose(UpdateGovDelay(new_delay)) */
 export function buildStellarProposeUpdateDelayTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: UpdateDelayArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -668,7 +669,7 @@ export function buildStellarProposeUpdateDelayTx(
 
 /** propose(GrantGovRole(RoleArgs)) */
 export function buildStellarProposeGrantGovernanceRoleTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: RoleGrantArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -677,7 +678,7 @@ export function buildStellarProposeGrantGovernanceRoleTx(
 
 /** propose(RevokeGovRole(RoleArgs)) */
 export function buildStellarProposeRevokeGovernanceRoleTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: RoleGrantArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -686,7 +687,7 @@ export function buildStellarProposeRevokeGovernanceRoleTx(
 
 /** propose(TransferGovOwnership(TransferOwnershipArgs)) */
 export function buildStellarProposeTransferGovOwnTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: TransferOwnershipArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -733,7 +734,7 @@ export interface StellarGovernanceExecuteArgs {
  * indexed proposal exactly as before.
  */
 export function buildStellarGovernanceExecuteTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: StellarGovernanceExecuteArgs
 ): BuiltStellarTx {
   const callArgs = vec(
@@ -754,7 +755,7 @@ export function buildStellarGovernanceExecuteTx(
 
 /** execute_self(executor=None, UpgradeGov(hash), salt) */
 export function buildStellarGovernanceExecuteGovernanceUpgradeTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: UpgradeArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -763,7 +764,7 @@ export function buildStellarGovernanceExecuteGovernanceUpgradeTx(
 
 /** execute_self(executor=None, UpdateGovDelay(new_delay), salt) */
 export function buildStellarGovernanceExecuteUpdateDelayTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: UpdateDelayArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -776,7 +777,7 @@ export function buildStellarGovernanceExecuteUpdateDelayTx(
 
 /** execute_self(executor=None, GrantGovRole(RoleArgs), salt) */
 export function buildStellarGovernanceExecuteGrantGovernanceRoleTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: RoleGrantArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -785,7 +786,7 @@ export function buildStellarGovernanceExecuteGrantGovernanceRoleTx(
 
 /** execute_self(executor=None, RevokeGovRole(RoleArgs), salt) */
 export function buildStellarGovernanceExecuteRevokeGovernanceRoleTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: RoleGrantArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -798,7 +799,7 @@ export function buildStellarGovernanceExecuteRevokeGovernanceRoleTx(
 
 /** execute_self(executor=None, TransferGovOwnership(TransferOwnershipArgs), salt) */
 export function buildStellarGovernanceExecuteTransferGovOwnTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: TransferOwnershipArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -838,7 +839,7 @@ const addressVec = (addresses: string[]): xdr.ScVal => vec(addresses.map(addr))
  * operation id.
  */
 export function buildStellarProposeCancellerResetTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: CancellerResetArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -856,7 +857,7 @@ export function buildStellarProposeCancellerResetTx(
  * `buildStellarProposeCancellerResetTx`.
  */
 export function buildStellarExecuteCancellerResetTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: ExecuteCancellerResetArgs,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
@@ -900,7 +901,7 @@ export interface OracleSanityBoundsArgs {
  * `EditAssetInSpoke` proposal.
  */
 export function buildStellarGovernanceSetSpokeAssetFlagsImmediateTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: SpokeAssetFlagsArgs
 ): BuiltStellarTx {
   return buildGovernanceTx(opts, 'set_spoke_asset_flags', [
@@ -923,7 +924,7 @@ export function buildStellarGovernanceSetSpokeAssetFlagsImmediateTx(
  * hold ORACLE and sign.
  */
 export function buildStellarGovernanceSetOracleSanityBoundsImmediateTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: OracleSanityBoundsArgs
 ): BuiltStellarTx {
   return buildGovernanceTx(opts, 'set_oracle_sanity_bounds', [
@@ -940,7 +941,7 @@ export function buildStellarGovernanceSetOracleSanityBoundsImmediateTx(
  * path. Distinct from `buildStellarProposeCreateHubTx` (timelock).
  */
 export function buildStellarGovernanceCreateHubImmediateTx(
-  opts: StellarBuilderOptions
+  opts: StellarGovernanceBuilderOptions
 ): BuiltStellarTx {
   return buildGovernanceTx(opts, 'create_hub', [addr(opts.caller)])
 }
@@ -951,7 +952,7 @@ export function buildStellarGovernanceCreateHubImmediateTx(
  * `buildStellarProposeAddSpokeTx` (timelock).
  */
 export function buildStellarGovernanceAddSpokeImmediateTx(
-  opts: StellarBuilderOptions
+  opts: StellarGovernanceBuilderOptions
 ): BuiltStellarTx {
   return buildGovernanceTx(opts, 'add_spoke', [addr(opts.caller)])
 }
@@ -964,7 +965,7 @@ export function buildStellarGovernanceAddSpokeImmediateTx(
  * governance owner.
  */
 export function buildStellarGovernanceRevokeRoleImmediateTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   args: RoleGrantArgs
 ): BuiltStellarTx {
   return buildGovernanceTx(opts, 'revoke_role_immediate', [
@@ -983,7 +984,7 @@ export function buildStellarGovernanceRevokeRoleImmediateTx(
  * owner is the governance contract.
  */
 export function buildStellarGovernancePauseTx(
-  opts: StellarBuilderOptions
+  opts: StellarGovernanceBuilderOptions
 ): BuiltStellarTx {
   return buildGovernanceTx(opts, 'pause', [addr(opts.caller)])
 }
@@ -994,7 +995,7 @@ export function buildStellarGovernancePauseTx(
  * governance proposal. `proposer = opts.caller` must hold PROPOSER and sign.
  */
 export function buildStellarProposeUnpauseTx(
-  opts: StellarBuilderOptions,
+  opts: StellarGovernanceBuilderOptions,
   salt: StellarGovernanceSalt
 ): BuiltStellarTx {
   return buildPropose(opts, adminOp('Unpause'), salt)

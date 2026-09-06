@@ -24,7 +24,7 @@ import {
   buildStellarProposeUnpauseTx,
   buildStellarProposeUpgradePoolParamsTx,
 } from '../governance'
-import type { StellarBuilderOptions } from '../lending'
+import type { StellarGovernanceBuilderOptions } from '../lending'
 
 const FIXTURE_CALLER =
   'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR'
@@ -55,7 +55,7 @@ afterAll(() => {
   jest.useRealTimers()
 })
 
-const BASE_OPTS: StellarBuilderOptions = {
+const BASE_OPTS: StellarGovernanceBuilderOptions = {
   network: 'testnet',
   caller: FIXTURE_CALLER,
   sourceSequence: FIXTURE_SEQUENCE,

@@ -1,3 +1,11 @@
+/**
+ * Typed Stellar lending reads and unsigned Soroban transaction builders.
+ * Start with {@link stellarLendingRead}, then {@link buildStellarSupplyTx}
+ * and {@link prepareStellarBuiltTx}. The host wallet signs prepared XDR.
+ * @module Stellar lending
+ */
+export { XOXNOClient } from '../../utils/api'
+export type { OurRequestInit, XOXNOClientOptions } from '../../utils/api'
 export * from './contracts'
 export * from './lending'
 export * from './lending-read'

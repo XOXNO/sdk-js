@@ -1,9 +1,10 @@
 /**
  * Stellar lending user-operation transaction builders.
  *
- * Each builder takes an `*Args` DTO from `@xoxno/types` plus a shared
- * `StellarBuilderOptions` ({ network, caller, sourceSequence, ... }) and returns
- * an unsigned transaction XDR string ready for wallet signing.
+ * Each builder takes a typed Stellar argument object plus shared
+ * `StellarLendingBuilderOptions` ({ network, caller, sourceSequence,
+ * controllerAddress, ... }) and returns
+ * unsigned transaction XDR that must be prepared before wallet signing.
  *
  * i128 values cross the boundary as decimal strings, encoded via
  * `new ScInt(str).toI128()`. Addresses (Stellar `G...` accounts and Soroban
@@ -25,11 +26,7 @@ import {
   xdr,
 } from '@stellar/stellar-sdk'
 
-import {
-  getStellarLendingController,
-  STELLAR_NETWORK_PASSPHRASE,
-  type StellarNetwork,
-} from './contracts'
+import { STELLAR_NETWORK_PASSPHRASE, type StellarNetwork } from './contracts'
 import {
   addr,
   asStellarBytes,
@@ -61,7 +58,9 @@ import {
 export type StellarAccountAddress = string
 
 export interface StellarBuilderOptions {
+  /** Must match the API deployment, RPC and signing wallet. */
   network: StellarNetwork
+  /** Transaction source and authorizing wallet public key (G...). */
   caller: StellarAccountAddress
   /**
    * Current sequence number of the caller account, as a decimal string.
@@ -70,27 +69,26 @@ export interface StellarBuilderOptions {
    * makes builders sync-friendly, RPC-free, and deterministic for snapshot tests.
    */
   sourceSequence: string
-  /**
-   * Override the controller contract address. Normally resolved from env via
-   * `getStellarLendingController(network)` — override is for tests and
-   * preview/staging deployments.
-   */
-  controllerAddress?: string
-  /**
-   * Override the governance (timelock) contract address. Normally resolved from
-   * env via `getStellarGovernance(network)` — override is for tests and
-   * preview/staging deployments. Required (env or override) for the governance
-   * `propose_*` / `execute` / `execute_*` builders.
-   */
-  governanceAddress?: string
   /** Base fee in stroops (default BASE_FEE = "100"). */
   fee?: string
   /** Tx timeout in seconds (default 300). */
   timeoutSeconds?: number
 }
 
+/** Shared options plus the lending controller contract selected by the host. */
+export interface StellarLendingBuilderOptions extends StellarBuilderOptions {
+  /** Soroban lending controller contract (C...). Supplied by the host app. */
+  controllerAddress: string
+}
+
+/** Shared options plus the governance timelock contract selected by the host. */
+export interface StellarGovernanceBuilderOptions extends StellarBuilderOptions {
+  /** Soroban governance/timelock contract (C...). Supplied by the host app. */
+  governanceAddress: string
+}
+
 export interface BuiltStellarTx {
-  /** Unsigned transaction XDR (base64) ready for wallet signing. */
+  /** Unsigned base64 XDR. Pass to prepareStellarBuiltTx before wallet signing. */
   xdr: string
 }
 
@@ -123,13 +121,14 @@ export type { StellarSeizeModeInput, StellarSwapVenue } from './scval-encode'
  * does this via `rpc.Server.prepareTransaction`.
  */
 export function buildTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   method: string,
   params: xdr.ScVal[]
 ): BuiltStellarTx {
-  const controllerId =
-    opts.controllerAddress ?? getStellarLendingController(opts.network)
-  const contract = new Contract(controllerId)
+  if (!opts.controllerAddress) {
+    throw new Error('Stellar lending controllerAddress is required')
+  }
+  const contract = new Contract(opts.controllerAddress)
 
   const source = new Account(opts.caller, opts.sourceSequence)
 
@@ -152,42 +151,46 @@ export function buildTx(
 
 /** A `(hub_id, asset)` coordinate — the `HubAssetKey` struct, builder-side. */
 export interface StellarHubAsset {
+  /** Liquidity hub from the selected reserve; independent of its risk spoke. */
   hubId: number
+  /** Token contract address (C...), including SAC addresses for classic assets. */
   asset: string
 }
 
-/** A `HubAssetKey` paired with an i128 decimal-string amount. */
+/** A hub/token coordinate with a token base-unit amount. */
 export interface StellarHubAssetAmount extends StellarHubAsset {
+  /** i128 decimal string in token base units; e.g. 1 token at 7 decimals is "10000000". */
   amount: string
 }
 
 export interface StellarSupplyArgs extends StellarHubAssetAmount {
-  /** Existing account id; omit / `0` opens a new account. */
-  accountNonce?: number
-  /** Risk spoke the (new) account binds to; defaults to the canonical spoke 0. */
-  spokeId?: number
+  /** Lending account ID, distinct from the Stellar sequence. Prefer decimal strings; omit / 0 opens an account. */
+  accountNonce?: number | string
+  /** Positive risk-spoke ID. Must match the existing account when topping up. */
+  spokeId: number
 }
 
 export interface StellarSupplyBatchArgs {
-  accountNonce?: number
-  spokeId?: number
+  accountNonce?: number | string
+  /** Positive risk-spoke ID; never inferred from the asset or hub. */
+  spokeId: number
   assets: ReadonlyArray<StellarHubAssetAmount>
 }
 
 export interface StellarBorrowArgs extends StellarHubAssetAmount {
-  accountNonce: number
+  accountNonce: number | string
   /** Optional recipient override (`C...`/`G...`); debt is recorded on the account. */
   to?: string
 }
 
 export interface StellarBorrowBatchArgs {
-  accountNonce: number
+  accountNonce: number | string
   borrows: ReadonlyArray<StellarHubAssetAmount>
   to?: string
 }
 
 export interface StellarWithdrawArgs extends StellarHubAssetAmount {
-  accountNonce: number
+  accountNonce: number | string
   /**
    * Optional recipient override (`C...` or `G...`). The pool pays the
    * withdrawn tokens to this address instead of the caller. Omit for the
@@ -198,22 +201,22 @@ export interface StellarWithdrawArgs extends StellarHubAssetAmount {
 }
 
 export interface StellarWithdrawBatchArgs {
-  accountNonce: number
+  accountNonce: number | string
   withdrawals: ReadonlyArray<StellarHubAssetAmount>
   to?: string
 }
 
 export interface StellarRepayArgs extends StellarHubAssetAmount {
-  accountNonce: number
+  accountNonce: number | string
 }
 
 export interface StellarRepayBatchArgs {
-  accountNonce: number
+  accountNonce: number | string
   payments: ReadonlyArray<StellarHubAssetAmount>
 }
 
 export interface StellarLiquidateArgs {
-  accountNonce: number
+  accountNonce: number | string
   debtPayments: ReadonlyArray<StellarHubAssetAmount>
   /**
    * How the liquidator takes delivery of the seized collateral. Defaults to
@@ -231,12 +234,13 @@ export interface StellarFlashLoanArgs extends StellarHubAsset {
 }
 
 export interface StellarMultiplyArgs {
-  accountNonce?: number
-  spokeId?: number
+  accountNonce?: number | string
+  /** Positive risk-spoke ID. Must match the existing account when reusing it. */
+  spokeId: number
   collateral: StellarHubAsset
   debtToFlashLoan: string
   debt: StellarHubAsset
-  /** `PositionMode` repr(u32). */
+  /** Stellar PositionMode: 0 normal, 1 multiply, 2 long, 3 short. */
   mode: number
   steps: StellarSwapStepsInput
   initialPayment?: StellarHubAssetAmount
@@ -244,7 +248,7 @@ export interface StellarMultiplyArgs {
 }
 
 export interface StellarSwapDebtArgs {
-  accountNonce: number
+  accountNonce: number | string
   existingDebt: StellarHubAsset
   newDebtAmount: string
   newDebt: StellarHubAsset
@@ -252,7 +256,7 @@ export interface StellarSwapDebtArgs {
 }
 
 export interface StellarSwapCollateralArgs {
-  accountNonce: number
+  accountNonce: number | string
   current: StellarHubAsset
   fromAmount: string
   newCollateral: StellarHubAsset
@@ -260,7 +264,7 @@ export interface StellarSwapCollateralArgs {
 }
 
 export interface StellarRepayDebtWithCollateralArgs {
-  accountNonce: number
+  accountNonce: number | string
   collateral: StellarHubAsset
   collateralAmount: string
   debt: StellarHubAsset
@@ -271,7 +275,7 @@ export interface StellarRepayDebtWithCollateralArgs {
 /**
  * `migrate_from_blend` references the *Blend* pool's bare-`Address` assets, so
  * collateral / supply / debt stay token-keyed; only the account's risk spoke
- * (`spoke_id`) crosses on the XOXNO side.
+ * and destination liquidity hub cross on the XOXNO side.
  */
 export interface StellarMigrateFromBlendArgs {
   accountId: number | string
@@ -287,27 +291,42 @@ export interface StellarMigrateFromBlendArgs {
 // Builders — 11 entry points, 1 : 1 with the multi-hub Stellar controller
 // -----------------------------------------------------------------------------
 
+function encodeSpokeId(value: number): xdr.ScVal {
+  if (!Number.isInteger(value) || value < 1 || value > 0xffffffff) {
+    throw new Error('Stellar builder: spokeId must be an integer from 1 to 4294967295')
+  }
+  return u32(value)
+}
+
 /**
  * supply(caller, account_id: u64, spoke_id: u32, assets: Vec<(HubAssetKey, i128)>)
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
  */
 export function buildStellarSupplyBatchTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarSupplyBatchArgs
 ): BuiltStellarTx {
   const accountId = args.accountNonce ?? 0
-  const spokeId = args.spokeId ?? 0
 
   return buildTx(opts, 'supply', [
     addr(opts.caller),
     u64(accountId),
-    u32(spokeId),
+    encodeSpokeId(args.spokeId),
     tupleHubAssetAmountVec([...args.assets]),
   ])
 }
 
-/** Single-asset `supply` — wraps the asset in a 1-element batch. */
+/** Single-asset `supply` — wraps the asset in a 1-element batch.
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
+ */
 export function buildStellarSupplyTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarSupplyArgs
 ): BuiltStellarTx {
   return buildStellarSupplyBatchTx(opts, {
@@ -321,9 +340,13 @@ export function buildStellarSupplyTx(
  * borrow(caller, account_id: u64, borrows: Vec<(HubAssetKey, i128)>,
  * to: Option<Address>) — `to` is always sent; absent means the caller
  * receives the funds.
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
  */
 export function buildStellarBorrowBatchTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarBorrowBatchArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'borrow', [
@@ -334,9 +357,14 @@ export function buildStellarBorrowBatchTx(
   ])
 }
 
-/** Single-asset `borrow`. */
+/** Single-asset `borrow`.
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
+ */
 export function buildStellarBorrowTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarBorrowArgs
 ): BuiltStellarTx {
   return buildStellarBorrowBatchTx(opts, {
@@ -350,9 +378,13 @@ export function buildStellarBorrowTx(
  * withdraw(caller, account_id: u64, withdrawals: Vec<(HubAssetKey, i128)>,
  * to: Option<Address>) — `to` is always sent; absent means the caller
  * receives the funds.
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
  */
 export function buildStellarWithdrawBatchTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarWithdrawBatchArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'withdraw', [
@@ -363,9 +395,14 @@ export function buildStellarWithdrawBatchTx(
   ])
 }
 
-/** Single-asset `withdraw`. */
+/** Single-asset `withdraw`. Amount "0" withdraws the full supplied position.
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
+ */
 export function buildStellarWithdrawTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarWithdrawArgs
 ): BuiltStellarTx {
   return buildStellarWithdrawBatchTx(opts, {
@@ -377,9 +414,13 @@ export function buildStellarWithdrawTx(
 
 /**
  * repay(caller, account_id: u64, payments: Vec<(HubAssetKey, i128)>)
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
  */
 export function buildStellarRepayBatchTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarRepayBatchArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'repay', [
@@ -389,9 +430,14 @@ export function buildStellarRepayBatchTx(
   ])
 }
 
-/** Single-asset `repay`. */
+/** Single-asset `repay`.
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
+ */
 export function buildStellarRepayTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarRepayArgs
 ): BuiltStellarTx {
   return buildStellarRepayBatchTx(opts, {
@@ -408,9 +454,13 @@ export function buildStellarRepayTx(
  * `SeizeMode::Credit` (freshly opened when `Credit(0)` was passed), and `0`
  * under `SeizeMode::Transfer`. Read it from the simulation / tx result with
  * `decodeStellarLiquidateReturn`.
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
  */
 export function buildStellarLiquidateTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarLiquidateArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'liquidate', [
@@ -442,9 +492,13 @@ export function decodeStellarLiquidateReturn(returnValueB64: string): string {
 
 /**
  * flash_loan(caller, asset: HubAssetKey, amount: i128, receiver, data: Bytes)
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
  */
 export function buildStellarFlashLoanTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarFlashLoanArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'flash_loan', [
@@ -460,23 +514,29 @@ export function buildStellarFlashLoanTx(
  * Build a `migrate_from_blend` controller invocation: atomically moves a Blend
  * V2 position (collateral + supply + debt) into XOXNO at zero flash-loan fee.
  *
- * ABI: `migrate_from_blend(caller, account_id, spoke_id, blend_pool,
+ * ABI: `migrate_from_blend(caller, account_id, spoke_id, hub_id, blend_pool,
  * collateral_assets, supply_assets, debt_caps: Vec<(Address, i128)>)`. Pass
  * `accountId = "0"` to open a new account. Each debt cap should slightly exceed
  * the live Blend debt — Blend refunds the excess, reconciled on-chain.
  *
  * Like every builder this emits an unsigned invoke; the nested `submit(from =
  * user)` authorization is materialized by `prepareTransaction` (simulation) and
- * signed by the wallet over the whole envelope.
+ * signed by the wallet over the whole envelope. The Blend pool must be approved
+ * by the controller. Use an explicit destination hub and spoke; this operation
+ * does not consume aggregator route bytes.
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
  */
 export function buildStellarMigrateFromBlendTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarMigrateFromBlendArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'migrate_from_blend', [
     addr(opts.caller),
     u64(args.accountId),
-    u32(args.spokeId),
+    encodeSpokeId(args.spokeId),
     u32(args.hubId),
     addr(args.blendPool),
     vec(args.collateralTokens.map(addr)),
@@ -496,18 +556,21 @@ export function buildStellarMigrateFromBlendTx(
  * `mode` is a repr(u32) `PositionMode` → encoded as `scvU32`. The two trailing
  * `Option`s seed an optional initial collateral payment and a secondary swap
  * converting it into the collateral token; both omit to Soroban `Void`.
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
  */
 export function buildStellarMultiplyTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarMultiplyArgs
 ): BuiltStellarTx {
   const accountId = args.accountNonce ?? 0
-  const spokeId = args.spokeId ?? 0
 
   return buildTx(opts, 'multiply', [
     addr(opts.caller),
     u64(accountId),
-    u32(spokeId),
+    encodeSpokeId(args.spokeId),
     hubAsset(args.collateral.hubId, args.collateral.asset),
     i128(args.debtToFlashLoan),
     hubAsset(args.debt.hubId, args.debt.asset),
@@ -523,9 +586,13 @@ export function buildStellarMultiplyTx(
 /**
  * swap_debt(caller, account_id, existing_debt: HubAssetKey, amount: i128,
  *           new_debt: HubAssetKey, swap: Bytes)
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
  */
 export function buildStellarSwapDebtTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarSwapDebtArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'swap_debt', [
@@ -541,9 +608,13 @@ export function buildStellarSwapDebtTx(
 /**
  * swap_collateral(caller, account_id, current: HubAssetKey, amount: i128,
  *                 new: HubAssetKey, swap: Bytes)
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
  */
 export function buildStellarSwapCollateralTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarSwapCollateralArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'swap_collateral', [
@@ -560,9 +631,13 @@ export function buildStellarSwapCollateralTx(
  * repay_debt_with_collateral(caller, account_id, collateral: HubAssetKey,
  *                            collateral_amount: i128, debt: HubAssetKey,
  *                            swap: Bytes, close_position: bool)
+ * @param opts - Network, caller, current source sequence and deployment addresses.
+ * @param args - Operation arguments; token amounts are decimal base-unit strings.
+ * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.
+ * @category Lending transactions
  */
 export function buildStellarRepayDebtWithCollateralTx(
-  opts: StellarBuilderOptions,
+  opts: StellarLendingBuilderOptions,
   args: StellarRepayDebtWithCollateralArgs
 ): BuiltStellarTx {
   return buildTx(opts, 'repay_debt_with_collateral', [

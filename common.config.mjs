@@ -38,7 +38,9 @@ export default {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        // build:types owns declarations and normalizes NodeNext imports.
+        // Bundling must not overwrite that tree with raw tsc declarations.
+        use: { loader: 'ts-loader', options: { compilerOptions: { declaration: false } } },
         exclude: /node_modules/,
       },
     ],

@@ -8,14 +8,24 @@ npm install @xoxno/sdk-js
 
 ## Basic usage
 
+For Stellar lending, start with the [integration guide](md/stellar-lending.md)
+and [checked example](examples/stellar-lending.ts). They cover typed market
+discovery and unsigned XDR preparation, wallet signing, submission and confirmation.
+Generate focused API documentation with `npm run docs:stellar`.
+`XOXNOClient` requires an application-supplied `apiUrl`; the SDK does not read
+environment variables or select an API deployment for you.
+For Stellar infrastructure, use the exported `STELLAR_NETWORKS` manifest and
+pass its selected RPC, quote-server and contract values to your host clients.
+
 ```typescript
 import { cache } from 'react'
 
 import { buildSdk, XOXNOClient } from '@xoxno/sdk-js'
+const apiUrl = 'https://api.example.com'
 
 // You can safely call `getSdk()` wherever you need it
 export const getSdk = cache(() => {
-  return buildSdk(new XOXNOClient())
+  return buildSdk(new XOXNOClient({ apiUrl }))
 })
 ```
 
@@ -783,127 +793,133 @@ sdk.stellar.tokens(...); // TokenDataDocHydrated[]
 sdk.stellar.aggregator.quote(...); // SoroswapQuoteResponseDto
 
 // GET /stellar-lending/assets
-sdk.stellarLending.assets(...); // StellarAssetListItemDto[]
+sdk.stellarLending.assets(...); // Array<StellarApi.StellarAssetListItemDto>
 
 // GET /stellar-lending/context
-sdk.stellarLending.context(...); // StellarLendingContextDto
+sdk.stellarLending.context(...); // StellarApi.StellarLendingContextDto
 
 // GET /stellar-lending/live-state
-sdk.stellarLending.liveState(...); // StellarLendingLiveStateDto
+sdk.stellarLending.liveState(...); // StellarApi.StellarLendingLiveStateDto
 
 // GET /stellar-lending/markets/detailed
-sdk.stellarLending.markets.detailed(...); // StellarDetailedMarketDto[]
+sdk.stellarLending.markets.detailed(...); // Array<StellarApi.StellarDetailedMarketDto>
 
 // GET /stellar-lending/hubs
-sdk.stellarLending.hubs(...); // StellarHubListItemDto[]
+sdk.stellarLending.hubs(...); // Array<StellarApi.StellarHubListItemDto>
 
 // GET /stellar-lending/spokes
-sdk.stellarLending.spokes(...); // StellarSpokeListItemDto[]
+sdk.stellarLending.spokes(...); // Array<StellarApi.StellarSpokeListItemDto>
 
 // GET /stellar-lending/reserves
-sdk.stellarLending.reserves(...); // StellarReserveListItemDto[]
+sdk.stellarLending.reserves(...); // Array<StellarApi.StellarReserveListItemDto>
 
 // GET /stellar-lending/reserves/:spokeId/:hubId/:asset
-sdk.stellarLending.reserves.spokeId("...").hubId("...").asset("...")(...); // ReserveDto
+sdk.stellarLending.reserves.spokeId("...").hubId("...").asset("...")(...); // StellarApi.ReserveDto
 
 // GET /stellar-lending/reserves/:spokeId/:hubId/:asset/holders
-sdk.stellarLending.reserves.spokeId("...").hubId("...").asset("...").holders(...); // TopHoldersDto
+sdk.stellarLending.reserves.spokeId("...").hubId("...").asset("...").holders(...); // StellarApi.TopHoldersDto
 
 // GET /stellar-lending/hubs/:hubId/holders
-sdk.stellarLending.hubs.hubId("...").holders(...); // TopHoldersDto
+sdk.stellarLending.hubs.hubId("...").holders(...); // StellarApi.TopHoldersDto
 
 // GET /stellar-lending/spokes/:spokeId/holders
-sdk.stellarLending.spokes.spokeId("...").holders(...); // TopHoldersDto
+sdk.stellarLending.spokes.spokeId("...").holders(...); // StellarApi.TopHoldersDto
 
 // GET /stellar-lending/assets/:asset
-sdk.stellarLending.assets.asset("...")(...); // AssetDto
+sdk.stellarLending.assets.asset("...")(...); // StellarApi.AssetDto
 
 // GET /stellar-lending/assets/:asset/page
-sdk.stellarLending.assets.asset("...").page(...); // AssetPageDto
+sdk.stellarLending.assets.asset("...").page(...); // StellarApi.AssetPageDto
 
 // GET /stellar-lending/assets/:asset/markets
-sdk.stellarLending.assets.asset("...").markets(...); // AssetMarketDto[]
+sdk.stellarLending.assets.asset("...").markets(...); // Array<StellarApi.AssetMarketDto>
 
 // GET /stellar-lending/hubs/:hubId
-sdk.stellarLending.hubs.hubId("...")(...); // HubDto
+sdk.stellarLending.hubs.hubId("...")(...); // StellarApi.HubDto
 
 // GET /stellar-lending/spokes/:spokeId
-sdk.stellarLending.spokes.spokeId("...")(...); // SpokeDto
+sdk.stellarLending.spokes.spokeId("...")(...); // StellarApi.SpokeDto
 
 // GET /stellar-lending/users/:owner/positions
-sdk.stellarLending.users.owner("...").positions(...); // AccountPositionsDto
+sdk.stellarLending.users.owner("...").positions(...); // StellarApi.AccountPositionsDto
 
 // GET /stellar-lending/users/:owner/activity
-sdk.stellarLending.users.owner("...").activity(...); // StellarUserActivityItemDto[]
+sdk.stellarLending.users.owner("...").activity(...); // Array<StellarApi.StellarUserActivityItemDto>
 
 // GET /stellar-lending/accounts/:accountId/positions
-sdk.stellarLending.accounts.accountId("...").positions(...); // AccountPositionsDto
+sdk.stellarLending.accounts.accountId("...").positions(...); // StellarApi.AccountPositionsDto
 
 // GET /stellar-lending/governance/proposals
-sdk.stellarLending.governance.proposals(...); // GovernanceProposalsPageDto
+sdk.stellarLending.governance.proposals(...); // StellarApi.GovernanceProposalsPageDto
 
 // GET /stellar-lending/assets/:asset/graph
-sdk.stellarLending.assets.asset("...").graph(...); // MarketGraphDto
+sdk.stellarLending.assets.asset("...").graph(...); // StellarApi.MarketGraphDto
 
 // GET /stellar-lending/hubs/:hubId/graph
-sdk.stellarLending.hubs.hubId("...").graph(...); // MarketGraphDto
+sdk.stellarLending.hubs.hubId("...").graph(...); // StellarApi.MarketGraphDto
 
 // GET /stellar-lending/spokes/:spokeId/graph
-sdk.stellarLending.spokes.spokeId("...").graph(...); // SpokeGraphDto
+sdk.stellarLending.spokes.spokeId("...").graph(...); // StellarApi.SpokeGraphDto
 
 // GET /stellar-lending/reserves/:spokeId/:hubId/:asset/graph
-sdk.stellarLending.reserves.spokeId("...").hubId("...").asset("...").graph(...); // MarketGraphDto
+sdk.stellarLending.reserves.spokeId("...").hubId("...").asset("...").graph(...); // StellarApi.MarketGraphDto
 
 // GET /stellar-lending/stats/history
-sdk.stellarLending.stats.history(...); // StellarStatsHistoryDto
+sdk.stellarLending.stats.history(...); // StellarApi.StellarStatsHistoryDto
 
 // GET /stellar-lending/pnl
-sdk.stellarLending.pnl(...); // StellarPositionsPnlDto
+sdk.stellarLending.pnl(...); // StellarApi.StellarPositionsPnlDto
 
 // GET /stellar-lending/campaign/leaderboard
-sdk.stellarLending.campaign.leaderboard(...); // StellarCampaignLeaderboardDto
+sdk.stellarLending.campaign.leaderboard(...); // StellarApi.StellarCampaignLeaderboardDto
 
 // GET /stellar-lending/campaign/me
-sdk.stellarLending.campaign.me(...); // StellarCampaignMeDto
+sdk.stellarLending.campaign.me(...); // StellarApi.StellarCampaignMeDto
 
 // GET /stellar-lending/positions
-sdk.stellarLending.positions(...); // StellarPositionsRankDto
+sdk.stellarLending.positions(...); // StellarApi.StellarPositionsRankDto
 
 // GET /stellar-lending/users/:accountId/history
-sdk.stellarLending.users.accountId("...").history(...); // UserHistoryDto
+sdk.stellarLending.users.accountId("...").history(...); // StellarApi.UserHistoryDto
 
 // GET /stellar-lending/pnl/scope
-sdk.stellarLending.pnl.scope(...); // PnlByScopeDto
+sdk.stellarLending.pnl.scope(...); // StellarApi.PnlByScopeDto
 
 // GET /stellar-lending/revenue
-sdk.stellarLending.revenue(...); // RevenueSeriesDto
+sdk.stellarLending.revenue(...); // StellarApi.RevenueSeriesDto
 
 // GET /stellar-lending/revenue/fees
-sdk.stellarLending.revenue.fees(...); // FeeRevenueSeriesDto
+sdk.stellarLending.revenue.fees(...); // StellarApi.FeeRevenueSeriesDto
 
 // GET /stellar-lending/participants
-sdk.stellarLending.participants(...); // ParticipantCountsDto
+sdk.stellarLending.participants(...); // StellarApi.ParticipantCountsDto
 
 // GET /stellar-lending/liquidations
-sdk.stellarLending.liquidations(...); // LiquidationsSeriesDto
+sdk.stellarLending.liquidations(...); // StellarApi.LiquidationsSeriesDto
 
 // GET /stellar-lending/liquidations/leaderboard
-sdk.stellarLending.liquidations.leaderboard(...); // LiquidationsLeaderboardDto
+sdk.stellarLending.liquidations.leaderboard(...); // StellarApi.LiquidationsLeaderboardDto
 
 // GET /stellar-lending/volume
-sdk.stellarLending.volume(...); // VolumeSeriesDto
+sdk.stellarLending.volume(...); // StellarApi.VolumeSeriesDto
 
 // GET /stellar-lending/active-users
-sdk.stellarLending.activeUsers(...); // ActiveUsersSeriesDto
+sdk.stellarLending.activeUsers(...); // StellarApi.ActiveUsersSeriesDto
 
 // GET /stellar-lending/distribution
-sdk.stellarLending.distribution(...); // HolderDistributionDto
+sdk.stellarLending.distribution(...); // StellarApi.HolderDistributionDto
 
 // GET /stellar-lending/rate-spread
-sdk.stellarLending.rateSpread(...); // RateSpreadSeriesDto
+sdk.stellarLending.rateSpread(...); // StellarApi.RateSpreadSeriesDto
 
 // GET /stellar-lending/defillama
-sdk.stellarLending.defillama(...); // DefiLlamaDimensionsDto
+sdk.stellarLending.defillama(...); // StellarApi.DefiLlamaDimensionsDto
+
+// GET /stellar-lending/users/:owner/assets/:asset/balance
+sdk.stellarLending.users.owner("...").assets.asset("...").balance(...); // StellarApi.StellarWalletBalanceDto
+
+// GET /stellar-lending/users/:owner/activity/page
+sdk.stellarLending.users.owner("...").activity.page(...); // StellarApi.StellarActivityPageDto
 
 // GET /tokens
 sdk.tokens(...); // TokenDataDocHydrated[]

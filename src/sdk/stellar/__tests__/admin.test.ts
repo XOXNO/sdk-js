@@ -40,7 +40,7 @@ import {
   type ConfigureMarketOracleArgs,
   type CreateLiquidityPoolArgs,
 } from '../admin'
-import type { StellarBuilderOptions } from '../lending'
+import type { StellarLendingBuilderOptions } from '../lending'
 
 // -----------------------------------------------------------------------------
 // Deterministic fixtures
@@ -71,7 +71,7 @@ afterAll(() => {
   jest.useRealTimers()
 })
 
-const BASE_OPTS: StellarBuilderOptions = {
+const BASE_OPTS: StellarLendingBuilderOptions = {
   network: 'testnet',
   caller: FIXTURE_CALLER,
   sourceSequence: FIXTURE_SEQUENCE,

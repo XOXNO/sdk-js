@@ -14,6 +14,7 @@ import {
   STELLAR_PROGRAM_VERSION,
   STELLAR_SWAP_VENUE_OPCODE,
   encodeStrategyPayload,
+  asStellarStrategySwapBytes,
   type StellarStrategyPayloadInput,
 } from '../scval-encode'
 
@@ -144,7 +145,7 @@ describe('packed strategy program', () => {
   })
 
   it('lowers a pre-swap ahead of the mint', () => {
-    const { amounts, ops } = decode({
+    const payload: StellarStrategyPayloadInput = {
       mintPool: POOL_THREE,
       mintPoolTokens: [TOKEN_IN, MID],
       mintMinShares: '5',
@@ -154,7 +155,11 @@ describe('packed strategy program', () => {
       tokenIn: TOKEN_IN,
       tokenOut: TOKEN_OUT,
       totalMinOut: '1',
-    })
+    }
+    const { amounts, ops } = decode(payload)
+    expect(asStellarStrategySwapBytes(payload).bytes()).toEqual(
+      Buffer.from(encodeStrategyPayload(payload).toXDR('base64'), 'base64')
+    )
     expect(ops[8]).toBe(2)
     expect(ops[10]).toBe(STELLAR_SWAP_VENUE_OPCODE.Aquarius)
     expect(ops[11]).toBe(3) // MODE_FIXED_BASE + amounts[1]

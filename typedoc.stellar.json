@@ -1,0 +1,11 @@
+{
+  "entryPoints": ["src/sdk/stellar/index.ts"],
+  "out": "docs/stellar-lending",
+  "name": "XOXNO Stellar lending SDK",
+  "readme": "md/stellar-lending.md",
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "intentionallyNotExported": ["endpoints", "Chain", "SafeHeaders", "StellarStrategyPayloadInput", "STELLAR_SWAP_VENUES"],
+  "categorizeByGroup": false,
+  "categoryOrder": ["Stellar lending reads", "Lending transactions", "Transaction preparation", "Strategy quotes", "*"]
+}

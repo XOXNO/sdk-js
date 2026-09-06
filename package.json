@@ -34,7 +34,7 @@
   "sideEffects": false,
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "build:sdk": "npx bun run src/sdk/parseSwagger.ts && npx oxlint src/sdk/swagger.ts --fix && npx bun run md/extract.ts",
+    "build:sdk": "npx bun run src/sdk/parseSwagger.ts --offline && npx oxlint src/sdk/swagger.ts --fix && npx bun run md/extract.ts",
     "build:types": "tsc --emitDeclarationOnly && node scripts/emit-cjs-dts.mjs",
     "build:esm": "webpack --config webpack-esm.config.mjs",
     "build:cjs": "webpack --config webpack-cjs.config.mjs",
@@ -45,7 +45,11 @@
     "format": "oxlint src --fix",
     "commit": "git-cz",
     "release": "semantic-release",
-    "docs": "typedoc --out docs src/**/*.ts"
+    "docs": "typedoc --out docs src/**/*.ts",
+    "update:sdk": "bun run src/sdk/parseSwagger.ts && bun run md/extract.ts",
+    "docs:stellar": "typedoc --options typedoc.stellar.json",
+    "check:examples": "tsc --project tsconfig.examples.json",
+    "test:browser": "node --experimental-vm-modules scripts/check-stellar-browser.mjs"
   },
   "config": {
     "commitizen": {
@@ -114,7 +118,8 @@
   "dependencies": {
     "@multiversx/sdk-core": "^15.3.2",
     "@multiversx/sdk-network-providers": "^2.9.3",
-    "@xoxno/types": "1.0.496"
+    "@xoxno/types": "1.0.496",
+    "buffer": "^6.0.3"
   },
   "peerDependencies": {
     "@stellar/stellar-sdk": ">=15.0.0 <17.0.0"

@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
 
 import { parse } from 'yaml'
+import { stellarSchemaTypes } from './stellar-schema'
 
 import {
   coveredMethods,
@@ -190,6 +191,8 @@ const duplicates: string[] = []
 
 const releaseOverlayPaths = [
   '/stellar-lending/live-state',
+  '/stellar-lending/users/{owner}/assets/{asset}/balance',
+  '/stellar-lending/users/{owner}/activity/page',
   '/integrations/lending/stellar',
   '/integrations/lending/stellar/history',
   '/integrations/lending/stellar/revenue',
@@ -197,6 +200,9 @@ const releaseOverlayPaths = [
 ] as const
 const releaseOverlaySchemas = [
   'StellarLendingLiveStateDto',
+  'StellarWalletBalanceDto',
+  'StellarActivityEntryDto',
+  'StellarActivityPageDto',
   'StellarMarketIndexByHub',
   'DefillamaLendingMarketExport',
   'DefillamaLendingHubMarketExport',
@@ -252,11 +258,14 @@ function preserveReleaseOverlay(
 }
 
 async function parseSwagger() {
-  const swaggerUrl = process.env.SWAGGER_URL ?? 'https://api.xoxno.com/swagger.yaml'
+  const swaggerUrl = process.argv
+    .find((arg) => arg.startsWith('--swagger-url='))
+    ?.slice('--swagger-url='.length) ?? 'https://api.xoxno.com/swagger.yaml'
   const swaggerJsonPath = path.join(process.cwd(), './src/sdk/swagger.json')
   const committed = JSON.parse(await readFile(swaggerJsonPath, 'utf8'))
 
-  const response = await fetch(swaggerUrl).catch(() => undefined)
+  const offline = process.argv.includes('--offline')
+  const response = offline ? undefined : await fetch(swaggerUrl).catch(() => undefined)
   let parsed = response?.ok ? parse(await response.text()) : undefined
 
   if (parsed?.paths) {
@@ -268,7 +277,7 @@ async function parseSwagger() {
   } else {
     // A WAF challenge or outage on the swagger endpoint must not block SDK
     // releases: build from the last committed spec and say so loudly.
-    console.error(
+    if (!offline) console.error(
       `swagger fetch failed (${swaggerUrl} -> ${response?.status ?? 'network error'}); ` +
         'building from committed src/sdk/swagger.json'
     )
@@ -276,6 +285,7 @@ async function parseSwagger() {
   }
 
   const result: IRawSdk = {}
+  const stellar = stellarSchemaTypes(parsed.components.schemas)
 
   for (const [key, value] of Object.entries(parsed.paths)) {
     const typedValue = value as Record<
@@ -302,7 +312,7 @@ async function parseSwagger() {
       }
     >
     for (const [method, endpoint] of Object.entries(typedValue)) {
-      const queryParameters = endpoint.parameters.filter((item) => {
+      const queryParameters = (endpoint.parameters ?? []).filter((item) => {
         return item.in === 'query'
       })
       const transformedKey = key.replace(/{([^}]+)}/g, ':$1')
@@ -314,9 +324,12 @@ async function parseSwagger() {
         alreadyChecked.add(toCheck)
       }
       const schemas = parsed.components.schemas as Record<string, unknown>
+      const schemaType = (schema: unknown) => key.startsWith('/stellar-lending/')
+        ? stellar.type(schema, 'StellarApi.')
+        : parseSchema(schema, schemas)
       const transformedInputs = queryParameters.length
         ? queryParameters.reduce((acc: Record<string, unknown>, curr) => {
-            const parsed = parseSchema(curr.schema, schemas)
+            const parsed = schemaType(curr.schema)
             acc[curr.name] = {
               type:
                 curr.name === 'chain'
@@ -342,10 +355,9 @@ async function parseSwagger() {
       const transformedOutputs = {
         '': {
           required: true,
-          type: parseSchema(
+          type: schemaType(
             Object.values(endpoint.responses)[0].content['application/json']
-              .schema,
-            schemas
+              .schema
           ),
         },
       }
@@ -432,10 +444,11 @@ async function parseSwagger() {
   function stringifyWithCasts(obj: any): string {
     const pretty = JSON.stringify(obj, null, 2)
 
-    const re = /(["'](?:input|output|body)["']\s*:\s*)(['"])([\s\S]*?)\2/g
+    const re = /("(?:input|output|body)"\s*:\s*)("(?:\\.|[^"\\])*")/g
 
     return pretty
-      .replace(re, (_, prefix: string, _q: string, body: string) => {
+      .replace(re, (_, prefix: string, literal: string) => {
+        const body = JSON.parse(literal) as string
         const trimmed = body.trim()
         const castTarget = trimmed.length ? trimmed : '{}'
         return `${prefix}{} as ${castTarget}`
@@ -450,9 +463,12 @@ async function parseSwagger() {
     [
       `import type { ${Array.from(new Set(sdkImports)).join(',')} } from '@xoxno/types';`,
       `import type { ${Array.from(new Set(sdkEnumImports)).join(',')} } from '@xoxno/types/enums';`,
+      `import type * as StellarApi from './stellar/lending-api-types';`,
       `export const endpoints = ${transformed} as const;`,
     ].join('\n')
   )
+
+  await writeFile(path.join(process.cwd(), './src/sdk/stellar/lending-api-types.ts'), stellar.render())
 
   await writeFile(path.join(process.cwd(), './md/transformed.txt'), transformed)
 

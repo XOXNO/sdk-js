@@ -19,10 +19,7 @@ import {
   TransactionBuilder,
 } from '@stellar/stellar-sdk'
 
-import {
-  getStellarAggregatorRouter,
-  STELLAR_NETWORK_PASSPHRASE,
-} from './contracts'
+import { STELLAR_NETWORK_PASSPHRASE } from './contracts'
 import type { BuiltStellarTx, StellarBuilderOptions } from './lending'
 import {
   addr,
@@ -48,10 +45,9 @@ export type StellarStrategySwapPath = StellarStrategySwapPathInput
 export interface StellarExecuteStrategyBuilderOptions
   extends StellarBuilderOptions {
   /**
-   * Override the resolved aggregator router contract address. Normally
-   * resolved from `STELLAR_AGGREGATOR_ROUTER[network]`.
+   * Aggregator router contract (C...) selected by the host application.
    */
-  routerAddress?: string
+  routerAddress: string
   /**
    * Total input amount passed to `execute_strategy` (i128 decimal string).
    * For a quote-derived swap, pass `quote.amountIn`.
@@ -102,9 +98,10 @@ export function buildStellarExecuteStrategyTx(
   opts: StellarExecuteStrategyBuilderOptions,
   swap: StellarStrategySwapInput
 ): BuiltStellarTx {
-  const routerId =
-    opts.routerAddress ?? getStellarAggregatorRouter(opts.network)
-  const contract = new Contract(routerId)
+  if (!opts.routerAddress) {
+    throw new Error('Stellar aggregator routerAddress is required')
+  }
+  const contract = new Contract(opts.routerAddress)
 
   const source = new Account(opts.caller, opts.sourceSequence)
   const swapBytes = asStellarStrategySwapBytes(
