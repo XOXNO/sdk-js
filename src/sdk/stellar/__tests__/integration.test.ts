@@ -39,16 +39,23 @@ it('binds all generated Stellar lending and integration routes without unresolve
 
 it('keeps per-call fetch options out of queries and preserves client defaults', async () => {
   const calls = captureFetch()
-  const signal = new AbortController().signal
-  const sdk = buildSdk(new XOXNOClient({ apiUrl: 'https://example.invalid', signal, credentials: 'omit' }))
+  // A read is composed with its own deadline, so the forwarded signal is no
+  // longer the caller's object. Assert the behaviour that matters instead: the
+  // caller's abort still reaches the request.
+  const controller = new AbortController()
+  const sdk = buildSdk(new XOXNOClient({ apiUrl: 'https://example.invalid', signal: controller.signal, credentials: 'omit' }))
   await sdk.stellarLending.reserves({ hubId: undefined, spokeId: undefined })
   expect(calls[0]?.url.search).toBe('')
-  expect(calls[0]?.init.signal).toBe(signal)
   expect(calls[0]?.init.credentials).toBe('omit')
-  const override = new AbortController().signal
-  await sdk.stellarLending.assets({ signal: override, credentials: 'include', redirect: 'error' })
+  expect(calls[0]?.init.signal?.aborted).toBe(false)
+  controller.abort()
+  expect(calls[0]?.init.signal?.aborted).toBe(true)
+  const override = new AbortController()
+  await sdk.stellarLending.assets({ signal: override.signal, credentials: 'include', redirect: 'error' })
   expect(calls[1]?.url.search).toBe('')
-  expect(calls[1]?.init).toMatchObject({ signal: override, credentials: 'include', redirect: 'error' })
+  expect(calls[1]?.init).toMatchObject({ credentials: 'include', redirect: 'error' })
+  override.abort()
+  expect(calls[1]?.init.signal?.aborted).toBe(true)
 })
 
 it('sends Stellar cursors in query parameters through both facades', async () => {
@@ -68,9 +75,12 @@ it('sends Stellar cursors in query parameters through both facades', async () =>
 it('preserves init with empty reserve filters and exposes the supported reader set', async () => {
   const calls = captureFetch()
   const read = stellarLendingRead(new XOXNOClient({ apiUrl: 'https://example.invalid' }))
-  const signal = new AbortController().signal
-  await read.reserves({}, { cache: 'no-store', signal })
-  expect(calls[0]?.init).toMatchObject({ cache: 'no-store', signal })
+  const controller = new AbortController()
+  await read.reserves({}, { cache: 'no-store', signal: controller.signal })
+  expect(calls[0]?.init).toMatchObject({ cache: 'no-store' })
+  // Composed with the read deadline; the caller's abort still propagates.
+  controller.abort()
+  expect(calls[0]?.init.signal?.aborted).toBe(true)
   await read.assetPage('token', { from: '2026-09-01', to: '2026-09-02', bin: '1d' })
   expect(calls[1]?.url.pathname).toBe('/stellar-lending/assets/token/page')
   await read.walletBalance('wallet', 'token')

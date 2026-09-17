@@ -21,7 +21,28 @@ export type SafeHeaders = Record<string, string> & {
 export type OurRequestInit = Omit<RequestInit, 'body' | 'headers'> & {
   headers?: SafeHeaders
   debug?: boolean
+  /**
+   * Milliseconds before the request is aborted, as a client-wide default or a
+   * per-call override. `0` disables the deadline for that call.
+   *
+   * Defaults to {@link DEFAULT_REQUEST_TIMEOUT_MS} for requests with no body.
+   * Requests that send a body are left unbounded by default because their
+   * duration depends on the caller's uplink — a multipart upload on a slow
+   * mobile connection is not a stalled request. Pass `timeout` explicitly to
+   * bound those.
+   */
+  timeout?: number
 }
+
+/**
+ * Default read deadline. Without one, a stalled response is bounded only by
+ * whatever the host runtime imposes (in Node, undici's Agent), which is
+ * typically longer than the caller's own budget — a Next.js `'use cache'` fill,
+ * for instance, gives up at `staticPageGenerationTimeout * 0.9` and turns the
+ * stall into a hard error instead of a fetch rejection the caller can degrade
+ * on. Generous enough that only a genuinely stuck read hits it.
+ */
+export const DEFAULT_REQUEST_TIMEOUT_MS = 30_000
 
 /**
  * Host-supplied configuration for {@link XOXNOClient}.
@@ -101,14 +122,16 @@ export class XOXNOClient {
     }: RequestInit & {
       debug?: boolean
       params?: Record<string, any>
+      timeout?: number
     } = {}
   ): Promise<T> => {
-    const { next, cache, debug, ...rest } = this.init as IInit
+    const { next, cache, debug, timeout, ...rest } = this.init as IInit
 
     const {
       next: overwriteNext,
       cache: overwriteCache,
       debug: overwriteDebug,
+      timeout: overwriteTimeout,
       headers,
       method = 'GET',
       ...overwriteRest
@@ -169,11 +192,29 @@ export class XOXNOClient {
         ? (overwriteCache ?? cache)
         : undefined
 
+    // A body's duration is uplink-bound, so it is only deadlined when the caller
+    // asks for it; a read is not.
+    const body = (overwriteRest as RequestInit).body
+    const effectiveTimeout =
+      overwriteTimeout ??
+      timeout ??
+      (body == null ? DEFAULT_REQUEST_TIMEOUT_MS : 0)
+
+    const deadline =
+      effectiveTimeout > 0 ? AbortSignal.timeout(effectiveTimeout) : undefined
+    const callerSignal =
+      (overwriteRest as RequestInit).signal ?? (rest as RequestInit).signal
+    const signal =
+      deadline && callerSignal
+        ? AbortSignal.any([callerSignal, deadline])
+        : (deadline ?? callerSignal)
+
     const init = {
       ...rest,
       ...overwriteRest,
       method,
       ...(Object.keys(allHeaders).length ? { headers: allHeaders } : {}),
+      ...(signal ? { signal } : {}),
       cache: finalCache,
       next: {
         ...other,
