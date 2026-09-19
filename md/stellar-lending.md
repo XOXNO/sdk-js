@@ -125,6 +125,46 @@ The leaderboard's `healthFactor` is debt divided by liquidation-weighted
 collateral, times 100; higher is riskier. Do not apply the opposite convention
 from other protocols. Use exact risk data and simulation for transaction decisions.
 
+## Position math
+
+`computeAccountRisk` and the helpers under `src/sdk/stellar/math/` reproduce the
+controller's valuation in native `BigInt` on the raw string fields, so an
+integrator renders the same health factor, borrow limit and per-action maximums
+the contract enforces. Each function's TypeDoc names the `rs-lending-xlm` source
+it mirrors (`common/src/rates/{scaling,curve,value}.rs`,
+`contracts/controller/src/risk/{totals,validation}.rs`, `docs/reference/formulas.md`).
+
+```ts
+import { computeAccountRisk, maxBorrow, maxWithdraw, projectAccountRisk } from '@xoxno/sdk-js/stellar-lending'
+
+const read = stellarLendingRead(client)
+const [context, liveState, { positions }] = await Promise.all([
+  read.context(), read.liveState(), read.accountPositions(accountId),
+])
+const risk = computeAccountRisk({ positions, reserves: context.reserveDetailsByKey, liveState })
+risk.healthFactorWad      // contract convention, null when debt-free
+risk.healthPercent        // UI convention: debt / threshold-weighted collateral × 100
+risk.availableBorrowUsd   // ltv-weighted collateral − debt, 0 below the min-collateral floor
+const usdc = context.reserveDetailsByKey[`${risk.spokeId}:1:${USDC}`]
+maxBorrow(risk, usdc, liveState)   // { amountBase, amountShort, reason, projectedUtilization }
+maxWithdraw(risk, xlm)             // isFullClose → sign "0" (withdraw-all sentinel)
+projectAccountRisk(risk, [{ side: 'borrow', hubId: 1, asset: USDC, amountBase: 100_000_000n }])
+```
+
+| Helper | Mirrors | Notes |
+| --- | --- | --- |
+| `unscaleSupplyFloor`, `unscaleBorrowCeil`, `unscaleHalfUp` | `scaling.rs` | Shares → base units with the pool's rounding (floor pays, ceil charges, half-up displays). |
+| `utilizationRay`, `annualBorrowRateRay`, `depositRateRay`, `rayAprToApy` | `curve.rs` | Annual RAY in and out; `rayAprToApy` is `e^apr − 1`. |
+| `computeAccountRisk` | `calculate_account_risk_totals` | Uses each position's `entry*Bps`; live index and price when the live-state row passes the divergence guard (`liveDataValid`), else the position's applied index and `reserve.usdPrice`. Min-collateral floor from `liveState.minBorrowCollateralUsdWad`, default 5 USD. |
+| `maxBorrow`, `maxWithdraw`, `maxSupply`, `maxRepay` | `require_post_pool_risk_gates`, spoke caps, `pool/guards.rs` | Base-unit maximum plus the binding `reason` (`ltv`, `healthFactor`, `minCollateral`, `cap`, `liquidity`, `utilizationCap`, `paused`, `frozen`). The risk-gate candidates search the contract's own predicate (shares minted / burned with the pool's rounding, merged into the existing leg, revalued), so the answer is the last amount the contract admits — one base unit below the naive `headroom / price` when the index is not `RAY`. Cap, cash and utilization candidates derive from the API's `*Short` numbers; `availableLiquidityShort` is assumed to be hub-pool cash. |
+| `mintShares`, `burnShares`, `projectAccountRisk`, `projectReserveApy` | `scaling.rs`, `formulas.md` rounding table, same aggregation and curve | What-if risk after signed base-unit deltas, applied in shares (supply mint floor / withdraw burn ceil, debt mint ceil / repay burn floor; a withdraw ≥ the half-up balance or a repay ≥ the ceil debt closes the leg); hub rates after pool flows, with both `*Apr` and `*Apy`. |
+
+Where the xoxno-ui mirror and the contract disagree, the SDK follows the
+contract: `unscaleBorrowCeil` ceils the share product (the UI rounds it half-up
+first, undershooting by one base unit in edge cases), and a `maxUtilizationRay`
+of `0` blocks borrows rather than disabling the guard. Liquidation sizing is not
+covered yet; use the controller's `get_liquidation_estimate` view.
+
 ## Build, prepare, sign and confirm
 
 ```ts
