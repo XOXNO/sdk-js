@@ -19,8 +19,13 @@ import {
   TransactionBuilder,
 } from '@stellar/stellar-sdk'
 
-import { STELLAR_NETWORK_PASSPHRASE } from './contracts'
+import { STELLAR_NETWORK_PASSPHRASE, type StellarNetwork } from './contracts'
 import type { BuiltStellarTx, StellarBuilderOptions } from './lending'
+import {
+  StellarRouteVerificationError,
+  stellarTokenContractId,
+  verifyStellarRouteBytes,
+} from './route-verify'
 import {
   addr,
   asStellarStrategySwapBytes,
@@ -33,8 +38,24 @@ import {
   type StellarSwapVenue,
 } from './scval-encode'
 
-type QuoteWithRouteXdr = StellarAggregatorQuoteResponseDto & {
-  routeXdr?: string
+/**
+ * The caller's own request, used to check a quote before it is signed. Every
+ * field that is absent falls back to the quote's JSON, which proves only that
+ * the response agrees with itself — pass request state whenever it is known.
+ */
+export interface StellarQuoteExpectation {
+  tokenIn?: string
+  tokenOut?: string
+  /** Lowest acceptable minimum output, base units. */
+  minOut?: string | bigint
+  amountIn?: string | bigint
+}
+
+export interface StellarQuoteMapOptions {
+  referralId?: number | string
+  /** Needed only when a token id is `XLM` or `CODE:GISSUER` instead of `C…`. */
+  network?: StellarNetwork
+  expected?: StellarQuoteExpectation
 }
 
 export type StellarStrategyPayload = StellarStrategyPayloadInput
@@ -138,7 +159,7 @@ export function buildStellarBatchSwapTx(
  */
 export function mapQuoteResponseToStrategyPayload(
   quote: StellarAggregatorQuoteResponseDto,
-  opts: { referralId?: number | string } = {}
+  opts: Pick<StellarQuoteMapOptions, 'referralId'> = {}
 ): StellarStrategyPayloadInput {
   if (typeof quote.amountOutMin !== 'string') {
     throw new Error(
@@ -170,16 +191,57 @@ export function mapQuoteResponseToStrategyPayload(
 /**
  * Return the executable quote route when the API provided it; otherwise build
  * the decoded fallback payload from hop/path fields.
+ *
+ * Either form is decoded and checked before it is returned: it must spend and
+ * deliver the expected pair and enforce a minimum that is not below the
+ * quote's `amountOutMin` (what a UI displays) nor below `expected.minOut`.
+ * @throws StellarRouteVerificationError — never sign a quote that throws here.
  */
 export function mapQuoteResponseToStrategySwap(
   quote: StellarAggregatorQuoteResponseDto,
-  opts: { referralId?: number | string } = {}
+  opts: StellarQuoteMapOptions = {}
 ): StellarStrategySwapInput {
-  const quoteWithRoute = quote as QuoteWithRouteXdr
-  if (typeof quoteWithRoute.routeXdr === 'string' && quoteWithRoute.routeXdr.length > 0) {
-    return { routeXdr: quoteWithRoute.routeXdr }
+  const expected = opts.expected ?? {}
+  // Built locally from the JSON when the server sent no route, so the encoded
+  // minimum IS `amountOutMin`; the same check then covers both forms.
+  const swap: StellarStrategySwapInput =
+    typeof quote.routeXdr === 'string' && quote.routeXdr.length > 0
+      ? { routeXdr: quote.routeXdr }
+      : mapQuoteResponseToStrategyPayload(quote, opts)
+
+  // The route is an opaque blob beside the JSON display fields. The router
+  // enforces only the minimum inside the blob, so it must not be below what
+  // the JSON (and therefore the UI) shows, nor below the caller's own floor.
+  const floors = [quote.amountOutMin, expected.minOut]
+    .filter((v): v is string | bigint => v !== undefined)
+    .map((v) => {
+      if (typeof v === 'bigint') return v
+      if (typeof v !== 'string' || !/^\d+$/.test(v)) {
+        throw new StellarRouteVerificationError(
+          'MALFORMED',
+          'minimum output must be a base-unit integer string'
+        )
+      }
+      return BigInt(v)
+    })
+  const minOut = floors.reduce<bigint | undefined>(
+    (max, v) => (max === undefined || v > max ? v : max),
+    undefined
+  )
+  if (minOut === undefined) {
+    throw new StellarRouteVerificationError(
+      'EXPECTATION_MISSING',
+      'quote has no `amountOutMin`; pass `slippage` when fetching it or `expected.minOut`'
+    )
   }
-  return mapQuoteResponseToStrategyPayload(quote, opts)
+  // The caller's pair is authoritative; the JSON pair only labels the response.
+  verifyStellarRouteBytes(swap, {
+    tokenIn: stellarTokenContractId(expected.tokenIn ?? quote.from, opts.network),
+    tokenOut: stellarTokenContractId(expected.tokenOut ?? quote.to, opts.network),
+    minOut,
+    amountIn: expected.amountIn ?? quote.amountIn,
+  })
+  return swap
 }
 
 /** @deprecated Use `mapQuoteResponseToStrategyPayload`. */

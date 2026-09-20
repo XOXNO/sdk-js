@@ -41,18 +41,18 @@ export const STELLAR_PROGRAM_VERSION = 1
 /** Split weights are parts per million. */
 export const PPM_DENOMINATOR = 1_000_000
 
-const OP_BURN = 5
-const OP_MINT = 6
+export const OP_BURN = 5
+export const OP_MINT = 6
 
-const MODE_ALL = 0
-const MODE_PREV = 1
-const MODE_FIXED_BASE = 2
-const MODE_PPM_BASE = 128
+export const MODE_ALL = 0
+export const MODE_PREV = 1
+export const MODE_FIXED_BASE = 2
+export const MODE_PPM_BASE = 128
 
-const MAX_OPS = 48
-const MAX_WEIGHTS = 32
-const MAX_ASSETS = 256
-const MAX_AMOUNTS = MODE_PPM_BASE - MODE_FIXED_BASE
+export const MAX_OPS = 48
+export const MAX_WEIGHTS = 32
+export const MAX_ASSETS = 256
+export const MAX_AMOUNTS = MODE_PPM_BASE - MODE_FIXED_BASE
 
 export interface StellarStrategySwapHopInput {
   /** Quote-side estimate; not carried on the wire. */

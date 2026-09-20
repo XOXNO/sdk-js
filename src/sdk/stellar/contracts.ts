@@ -22,6 +22,8 @@ export interface StellarDeployment {
   readonly aquariusApiUrl: string
   readonly aquariusRouter: string
   readonly lendingController: string
+  /** The controller's single liquidity pool: the recipient of supply, repay and liquidation transfers. */
+  readonly lendingPool: string
   readonly aggregatorRouter: string
   readonly governance: string
   readonly priceAggregator: string
@@ -45,6 +47,7 @@ export const STELLAR_NETWORKS = {
     aquariusRouter: 'CBQDHNBFBZYE4MKPWBSJOPIYLW4SFSXAXUTSXJN76GNKYVYPCKWC6QUK',
     lendingController:
       'CAUCMIN5KSXEVZ7NMXR3LZATGD5EFIEUI5XWTFLYRO2R5OTXI22WE5JX',
+    lendingPool: 'CBXRNDQMAJFG4VUKMKFEMFS75UUXE2SPSNV4LEEFCSNBCN66PYRWBKXO',
     aggregatorRouter:
       'CCVENFSVCBYDHVOACFZXMNNYVOZ3LKXPZYU5LUI4N7KTXOKRVYD7F3TR',
     governance: 'CC44PEQW7HSEPKAZ5ZRPH2JS5M5KVJXCUBLJ2ZX4E3WCDKMNFILHC2AD',
@@ -63,6 +66,7 @@ export const STELLAR_NETWORKS = {
     aquariusRouter: 'CBCFTQSPDBAIZ6R6PJQKSQWKNKWH2QIV3I4J72SHWBIK3ADRRAM5A6GD',
     lendingController:
       'CCXRWJ6SIU2WPFEGLFGJVITPL57QAYIMIO6OAM2NBGNDQSSCK2FFV3F3',
+    lendingPool: 'CBSGF6QOQAMPFBEVSYPEQHSZRIHJ6RCGUPCRDMUX36DEKRWFAO2PZB5A',
     aggregatorRouter:
       'CDNTWMWW2WGYTKIZTJYNGNVQQZI4KTC5BQRZ3275KESRX5T4O3AYECL5',
     governance: 'CDS33JDOYH3F3FL4QUQ6DV4WKHML2AKHF4LADTZ57FRUAEBTE7NMY5FQ',

@@ -6,6 +6,7 @@ import type { StellarBuilderOptions } from '../lending'
 import {
   buildStellarBatchSwapTx,
   buildStellarExecuteStrategyTx,
+  encodeStrategyPayloadToRouteXdr,
   mapQuoteResponseToStrategyPayload,
   mapQuoteResponseToStrategySwap,
 } from '../swap'
@@ -125,13 +126,25 @@ describe('Stellar aggregator direct swap builder', () => {
     expect(parseInvocation(built.xdr).functionName).toBe('execute_strategy')
   })
 
-  it('prefers quote routeXdr when present', () => {
+  it('prefers quote routeXdr when present and it matches the quote', () => {
+    const routeXdr = encodeStrategyPayloadToRouteXdr(
+      mapQuoteResponseToStrategyPayload(quoteWithoutRouteXdr)
+    )
     const routed = mapQuoteResponseToStrategySwap({
       ...quoteWithoutRouteXdr,
-      routeXdr: FIXTURE_ROUTE_XDR,
-    } as StellarAggregatorQuoteResponseDto & { routeXdr: string })
+      routeXdr,
+    } as StellarAggregatorQuoteResponseDto)
 
-    expect(routed).toEqual({ routeXdr: FIXTURE_ROUTE_XDR })
+    expect(routed).toEqual({ routeXdr })
+  })
+
+  it('refuses a quote routeXdr that does not decode', () => {
+    expect(() =>
+      mapQuoteResponseToStrategySwap({
+        ...quoteWithoutRouteXdr,
+        routeXdr: FIXTURE_ROUTE_XDR,
+      } as StellarAggregatorQuoteResponseDto)
+    ).toThrow(/MALFORMED/)
   })
 
   it('maps quote hops into a decoded StrategyPayload fallback', () => {
