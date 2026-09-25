@@ -1,6 +1,14 @@
 import { mapSorobanError } from '../soroban-errors'
 
 describe('mapSorobanError', () => {
+  it('maps the zero-amount rejection returned by lending transaction preparation', () => {
+    expect(mapSorobanError('simulation failed: HostError: Error(Contract, #14)')).toEqual({
+      code: 14,
+      name: 'AmountMustBePositive',
+      message: 'The amount must be greater than zero.',
+    })
+  })
+
   it('maps a known SpokeError contract error', () => {
     const raw = 'HostError: Error(Contract, #309)'
     expect(mapSorobanError(raw)).toEqual({

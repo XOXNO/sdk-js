@@ -12,6 +12,7 @@ const SOROBAN_ERROR_CATALOG: Record<number, { name: string; message: string }> =
   10: { name: 'InvalidWasmHash', message: 'The WASM hash is empty or invalid.' },
   11: { name: 'InvalidExchangeSrc', message: 'The oracle configuration is invalid.' },
   12: { name: 'PairNotActive', message: 'No oracle is configured for this asset.' },
+  14: { name: 'AmountMustBePositive', message: 'The amount must be greater than zero.' },
   32: { name: 'OwnerNotSet', message: 'The contract owner has not been set.' },
   39: { name: 'InvalidTimelockDelay', message: 'The timelock delay is out of the allowed range.' },
   41: { name: 'InvalidRole', message: 'The caller does not hold the required role.' },
