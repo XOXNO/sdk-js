@@ -1,4 +1,4 @@
-import { TransactionBuilder } from '@stellar/stellar-sdk'
+import { TransactionBuilder, rpc } from '@stellar/stellar-sdk'
 import type { FeeBumpTransaction, Transaction } from '@stellar/stellar-sdk'
 
 import type { BuiltStellarTx } from './lending'
@@ -10,18 +10,23 @@ export interface StellarPrepareOptions {
   network?: StellarNetwork
   /** Contract used to qualify errors before mapping controller/pool error codes. */
   invokedContractId?: string
+  /**
+   * Extra CPU instructions requested from simulation (default 20,000,000).
+   * Covers the measured ~11.84M instruction increase across a ledger boundary
+   * for a ten-position accrual flow, with headroom.
+   * Must be an integer from 0 to 4294967295. Increase for measured execution
+   * variance; this margin does not guarantee coverage of later state changes
+   * or maximum-position flows. The resulting resources must fit network limits.
+   */
+  instructionLeeway?: number
 }
 
-/**
- * The single `rpc.Server` capability the prepare helpers need. Declared
- * structurally instead of `Pick<rpc.Server, 'prepareTransaction'>` so the
- * published `.d.ts` references stellar-sdk's concrete `Transaction` exports
- * rather than its `rpc` namespace — the namespaced form trips
- * `dts-bundle-generator`'s external-type resolution under stellar-sdk v16. A
- * real `rpc.Server` satisfies this structurally, so call sites are unchanged.
- */
+/** The simulation capability the prepare helpers need from `rpc.Server`. */
 export interface StellarTxPreparer {
-  prepareTransaction(tx: Transaction | FeeBumpTransaction): Promise<Transaction>
+  simulateTransaction(
+    tx: Transaction | FeeBumpTransaction,
+    resources?: { cpuInstructions?: number }
+  ): Promise<rpc.Api.SimulateTransactionResponse>
 }
 
 export function tagStellarInvokedContractError(
@@ -50,11 +55,17 @@ export async function prepareStellarTxXdr(
   xdr: string,
   opts?: StellarPrepareOptions
 ): Promise<string> {
+  const instructionLeeway = opts?.instructionLeeway ?? 20_000_000
+  if (!Number.isInteger(instructionLeeway) || instructionLeeway < 0 || instructionLeeway > 0xffffffff) {
+    throw new Error('instructionLeeway must be an integer from 0 to 4294967295')
+  }
   const tx = TransactionBuilder.fromXDR(xdr, opts?.network
     ? STELLAR_NETWORK_PASSPHRASE[opts.network]
     : '')
   try {
-    return (await server.prepareTransaction(tx)).toXDR()
+    const simulation = await server.simulateTransaction(tx, { cpuInstructions: instructionLeeway })
+    if (rpc.Api.isSimulationError(simulation)) throw new Error(simulation.error)
+    return rpc.assembleTransaction(tx, simulation).build().toXDR()
   } catch (error) {
     if (opts?.invokedContractId) {
       throw tagStellarInvokedContractError(opts.invokedContractId, error)

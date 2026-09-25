@@ -7,7 +7,7 @@ import { stellarSchemaTypes } from '../../stellar-schema'
 import { stellarLendingRead } from '../lending-read'
 import { getStellarAggregatorQuote } from '../quote'
 import { buildStellarSupplyTx } from '../lending'
-import { prepareStellarBuiltTx } from '../prepare'
+import { prepareStellarBuiltTx, prepareStellarTxXdr } from '../prepare'
 
 const originalFetch = globalThis.fetch
 afterEach(() => { globalThis.fetch = originalFetch })
@@ -115,20 +115,44 @@ it('prepares unsigned builder XDR with the selected signing domain and preserves
     sourceSequence: '123',
   }
   const built = buildStellarSupplyTx(opts, { spokeId: 1, hubId: 1, asset: opts.controllerAddress, amount: '100' })
-  const prepared = await prepareStellarBuiltTx({
-    prepareTransaction: async tx => {
-      expect(tx.networkPassphrase).toBe(Networks.TESTNET)
-      const simulation: rpc.Api.SimulateTransactionSuccessResponse = {
-        _parsed: true, id: 'offline', latestLedger: 1, events: [], minResourceFee: '1000',
-        transactionData: new SorobanDataBuilder().setResourceFee('1000'), result: { auth: [], retval: xdr.ScVal.scvVoid() },
-      }
-      return rpc.assembleTransaction(tx, simulation).build()
-    },
-  }, built, { network: opts.network })
+  globalThis.fetch = jest.fn(async (_input: string | URL | Request, init?: RequestInit) => {
+    const request = JSON.parse(String(init?.body))
+    expect(request.method).toBe('simulateTransaction')
+    expect(request.params.transaction).toBe(built.xdr)
+    expect(request.params.resourceConfig).toEqual({ instructionLeeway: 20_000_000 })
+    return new Response(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: {
+      latestLedger: 1, events: [], minResourceFee: '1000',
+      transactionData: new SorobanDataBuilder().setResources(24_343_254, 116, 1080).setResourceFee('1000').build().toXDR('base64'),
+      results: [{ auth: [], xdr: xdr.ScVal.scvVoid().toXDR('base64') }],
+    } }), { status: 200 })
+  }) as typeof fetch
+  const prepared = await prepareStellarBuiltTx(new rpc.Server('https://example.invalid'), built, { network: opts.network })
   const tx = TransactionBuilder.fromXDR(prepared, Networks.TESTNET)
   expect(tx.signatures).toHaveLength(0)
   expect(tx.fee).toBe('1100')
+  expect(tx.toEnvelope().v1().tx().ext().sorobanData().resources().instructions()).toBe(24_343_254)
   expect(tx.toEnvelope().v1().tx().operations()).toEqual(TransactionBuilder.fromXDR(built.xdr, Networks.TESTNET).toEnvelope().v1().tx().operations())
+})
+
+it.each([0, 5_000_000, 0xffffffff])('forwards instruction leeway %i and retains contract error context', async instructionLeeway => {
+  const built = buildStellarSupplyTx({
+    network: 'testnet', caller: 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR',
+    controllerAddress: 'CABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAFNSZ', sourceSequence: '123',
+  }, { spokeId: 1, hubId: 1, asset: 'CABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAFNSZ', amount: '100' })
+  const simulateTransaction = jest.fn(async () => ({
+    _parsed: true as const, id: 'offline', latestLedger: 1, events: [], error: 'Error(Contract, #1)',
+  }))
+  await expect(prepareStellarTxXdr({ simulateTransaction }, built.xdr, {
+    network: 'testnet', invokedContractId: 'controller', instructionLeeway,
+  })).rejects.toThrow('[xoxno-invoked:controller] Error(Contract, #1)')
+  expect(simulateTransaction).toHaveBeenCalledWith(expect.anything(), { cpuInstructions: instructionLeeway })
+})
+
+it.each([-1, 1.5, NaN, Infinity, 0x100000000])('rejects invalid instruction leeway %s before RPC', async instructionLeeway => {
+  const simulateTransaction = jest.fn<rpc.Server['simulateTransaction']>()
+  await expect(prepareStellarTxXdr({ simulateTransaction }, '', { instructionLeeway }))
+    .rejects.toThrow('instructionLeeway must be an integer from 0 to 4294967295')
+  expect(simulateTransaction).not.toHaveBeenCalled()
 })
 
 it('renders nested, nullable and enum OpenAPI contracts and fails on dangling references', () => {
