@@ -193,6 +193,16 @@ the original envelope. Sign the **prepared** result. Default timeout is 300 seco
 Fetch a fresh sequence immediately before building; serialize submissions from
 the same wallet. Rebuild and prepare after expiry or a sequence change.
 
+Preparation requests 20,000,000 extra CPU instructions through the RPC simulation
+and uses its returned resource fee. This covers the measured ~11.84M instruction
+increase across a ledger boundary for a ten-position accrual flow, with headroom.
+Set `instructionLeeway` in the prepare options
+to an integer from 0 to 4294967295 when measured execution variance needs a different
+margin. This default does not guarantee coverage of maximum-position flows or
+later state changes; the resulting resource declaration must fit network limits.
+Custom `StellarTxPreparer` adapters must expose `simulateTransaction(tx, resources)`;
+passing a Stellar `rpc.Server` continues to work unchanged.
+
 `PENDING` and `DUPLICATE` are not execution success. Persist the transaction hash,
 poll with a bounded timeout, and refresh the portfolio after `SUCCESS`. If a
 network call fails or confirmation times out, check that hash before building a
