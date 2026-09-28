@@ -12,7 +12,7 @@ import {
   buildStellarGovernanceSetSpokeAssetFlagsImmediateTx,
   buildStellarProposeCancellerResetTx,
   buildStellarProposeDeployPoolTx,
-  buildStellarProposeSetAggregatorTx,
+  buildStellarProposeSetSwapAggregatorTx,
   buildStellarProposeUpdateDelayTx,
   buildStellarProposeAddAssetToSpokeTx,
   buildStellarProposeAddSpokeTx,
@@ -149,7 +149,7 @@ describe('Stellar lending governance builders', () => {
       // Built inside `it` so the outer `beforeAll` fake timers are active and
       // the tx timebounds (hence the snapshot) are deterministic.
       const build = () =>
-        buildStellarProposeSetAggregatorTx(
+        buildStellarProposeSetSwapAggregatorTx(
           BASE_OPTS,
           { aggregator: FIXTURE_USDC },
           FIXTURE_SALT
@@ -397,7 +397,7 @@ describe('Stellar lending governance builders', () => {
     it('SetSwapAggregator(addr)', () => {
       expect(
         opXdr(
-          buildStellarProposeSetAggregatorTx(
+          buildStellarProposeSetSwapAggregatorTx(
             BASE_OPTS,
             { aggregator: PARITY_ADDR },
             FIXTURE_SALT

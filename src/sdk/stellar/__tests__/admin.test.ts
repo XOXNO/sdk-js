@@ -29,7 +29,7 @@ import {
   buildStellarRevokeRoleTx,
   buildStellarRevokeBlendPoolTx,
   buildStellarSetAccumulatorTx,
-  buildStellarSetAggregatorTx,
+  buildStellarSetSwapAggregatorTx,
   buildStellarSetPositionLimitsTx,
   buildStellarTransferOwnershipTx,
   buildStellarUnpauseTx,
@@ -37,7 +37,7 @@ import {
   buildStellarUpdateIndexesTx,
   buildStellarUpgradeControllerTx,
   buildStellarUpgradeLiquidityPoolParamsTx,
-  type ConfigureMarketOracleArgs,
+  type ConfigureAssetOracleArgs,
   type CreateLiquidityPoolArgs,
 } from '../admin'
 import type { StellarLendingBuilderOptions } from '../lending'
@@ -142,7 +142,7 @@ const configureOracleArgs = {
     minSanityPriceWad: '900000000000000000',
     maxSanityPriceWad: '1100000000000000000',
   },
-} as unknown as ConfigureMarketOracleArgs
+} as unknown as ConfigureAssetOracleArgs
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -240,7 +240,7 @@ const cases: Case[] = [
     name: 'set_swap_aggregator',
     expectedFn: 'set_swap_aggregator',
     expectedArgCount: 1,
-    build: () => buildStellarSetAggregatorTx(BASE_OPTS, { aggregator: FIXTURE_XLM }),
+    build: () => buildStellarSetSwapAggregatorTx(BASE_OPTS, { aggregator: FIXTURE_XLM }),
   },
   {
     name: 'set_accumulator',
@@ -470,7 +470,7 @@ describe('complex struct encoding', () => {
           },
         ],
       },
-    } as unknown as ConfigureMarketOracleArgs
+    } as unknown as ConfigureAssetOracleArgs
     const parsed = parseInvoked(buildStellarSetOracleTx(BASE_OPTS, args).xdr)
     const cfg = parsed.args[1]!
     const sources = cfg
@@ -523,7 +523,7 @@ describe('complex struct encoding', () => {
         ...configureOracleArgs.oracle,
         sources: [configureOracleArgs.oracle.sources[0]],
       },
-    } as unknown as ConfigureMarketOracleArgs
+    } as unknown as ConfigureAssetOracleArgs
     const parsed = parseInvoked(buildStellarSetOracleTx(BASE_OPTS, single).xdr)
     const cfg = parsed.args[1]!
     const sources = cfg

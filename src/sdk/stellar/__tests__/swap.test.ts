@@ -4,7 +4,6 @@ import { Networks, Transaction, xdr as stellarXdr } from '@stellar/stellar-sdk'
 
 import type { StellarBuilderOptions } from '../lending'
 import {
-  buildStellarBatchSwapTx,
   buildStellarExecuteStrategyTx,
   encodeStrategyPayloadToRouteXdr,
   mapQuoteResponseToStrategyPayload,
@@ -111,19 +110,6 @@ describe('Stellar aggregator direct swap builder', () => {
     expect(parsed.functionName).toBe('execute_strategy')
     expect(parsed.args).toHaveLength(3)
     expect(parsed.args[2].switch().name).toBe('scvBytes')
-  })
-
-  it('keeps buildStellarBatchSwapTx as an execute_strategy compatibility wrapper', () => {
-    const built = buildStellarBatchSwapTx(
-      {
-        ...BASE_OPTS,
-        routerAddress: FIXTURE_ROUTER,
-        totalIn: '1000000',
-      },
-      FIXTURE_ROUTE_XDR
-    )
-
-    expect(parseInvocation(built.xdr).functionName).toBe('execute_strategy')
   })
 
   it('prefers quote routeXdr when present and it matches the quote', () => {

@@ -355,10 +355,6 @@ export function buildStellarProposeSetPriceAggregatorTx(
   )
 }
 
-/** @deprecated Use buildStellarProposeSetSwapAggregatorTx. */
-export const buildStellarProposeSetAggregatorTx =
-  buildStellarProposeSetSwapAggregatorTx
-
 /** propose(SetAccumulator(addr)) */
 export function buildStellarProposeSetAccumulatorTx(
   opts: StellarGovernanceBuilderOptions,
@@ -627,10 +623,6 @@ export function buildStellarProposeConfigureAssetOracleTx(
     salt
   )
 }
-
-/** @deprecated Use buildStellarProposeConfigureAssetOracleTx. */
-export const buildStellarProposeConfigureMarketOracleTx =
-  buildStellarProposeConfigureAssetOracleTx
 
 /** propose(EditOracleTolerance(EditToleranceArgs)) */
 export function buildStellarProposeEditOracleToleranceTx(

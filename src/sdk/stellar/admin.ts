@@ -272,9 +272,6 @@ export const encodeAssetOracle = (
   })
 }
 
-/** @deprecated Use {@link encodeAssetOracle}. */
-export const encodeMarketOracleConfigInput = encodeAssetOracle
-
 // -----------------------------------------------------------------------------
 // Builder argument shapes (SDK-local — the on-chain structs live in @xoxno/types)
 // -----------------------------------------------------------------------------
@@ -289,9 +286,6 @@ export interface TransferOwnershipArgs {
 }
 /** Governance / aggregator `ConfigureAssetOracle` args. */
 export type ConfigureAssetOracleArgs = ConfigureAssetOracleArgsDto
-
-/** @deprecated Alias — use ConfigureAssetOracleArgs. */
-export type ConfigureMarketOracleArgs = ConfigureAssetOracleArgs
 
 /** Edit dual-source tolerance (PriceKey + bps). */
 export type EditOracleToleranceArgs = EditOracleToleranceArgsDto
@@ -401,9 +395,6 @@ export function buildStellarSetPriceAggregatorTx(
   return buildTx(opts, 'set_price_aggregator', [addr(args.aggregator)])
 }
 
-/** @deprecated Use buildStellarSetSwapAggregatorTx. */
-export const buildStellarSetAggregatorTx = buildStellarSetSwapAggregatorTx
-
 /** set_accumulator(addr: Address) — #[only_owner] */
 export function buildStellarSetAccumulatorTx(
   opts: StellarLendingBuilderOptions,
@@ -436,11 +427,6 @@ export function buildStellarRevokeBlendPoolTx(
   return buildTx(opts, 'revoke_blend_pool', [addr(args.pool)])
 }
 
-/** @deprecated Use buildStellarApproveBlendPoolTx. */
-export const buildStellarApproveTokenTx = buildStellarApproveBlendPoolTx
-/** @deprecated Use buildStellarRevokeBlendPoolTx. */
-export const buildStellarRevokeTokenTx = buildStellarRevokeBlendPoolTx
-
 /**
  * Direct price-aggregator `set_oracle(key, oracle)` — owner only (governance
  * contract address as tx source after deploy). Prefer governance propose path
@@ -455,9 +441,6 @@ export function buildStellarSetOracleTx(
     encodeAssetOracle(args.oracle),
   ])
 }
-
-/** @deprecated Use buildStellarSetOracleTx. */
-export const buildStellarSetMarketOracleConfigTx = buildStellarSetOracleTx
 
 /** price-aggregator `set_tolerance(key, OracleTolerance)` — owner only. */
 export function buildStellarSetOracleToleranceTx(

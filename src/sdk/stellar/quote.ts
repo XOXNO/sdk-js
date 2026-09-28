@@ -37,14 +37,6 @@ export interface StellarQuoteToken {
   pool?: string | null
   /** LP only: constituent token ids in pool order. */
   assets?: string[] | null
-  /** @deprecated Not returned by the service; always `undefined`. */
-  kind?: never
-  /** @deprecated Not returned by the service; always `undefined`. */
-  sacPeer?: never
-  /** @deprecated Not returned by the service; always `undefined`. */
-  code?: never
-  /** @deprecated Not returned by the service; always `undefined`. */
-  degree?: never
 }
 
 /** Liquidity snapshot the route was searched against. */

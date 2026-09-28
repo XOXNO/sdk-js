@@ -82,10 +82,6 @@ export interface StellarExecuteStrategyBuilderOptions
   referralId?: number | string
 }
 
-/** @deprecated Use `StellarExecuteStrategyBuilderOptions`. */
-export interface StellarBatchSwapBuilderOptions
-  extends StellarExecuteStrategyBuilderOptions {}
-
 const hasPayloadPaths = (
   swap: StellarStrategySwapInput
 ): swap is StellarStrategyPayloadInput =>
@@ -140,17 +136,6 @@ export function buildStellarExecuteStrategyTx(
     .build()
 
   return { xdr: tx.toXDR() }
-}
-
-/**
- * @deprecated The router no longer exposes `batch_execute`; this wrapper now
- * builds `execute_strategy(sender, total_in, swap_xdr)`.
- */
-export function buildStellarBatchSwapTx(
-  opts: StellarBatchSwapBuilderOptions,
-  swap: StellarStrategySwapInput
-): BuiltStellarTx {
-  return buildStellarExecuteStrategyTx(opts, swap)
 }
 
 /**
@@ -243,9 +228,6 @@ export function mapQuoteResponseToStrategySwap(
   })
   return swap
 }
-
-/** @deprecated Use `mapQuoteResponseToStrategyPayload`. */
-export const mapQuoteResponseToAggregatorSwap = mapQuoteResponseToStrategyPayload
 
 const mapHop = (hop: {
   amountOut: string

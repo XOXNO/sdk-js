@@ -492,9 +492,6 @@ export const encodeStrategyPayload = (
   })
 }
 
-/** @deprecated Use `encodeStrategyPayload`. */
-export const encodeAggregatorSwap = encodeStrategyPayload
-
 export const encodeStrategyPayloadToBytes = (
   payload: StellarStrategyPayloadInput
 ): xdr.ScVal =>
@@ -677,9 +674,6 @@ export const asStellarStrategySwapBytes = (steps: unknown): xdr.ScVal => {
     'Stellar builder: `steps` must be opaque strategy bytes (`routeXdr`, base64/hex string, or Uint8Array)'
   )
 }
-
-/** @deprecated Use `asStellarStrategyPayload` or `asStellarStrategySwapBytes`. */
-export const asStellarSwapSteps = asStellarStrategyPayload
 
 /**
  * Validate the untyped `data` field on FlashLoanArgs and narrow it to
