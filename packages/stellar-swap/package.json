@@ -1,0 +1,16 @@
+{
+  "name": "@xoxno/stellar-swap",
+  "version": "0.1.0",
+  "description": "Pure Stellar swap activity decoding for XOXNO and LI.FI",
+  "type": "module",
+  "main": "./dist/swap-index.cjs",
+  "module": "./dist/swap-index.esm.js",
+  "types": "./dist/swap-index.d.ts",
+  "exports": { ".": { "import": { "types": "./dist/swap-index.d.ts", "default": "./dist/swap-index.esm.js" }, "require": { "types": "./dist/cjs/swap-index.d.ts", "default": "./dist/swap-index.cjs" } } },
+  "files": ["dist"],
+  "sideEffects": false,
+  "license": "ISC",
+  "repository": { "type": "git", "url": "https://github.com/XOXNO/sdk-js.git", "directory": "packages/stellar-swap" },
+  "peerDependencies": { "@stellar/stellar-sdk": "^16.3.0 || ^17.0.1" },
+  "publishConfig": { "access": "public" }
+}

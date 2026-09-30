@@ -15,7 +15,7 @@ if (!sdkPaths.length) {
 const check = `
 const assert = require('node:assert/strict')
 const s = require('@stellar/stellar-sdk')
-const { decodeStellarSwapEnvelope } = require('@xoxno/sdk-js/stellar-swap')
+const { decodeStellarSwapEnvelope, decodeSwapEnvelope, getSwapRouter } = require('@xoxno/stellar-swap')
 const { assertStellarAuthEntries } = require('@xoxno/sdk-js/stellar-lending')
 const contract = n => s.StrKey.encodeContract(Buffer.alloc(32,n))
 const viewer = s.StrKey.encodeEd25519PublicKey(Buffer.alloc(32,1))
@@ -33,6 +33,27 @@ const tx = new s.TransactionBuilder(new s.Account(viewer,'1'),{fee:'100',network
 const opts = {networkPassphrase:s.Networks.PUBLIC,routerAddress:router,viewer}
 for(const envelope of [tx,s.TransactionBuilder.buildFeeBumpTransaction(viewer,'100',tx,s.Networks.PUBLIC)]) assert.deepEqual(decodeStellarSwapEnvelope({...opts,envelopeXdr:envelope.toXDR()}),{tokenIn,tokenOut,amountInAtoms:input,operationIndex:0})
 assert.equal(decodeStellarSwapEnvelope({...opts,envelopeXdr:'bad'}),null)
+const address = a => new s.Address(a).toScVal()
+const lifiOp = new s.Contract(getSwapRouter(s.Networks.PUBLIC,'lifi')).call('swap',s.xdr.ScVal.scvMap([
+ field('args',s.xdr.ScVal.scvVec([address(tokenIn),address(tokenOut),new s.ScInt(input).toI128(),new s.ScInt('1').toI128(),s.xdr.ScVal.scvVec([]),address(viewer),s.nativeToScVal(1,{type:'u64'})])),
+ field('fees',s.xdr.ScVal.scvVec([])), field('interface',s.xdr.ScVal.scvSymbol('soroswap_aggregator')),
+ field('min_amount_out',new s.ScInt('1').toI128()),field('token_in',address(tokenIn)),field('token_out',address(tokenOut)),field('tracking_id',s.xdr.ScVal.scvString('check'))
+]),address(viewer))
+const xoxnoOp = new s.Contract(getSwapRouter(s.Networks.PUBLIC,'xoxno')).call('execute_strategy',address(viewer),new s.ScInt(input).toI128(),s.xdr.ScVal.scvBytes(Buffer.from(route.toXDR('base64'),'base64')))
+const build = ops => ops.reduce((b,op)=>b.addOperation(op),new s.TransactionBuilder(new s.Account(viewer,'1'),{fee:'100',networkPassphrase:s.Networks.PUBLIC})).setTimeout(0).build()
+for (const op of [lifiOp,xoxnoOp]) {
+ const tx = build([op]); const expected = {tokenIn,tokenOut,amountInAtoms:input,operationIndex:0,provider:op===lifiOp?'lifi':'xoxno'}
+ for (const envelope of [tx,s.TransactionBuilder.buildFeeBumpTransaction(viewer,'100',tx,s.Networks.PUBLIC)]) assert.deepEqual(decodeSwapEnvelope({...opts,envelopeXdr:envelope.toXDR()}),expected)
+ assert.equal(decodeSwapEnvelope({...opts,viewer:contract(5),envelopeXdr:tx.toXDR()}),null)
+ assert.equal(decodeSwapEnvelope({...opts,operationIndex:1,envelopeXdr:tx.toXDR()}),null)
+}
+const mixed = build([lifiOp,xoxnoOp]).toXDR()
+assert.equal(decodeSwapEnvelope({...opts,envelopeXdr:mixed}),null)
+assert.equal(decodeSwapEnvelope({...opts,envelopeXdr:mixed,operationIndex:0}).provider,'lifi')
+assert.equal(decodeSwapEnvelope({...opts,envelopeXdr:mixed,operationIndex:1}).provider,'xoxno')
+assert.equal(decodeSwapEnvelope({...opts,envelopeXdr:'bad'}),null)
+assert.equal(decodeSwapEnvelope({...opts,networkPassphrase:'unknown',envelopeXdr:mixed}),null)
+
 assert.throws(()=>assertStellarAuthEntries([{credentials:{type:'sorobanCredentialsAddressV2'}}],{caller:viewer,root:{contract:router,fn:'execute_strategy'},transfers:[]}),e=>e.code==='MALFORMED_TRANSACTION')
 `
 
@@ -46,14 +67,18 @@ for (const sdkPath of sdkPaths) {
     mkdirSync(join(root, 'node_modules/@stellar'), { recursive: true })
     cpSync('dist', join(pkg, 'dist'), { recursive: true })
     cpSync('package.json', join(pkg, 'package.json'))
+    const lean = join(root, 'node_modules/@xoxno/stellar-swap')
+    mkdirSync(lean, {recursive:true})
+    cpSync('packages/stellar-swap/dist', join(lean, 'dist'), {recursive:true})
+    cpSync('packages/stellar-swap/package.json', join(lean, 'package.json'))
     symlinkSync(sdk, join(root, 'node_modules/@stellar/stellar-sdk'), 'dir')
     execFileSync(process.execPath, ['-e', check], { cwd: root, stdio: 'inherit' })
     const esm = check.replace("const assert = require('node:assert/strict')", "import assert from 'node:assert/strict'")
       .replace("const s = require('@stellar/stellar-sdk')", "import * as s from '@stellar/stellar-sdk'")
-      .replace("const { decodeStellarSwapEnvelope } = require('@xoxno/sdk-js/stellar-swap')", "import { decodeStellarSwapEnvelope } from '@xoxno/sdk-js/stellar-swap'")
+      .replace("const { decodeStellarSwapEnvelope, decodeSwapEnvelope, getSwapRouter } = require('@xoxno/stellar-swap')", "import { decodeStellarSwapEnvelope, decodeSwapEnvelope, getSwapRouter } from '@xoxno/stellar-swap'")
       .replace("const { assertStellarAuthEntries } = require('@xoxno/sdk-js/stellar-lending')", "import { assertStellarAuthEntries } from '@xoxno/sdk-js/stellar-lending'")
     execFileSync(process.execPath, ['--input-type=module', '-e', esm], { cwd: root, stdio: 'inherit' })
-    const types = `import { decodeStellarSwapEnvelope, type StellarSwapEnvelopeOptions } from '@xoxno/sdk-js/stellar-swap'
+    const types = `import { decodeStellarSwapEnvelope, type StellarSwapEnvelopeOptions } from '@xoxno/stellar-swap'
 const options: StellarSwapEnvelopeOptions = { envelopeXdr: '', networkPassphrase: '', routerAddress: '', viewer: '' }
 const decoded = decodeStellarSwapEnvelope(options)
 const atoms: string | undefined = decoded?.amountInAtoms

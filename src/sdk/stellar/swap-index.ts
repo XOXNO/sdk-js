@@ -1,2 +1,2 @@
-export { decodeStellarSwapEnvelope } from './swap-history'
-export type { DecodedStellarSwapEnvelope, StellarSwapEnvelopeOptions } from './swap-history'
+export { decodeStellarSwapEnvelope, decodeSwapEnvelope, getSwapRouter } from './swap-history'
+export type { DecodedStellarSwapEnvelope, StellarSwapEnvelopeOptions, DecodedSwapEnvelope, SwapEnvelopeOptions, SwapProvider } from './swap-history'
