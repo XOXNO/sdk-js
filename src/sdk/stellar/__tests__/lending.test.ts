@@ -1,3 +1,4 @@
+import { xdrBytes, xdrField, xdrType } from '../xdr-compat'
 /**
  * Snapshot + sanity tests for the Stellar Soroban lending transaction builders.
  *
@@ -120,17 +121,17 @@ const parseInvokedFunction = (
   expect(op.type).toBe('invokeHostFunction')
 
   const hostFn = op.func
-  const invokeContract = hostFn.invokeContract()
-  const contractIdScAddress = invokeContract.contractAddress()
-  const functionNameBuf = invokeContract.functionName()
+  const invokeContract = xdrField(hostFn, 'invokeContract')
+  const contractIdScAddress = xdrField(invokeContract, 'contractAddress')
+  const functionNameBuf = xdrField(invokeContract, 'functionName')
 
   return {
     // Raw strkey not needed — compare via the ScAddress type instead.
-    contractId: contractIdScAddress.switch().name,
+    contractId: xdrType(contractIdScAddress)!,
     functionName: Buffer.isBuffer(functionNameBuf)
       ? functionNameBuf.toString('utf8')
       : String(functionNameBuf),
-    argCount: invokeContract.args().length,
+    argCount: xdrField(invokeContract, 'args').length,
   }
 }
 
@@ -507,15 +508,15 @@ describe('liquidate — SeizeMode', () => {
     const tx = new Transaction(built.xdr, Networks.TESTNET)
     const op = tx.operations[0] as unknown as { func: stellarXdr.HostFunction }
     // liquidator, account_id, debt_payments, seize_mode
-    return op.func.invokeContract().args()[3]!
+    return xdrField(xdrField(op.func, 'invokeContract'), 'args')[3]!
   }
 
   it('defaults to the Transfer arm when seizeMode is omitted', () => {
     const arg = seizeModeArg(buildStellarLiquidateTx(BASE_OPTS, liquidateArgs))
-    expect(arg.switch().name).toBe('scvVec')
-    const elems = arg.vec()!
+    expect(xdrType(arg)).toBe('scvVec')
+    const elems = xdrField(arg, 'vec')!
     expect(elems).toHaveLength(1)
-    expect(elems[0]!.sym().toString()).toBe('Transfer')
+    expect(xdrField(elems[0]!, 'sym').toString()).toBe('Transfer')
   })
 
   it("omitting seizeMode is identical to passing 'Transfer'", () => {
@@ -531,10 +532,10 @@ describe('liquidate — SeizeMode', () => {
     const arg = seizeModeArg(
       buildStellarLiquidateTx(BASE_OPTS, liquidateCreditArgs)
     )
-    const elems = arg.vec()!
+    const elems = xdrField(arg, 'vec')!
     expect(elems).toHaveLength(2)
-    expect(elems[0]!.sym().toString()).toBe('Credit')
-    expect(elems[1]!.switch().name).toBe('scvU64')
+    expect(xdrField(elems[0]!, 'sym').toString()).toBe('Credit')
+    expect(xdrType(elems[1]!)).toBe('scvU64')
     expect(scValToNative(elems[1]!)).toBe(0n)
   })
 
@@ -545,7 +546,7 @@ describe('liquidate — SeizeMode', () => {
         seizeMode: { Credit: '4294967296' },
       })
     )
-    expect(scValToNative(arg.vec()![1]!)).toBe(4294967296n)
+    expect(scValToNative(xdrField(arg, 'vec')![1]!)).toBe(4294967296n)
   })
 
   it('rejects a malformed seize mode at the SDK boundary', () => {
@@ -609,11 +610,11 @@ describe('repay_debt_with_collateral — same-token', () => {
     const built = buildStellarRepayDebtWithCollateralTx(BASE_OPTS, sameTokenArgs)
     const tx = new Transaction(built.xdr, Networks.TESTNET)
     const op = tx.operations[0] as unknown as { func: stellarXdr.HostFunction }
-    const args = op.func.invokeContract().args()
+    const args = xdrField(xdrField(op.func, 'invokeContract'), 'args')
     // caller, account_id, collateral, amount, debt_token, steps, close_position
     const swapArg = args[5]
-    expect(swapArg.switch().name).toBe('scvBytes')
-    expect(swapArg.bytes().length).toBe(0)
+    expect(xdrType(swapArg)).toBe('scvBytes')
+    expect(xdrBytes(swapArg).length).toBe(0)
   })
 
   it('buildSameTokenRepaySwapSteps ignores legacy (token, collateralAmount) args for source compatibility', () => {
@@ -629,10 +630,10 @@ describe('repay_debt_with_collateral — same-token', () => {
     })
     const tx = new Transaction(built.xdr, Networks.TESTNET)
     const op = tx.operations[0] as unknown as { func: stellarXdr.HostFunction }
-    const args = op.func.invokeContract().args()
+    const args = xdrField(xdrField(op.func, 'invokeContract'), 'args')
     const swapArg = args[5]
-    expect(swapArg.switch().name).toBe('scvBytes')
-    expect(swapArg.bytes().length).toBe(0)
+    expect(xdrType(swapArg)).toBe('scvBytes')
+    expect(xdrBytes(swapArg).length).toBe(0)
   })
 })
 
@@ -641,7 +642,7 @@ it('preserves full u64 account IDs supplied as strings and rejects unsafe numeri
   const built = buildStellarSupplyTx(BASE_OPTS, { ...supplyArgs, accountNonce })
   const tx = new Transaction(built.xdr, Networks.TESTNET)
   const op = tx.operations[0] as unknown as { func: stellarXdr.HostFunction }
-  expect(op.func.invokeContract().args()[1].u64().toString()).toBe(accountNonce)
+  expect(xdrField(xdrField(xdrField(op.func, 'invokeContract'), 'args')[1], 'u64').toString()).toBe(accountNonce)
   expect(() => buildStellarSupplyTx(BASE_OPTS, {
     ...supplyArgs, accountNonce: Number.MAX_SAFE_INTEGER + 1,
   })).toThrow(/safe integers/)

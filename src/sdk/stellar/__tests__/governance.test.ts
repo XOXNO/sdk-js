@@ -1,3 +1,4 @@
+import { xdrField, xdrType } from '../xdr-compat'
 /**
  * Snapshot + structural tests for governance `propose_*` transaction builders
  * used by the admin dashboard (timelock proposals).
@@ -77,20 +78,20 @@ const parseInvoked = (
     func: stellarXdr.HostFunction
   }
   expect(op.type).toBe('invokeHostFunction')
-  const invokeContract = op.func.invokeContract()
-  const fnBuf = invokeContract.functionName()
+  const invokeContract = xdrField(op.func, 'invokeContract')
+  const fnBuf = xdrField(invokeContract, 'functionName')
   return {
     functionName: Buffer.isBuffer(fnBuf) ? fnBuf.toString('utf8') : String(fnBuf),
-    args: invokeContract.args(),
+    args: xdrField(invokeContract, 'args'),
   }
 }
 
 /** Read the variant symbol of an `AdminOperation` enum ScVal (`scvVec[sym,...]`). */
 const adminOpVariant = (op: stellarXdr.ScVal): string => {
-  expect(op.switch().name).toBe('scvVec')
-  const elems = op.vec()!
-  expect(elems[0]!.switch().name).toBe('scvSymbol')
-  return elems[0]!.sym().toString()
+  expect(xdrType(op)).toBe('scvVec')
+  const elems = xdrField(op, 'vec')!
+  expect(xdrType(elems[0]!)).toBe('scvSymbol')
+  return xdrField(elems[0]!, 'sym').toString()
 }
 
 describe('Stellar lending governance builders', () => {
@@ -123,17 +124,17 @@ describe('Stellar lending governance builders', () => {
         const parsed = parseInvoked(built.xdr)
         expect(parsed.functionName).toBe('propose')
         expect(parsed.args).toHaveLength(3)
-        expect(parsed.args[0]!.switch().name).toBe('scvAddress')
-        expect(parsed.args[1]!.switch().name).toBe('scvVec')
-        expect(parsed.args[2]!.switch().name).toBe('scvBytes')
+        expect(xdrType(parsed.args[0]!)).toBe('scvAddress')
+        expect(xdrType(parsed.args[1]!)).toBe('scvVec')
+        expect(xdrType(parsed.args[2]!)).toBe('scvBytes')
       })
 
       it('wraps the UpgradeLiquidityPoolParams variant with a struct payload', () => {
         const op = parseInvoked(built.xdr).args[1]!
         expect(adminOpVariant(op)).toBe('UpgradeLiquidityPoolParams')
         // [symbol, UpgradePoolParamsArgs struct]
-        expect(op.vec()).toHaveLength(2)
-        expect(op.vec()![1]!.switch().name).toBe('scvMap')
+        expect(xdrField(op, 'vec')).toHaveLength(2)
+        expect(xdrType(xdrField(op, 'vec')![1]!)).toBe('scvMap')
       })
 
       it('is deterministic', () => {
@@ -158,8 +159,8 @@ describe('Stellar lending governance builders', () => {
       it('wraps SetAggregator with an Address payload', () => {
         const op = parseInvoked(build().xdr).args[1]!
         expect(adminOpVariant(op)).toBe('SetSwapAggregator')
-        expect(op.vec()).toHaveLength(2)
-        expect(op.vec()![1]!.switch().name).toBe('scvAddress')
+        expect(xdrField(op, 'vec')).toHaveLength(2)
+        expect(xdrType(xdrField(op, 'vec')![1]!)).toBe('scvAddress')
       })
 
       it('matches stored snapshot', () => {
@@ -190,7 +191,7 @@ describe('Stellar lending governance builders', () => {
           buildStellarProposeAddSpokeTx(BASE_OPTS, FIXTURE_SALT).xdr
         ).args[1]!
         expect(adminOpVariant(op)).toBe('AddSpoke')
-        expect(op.vec()).toHaveLength(1)
+        expect(xdrField(op, 'vec')).toHaveLength(1)
       })
 
       it('RemoveSpoke carries the spoke id as u32', () => {
@@ -202,9 +203,9 @@ describe('Stellar lending governance builders', () => {
           ).xdr
         ).args[1]!
         expect(adminOpVariant(op)).toBe('RemoveSpoke')
-        expect(op.vec()).toHaveLength(2)
-        expect(op.vec()![1]!.switch().name).toBe('scvU32')
-        expect(op.vec()![1]!.u32()).toBe(3)
+        expect(xdrField(op, 'vec')).toHaveLength(2)
+        expect(xdrType(xdrField(op, 'vec')![1]!)).toBe('scvU32')
+        expect(xdrField(xdrField(op, 'vec')![1]!, 'u32')).toBe(3)
       })
 
       it('AddAssetToSpoke encodes SpokeAssetArgs with the 14 sorted wire keys', () => {
@@ -220,8 +221,8 @@ describe('Stellar lending governance builders', () => {
           ).xdr
         ).args[1]!
         expect(adminOpVariant(op)).toBe('AddAssetToSpoke')
-        const entries = op.vec()![1]!.map()!
-        const keys = entries.map((e) => e.key().sym().toString())
+        const entries = xdrField(xdrField(op, 'vec')![1]!, 'map')!
+        const keys = entries.map((e) => xdrField(xdrField(e, 'key'), 'sym').toString())
         expect(keys).toEqual([
           'asset',
           'bonus',
@@ -239,14 +240,14 @@ describe('Stellar lending governance builders', () => {
           'threshold',
         ])
         const field = (name: string) =>
-          entries.find((e) => e.key().sym().toString() === name)!.val()
-        expect(field('supply_cap').switch().name).toBe('scvI128')
-        expect(field('borrow_cap').switch().name).toBe('scvI128')
-        expect(field('can_borrow').switch().name).toBe('scvBool')
+          xdrField(entries.find((e) => xdrField(xdrField(e, 'key'), 'sym').toString() === name)!, 'val')
+        expect(xdrType(field('supply_cap'))).toBe('scvI128')
+        expect(xdrType(field('borrow_cap'))).toBe('scvI128')
+        expect(xdrType(field('can_borrow'))).toBe('scvBool')
         // Per-listing incident flags carry through the wire encoding verbatim.
-        expect(field('paused').b()).toBe(false)
-        expect(field('frozen').b()).toBe(true)
-        expect(field('no_seize').b()).toBe(true)
+        expect(xdrField(field('paused'), 'b')).toBe(false)
+        expect(xdrField(field('frozen'), 'b')).toBe(true)
+        expect(xdrField(field('no_seize'), 'b')).toBe(true)
       })
 
       it('EditAssetInSpoke reuses the SpokeAssetArgs payload', () => {
@@ -258,7 +259,7 @@ describe('Stellar lending governance builders', () => {
           ).xdr
         ).args[1]!
         expect(adminOpVariant(op)).toBe('EditAssetInSpoke')
-        expect(op.vec()![1]!.switch().name).toBe('scvMap')
+        expect(xdrType(xdrField(op, 'vec')![1]!)).toBe('scvMap')
       })
 
       it('RemoveAssetFromSpoke wraps hub_asset + spoke_id', () => {
@@ -270,10 +271,8 @@ describe('Stellar lending governance builders', () => {
           ).xdr
         ).args[1]!
         expect(adminOpVariant(op)).toBe('RemoveAssetFromSpoke')
-        const keys = op
-          .vec()![1]!
-          .map()!
-          .map((e) => e.key().sym().toString())
+        const keys = xdrField(xdrField(op, 'vec')![1]!, 'map')!
+          .map((e) => xdrField(xdrField(e, 'key'), 'sym').toString())
         expect(keys).toEqual(['hub_asset', 'spoke_id'])
       })
 
@@ -291,8 +290,8 @@ describe('Stellar lending governance builders', () => {
           ).xdr
         ).args[1]!
         expect(adminOpVariant(op)).toBe('SetSpokeLiquidationCurve')
-        const entries = op.vec()![1]!.map()!
-        const keys = entries.map((e) => e.key().sym().toString())
+        const entries = xdrField(xdrField(op, 'vec')![1]!, 'map')!
+        const keys = entries.map((e) => xdrField(xdrField(e, 'key'), 'sym').toString())
         expect(keys).toEqual([
           'hf_for_max_bonus_wad',
           'liquidation_bonus_factor_bps',
@@ -300,14 +299,14 @@ describe('Stellar lending governance builders', () => {
           'target_hf_wad',
         ])
         const field = (name: string) =>
-          entries.find((e) => e.key().sym().toString() === name)!.val()
-        expect(field('target_hf_wad').switch().name).toBe('scvI128')
-        expect(field('hf_for_max_bonus_wad').switch().name).toBe('scvI128')
-        expect(field('liquidation_bonus_factor_bps').switch().name).toBe(
+          xdrField(entries.find((e) => xdrField(xdrField(e, 'key'), 'sym').toString() === name)!, 'val')
+        expect(xdrType(field('target_hf_wad'))).toBe('scvI128')
+        expect(xdrType(field('hf_for_max_bonus_wad'))).toBe('scvI128')
+        expect(xdrType(field('liquidation_bonus_factor_bps'))).toBe(
           'scvU32'
         )
-        expect(field('liquidation_bonus_factor_bps').u32()).toBe(10000)
-        expect(field('spoke_id').u32()).toBe(3)
+        expect(xdrField(field('liquidation_bonus_factor_bps'), 'u32')).toBe(10000)
+        expect(xdrField(field('spoke_id'), 'u32')).toBe(3)
       })
 
       it('SetPositionManager is a two-field tuple variant', () => {
@@ -319,9 +318,9 @@ describe('Stellar lending governance builders', () => {
           ).xdr
         ).args[1]!
         expect(adminOpVariant(op)).toBe('SetPositionManager')
-        expect(op.vec()).toHaveLength(3)
-        expect(op.vec()![1]!.switch().name).toBe('scvAddress')
-        expect(op.vec()![2]!.switch().name).toBe('scvBool')
+        expect(xdrField(op, 'vec')).toHaveLength(3)
+        expect(xdrType(xdrField(op, 'vec')![1]!)).toBe('scvAddress')
+        expect(xdrType(xdrField(op, 'vec')![2]!)).toBe('scvBool')
       })
     })
 
@@ -332,7 +331,7 @@ describe('Stellar lending governance builders', () => {
       it('encodes DeployPool with a BytesN payload', () => {
         const op = parseInvoked(build().xdr).args[1]!
         expect(adminOpVariant(op)).toBe('DeployPool')
-        expect(op.vec()).toHaveLength(2)
+        expect(xdrField(op, 'vec')).toHaveLength(2)
       })
 
       it('matches stored snapshot', () => {
@@ -346,7 +345,7 @@ describe('Stellar lending governance builders', () => {
       it('encodes Unpause as a tag-only enum', () => {
         const op = parseInvoked(build().xdr).args[1]!
         expect(adminOpVariant(op)).toBe('Unpause')
-        expect(op.vec()).toHaveLength(1)
+        expect(xdrField(op, 'vec')).toHaveLength(1)
       })
 
       it('matches stored snapshot', () => {
@@ -428,13 +427,13 @@ describe('Stellar lending governance builders', () => {
       const { functionName, args } = parseInvoked(built().xdr)
       expect(functionName).toBe('set_spoke_asset_flags')
       expect(args).toHaveLength(6)
-      expect(args[0]!.switch().name).toBe('scvAddress')
-      expect(args[1]!.u32()).toBe(3)
-      expect(args[2]!.switch().name).toBe('scvMap')
-      expect(args[3]!.b()).toBe(false)
-      expect(args[4]!.b()).toBe(false)
+      expect(xdrType(args[0]!)).toBe('scvAddress')
+      expect(xdrField(args[1]!, 'u32')).toBe(3)
+      expect(xdrType(args[2]!)).toBe('scvMap')
+      expect(xdrField(args[3]!, 'b')).toBe(false)
+      expect(xdrField(args[4]!, 'b')).toBe(false)
       // no_seize is last — a swap with `frozen` would halt the wrong leg.
-      expect(args[5]!.b()).toBe(true)
+      expect(xdrField(args[5]!, 'b')).toBe(true)
     })
   })
 
@@ -452,9 +451,9 @@ describe('Stellar lending governance builders', () => {
       const parsed = parseInvoked(build().xdr)
       expect(parsed.functionName).toBe('execute_self')
       expect(parsed.args).toHaveLength(3)
-      expect(parsed.args[0]!.switch().name).toBe('scvVoid')
+      expect(xdrType(parsed.args[0]!)).toBe('scvVoid')
       expect(adminOpVariant(parsed.args[1]!)).toBe('UpdateGovDelay')
-      expect(parsed.args[2]!.switch().name).toBe('scvBytes')
+      expect(xdrType(parsed.args[2]!)).toBe('scvBytes')
     })
 
     it('matches stored snapshot', () => {
@@ -489,12 +488,12 @@ describe('Stellar lending governance builders', () => {
       const parsed = parseInvoked(built.xdr)
       expect(parsed.functionName).toBe('propose_canceller_reset')
       expect(parsed.args).toHaveLength(2)
-      expect(parsed.args[0]!.switch().name).toBe('scvVec')
-      const elems = parsed.args[0]!.vec()!
+      expect(xdrType(parsed.args[0]!)).toBe('scvVec')
+      const elems = xdrField(parsed.args[0]!, 'vec')!
       expect(elems).toHaveLength(2)
-      expect(elems[0]!.switch().name).toBe('scvAddress')
-      expect(elems[1]!.switch().name).toBe('scvAddress')
-      expect(parsed.args[1]!.switch().name).toBe('scvBytes')
+      expect(xdrType(elems[0]!)).toBe('scvAddress')
+      expect(xdrType(elems[1]!)).toBe('scvAddress')
+      expect(xdrType(parsed.args[1]!)).toBe('scvBytes')
     })
 
     it('is deterministic', () => {
@@ -524,10 +523,10 @@ describe('Stellar lending governance builders', () => {
       const parsed = parseInvoked(built.xdr)
       expect(parsed.functionName).toBe('execute_canceller_reset')
       expect(parsed.args).toHaveLength(3)
-      expect(parsed.args[0]!.switch().name).toBe('scvVoid')
-      expect(parsed.args[1]!.switch().name).toBe('scvVec')
-      expect(parsed.args[1]!.vec()).toHaveLength(2)
-      expect(parsed.args[2]!.switch().name).toBe('scvBytes')
+      expect(xdrType(parsed.args[0]!)).toBe('scvVoid')
+      expect(xdrType(parsed.args[1]!)).toBe('scvVec')
+      expect(xdrField(parsed.args[1]!, 'vec')).toHaveLength(2)
+      expect(xdrType(parsed.args[2]!)).toBe('scvBytes')
     })
 
     it('encodes a present executor as a bare Address (Soroban Option::Some is unwrapped)', () => {
@@ -538,7 +537,7 @@ describe('Stellar lending governance builders', () => {
           FIXTURE_SALT
         ).xdr
       )
-      expect(parsed.args[0]!.switch().name).toBe('scvAddress')
+      expect(xdrType(parsed.args[0]!)).toBe('scvAddress')
     })
 
     it('is deterministic', () => {

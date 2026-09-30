@@ -14,6 +14,7 @@ import { Address, Asset, scValToBigInt, StrKey, xdr } from '@stellar/stellar-sdk
 import { Buffer } from 'buffer'
 
 import { STELLAR_NETWORK_PASSPHRASE, type StellarNetwork } from './contracts'
+import { xdrBytes, xdrField, xdrType } from './xdr-compat'
 import {
   asStellarStrategySwapBytes,
   MAX_AMOUNTS,
@@ -127,7 +128,7 @@ const toBuffer = (route: StellarRouteBytesInput): Buffer => {
     return fail('OVERSIZED', `encoded route has ${encoded.length} characters`)
   }
   try {
-    return Buffer.from(asStellarStrategySwapBytes(route).bytes())
+    return xdrBytes(asStellarStrategySwapBytes(route))
   } catch (error) {
     return fail('MALFORMED', error instanceof Error ? error.message : String(error))
   }
@@ -146,33 +147,33 @@ const readPayloadFields = (
       `payload is not one XDR ScVal: ${error instanceof Error ? error.message : String(error)}`
     )
   }
-  if (value.switch().name !== 'scvMap') {
+  if (xdrType(value) !== 'scvMap') {
     return fail('MALFORMED', 'payload must be a StrategyPayload map')
   }
-  const entries = value.map() ?? []
+  const entries = xdrField(value, 'map') ?? []
   // A `#[contracttype]` struct is a map with exactly its fields, keys sorted.
   const keys = entries.map((entry) =>
-    entry.key().switch().name === 'scvSymbol' ? entry.key().sym().toString() : ''
+    xdrType(xdrField(entry, 'key')) === 'scvSymbol' ? xdrField(xdrField(entry, 'key'), 'sym').toString() : ''
   )
   if (keys.join(',') !== 'amounts,assets,ops') {
     return fail('MALFORMED', 'payload fields must be exactly amounts, assets, ops')
   }
-  const [amountsVal, assetsVal, opsVal] = entries.map((entry) => entry.val()) as [
+  const [amountsVal, assetsVal, opsVal] = entries.map((entry) => xdrField(entry, 'val')) as [
     xdr.ScVal,
     xdr.ScVal,
     xdr.ScVal,
   ]
   if (
-    amountsVal.switch().name !== 'scvVec' ||
-    assetsVal.switch().name !== 'scvVec' ||
-    opsVal.switch().name !== 'scvBytes'
+    xdrType(amountsVal) !== 'scvVec' ||
+    xdrType(assetsVal) !== 'scvVec' ||
+    xdrType(opsVal) !== 'scvBytes'
   ) {
     return fail('MALFORMED', 'payload field has the wrong type')
   }
   return {
-    amounts: amountsVal.vec() ?? [],
-    assets: assetsVal.vec() ?? [],
-    ops: Buffer.from(opsVal.bytes()),
+    amounts: xdrField(amountsVal, 'vec') ?? [],
+    assets: xdrField(assetsVal, 'vec') ?? [],
+    ops: xdrBytes(opsVal),
   }
 }
 
@@ -198,13 +199,13 @@ export function decodeStellarRouteBytes(route: StellarRouteBytesInput): DecodedS
   }
 
   const assets = fields.assets.map((value, i) => {
-    if (value.switch().name !== 'scvAddress') {
+    if (xdrType(value) !== 'scvAddress') {
       return fail('MALFORMED', `assets[${i}] is not an address`)
     }
-    return Address.fromScAddress(value.address()).toString()
+    return Address.fromScAddress(xdrField(value, 'address')).toString()
   })
   const amounts = fields.amounts.map((value, i) => {
-    if (value.switch().name !== 'scvI128') {
+    if (xdrType(value) !== 'scvI128') {
       return fail('MALFORMED', `amounts[${i}] is not an i128`)
     }
     return scValToBigInt(value)

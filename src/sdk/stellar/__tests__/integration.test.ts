@@ -1,3 +1,4 @@
+import { xdrField } from '../xdr-compat'
 import { jest } from '@jest/globals'
 import { Networks, SorobanDataBuilder, TransactionBuilder, rpc, xdr } from '@stellar/stellar-sdk'
 import { XOXNOClient } from '../../../utils/api'
@@ -130,8 +131,8 @@ it('prepares unsigned builder XDR with the selected signing domain and preserves
   const tx = TransactionBuilder.fromXDR(prepared, Networks.TESTNET)
   expect(tx.signatures).toHaveLength(0)
   expect(tx.fee).toBe('1100')
-  expect(tx.toEnvelope().v1().tx().ext().sorobanData().resources().instructions()).toBe(24_343_254)
-  expect(tx.toEnvelope().v1().tx().operations()).toEqual(TransactionBuilder.fromXDR(built.xdr, Networks.TESTNET).toEnvelope().v1().tx().operations())
+  expect(xdrField(xdrField(xdrField(xdrField(xdrField(xdrField(tx.toEnvelope(), 'v1'), 'tx'), 'ext'), 'sorobanData'), 'resources'), 'instructions')).toBe(24_343_254)
+  expect(xdrField(xdrField(xdrField(tx.toEnvelope(), 'v1'), 'tx'), 'operations')).toEqual(xdrField(xdrField(xdrField(TransactionBuilder.fromXDR(built.xdr, Networks.TESTNET).toEnvelope(), 'v1'), 'tx'), 'operations'))
 })
 
 it.each([0, 5_000_000, 0xffffffff])('forwards instruction leeway %i and retains contract error context', async instructionLeeway => {

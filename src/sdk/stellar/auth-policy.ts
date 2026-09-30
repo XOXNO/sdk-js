@@ -26,6 +26,7 @@ import { Address, scValToBigInt, StrKey, xdr } from '@stellar/stellar-sdk'
 
 import { getStellarDeployment, type StellarNetwork } from './contracts'
 import { decodeStellarRouteBytes } from './route-verify'
+import { xdrBytes, xdrField, xdrOpaque, xdrType } from './xdr-compat'
 
 export type StellarAuthPolicyErrorCode =
   | 'MALFORMED_TRANSACTION'
@@ -88,38 +89,39 @@ export interface StellarAuthPolicy {
 }
 
 const addressOf = (value: xdr.ScVal | undefined): string | undefined =>
-  value?.switch().name === 'scvAddress'
-    ? Address.fromScAddress(value.address()).toString()
+  value && xdrType(value) === 'scvAddress'
+    ? Address.fromScAddress(xdrField(value, 'address')).toString()
     : undefined
 
 const i128Of = (value: xdr.ScVal | undefined): bigint | undefined =>
-  value?.switch().name === 'scvI128' ? scValToBigInt(value) : undefined
+  value && xdrType(value) === 'scvI128' ? scValToBigInt(value) : undefined
 
 const vecOf = (value: xdr.ScVal | undefined): xdr.ScVal[] | undefined =>
-  value?.switch().name === 'scvVec' ? (value.vec() ?? []) : undefined
+  value && xdrType(value) === 'scvVec' ? (xdrField(value, 'vec') ?? []) : undefined
 
-const fieldOf = (value: xdr.ScVal | undefined, name: string): xdr.ScVal | undefined =>
-  value?.switch().name === 'scvMap'
-    ? (value.map() ?? [])
-        .find((e) => e.key().switch().name === 'scvSymbol' && e.key().sym().toString() === name)
-        ?.val()
-    : undefined
+const fieldOf = (value: xdr.ScVal | undefined, name: string): xdr.ScVal | undefined => {
+  if (!value || xdrType(value) !== 'scvMap') return undefined
+  const entry = (xdrField(value, 'map') ?? []).find((e) =>
+    xdrType(xdrField(e, 'key')) === 'scvSymbol' && xdrField(xdrField(e, 'key'), 'sym').toString() === name
+  )
+  return entry ? xdrField(entry, 'val') : undefined
+}
 
 const describeArg = (value: xdr.ScVal): string =>
   addressOf(value) ?? i128Of(value)?.toString() ?? value.toXDR('base64')
 
 const describe = (args: xdr.InvokeContractArgs): StellarAuthOffender => ({
-  contract: Address.fromScAddress(args.contractAddress()).toString(),
-  fn: args.functionName().toString(),
-  args: args.args().map(describeArg),
+  contract: Address.fromScAddress(xdrField(args, 'contractAddress')).toString(),
+  fn: xdrField(args, 'functionName').toString(),
+  args: xdrField(args, 'args').map(describeArg),
 })
 
 const contractFnOf = (
   invocation: xdr.SorobanAuthorizedInvocation
 ): xdr.InvokeContractArgs | undefined => {
-  const fn = invocation.function()
-  return fn.switch().name === 'sorobanAuthorizedFunctionTypeContractFn'
-    ? fn.contractFn()
+  const fn = xdrField(invocation, 'function')
+  return xdrType(fn) === 'sorobanAuthorizedFunctionTypeContractFn'
+    ? xdrField(fn, 'contractFn')
     : undefined
 }
 
@@ -138,11 +140,14 @@ export function assertStellarAuthEntries(
   sourceAccount?: string
 ): void {
   const mine = entries.filter((entry) => {
-    const credentials = entry.credentials()
-    const signer =
-      credentials.switch().name === 'sorobanCredentialsAddress'
-        ? Address.fromScAddress(credentials.address().address()).toString()
-        : (sourceAccount ?? policy.caller)
+    const credentials = xdrField(entry, 'credentials')
+    const kind = xdrType(credentials)
+    if (kind !== 'sorobanCredentialsAddress' && kind !== 'sorobanCredentialsSourceAccount') {
+      throw new StellarAuthPolicyError('MALFORMED_TRANSACTION', 'unsupported authorization credentials')
+    }
+    const signer = kind === 'sorobanCredentialsAddress'
+      ? Address.fromScAddress(xdrField(xdrField(credentials, 'address'), 'address')).toString()
+      : (sourceAccount ?? policy.caller)
     return signer === policy.caller
   })
   if (mine.length > 1) {
@@ -154,7 +159,7 @@ export function assertStellarAuthEntries(
   const entry = mine[0]
   if (!entry) return
 
-  const root = contractFnOf(entry.rootInvocation())
+  const root = contractFnOf(xdrField(entry, 'rootInvocation'))
   if (!root) {
     throw new StellarAuthPolicyError('UNEXPECTED_ROOT', 'root is not a contract call')
   }
@@ -169,13 +174,13 @@ export function assertStellarAuthEntries(
 
   const spent = policy.transfers.map(() => 0n)
   const called = (policy.calls ?? []).map(() => 0)
-  for (const child of entry.rootInvocation().subInvocations()) {
+  for (const child of xdrField(xdrField(entry, 'rootInvocation'), 'subInvocations')) {
     const call = contractFnOf(child)
     if (!call) {
       throw new StellarAuthPolicyError('UNEXPECTED_CALL', 'sub-invocation is not a contract call')
     }
     const info = describe(call)
-    if (child.subInvocations().length > 0) {
+    if (xdrField(child, 'subInvocations').length > 0) {
       throw new StellarAuthPolicyError(
         'NESTED_INVOCATION',
         'sub-invocation carries its own sub-invocations',
@@ -188,7 +193,7 @@ export function assertStellarAuthEntries(
     )
     if (allowedCall !== -1) {
       const allowance = (policy.calls ?? [])[allowedCall] as StellarAuthCallAllowance
-      const reason = allowance.reject(call.args())
+      const reason = allowance.reject(xdrField(call, 'args'))
       if (reason) throw new StellarAuthPolicyError('UNEXPECTED_CALL', reason, info)
       called[allowedCall] = (called[allowedCall] ?? 0) + 1
       if ((called[allowedCall] ?? 0) > allowance.maxCount) {
@@ -201,13 +206,13 @@ export function assertStellarAuthEntries(
       continue
     }
 
-    if (info.fn !== 'transfer' || call.args().length !== 3) {
+    if (info.fn !== 'transfer' || xdrField(call, 'args').length !== 3) {
       throw new StellarAuthPolicyError('UNEXPECTED_CALL', 'only `transfer` is allowed', info)
     }
     if (!policy.transfers.some((t) => t.token === info.contract)) {
       throw new StellarAuthPolicyError('UNEXPECTED_TOKEN', 'transfer on an unexpected token', info)
     }
-    const [from, to, amount] = call.args()
+    const [from, to, amount] = xdrField(call, 'args')
     if (addressOf(from) !== policy.caller) {
       throw new StellarAuthPolicyError('UNEXPECTED_SENDER', 'transfer is not from the caller', info)
     }
@@ -289,8 +294,8 @@ const blendSubmitAllowance = (
     for (const request of requests) {
       const type = fieldOf(request, 'request_type')
       if (
-        type?.switch().name !== 'scvU32' ||
-        !BLEND_MIGRATION_REQUEST_TYPES.has(type.u32())
+        !type || xdrType(type) !== 'scvU32' ||
+        !BLEND_MIGRATION_REQUEST_TYPES.has(xdrField(type, 'u32'))
       ) {
         return 'request is not a withdraw, withdraw-collateral, or repay'
       }
@@ -311,7 +316,7 @@ export function stellarAuthPolicyForInvocation(
   deployment: StellarAuthDeployment
 ): StellarAuthPolicy {
   const { contract, fn } = describe(invocation)
-  const args = invocation.args()
+  const args = xdrField(invocation, 'args')
   const policy: StellarAuthPolicy = { caller, root: { contract, fn }, transfers: [] }
 
   if (contract === deployment.governance) return policy
@@ -319,10 +324,10 @@ export function stellarAuthPolicyForInvocation(
   if (contract === deployment.aggregatorRouter) {
     if (fn !== 'execute_strategy') return policy
     const totalIn = i128Of(args[1])
-    if (addressOf(args[0]) !== caller || totalIn === undefined || args[2]?.switch().name !== 'scvBytes') {
+    if (addressOf(args[0]) !== caller || totalIn === undefined || xdrType(args[2]) !== 'scvBytes') {
       return malformed('execute_strategy arguments must be (caller, total_in, swap_xdr)')
     }
-    const route = decodeStellarRouteBytes(args[2].bytes())
+    const route = decodeStellarRouteBytes(xdrBytes(args[2]))
     policy.transfers = [{ token: route.tokenIn, to: contract, maxAmount: totalIn }]
     return policy
   }
@@ -347,7 +352,7 @@ export function stellarAuthPolicyForInvocation(
     case 'multiply': {
       // initial_payment: Option<(HubAssetKey, i128)> pays the controller.
       const payment = args[8]
-      if (payment && payment.switch().name !== 'scvVoid') {
+      if (payment && xdrType(payment) !== 'scvVoid') {
         policy.transfers = hubPaymentAllowances(xdr.ScVal.scvVec([payment]), contract)
       }
       break
@@ -365,7 +370,7 @@ export function stellarAuthPolicyForInvocation(
 
 const accountOf = (muxed: xdr.MuxedAccount): string =>
   StrKey.encodeEd25519PublicKey(
-    muxed.switch().name === 'keyTypeMuxedEd25519' ? muxed.med25519().ed25519() : muxed.ed25519()
+    xdrOpaque(xdrType(muxed) === 'keyTypeMuxedEd25519' ? xdrField(xdrField(muxed, 'med25519'), 'ed25519') : xdrField(muxed, 'ed25519'))
   )
 
 const singleInvocation = (
@@ -377,26 +382,26 @@ const singleInvocation = (
   } catch {
     return malformed('not a transaction envelope')
   }
-  if (envelope.switch().name !== 'envelopeTypeTx') {
+  if (xdrType(envelope) !== 'envelopeTypeTx') {
     return malformed('expected a regular (v1) transaction')
   }
-  const tx = envelope.v1().tx()
-  const operation = tx.operations()[0]
-  if (!operation || tx.operations().length !== 1) {
+  const tx = xdrField(xdrField(envelope, 'v1'), 'tx')
+  const operation = xdrField(tx, 'operations')[0]
+  if (!operation || xdrField(tx, 'operations').length !== 1) {
     return malformed('expected exactly one operation')
   }
-  const body = operation.body()
-  if (body.switch().name !== 'invokeHostFunction') {
+  const body = xdrField(operation, 'body')
+  if (xdrType(body) !== 'invokeHostFunction') {
     return malformed('operation is not a contract invocation')
   }
-  const op = body.invokeHostFunctionOp()
-  if (op.hostFunction().switch().name !== 'hostFunctionTypeInvokeContract') {
+  const op = xdrField(body, 'invokeHostFunctionOp')
+  if (xdrType(xdrField(op, 'hostFunction')) !== 'hostFunctionTypeInvokeContract') {
     return malformed('host function is not a contract call')
   }
   return {
-    source: accountOf(operation.sourceAccount() ?? tx.sourceAccount()),
+    source: accountOf(xdrField(operation, 'sourceAccount') ?? xdrField(tx, 'sourceAccount')),
     op,
-    call: op.hostFunction().invokeContract(),
+    call: xdrField(xdrField(op, 'hostFunction'), 'invokeContract'),
   }
 }
 
@@ -428,8 +433,8 @@ export function assertStellarPreparedTxAuth(
   const prepared = singleInvocation(preparedXdr)
   if (
     opts.builtXdr !== undefined &&
-    singleInvocation(opts.builtXdr).op.hostFunction().toXDR('base64') !==
-      prepared.op.hostFunction().toXDR('base64')
+    xdrField(singleInvocation(opts.builtXdr).op, 'hostFunction').toXDR('base64') !==
+      xdrField(prepared.op, 'hostFunction').toXDR('base64')
   ) {
     throw new StellarAuthPolicyError(
       'INVOCATION_CHANGED',
@@ -443,5 +448,5 @@ export function assertStellarPreparedTxAuth(
       ...getStellarDeployment(opts.network),
       ...opts.deployment,
     })
-  assertStellarAuthEntries(prepared.op.auth(), policy, prepared.source)
+  assertStellarAuthEntries(xdrField(prepared.op, 'auth'), policy, prepared.source)
 }

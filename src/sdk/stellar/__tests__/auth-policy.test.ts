@@ -1,4 +1,5 @@
 import { Address, StrKey, xdr } from '@stellar/stellar-sdk'
+import { xdrField } from '../xdr-compat'
 
 import {
   assertStellarAuthEntries,
@@ -92,14 +93,16 @@ const prepare = (
   extra: xdr.SorobanAuthorizationEntry[] = []
 ): string => {
   const envelope = xdr.TransactionEnvelope.fromXDR(builtXdr, 'base64')
-  const op = envelope.v1().tx().operations()[0]?.body().invokeHostFunctionOp()
+  const op = xdrField(xdrField(xdrField(xdrField(xdrField(envelope, 'v1'), 'tx'), 'operations')[0], 'body'), 'invokeHostFunctionOp')
   if (!op) throw new Error('fixture has no operation')
-  const invoked = op.hostFunction().invokeContract()
+  const invoked = xdrField(xdrField(op, 'hostFunction'), 'invokeContract')
   const root = new xdr.SorobanAuthorizedInvocation({
     function: xdr.SorobanAuthorizedFunction.sorobanAuthorizedFunctionTypeContractFn(invoked),
     subInvocations: children,
   })
-  op.auth([sourceEntry(root), ...extra])
+  const auth = [sourceEntry(root), ...extra]
+  if (typeof op.auth === 'function') op.auth(auth)
+  else Object.assign(op, { auth })
   return envelope.toXDR('base64')
 }
 
@@ -310,5 +313,15 @@ describe('assertStellarAuthEntries', () => {
     expect(() =>
       assertStellarAuthEntries([sourceEntry(call(USDC, 'burn', []))], policy, ATTACKER)
     ).not.toThrow()
+  })
+
+  it('rejects new and unknown credential variants rather than treating them as source credentials', () => {
+    for (const type of ['sorobanCredentialsAddressV2', 'sorobanCredentialsAddressWithDelegates', 'unknown']) {
+      const entry = {
+        credentials: { type },
+        rootInvocation: call(CONTROLLER, 'repay', []),
+      } as unknown as xdr.SorobanAuthorizationEntry
+      expectCode(() => assertStellarAuthEntries([entry], policy, ATTACKER), 'MALFORMED_TRANSACTION')
+    }
   })
 })

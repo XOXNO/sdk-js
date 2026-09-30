@@ -1,5 +1,6 @@
 import type { StellarAggregatorQuoteResponseDto } from '@xoxno/types'
 import { StrKey, xdr } from '@stellar/stellar-sdk'
+import { xdrBytes, xdrField } from '../xdr-compat'
 
 import {
   decodeStellarRouteBytes,
@@ -46,11 +47,11 @@ const expectCode = (run: () => unknown, code: StellarRouteErrorCode): void => {
 
 /** Re-encode `routeXdr` with its program bytes rewritten. */
 const withProgram = (routeXdr: string, edit: (ops: Buffer) => Buffer): string => {
-  const entries = xdr.ScVal.fromXDR(routeXdr, 'base64').map() ?? []
+  const entries = xdrField(xdr.ScVal.fromXDR(routeXdr, 'base64'), 'map') ?? []
   const fields: Record<string, xdr.ScVal> = {}
-  for (const entry of entries) fields[entry.key().sym().toString()] = entry.val()
+  for (const entry of entries) fields[xdrField(xdrField(entry, 'key'), 'sym').toString()] = xdrField(entry, 'val')
   const ops = fields.ops as xdr.ScVal
-  fields.ops = xdr.ScVal.scvBytes(edit(Buffer.from(ops.bytes())))
+  fields.ops = xdr.ScVal.scvBytes(edit(Buffer.from(xdrBytes(ops))))
   return scStruct(fields).toXDR('base64')
 }
 

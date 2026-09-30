@@ -1,3 +1,4 @@
+import { xdrField, xdrType } from '../xdr-compat'
 /**
  * Snapshot + structural tests for the Stellar lending admin / config / keeper /
  * access transaction builders.
@@ -161,23 +162,22 @@ const parseInvoked = (
     func: stellarXdr.HostFunction
   }
   expect(op.type).toBe('invokeHostFunction')
-  const invokeContract = op.func.invokeContract()
-  const fnBuf = invokeContract.functionName()
+  const invokeContract = xdrField(op.func, 'invokeContract')
+  const fnBuf = xdrField(invokeContract, 'functionName')
   return {
     functionName: Buffer.isBuffer(fnBuf) ? fnBuf.toString('utf8') : String(fnBuf),
-    args: invokeContract.args(),
+    args: xdrField(invokeContract, 'args'),
   }
 }
 
 /** Read the symbol keys of an scvMap arg, in wire order. */
 const mapKeys = (v: stellarXdr.ScVal): string[] => {
-  expect(v.switch().name).toBe('scvMap')
-  return v
-    .map()!
+  expect(xdrType(v)).toBe('scvMap')
+  return xdrField(v, 'map')!
     .map((e) => {
-      const k = e.key()
-      expect(k.switch().name).toBe('scvSymbol')
-      return k.sym().toString()
+      const k = xdrField(e, 'key')
+      expect(xdrType(k)).toBe('scvSymbol')
+      return xdrField(k, 'sym').toString()
     })
 }
 
@@ -434,18 +434,18 @@ describe('complex struct encoding', () => {
       'tolerance',
     ])
 
-    const entries = cfg.map()!
+    const entries = xdrField(cfg, 'map')!
     const byKey = (name: string) =>
-      entries.find((e) => e.key().sym().toString() === name)!.val()
+      xdrField(entries.find((e) => xdrField(xdrField(e, 'key'), 'sym').toString() === name)!, 'val')
 
     const sources = byKey('sources')
-    expect(sources.switch().name).toBe('scvVec')
-    expect(sources.vec()!.length).toBe(2)
-    expect(sources.vec()![0]!.vec()![0]!.sym().toString()).toBe('Feed')
-    expect(sources.vec()![1]!.vec()![0]!.sym().toString()).toBe('Feed')
+    expect(xdrType(sources)).toBe('scvVec')
+    expect(xdrField(sources, 'vec')!.length).toBe(2)
+    expect(xdrField(xdrField(xdrField(sources, 'vec')![0]!, 'vec')![0]!, 'sym').toString()).toBe('Feed')
+    expect(xdrField(xdrField(xdrField(sources, 'vec')![1]!, 'vec')![0]!, 'sym').toString()).toBe('Feed')
 
     const independence = byKey('independence')
-    expect(independence.vec()![0]!.sym().toString()).toBe('RequireDisjoint')
+    expect(xdrField(xdrField(independence, 'vec')![0]!, 'sym').toString()).toBe('RequireDisjoint')
   })
 
   it('encodes MultiFeed kind Xoxno under sources', () => {
@@ -473,18 +473,13 @@ describe('complex struct encoding', () => {
     } as unknown as ConfigureAssetOracleArgs
     const parsed = parseInvoked(buildStellarSetOracleTx(BASE_OPTS, args).xdr)
     const cfg = parsed.args[1]!
-    const sources = cfg
-      .map()!
-      .find((e) => e.key().sym().toString() === 'sources')!
-      .val()
-    const feed = sources.vec()![0]!
-    expect(feed.vec()![0]!.sym().toString()).toBe('Feed')
-    const provider = feed
-      .vec()![1]!
-      .map()!
-      .find((e) => e.key().sym().toString() === 'provider')!
-      .val()
-    expect(provider.vec()![0]!.sym().toString()).toBe('MultiFeed')
+    const sources = xdrField(xdrField(cfg, 'map')!
+      .find((e) => xdrField(xdrField(e, 'key'), 'sym').toString() === 'sources')!, 'val')
+    const feed = xdrField(sources, 'vec')![0]!
+    expect(xdrField(xdrField(feed, 'vec')![0]!, 'sym').toString()).toBe('Feed')
+    const provider = xdrField(xdrField(xdrField(feed, 'vec')![1]!, 'map')!
+      .find((e) => xdrField(xdrField(e, 'key'), 'sym').toString() === 'provider')!, 'val')
+    expect(xdrField(xdrField(provider, 'vec')![0]!, 'sym').toString()).toBe('MultiFeed')
   })
 
   it('encodes each struct field at its correct ScVal width (i128 vs u64 vs u32 vs bool)', () => {
@@ -493,27 +488,27 @@ describe('complex struct encoding', () => {
     const params = parseInvoked(
       buildStellarCreateLiquidityPoolTx(BASE_OPTS, createPoolArgs).xdr
     ).args[2]!
-    const pEntries = params.map()!
+    const pEntries = xdrField(params, 'map')!
     const pField = (name: string) =>
-      pEntries.find((e) => e.key().sym().toString() === name)!.val()
-    expect(pField('max_borrow_rate').switch().name).toBe('scvI128')
-    expect(pField('reserve_factor').switch().name).toBe('scvU32')
-    expect(pField('asset_decimals').switch().name).toBe('scvU32')
-    expect(pField('asset_id').switch().name).toBe('scvAddress')
-    expect(pField('is_flashloanable').switch().name).toBe('scvBool')
-    expect(pField('flashloan_fee').switch().name).toBe('scvU32')
+      xdrField(pEntries.find((e) => xdrField(xdrField(e, 'key'), 'sym').toString() === name)!, 'val')
+    expect(xdrType(pField('max_borrow_rate'))).toBe('scvI128')
+    expect(xdrType(pField('reserve_factor'))).toBe('scvU32')
+    expect(xdrType(pField('asset_decimals'))).toBe('scvU32')
+    expect(xdrType(pField('asset_id'))).toBe('scvAddress')
+    expect(xdrType(pField('is_flashloanable'))).toBe('scvBool')
+    expect(xdrType(pField('flashloan_fee'))).toBe('scvU32')
 
     // AssetOracle — stale seconds are u64, sanity i128.
     const cfg = parseInvoked(
       buildStellarSetOracleTx(BASE_OPTS, configureOracleArgs).xdr
     ).args[1]!
-    const cEntries = cfg.map()!
+    const cEntries = xdrField(cfg, 'map')!
     const cField = (name: string) =>
-      cEntries.find((e) => e.key().sym().toString() === name)!.val()
-    expect(cField('max_price_stale_seconds').switch().name).toBe('scvU64')
-    expect(cField('min_sanity_price_wad').switch().name).toBe('scvI128')
-    expect(cField('max_sanity_price_wad').switch().name).toBe('scvI128')
-    expect(cField('asset_decimals').switch().name).toBe('scvU32')
+      xdrField(cEntries.find((e) => xdrField(xdrField(e, 'key'), 'sym').toString() === name)!, 'val')
+    expect(xdrType(cField('max_price_stale_seconds'))).toBe('scvU64')
+    expect(xdrType(cField('min_sanity_price_wad'))).toBe('scvI128')
+    expect(xdrType(cField('max_sanity_price_wad'))).toBe('scvI128')
+    expect(xdrType(cField('asset_decimals'))).toBe('scvU32')
   })
 
   it('single-source oracle encodes one Feed only', () => {
@@ -526,10 +521,8 @@ describe('complex struct encoding', () => {
     } as unknown as ConfigureAssetOracleArgs
     const parsed = parseInvoked(buildStellarSetOracleTx(BASE_OPTS, single).xdr)
     const cfg = parsed.args[1]!
-    const sources = cfg
-      .map()!
-      .find((e) => e.key().sym().toString() === 'sources')!
-      .val()
-    expect(sources.vec()!.length).toBe(1)
+    const sources = xdrField(xdrField(cfg, 'map')!
+      .find((e) => xdrField(xdrField(e, 'key'), 'sym').toString() === 'sources')!, 'val')
+    expect(xdrField(sources, 'vec')!.length).toBe(1)
   })
 })

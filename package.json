@@ -23,6 +23,16 @@
         "types": "./dist/cjs/sdk/stellar/index.d.ts",
         "default": "./dist/sdk/stellar/index.cjs"
       }
+    },
+    "./stellar-swap": {
+      "import": {
+        "types": "./dist/sdk/stellar/swap-index.d.ts",
+        "default": "./dist/sdk/stellar/swap-index.esm.js"
+      },
+      "require": {
+        "types": "./dist/cjs/sdk/stellar/swap-index.d.ts",
+        "default": "./dist/sdk/stellar/swap-index.cjs"
+      }
     }
   },
   "types": "./dist/index.d.ts",
@@ -39,7 +49,7 @@
     "build:esm": "webpack --config webpack-esm.config.mjs",
     "build:cjs": "webpack --config webpack-cjs.config.mjs",
     "build": "npm run build:sdk && npm run build:types && npm run build:esm && npm run build:cjs",
-    "verify:dist": "node -e \"const m=require('./dist/index.cjs'); if(typeof m.decodeStellarLendingEvent!=='function')throw new Error('CJS require broken'); console.log('CJS ok')\" && node --input-type=module -e \"import('./dist/index.esm.js').then(m=>{if(typeof m.decodeStellarLendingEvent!=='function')throw new Error('ESM import broken'); console.log('ESM ok')})\"",
+    "verify:dist": "node -e \"const m=require('./dist/index.cjs'); if(typeof m.decodeStellarLendingEvent!=='function')throw new Error('CJS require broken'); console.log('CJS ok')\" && node --input-type=module -e \"import('./dist/index.esm.js').then(m=>{if(typeof m.decodeStellarLendingEvent!=='function')throw new Error('ESM import broken'); console.log('ESM ok')})\" && npm run test:swap",
     "prepublishOnly": "npm run verify:dist",
     "lint": "oxlint src",
     "format": "oxlint src --fix",
@@ -49,7 +59,8 @@
     "update:sdk": "bun run src/sdk/parseSwagger.ts && bun run md/extract.ts",
     "docs:stellar": "typedoc --options typedoc.stellar.json",
     "check:examples": "tsc --project tsconfig.examples.json",
-    "test:browser": "node --experimental-vm-modules scripts/check-stellar-browser.mjs"
+    "test:browser": "node --experimental-vm-modules scripts/check-stellar-browser.mjs",
+    "test:swap": "node scripts/check-stellar-swap.mjs"
   },
   "config": {
     "commitizen": {
@@ -122,6 +133,6 @@
     "buffer": "^6.0.3"
   },
   "peerDependencies": {
-    "@stellar/stellar-sdk": ">=15.0.0 <17.0.0"
+    "@stellar/stellar-sdk": ">=15.0.0 <18.0.0"
   }
 }

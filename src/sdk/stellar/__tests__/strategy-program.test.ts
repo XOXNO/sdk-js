@@ -1,3 +1,4 @@
+import { xdrBytes, xdrField } from '../xdr-compat'
 /**
  * Cross-language wire-format check for the aggregator's packed strategy program.
  *
@@ -27,20 +28,18 @@ const POOL_THREE = 'CAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQMCJ'
 
 /** Pull the three registries back out of an encoded payload. */
 const decode = (payload: StellarStrategyPayloadInput) => {
-  const map = encodeStrategyPayload(payload).map()
+  const map = xdrField(encodeStrategyPayload(payload), 'map')
   if (!map) throw new Error('payload must encode as a map')
-  const keys = map.map((e) => e.key().sym().toString())
+  const keys = map.map((e) => xdrField(xdrField(e, 'key'), 'sym').toString())
   expect(keys).toEqual(['amounts', 'assets', 'ops'])
   return {
-    amounts: (map[0] as xdr.ScMapEntry)
-      .val()
-      .vec()!
+    amounts: xdrField(xdrField((map[0] as xdr.ScMapEntry), 'val'), 'vec')!
       .map((v) => {
-        const parts = v.i128()
-        return (BigInt(parts.hi().toString()) << 64n) | BigInt(parts.lo().toString())
+        const parts = xdrField(v, 'i128')
+        return (BigInt(xdrField(parts, 'hi').toString()) << 64n) | BigInt(xdrField(parts, 'lo').toString())
       }),
-    assets: (map[1] as xdr.ScMapEntry).val().vec()!.length,
-    ops: Array.from((map[2] as xdr.ScMapEntry).val().bytes()),
+    assets: xdrField(xdrField((map[1] as xdr.ScMapEntry), 'val'), 'vec')!.length,
+    ops: Array.from(xdrBytes(xdrField((map[2] as xdr.ScMapEntry), 'val'))),
   }
 }
 
@@ -157,7 +156,7 @@ describe('packed strategy program', () => {
       totalMinOut: '1',
     }
     const { amounts, ops } = decode(payload)
-    expect(asStellarStrategySwapBytes(payload).bytes()).toEqual(
+    expect(xdrBytes(asStellarStrategySwapBytes(payload))).toEqual(
       Buffer.from(encodeStrategyPayload(payload).toXDR('base64'), 'base64')
     )
     expect(ops[8]).toBe(2)

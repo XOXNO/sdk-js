@@ -1,3 +1,4 @@
+import { xdrField, xdrType } from '../xdr-compat'
 import { jest } from '@jest/globals'
 import type { StellarAggregatorQuoteResponseDto } from '@xoxno/types'
 import { Networks, Transaction, xdr as stellarXdr } from '@stellar/stellar-sdk'
@@ -50,14 +51,14 @@ const parseInvocation = (
   }
   expect(op.type).toBe('invokeHostFunction')
 
-  const invokeContract = op.func.invokeContract()
-  const functionNameBuf = invokeContract.functionName()
+  const invokeContract = xdrField(op.func, 'invokeContract')
+  const functionNameBuf = xdrField(invokeContract, 'functionName')
 
   return {
     functionName: Buffer.isBuffer(functionNameBuf)
       ? functionNameBuf.toString('utf8')
       : String(functionNameBuf),
-    args: invokeContract.args(),
+    args: xdrField(invokeContract, 'args'),
   }
 }
 
@@ -109,7 +110,7 @@ describe('Stellar aggregator direct swap builder', () => {
     const parsed = parseInvocation(built.xdr)
     expect(parsed.functionName).toBe('execute_strategy')
     expect(parsed.args).toHaveLength(3)
-    expect(parsed.args[2].switch().name).toBe('scvBytes')
+    expect(xdrType(parsed.args[2])).toBe('scvBytes')
   })
 
   it('prefers quote routeXdr when present and it matches the quote', () => {

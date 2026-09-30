@@ -1,3 +1,4 @@
+import { xdrField, xdrType } from '../xdr-compat'
 /**
  * Multi-hub ABI encoding tests for the Stellar lending builders.
  *
@@ -36,14 +37,13 @@ const BASE_OPTS: StellarLendingBuilderOptions = {
 const invokeArgsOf = (xdrB64: string): xdr.ScVal[] => {
   const tx = new Transaction(xdrB64, Networks.TESTNET)
   const op = tx.operations[0] as unknown as { func: xdr.HostFunction }
-  return op.func.invokeContract().args()
+  return xdrField(xdrField(op.func, 'invokeContract'), 'args')
 }
 
 /** Sorted symbol-key names of a HubAssetKey struct ScVal (an scvMap). */
 const hubAssetKeyNames = (hubAssetKey: xdr.ScVal): string[] =>
-  hubAssetKey
-    .map()!
-    .map((e) => e.key().sym().toString())
+  xdrField(hubAssetKey, 'map')!
+    .map((e) => xdrField(xdrField(e, 'key'), 'sym').toString())
     .sort()
 
 describe('multi-hub builder ABI encoding', () => {
@@ -58,20 +58,19 @@ describe('multi-hub builder ABI encoding', () => {
 
     // [caller, account_id(u64), spoke_id(u32), assets vec]
     expect(args).toHaveLength(4)
-    expect(args[2].switch()).toBe(xdr.ScValType.scvU32())
-    expect(args[2].u32()).toBe(2)
+    expect(xdrType(args[2])).toBe('scvU32')
+    expect(xdrField(args[2], 'u32')).toBe(2)
 
-    const firstTuple = args[3].vec()![0].vec()! // (HubAssetKey, i128)
+    const firstTuple = xdrField(xdrField(args[3], 'vec')![0], 'vec')! // (HubAssetKey, i128)
     expect(hubAssetKeyNames(firstTuple[0])).toEqual(['asset', 'hub_id'])
 
     // hub_id round-trips as the u32 we passed.
-    const hubIdEntry = firstTuple[0]
-      .map()!
-      .find((e) => e.key().sym().toString() === 'hub_id')
-    expect(hubIdEntry?.val().u32()).toBe(1)
+    const hubIdEntry = xdrField(firstTuple[0], 'map')!
+      .find((e) => xdrField(xdrField(e, 'key'), 'sym').toString() === 'hub_id')
+    expect(xdrField(xdrField(hubIdEntry!, 'val'), 'u32')).toBe(1)
 
     // amount is the i128 second tuple element.
-    expect(firstTuple[1].switch()).toBe(xdr.ScValType.scvI128())
+    expect(xdrType(firstTuple[1])).toBe('scvI128')
   })
 
   it('borrow encodes Vec<(HubAssetKey, i128)> + trailing Option<to>', () => {
@@ -85,8 +84,8 @@ describe('multi-hub builder ABI encoding', () => {
 
     // [caller, account_id(u64), borrows vec, to (None -> Void)]
     expect(args).toHaveLength(4)
-    const firstTuple = args[2].vec()![0].vec()!
+    const firstTuple = xdrField(xdrField(args[2], 'vec')![0], 'vec')!
     expect(hubAssetKeyNames(firstTuple[0])).toEqual(['asset', 'hub_id'])
-    expect(args[3].switch()).toBe(xdr.ScValType.scvVoid())
+    expect(xdrType(args[3])).toBe('scvVoid')
   })
 })

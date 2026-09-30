@@ -7,6 +7,7 @@ export default {
     // lending surface (builders, admin, governance, event decoders). Output
     // lands at `dist/sdk/stellar/index.{esm.js,cjs}` to match package.json.
     'sdk/stellar/index': './src/sdk/stellar/index.ts',
+    'sdk/stellar/swap-index': './src/sdk/stellar/swap-index.ts',
   },
   plugins: [
     // Polyfill `self` for Node.js / Edge consumers. The SDK and its

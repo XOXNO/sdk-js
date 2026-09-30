@@ -12,6 +12,23 @@ For Stellar lending, start with the [integration guide](md/stellar-lending.md)
 and [checked example](examples/stellar-lending.ts). They cover typed market
 discovery and unsigned XDR preparation, wallet signing, submission and confirmation.
 Generate focused API documentation with `npm run docs:stellar`.
+Decode direct XOXNO swap history synchronously with
+`decodeStellarSwapEnvelope` from `@xoxno/sdk-js/stellar-swap`:
+
+```typescript
+import { decodeStellarSwapEnvelope } from '@xoxno/sdk-js/stellar-swap'
+
+const swap = decodeStellarSwapEnvelope({
+  envelopeXdr, networkPassphrase, routerAddress, viewer, operationIndex,
+})
+// swap: { tokenIn, tokenOut, amountInAtoms, operationIndex } | null
+```
+
+Pin `routerAddress` for the selected network. Fee bumps use inner operation
+indices; omit the index only when there is one matching swap. The input amount
+is an exact base-unit string. Actual output must come from ledger effects;
+the route minimum is not the received amount. This decoder makes no network requests.
+
 `XOXNOClient` requires an application-supplied `apiUrl`; the SDK does not read
 environment variables or select an API deployment for you.
 For Stellar infrastructure, use the exported `STELLAR_NETWORKS` manifest and
