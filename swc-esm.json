@@ -1,0 +1,10 @@
+{
+  "$schema": "https://swc.rs/schema.json",
+  "jsc": {
+    "parser": { "syntax": "typescript" },
+    "target": "es2020"
+  },
+  "module": { "type": "es6", "resolveFully": true },
+  "exclude": ["__tests__", "\\.test\\.ts$", "parseSwagger\\.ts$"],
+  "minify": false
+}
