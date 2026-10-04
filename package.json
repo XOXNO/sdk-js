@@ -46,7 +46,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "build:sdk": "npx bun run src/sdk/parseSwagger.ts --offline && npx oxlint src/sdk/swagger.ts --fix && npx bun run md/extract.ts",
     "build:types": "tsc --emitDeclarationOnly && node scripts/emit-cjs-dts.mjs",
-    "build:esm": "webpack --config webpack-esm.config.mjs",
+    "build:esm": "swc src -d dist/esm --strip-leading-paths --config-file swc-esm.json -C jsc.baseUrl=$PWD/src && node scripts/emit-esm-entries.mjs && webpack --config webpack-esm.config.mjs",
     "build:cjs": "webpack --config webpack-cjs.config.mjs",
     "build": "npm run build:sdk && npm run build:types && npm run build:esm && npm run build:cjs",
     "verify:dist": "node -e \"const m=require('./dist/index.cjs'); if(typeof m.decodeStellarLendingEvent!=='function')throw new Error('CJS require broken'); console.log('CJS ok')\" && node --input-type=module -e \"import('./dist/index.esm.js').then(m=>{if(typeof m.decodeStellarLendingEvent!=='function')throw new Error('ESM import broken'); console.log('ESM ok')})\" && npm run test:swap",
