@@ -40,7 +40,8 @@ const spoke = object({
 export const lendingPositionsSchema = {
   type: 'array' as const,
   items: object({
-    accountId: string, nftContract: string, network,
+    accountId: string, nftContract: string,
+    nftImage: { ...string, format: 'uri', description: 'Dynamic position SVG served by the network\'s XOXNO API.' }, network,
     spokeId: nullableNumber, spokeName: nullableString,
     supplied: { type: 'array' as const, items: positionAsset },
     borrow: { type: 'array' as const, items: positionAsset },

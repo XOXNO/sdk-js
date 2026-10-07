@@ -36,6 +36,8 @@ export interface PositionAsset extends LendingToken {
 export interface LendingPosition {
   accountId: string
   nftContract: string
+  /** Dynamic position SVG served by the network's XOXNO API. */
+  nftImage: string
   network: 'mainnet' | 'testnet'
   spokeId: number | null
   spokeName: string | null

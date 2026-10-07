@@ -8,6 +8,7 @@ const page = (rows: unknown[], link?: string, status = 200) =>
   new Response(JSON.stringify(rows), { status, headers: link ? { Link: link } : {} })
 const position: LendingPosition = {
   accountId: '9007199254740993', nftContract: 'CNFT', network: 'mainnet',
+  nftImage: 'https://api.xoxno.com/user/lending/image/9007199254740993?isStatic=true&chain=STELLAR',
   spokeId: null, spokeName: null, supplied: [], borrow: [],
   hasDebt: null, healthFactor: null, borrowLimitUsd: null,
   availableBorrowUsd: null, netApy: null, dataStatus: 'incomplete',
