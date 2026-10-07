@@ -24,6 +24,16 @@
         "default": "./dist/sdk/stellar/index.cjs"
       }
     },
+    "./stellar-lending/read": {
+      "import": {
+        "types": "./dist/sdk/stellar/read/index.d.ts",
+        "default": "./dist/sdk/stellar/read/index.esm.js"
+      },
+      "require": {
+        "types": "./dist/cjs/sdk/stellar/read/index.d.ts",
+        "default": "./dist/sdk/stellar/read/index.cjs"
+      }
+    },
     "./stellar-swap": {
       "import": {
         "types": "./dist/sdk/stellar/swap-index.d.ts",
@@ -50,7 +60,7 @@
     "build:cjs": "webpack --config webpack-cjs.config.mjs",
     "build": "npm run build:sdk && npm run build:types && npm run build:esm && npm run build:cjs",
     "verify:dist": "node -e \"const m=require('./dist/index.cjs'); if(typeof m.decodeStellarLendingEvent!=='function')throw new Error('CJS require broken'); console.log('CJS ok')\" && node --input-type=module -e \"import('./dist/index.esm.js').then(m=>{if(typeof m.decodeStellarLendingEvent!=='function')throw new Error('ESM import broken'); console.log('ESM ok')})\" && npm run test:swap",
-    "prepublishOnly": "npm run verify:dist",
+    "prepublishOnly": "npm run verify:dist && npm run test:read",
     "lint": "oxlint src",
     "format": "oxlint src --fix",
     "commit": "git-cz",
@@ -60,7 +70,8 @@
     "docs:stellar": "typedoc --options typedoc.stellar.json",
     "check:examples": "tsc --project tsconfig.examples.json",
     "test:browser": "node --experimental-vm-modules scripts/check-stellar-browser.mjs",
-    "test:swap": "node scripts/check-stellar-swap.mjs"
+    "test:swap": "node scripts/check-stellar-swap.mjs",
+    "test:read": "node --experimental-vm-modules scripts/check-stellar-read.mjs"
   },
   "config": {
     "commitizen": {
@@ -134,5 +145,10 @@
   },
   "peerDependencies": {
     "@stellar/stellar-sdk": ">=15.0.0 <18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@stellar/stellar-sdk": {
+      "optional": true
+    }
   }
 }

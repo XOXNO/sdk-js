@@ -7,6 +7,7 @@ export default {
     // lending surface (builders, admin, governance, event decoders). Output
     // lands at `dist/sdk/stellar/index.{esm.js,cjs}` to match package.json.
     'sdk/stellar/index': './src/sdk/stellar/index.ts',
+    'sdk/stellar/read/index': './src/sdk/stellar/read/index.ts',
     'sdk/stellar/swap-index': './src/sdk/stellar/swap-index.ts',
   },
   plugins: [
@@ -21,6 +22,7 @@ export default {
         'if(typeof globalThis!=="undefined"&&typeof globalThis.self==="undefined"){globalThis.self=globalThis;}',
       raw: true,
       entryOnly: true,
+      exclude: /sdk\/stellar\/read\/index/,
     }),
   ],
   // Leave `@stellar/stellar-sdk` (and any subpath) out of the bundle so the

@@ -8,6 +8,28 @@ npm install @xoxno/sdk-js
 
 ## Basic usage
 
+For render-ready Stellar lending data in browsers or React Native, use the
+read subpath. It has no Stellar, MultiversX or Node runtime imports:
+
+```typescript
+import { createStellarLendingReadClient } from '@xoxno/sdk-js/stellar-lending/read'
+
+const lending = createStellarLendingReadClient({ baseUrl: 'https://api.xoxno.com' })
+const assets = await lending.assets({ usage: 'collateral' })
+const positions = await lending.positions(owner)
+```
+
+`baseUrl` selects the API deployment, which must expose the new
+`/stellar-lending/v1` read routes. Supply `fetch` if the host has no global
+implementation. Both methods accept `signal`; positions follows every `Link`
+page, including empty pages. APYs are fractions, raw amounts are exact integer
+token base-unit strings, and unavailable data stays null. Capacities are indexed
+estimates; prepare/simulate before signing. Public response types and inline
+OpenAPI schemas are exported from the same subpath.
+
+The Stellar peer is optional for REST reads. Install `@stellar/stellar-sdk`
+when using transaction builders, RPC reads or swap decoders.
+
 For Stellar lending, start with the [integration guide](md/stellar-lending.md)
 and [checked example](examples/stellar-lending.ts). They cover typed market
 discovery and unsigned XDR preparation, wallet signing, submission and confirmation.
