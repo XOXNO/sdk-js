@@ -21,6 +21,7 @@ import {
   Account,
   BASE_FEE,
   Contract,
+  Soroban,
   scValToNative,
   TransactionBuilder,
   xdr,
@@ -47,6 +48,29 @@ import {
   type StellarStrategySwapInput,
   type StellarStrategySwapPathInput,
 } from './scval-encode'
+
+/**
+ * Convert a positive decimal token amount into a builder-ready base-unit string.
+ * Uses Stellar's exact string parser; never rounds excess precision or uses floats.
+ * @param amount - Plain decimal text, for example '1.25'; no sign or exponent.
+ * @param decimals - Token decimal places, from 0 to 18; null metadata is rejected.
+ * @throws If the input is invalid, non-positive, over-precise, or exceeds i128.
+ * @example parseStellarTokenAmount('1.25', 7) // '12500000'
+ */
+export function parseStellarTokenAmount(amount: string, decimals: number | null): string {
+  if (typeof decimals !== 'number' || !Number.isInteger(decimals) || decimals < 0 || decimals > 18) {
+    throw new Error('Token decimals must be an integer from 0 to 18')
+  }
+  if (typeof amount !== 'string' || !/^\d+(?:\.\d+)?$/.test(amount)) {
+    throw new Error('Token amount must be plain decimal text')
+  }
+  const raw = Soroban.parseTokenAmount(amount, decimals)
+  const value = BigInt(raw)
+  if (value <= 0n || value > (1n << 127n) - 1n) {
+    throw new Error('Token amount must be within the positive i128 range')
+  }
+  return raw
+}
 
 // -----------------------------------------------------------------------------
 // Shared types
