@@ -19,6 +19,7 @@ export const STELLAR_SWAP_VENUES = [
   'Phoenix',
   'Sushi',
   'CometDex',
+  'Curve',
 ] as const
 
 export type StellarSwapVenue = (typeof STELLAR_SWAP_VENUES)[number]
@@ -33,6 +34,7 @@ export const STELLAR_SWAP_VENUE_OPCODE: Record<StellarSwapVenue, number> = {
   Phoenix: 2,
   Sushi: 3,
   CometDex: 4,
+  Curve: 7,
 }
 
 /** Wire version of the packed program. Must match the contract's `VERSION`. */

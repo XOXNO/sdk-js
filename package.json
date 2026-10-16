@@ -140,7 +140,7 @@
   "dependencies": {
     "@multiversx/sdk-core": "^15.3.2",
     "@multiversx/sdk-network-providers": "^2.9.3",
-    "@xoxno/types": "1.0.496",
+    "@xoxno/types": "1.0.500",
     "buffer": "^6.0.3"
   },
   "peerDependencies": {

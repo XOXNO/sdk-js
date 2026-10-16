@@ -30,6 +30,7 @@ import {
   PPM_DENOMINATOR,
   STELLAR_PROGRAM_VERSION,
   STELLAR_SWAP_VENUES,
+  STELLAR_SWAP_VENUE_OPCODE,
   type StellarStrategySwapInput,
   type StellarSwapVenue,
 } from './scval-encode'
@@ -269,7 +270,10 @@ export function decodeStellarRouteBytes(route: StellarRouteBytesInput): DecodedS
     const idxA = byte(at + 2)
     const idxB = byte(at + 3)
     const idxC = byte(at + 4)
-    if (opcode > OP_MINT) fail('UNKNOWN_OPCODE', `instruction ${i} has opcode ${opcode}`)
+    const venue = STELLAR_SWAP_VENUES.find((value) => STELLAR_SWAP_VENUE_OPCODE[value] === opcode)
+    if (!venue && opcode !== OP_BURN && opcode !== OP_MINT) {
+      fail('UNKNOWN_OPCODE', `instruction ${i} has opcode ${opcode}`)
+    }
 
     let mode: DecodedStellarRouteMode
     if (modeByte === MODE_ALL) {
@@ -305,7 +309,7 @@ export function decodeStellarRouteBytes(route: StellarRouteBytesInput): DecodedS
     if (idxB === idxC) fail('INVALID_STRUCTURE', `instruction ${i} swaps a token for itself`)
     decoded.push({
       kind: 'swap',
-      venue: STELLAR_SWAP_VENUES[opcode] as StellarSwapVenue,
+      venue: venue as StellarSwapVenue,
       mode,
       pool,
       tokenIn: asset(idxB),

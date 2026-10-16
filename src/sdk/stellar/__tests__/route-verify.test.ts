@@ -1,4 +1,5 @@
 import type { StellarAggregatorQuoteResponseDto } from '@xoxno/types'
+import { readFileSync } from 'node:fs'
 import { StrKey, xdr } from '@stellar/stellar-sdk'
 import { xdrBytes, xdrField } from '../xdr-compat'
 
@@ -55,6 +56,63 @@ const withProgram = (routeXdr: string, edit: (ops: Buffer) => Buffer): string =>
   return scStruct(fields).toXDR('base64')
 }
 
+describe('Curve opcode 7', () => {
+  // Same arb-algo fixture executed against the production router WASM.
+  const golden = readFileSync(new URL('./fixtures/curve-opcode7.xdr', import.meta.url))
+  const payload: StellarStrategyPayloadInput = {
+    tokenIn: 'CCABDO7UZXYE4W6GVSEGSNNZTKSLFQGKXXQTH6OX7M7GKZ4Z6CUJNGZN',
+    tokenOut: 'CDLDVFKHEZ2RVB3NG4UQA4VPD3TSHV6XMHXMHP2BSGCJ2IIWVTOHGDSG',
+    totalMinOut: '9969012',
+    paths: [{ splitPpm: 1_000_000, hops: [{
+      pool: 'CD5M24KZHINN46ZCECBNWYKINAIJGRO4WTZNGUCISPZIYUZZAWDS6H7Y',
+      tokenIn: 'CCABDO7UZXYE4W6GVSEGSNNZTKSLFQGKXXQTH6OX7M7GKZ4Z6CUJNGZN',
+      tokenOut: 'CDLDVFKHEZ2RVB3NG4UQA4VPD3TSHV6XMHXMHP2BSGCJ2IIWVTOHGDSG',
+      venue: 'Curve',
+    }] }],
+  }
+  const expected = { tokenIn: payload.tokenIn, tokenOut: payload.tokenOut, minOut: payload.totalMinOut, amountIn: '10000000' }
+  const quote: StellarAggregatorQuoteResponseDto = {
+    mode: 'forward', from: payload.tokenIn, to: payload.tokenOut,
+    amountIn: '10000000', amountOut: '9999012', amountOutMin: payload.totalMinOut,
+    tokenInKind: 'soroban', tokenOutKind: 'soroban', amountInShort: 1, amountOutShort: 0.9999012,
+    rate: 0.9999012, rateInverse: 1 / 0.9999012, decimalsIn: 7, decimalsOut: 7,
+    routeXdr: golden.toString('base64'), platform: 'aggregator',
+    hops: [{ address: payload.paths[0]!.hops[0]!.pool, from: payload.tokenIn, to: payload.tokenOut,
+      amountIn: '10000000', amountOut: '9999012', dex: 'Curve', kind: 'stable', feeBps: 3,
+      tokenInKind: 'soroban', tokenOutKind: 'soroban', amountInShort: 1, amountOutShort: 0.9999012 }],
+  }
+
+  it('encodes byte-for-byte like arb-algo and verifies its golden route', () => {
+    expect(Buffer.from(encodeStrategyPayloadToRouteXdr(payload), 'base64')).toEqual(golden)
+    expect(verifyStellarRouteBytes(golden, expected).ops).toEqual([{
+      kind: 'swap', venue: 'Curve', mode: { kind: 'all' },
+      pool: payload.paths[0]!.hops[0]!.pool, tokenIn: payload.tokenIn, tokenOut: payload.tokenOut,
+    }])
+  })
+
+  it('maps opaque quotes and locally encoded fallback quotes', () => {
+    expect(mapQuoteResponseToStrategySwap(quote, { expected })).toEqual({ routeXdr: quote.routeXdr })
+    expect(verifyStellarRouteBytes(mapQuoteResponseToStrategySwap({ ...quote, routeXdr: undefined }, { expected }), expected).ops[0])
+      .toMatchObject({ kind: 'swap', venue: 'Curve' })
+  })
+
+  it('preserves pair, floor, fixed-input and chaining checks', () => {
+    expectCode(() => mapQuoteResponseToStrategySwap(quote, { expected: { ...expected, tokenIn: USDC } }), 'TOKEN_IN_MISMATCH')
+    expectCode(() => mapQuoteResponseToStrategySwap(quote, { expected: { ...expected, tokenOut: XLM } }), 'TOKEN_OUT_MISMATCH')
+    expectCode(() => mapQuoteResponseToStrategySwap(quote, { expected: { ...expected, minOut: '9969013' } }), 'MIN_OUT_TOO_LOW')
+    expectCode(() => decodeStellarRouteBytes(withProgram(quote.routeXdr!, (ops) => { ops[11] = 1; return ops })), 'INVALID_STRUCTURE')
+    const fixed = withProgram(quote.routeXdr!, (ops) => { ops[11] = 2; return ops })
+    expectCode(() => verifyStellarRouteBytes(fixed, { ...expected, amountIn: '1' }), 'AMOUNT_IN_EXCEEDED')
+  })
+
+  it.each([
+    ['Soroswap', 0], ['Aquarius', 1], ['Phoenix', 2], ['Sushi', 3], ['CometDex', 4], ['Curve', 7],
+  ] as const)('preserves %s opcode %i', (venue, opcode) => {
+    const routeXdr = withProgram(quote.routeXdr!, (ops) => { ops[10] = opcode; return ops })
+    expect(decodeStellarRouteBytes(routeXdr).ops[0]).toMatchObject({ kind: 'swap', venue })
+  })
+})
+
 describe('decodeStellarRouteBytes round trip', () => {
   it('decodes a single hop', () => {
     const route = decodeStellarRouteBytes(encodeStrategyPayloadToRouteXdr(singleHop))
@@ -78,7 +136,7 @@ describe('decodeStellarRouteBytes round trip', () => {
     ])
   })
 
-  it('decodes a multi hop chain', () => {
+  it.each(['Phoenix', 'Curve'] as const)('decodes a multi hop chain through %s', (venue) => {
     const route = decodeStellarRouteBytes(
       encodeStrategyPayloadToRouteXdr({
         ...singleHop,
@@ -86,7 +144,7 @@ describe('decodeStellarRouteBytes round trip', () => {
           {
             hops: [
               { pool: POOL_A, tokenIn: USDC, tokenOut: EURC, venue: 'Aquarius' },
-              { pool: POOL_B, tokenIn: EURC, tokenOut: XLM, venue: 'Phoenix' },
+              { pool: POOL_B, tokenIn: EURC, tokenOut: XLM, venue },
             ],
             splitPpm: 1_000_000,
           },
@@ -95,11 +153,11 @@ describe('decodeStellarRouteBytes round trip', () => {
     )
     expect(route.ops.map((op) => (op.kind === 'swap' ? [op.venue, op.mode.kind] : op.kind))).toEqual([
       ['Aquarius', 'all'],
-      ['Phoenix', 'prev'],
+      [venue, 'prev'],
     ])
   })
 
-  it('decodes a split as a share of the remainder, then All', () => {
+  it.each(['Sushi', 'Curve'] as const)('decodes a split through %s as a share of the remainder, then All', (venue) => {
     const route = decodeStellarRouteBytes(
       encodeStrategyPayloadToRouteXdr({
         ...singleHop,
@@ -109,7 +167,7 @@ describe('decodeStellarRouteBytes round trip', () => {
             splitPpm: 600_000,
           },
           {
-            hops: [{ pool: POOL_B, tokenIn: USDC, tokenOut: XLM, venue: 'Sushi' }],
+            hops: [{ pool: POOL_B, tokenIn: USDC, tokenOut: XLM, venue }],
             splitPpm: 400_000,
           },
         ],
@@ -236,7 +294,7 @@ describe('verifyStellarRouteBytes', () => {
       return copy
     }
     expectCode(() => decodeStellarRouteBytes(withProgram(routeXdr, patch(0, 2))), 'UNSUPPORTED_VERSION')
-    expectCode(() => decodeStellarRouteBytes(withProgram(routeXdr, patch(10, 7))), 'UNKNOWN_OPCODE')
+    expectCode(() => decodeStellarRouteBytes(withProgram(routeXdr, patch(10, 8))), 'UNKNOWN_OPCODE')
     expectCode(() => decodeStellarRouteBytes(new Uint8Array(17 * 1024)), 'OVERSIZED')
     expectCode(() => decodeStellarRouteBytes('AQIDBA=='), 'MALFORMED')
   })
