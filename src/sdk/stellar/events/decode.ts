@@ -91,6 +91,7 @@ const POSITION_ACTION = [
   'migrate',
   'rp_col_net',
   'liq_credit',
+  'flash_pos',
 ] as const
 
 const positionMode = (v: unknown): 'None' | 'Multiply' | 'Long' | 'Short' =>
@@ -225,21 +226,25 @@ const REGISTRY: Record<string, DecoderFn> = {
       marketAddress: str(d.market_address),
     },
   }),
-  'market:params_update': (d) => ({
-    topic: 'market:params_update',
-    data: {
-      asset: str(d.asset),
-      maxBorrowRateRay: dec(d.max_borrow_rate),
-      baseBorrowRateRay: dec(d.base_borrow_rate),
-      slope1Ray: dec(d.slope1),
-      slope2Ray: dec(d.slope2),
-      slope3Ray: dec(d.slope3),
-      midUtilizationRay: dec(d.mid_utilization),
-      optimalUtilizationRay: dec(d.optimal_utilization),
-      maxUtilizationRay: dec(d.max_utilization),
-      reserveFactorBps: num(d.reserve_factor),
-    },
-  }),
+  // `hub_id` is required to tell same-token markets apart; the upstream DTO
+  // does not declare it yet, hence the cast.
+  'market:params_update': (d) =>
+    ({
+      topic: 'market:params_update',
+      data: {
+        hubId: num(d.hub_id),
+        asset: str(d.asset),
+        maxBorrowRateRay: dec(d.max_borrow_rate),
+        baseBorrowRateRay: dec(d.base_borrow_rate),
+        slope1Ray: dec(d.slope1),
+        slope2Ray: dec(d.slope2),
+        slope3Ray: dec(d.slope3),
+        midUtilizationRay: dec(d.mid_utilization),
+        optimalUtilizationRay: dec(d.optimal_utilization),
+        maxUtilizationRay: dec(d.max_utilization),
+        reserveFactorBps: num(d.reserve_factor),
+      },
+    }) as Extract<StellarLendingDecodedEvent, { topic: 'market:params_update' }>,
   // Vec-encoded (ABI v2): data is the entries Vec directly, each an array of 9.
   'market:batch_state_update': (d) => ({
     topic: 'market:batch_state_update',
@@ -334,15 +339,17 @@ const REGISTRY: Record<string, DecoderFn> = {
       totalCollateralUsdWad: dec(d.total_collateral_usd_wad),
     },
   }),
-  'strategy:initial_payment': (d) => ({
-    topic: 'strategy:initial_payment',
-    data: {
-      token: str(d.token),
-      amount: dec(d.amount),
-      usdValueWad: dec(d.usd_value_wad),
-      accountId: dec(d.account_id),
-    },
-  }),
+  // The event carries `{ token, amount, account_id }` only. The upstream DTO
+  // still declares `usdValueWad`; it is left absent rather than fabricated.
+  'strategy:initial_payment': (d) =>
+    ({
+      topic: 'strategy:initial_payment',
+      data: {
+        token: str(d.token),
+        amount: dec(d.amount),
+        accountId: dec(d.account_id),
+      },
+    }) as unknown as Extract<StellarLendingDecodedEvent, { topic: 'strategy:initial_payment' }>,
   'strategy:fee': (d) => ({
     topic: 'strategy:fee',
     data: {

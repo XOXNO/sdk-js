@@ -35,3 +35,4 @@ export type {
 // Soroban error mapper; re-export at the stellar subpath so consumers can
 // import from '@xoxno/sdk-js/stellar-lending' when decoding contract errors.
 export { mapSorobanError } from '../../utils/soroban-errors'
+export type { MapSorobanErrorOptions } from '../../utils/soroban-errors'

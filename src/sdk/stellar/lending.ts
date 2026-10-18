@@ -515,6 +515,73 @@ export function decodeStellarLiquidateReturn(returnValueB64: string): string {
 }
 
 /**
+ * get_liquidation_estimate(account_id: u64, debt_payments: Vec<(HubAssetKey, i128)>,
+ *                          seize_mode: SeizeMode) -> LiquidationEstimate
+ *
+ * Read-only view: simulate the built transaction (`server.simulateTransaction`)
+ * and decode `result.retval` with `decodeStellarLiquidationEstimate`. Takes the
+ * same args as `buildStellarLiquidateTx`, so an estimate and the real call stay
+ * encoded identically. Never submit this transaction.
+ * @param opts - Network, caller (any account; it is only the simulation source), sequence and controller.
+ * @param args - The liquidation you intend to send.
+ * @returns Unsigned XDR to simulate.
+ * @category Lending transactions
+ */
+export function buildStellarLiquidationEstimateTx(
+  opts: StellarLendingBuilderOptions,
+  args: StellarLiquidateArgs
+): BuiltStellarTx {
+  return buildTx(opts, 'get_liquidation_estimate', [
+    u64(args.accountNonce),
+    tupleHubAssetAmountVec([...args.debtPayments]),
+    seizeMode(args.seizeMode ?? 'Transfer'),
+  ])
+}
+
+/** One `PaymentTuple`: a token amount without a hub id. */
+export interface StellarPaymentTuple {
+  asset: string
+  /** Token base units for Transfer legs; RAY-scaled supply shares for Credit seizure. */
+  amount: string
+}
+
+/** Decoded `LiquidationEstimate`; i128 fields as decimal strings. */
+export interface StellarLiquidationEstimate {
+  seizedCollaterals: StellarPaymentTuple[]
+  protocolFees: StellarPaymentTuple[]
+  refunds: StellarPaymentTuple[]
+  maxPaymentWad: string
+  bonusRateBps: string
+}
+
+const paymentTuples = (v: unknown): StellarPaymentTuple[] =>
+  (Array.isArray(v) ? v : []).map((p) => {
+    const row = p as { asset: unknown; amount: unknown }
+    return { asset: String(row.asset), amount: String(row.amount) }
+  })
+
+/**
+ * Decode `get_liquidation_estimate`'s return value from base64 XDR (Soroban
+ * RPC `result.retval`). Tuples carry token addresses without hub ids; match
+ * them to the target's `(hub_id, asset)` positions yourself.
+ */
+export function decodeStellarLiquidationEstimate(
+  returnValueB64: string
+): StellarLiquidationEstimate {
+  const native = scValToNative(xdr.ScVal.fromXDR(returnValueB64, 'base64')) as Record<string, unknown>
+  if (!native || typeof native !== 'object' || Array.isArray(native)) {
+    throw new Error('Stellar builder: liquidation estimate must be a struct')
+  }
+  return {
+    seizedCollaterals: paymentTuples(native.seized_collaterals),
+    protocolFees: paymentTuples(native.protocol_fees),
+    refunds: paymentTuples(native.refunds),
+    maxPaymentWad: String(native.max_payment_wad),
+    bonusRateBps: String(native.bonus_rate_bps),
+  }
+}
+
+/**
  * flash_loan(caller, asset: HubAssetKey, amount: i128, receiver, data: Bytes)
  * @param opts - Network, caller, current source sequence and deployment addresses.
  * @param args - Operation arguments; token amounts are decimal base-unit strings.

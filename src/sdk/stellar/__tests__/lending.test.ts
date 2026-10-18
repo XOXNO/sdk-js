@@ -33,6 +33,7 @@ import {
   buildStellarBorrowTx,
   buildStellarFlashLoanTx,
   buildStellarLiquidateTx,
+  buildStellarLiquidationEstimateTx,
   buildStellarMigrateFromBlendTx,
   buildStellarMultiplyTx,
   buildStellarRepayDebtWithCollateralTx,
@@ -43,6 +44,7 @@ import {
   buildStellarWithdrawBatchTx,
   buildStellarWithdrawTx,
   decodeStellarLiquidateReturn,
+  decodeStellarLiquidationEstimate,
   type StellarLendingBuilderOptions,
   type StellarFlashLoanArgs,
   type StellarLiquidateArgs,
@@ -647,3 +649,54 @@ it('preserves full u64 account IDs supplied as strings and rejects unsafe numeri
     ...supplyArgs, accountNonce: Number.MAX_SAFE_INTEGER + 1,
   })).toThrow(/safe integers/)
 })
+
+describe('liquidation estimate', () => {
+  const invoke = (built: { xdr: string }) => {
+    const tx = new Transaction(built.xdr, Networks.TESTNET)
+    const op = tx.operations[0] as unknown as { func: stellarXdr.HostFunction }
+    return xdrField(op.func, 'invokeContract')
+  }
+
+  it('calls get_liquidation_estimate with the liquidate args minus the liquidator', () => {
+    const est = invoke(buildStellarLiquidationEstimateTx(BASE_OPTS, liquidateArgs))
+    const liq = invoke(buildStellarLiquidateTx(BASE_OPTS, liquidateArgs))
+    expect(xdrField(est, 'functionName').toString()).toBe('get_liquidation_estimate')
+    const estArgs = xdrField(est, 'args')
+    const liqArgs = xdrField(liq, 'args')
+    expect(estArgs).toHaveLength(3)
+    // account_id, debt_payments, seize_mode are encoded exactly as liquidate's.
+    for (let i = 0; i < 3; i++) {
+      expect(estArgs[i]!.toXDR('base64')).toBe(liqArgs[i + 1]!.toXDR('base64'))
+    }
+  })
+
+  it('decodes the LiquidationEstimate struct with decimal strings', () => {
+    const asset = 'CAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQC526'
+    const tuple = (amount: bigint) =>
+      stellarXdr.ScVal.scvMap([
+        new stellarXdr.ScMapEntry({ key: stellarXdr.ScVal.scvSymbol('amount'), val: new ScInt(amount).toI128() }),
+        new stellarXdr.ScMapEntry({
+          key: stellarXdr.ScVal.scvSymbol('asset'),
+          val: stellarXdr.ScVal.scvAddress(
+            stellarXdr.ScAddress.scAddressTypeContract(Buffer.alloc(32, 1) as never)
+          ),
+        }),
+      ])
+    const entry = (k: string, v: stellarXdr.ScVal) =>
+      new stellarXdr.ScMapEntry({ key: stellarXdr.ScVal.scvSymbol(k), val: v })
+    const retval = stellarXdr.ScVal.scvMap([
+      entry('bonus_rate_bps', new ScInt(450n).toI128()),
+      entry('max_payment_wad', new ScInt(6n * 10n ** 20n).toI128()),
+      entry('protocol_fees', stellarXdr.ScVal.scvVec([tuple(12n)])),
+      entry('refunds', stellarXdr.ScVal.scvVec([])),
+      entry('seized_collaterals', stellarXdr.ScVal.scvVec([tuple(1_000_000n)])),
+    ])
+    const out = decodeStellarLiquidationEstimate(retval.toXDR('base64'))
+    expect(out.bonusRateBps).toBe('450')
+    expect(out.maxPaymentWad).toBe('600000000000000000000')
+    expect(out.seizedCollaterals).toEqual([{ asset, amount: '1000000' }])
+    expect(out.protocolFees).toEqual([{ asset, amount: '12' }])
+    expect(out.refunds).toEqual([])
+  })
+})
+

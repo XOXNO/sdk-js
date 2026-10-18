@@ -584,4 +584,47 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     const ev = decodeStellarLendingEvent(f.topics.map((t) => toBase64Xdr(xdr.ScVal.fromXDR(t, 'base64'))), toBase64Xdr(live))
     expect(ev!.topic).toBe('config:oracle_disabled')
   })
+
+  it('position:batch_update — FlashPos (16) decodes as flash_pos', () => {
+    const data = vecV([
+      u64(44n),
+      vecV([addrV(OWNER), u32(1), u32(0)]),
+      vecV([]),
+      vecV([borrowEntry(16, ASSET_A, 5_000_000n)]),
+    ])
+    const ev = decodeStellarLendingEvent(topicsFor('position', 'batch_update'), b64(data))
+    if (ev?.topic !== 'position:batch_update') throw new Error('narrow')
+    expect(ev.data.updates.map((u) => u.action)).toEqual(['flash_pos'])
+  })
+
+  it('market:params_update — keeps hub_id so same-token markets stay distinct', () => {
+    const data = mapV({
+      hub_id: u32(2),
+      asset: addrV(ASSET_A),
+      max_borrow_rate: i128(2n * RAY),
+      base_borrow_rate: i128(0n),
+      slope1: i128(RAY / 10n),
+      slope2: i128(RAY / 5n),
+      slope3: i128(RAY),
+      mid_utilization: i128(RAY / 2n),
+      optimal_utilization: i128((RAY * 8n) / 10n),
+      max_utilization: i128((RAY * 95n) / 100n),
+      reserve_factor: u32(1000),
+    })
+    const ev = decodeStellarLendingEvent(topicsFor('market', 'params_update'), b64(data))
+    if (ev?.topic !== 'market:params_update') throw new Error('narrow')
+    expect((ev.data as { hubId?: number }).hubId).toBe(2)
+    expect(ev.data.asset).toBe(ASSET_A)
+    expect(ev.data.reserveFactorBps).toBe(1000)
+  })
+
+  it('strategy:initial_payment — no fabricated usdValueWad (the event has none)', () => {
+    const data = mapV({ token: addrV(ASSET_B), amount: i128(1_000_000n), account_id: u64(9n) })
+    const ev = decodeStellarLendingEvent(topicsFor('strategy', 'initial_payment'), b64(data))
+    if (ev?.topic !== 'strategy:initial_payment') throw new Error('narrow')
+    expect(ev.data.token).toBe(ASSET_B)
+    expect(ev.data.amount).toBe('1000000')
+    expect(ev.data.accountId).toBe('9')
+    expect((ev.data as { usdValueWad?: string }).usdValueWad).toBeUndefined()
+  })
 })
