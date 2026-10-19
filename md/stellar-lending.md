@@ -119,7 +119,7 @@ cash; use the explicit supplied/borrowed totals when displaying those quantities
 | Market `side` | `deposit` or `borrow`. |
 | Holder-list `side` | `deposits` or `borrows`. |
 | Distribution query / response `side` | Query: `deposits` or `borrows`; response: `supply` or `borrow`. |
-| Chart query | ISO-8601 `from`/`to` and a Kusto `bin`, such as `1h` or `1d`. |
+| Chart query | `from`/`to` as calendar days (`yyyy-MM-dd`; datetimes return HTTP 400) and a Kusto `bin`, such as `1h` or `1d`. |
 
 The leaderboard's `healthFactor` is debt divided by liquidation-weighted
 collateral, times 100; higher is riskier. Do not apply the opposite convention

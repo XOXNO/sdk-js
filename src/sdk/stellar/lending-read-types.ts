@@ -40,11 +40,11 @@ export type StellarUserActivityItem = Api.StellarUserActivityItemDto
 export type StellarLendingMarketSide = 'deposit' | 'borrow'
 /** Holder-list balance selector. Also used by holder distribution. */
 export type StellarLendingHoldersSide = 'deposits' | 'borrows'
-/** Time window for API charts. Dates are ISO-8601; bin examples: 1h, 1d. */
+/** Time window for API charts. Dates are calendar days (yyyy-MM-dd, e.g. 2026-09-01); the API rejects ISO-8601 datetimes with HTTP 400. Bin examples: 1h, 1d. */
 export interface StellarMarketGraphQuery {
-  /** Window start. */
+  /** Window start day, yyyy-MM-dd. */
   from: string
-  /** Window end. */
+  /** Window end day, yyyy-MM-dd. */
   to: string
   /** Kusto timespan, for example 1h or 1d. */
   bin: string
@@ -54,11 +54,16 @@ export type StellarActivityQuery = (typeof endpoints)['/stellar-lending/users/:o
 export type StellarActivityPageQuery = (typeof endpoints)['/stellar-lending/users/:owner/activity/page']['input']
 export type StellarGovernanceQuery = (typeof endpoints)['/stellar-lending/governance/proposals']['input']
 export type StellarPositionsQuery = (typeof endpoints)['/stellar-lending/positions']['input']
+/** from/to are calendar days (yyyy-MM-dd); the API rejects ISO-8601 datetimes with HTTP 400. */
 export type StellarRevenueQuery = (typeof endpoints)['/stellar-lending/revenue']['input']
+/** from/to are calendar days (yyyy-MM-dd); the API rejects ISO-8601 datetimes with HTTP 400. */
 export type StellarFeeRevenueQuery = (typeof endpoints)['/stellar-lending/revenue/fees']['input']
 export type StellarParticipantsQuery = (typeof endpoints)['/stellar-lending/participants']['input']
+/** from/to are calendar days (yyyy-MM-dd); the API rejects ISO-8601 datetimes with HTTP 400. */
 export type StellarLiquidationsQuery = (typeof endpoints)['/stellar-lending/liquidations']['input']
 export type StellarLiquidationsLeaderboardQuery = (typeof endpoints)['/stellar-lending/liquidations/leaderboard']['input']
+/** from/to are calendar days (yyyy-MM-dd); the API rejects ISO-8601 datetimes with HTTP 400. */
 export type StellarVolumeQuery = (typeof endpoints)['/stellar-lending/volume']['input']
 export type StellarDistributionQuery = (typeof endpoints)['/stellar-lending/distribution']['input']
+/** from/to are calendar days (yyyy-MM-dd); the API rejects ISO-8601 datetimes with HTTP 400. */
 export type StellarRateSpreadQuery = (typeof endpoints)['/stellar-lending/rate-spread']['input']
