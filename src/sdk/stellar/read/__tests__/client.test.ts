@@ -33,7 +33,7 @@ describe('dependency-free integrator reads', () => {
     const client = createStellarLendingReadClient({ baseUrl, fetch })
     const signal = new AbortController().signal
     expect(await client.assets({ signal })).toEqual([asset])
-    expect(fetch).toHaveBeenCalledWith('https://api.example/api/stellar-lending/v1/assets', { signal, redirect: 'error' })
+    expect(fetch).toHaveBeenCalledWith('https://api.example/api/stellar-lending/v1/assets', { signal, redirect: 'manual' })
     await client.assets({ usage: 'borrow' })
     expect(fetch.mock.calls[1][0]).toBe('https://api.example/api/stellar-lending/v1/assets?usage=borrow')
   })
@@ -88,6 +88,20 @@ describe('dependency-free integrator reads', () => {
   it('rejects pagination cycles', async () => {
     const fetch = jest.fn<typeof globalThis.fetch>().mockResolvedValue(page([], `<${positionsPath}>; rel=next`))
     await expect(createStellarLendingReadClient({ baseUrl, fetch }).positions('GOWNER')).rejects.toThrow('cycle')
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    ['a manual 3xx response', () => new Response(null, { status: 302, headers: { Location: 'https://evil.invalid/' } })],
+    ['a browser opaqueredirect response', () => {
+      const response = new Response(null, { status: 200 })
+      Object.defineProperty(response, 'type', { value: 'opaqueredirect' })
+      Object.defineProperty(response, 'status', { value: 0 })
+      return response
+    }],
+  ])('rejects %s without following it', async (_, redirect) => {
+    const fetch = jest.fn<typeof globalThis.fetch>().mockResolvedValue(redirect())
+    await expect(createStellarLendingReadClient({ baseUrl, fetch }).assets()).rejects.toThrow('redirects are not allowed')
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 

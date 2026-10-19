@@ -3,7 +3,7 @@ import type { LendingAsset, LendingAssetUsage, LendingPosition } from './types'
 export interface StellarLendingReadClientOptions {
   /** API root, for example https://api.xoxno.com. May include a deployment prefix. */
   baseUrl: string
-  /** Inject the host's fetch implementation when unavailable globally; it must honor redirect: 'error'. */
+  /** Inject the host's fetch implementation when unavailable globally; it must honor redirect: 'manual'. */
   fetch?: typeof globalThis.fetch
 }
 
@@ -66,9 +66,13 @@ export function createStellarLendingReadClient(
     while (true) {
       if (visited.has(url.href)) throw new Error('Pagination Link cycle')
       visited.add(url.href)
-      // Reject redirects before a custom fetch could forward credentials to another host.
-      const response = await fetcher(url.href, { signal, redirect: 'error' })
-      if (response.redirected || (response.url && new URL(response.url).href !== url.href)) {
+      // Never follow redirects: a custom fetch could forward credentials to another host.
+      // 'manual' instead of 'error' because Cloudflare Workers reject redirect: 'error'.
+      const response = await fetcher(url.href, { signal, redirect: 'manual' })
+      if (
+        response.type === 'opaqueredirect' || (response.status >= 300 && response.status < 400) ||
+        response.redirected || (response.url && new URL(response.url).href !== url.href)
+      ) {
         throw new Error('Stellar lending redirects are not allowed')
       }
       if (!response.ok) throw new Error(`Stellar lending request failed: HTTP ${response.status}`)
