@@ -2,10 +2,9 @@
  * Decoders for the Stellar lending `#[contractevent]`s (controller, pool, and
  * the price-aggregator's `config:asset_oracle`).
  *
- * Decodes core protocol topics plus pool `strategy:fee` and live controller
- * config topics used by the indexer. Intentional omissions still return
- * `null`: `config:spoke_asset` / `config:remove_spoke_asset` / `config:hub` /
- * `strategy:blend_migration` (handled by az-functions own decoders).
+ * Decodes every topic the controller, pool, price aggregator, governance and
+ * DeFindex strategy contracts emit, plus legacy keys for historical ledgers.
+ * Unknown topics (for example access-control events) return `null`.
  *
  * The public API takes base64-XDR strings (`decodeStellarLendingEvent(topicsB64,
  * dataB64)`) and parses them with this SDK's bundled `@stellar/stellar-sdk`, so
@@ -226,13 +225,12 @@ const REGISTRY: Record<string, DecoderFn> = {
       marketAddress: str(d.market_address),
     },
   }),
-  // `hub_id` is required to tell same-token markets apart; the upstream DTO
-  // does not declare it yet, hence the cast.
+  // `hub_id` tells same-token markets apart; absent on pre-hub ledgers.
   'market:params_update': (d) =>
     ({
       topic: 'market:params_update',
       data: {
-        hubId: num(d.hub_id),
+        hubId: d.hub_id === undefined ? undefined : num(d.hub_id),
         asset: str(d.asset),
         maxBorrowRateRay: dec(d.max_borrow_rate),
         baseBorrowRateRay: dec(d.base_borrow_rate),
@@ -244,7 +242,7 @@ const REGISTRY: Record<string, DecoderFn> = {
         maxUtilizationRay: dec(d.max_utilization),
         reserveFactorBps: num(d.reserve_factor),
       },
-    }) as Extract<StellarLendingDecodedEvent, { topic: 'market:params_update' }>,
+    }),
   // Vec-encoded (ABI v2): data is the entries Vec directly, each an array of 9.
   'market:batch_state_update': (d) => ({
     topic: 'market:batch_state_update',
@@ -339,17 +337,17 @@ const REGISTRY: Record<string, DecoderFn> = {
       totalCollateralUsdWad: dec(d.total_collateral_usd_wad),
     },
   }),
-  // The event carries `{ token, amount, account_id }` only. The upstream DTO
-  // still declares `usdValueWad`; it is left absent rather than fabricated.
-  'strategy:initial_payment': (d) =>
-    ({
-      topic: 'strategy:initial_payment',
-      data: {
-        token: str(d.token),
-        amount: dec(d.amount),
-        accountId: dec(d.account_id),
-      },
-    }) as unknown as Extract<StellarLendingDecodedEvent, { topic: 'strategy:initial_payment' }>,
+  // Current contracts emit `{ token, amount, account_id }`; `usd_value_wad`
+  // exists only on older ledgers and is never fabricated.
+  'strategy:initial_payment': (d) => ({
+    topic: 'strategy:initial_payment',
+    data: {
+      token: str(d.token),
+      amount: dec(d.amount),
+      usdValueWad: d.usd_value_wad === undefined ? undefined : dec(d.usd_value_wad),
+      accountId: dec(d.account_id),
+    },
+  }),
   'strategy:fee': (d) => ({
     topic: 'strategy:fee',
     data: {
@@ -423,10 +421,100 @@ const REGISTRY: Record<string, DecoderFn> = {
       },
     }
   },
+  'position:flash_position': (d) => ({
+    topic: 'position:flash_position',
+    data: {
+      accountId: dec(d.account_id),
+      hubId: num(d.hub_id),
+      asset: str(d.asset),
+      receiver: str(d.receiver),
+      caller: str(d.caller),
+      amount: dec(d.amount),
+      amountReceived: dec(d.amount_received),
+      fee: dec(d.fee),
+    },
+  }),
+  'revenue:claim': (d) => ({
+    topic: 'revenue:claim',
+    data: {
+      hubId: num(d.hub_id),
+      asset: str(d.asset),
+      caller: str(d.caller),
+      accumulator: str(d.accumulator),
+      amount: dec(d.amount),
+    },
+  }),
+  'account:delegate': (d) => ({
+    topic: 'account:delegate',
+    data: {
+      accountId: dec(d.account_id),
+      owner: str(d.owner),
+      delegate: str(d.delegate),
+      granted: Boolean(d.granted),
+    },
+  }),
+  'config:hub': (d) => ({
+    topic: 'config:hub',
+    data: { hubId: num(d.hub_id) },
+  }),
+  'config:spoke_asset': (d) => {
+    const c = d.config as Raw
+    return {
+      topic: 'config:spoke_asset',
+      data: {
+        spokeId: num(d.spoke_id),
+        hubId: num(d.hub_id),
+        asset: str(d.asset),
+        config: {
+          isCollateralizable: Boolean(c.is_collateralizable),
+          isBorrowable: Boolean(c.is_borrowable),
+          paused: Boolean(c.paused),
+          frozen: Boolean(c.frozen),
+          noSeize: Boolean(c.no_seize),
+          loanToValueBps: num(c.loan_to_value),
+          liquidationThresholdBps: num(c.liquidation_threshold),
+          liquidationBonusBps: num(c.liquidation_bonus),
+          liquidationFeesBps: num(c.liquidation_fees),
+          supplyCap: dec(c.supply_cap),
+          borrowCap: dec(c.borrow_cap),
+        },
+      },
+    }
+  },
+  'config:remove_spoke_asset': (d) => ({
+    topic: 'config:remove_spoke_asset',
+    data: { spokeId: num(d.spoke_id), hubId: num(d.hub_id), asset: str(d.asset) },
+  }),
+  'strategy:blend_migration': (d) => ({
+    topic: 'strategy:blend_migration',
+    data: {
+      accountId: dec(d.account_id),
+      blendPool: str(d.blend_pool),
+      collateralCount: num(d.collateral_count),
+      supplyCount: num(d.supply_count),
+      debtCount: num(d.debt_count),
+    },
+  }),
+  // Emitted by the DeFindex strategy adapter, not the controller.
+  'strategy:harvest': (d) => ({
+    topic: 'strategy:harvest',
+    data: {
+      from: str(d.from),
+      amount: dec(d.amount),
+      pricePerShare: dec(d.price_per_share),
+    },
+  }),
+  'governance:deploy_controller': (d) => ({
+    topic: 'governance:deploy_controller',
+    data: { controller: str(d.controller), wasmHash: hex(d.wasm_hash) },
+  }),
+  'governance:deploy_price_aggregator': (d) => ({
+    topic: 'governance:deploy_price_aggregator',
+    data: { priceAggregator: str(d.price_aggregator), wasmHash: hex(d.wasm_hash) },
+  }),
 }
 
-/** Topic keys this SDK can decode. See the module header for the intentional
- * omissions. */
+/** Topic keys this SDK can decode. */
 export const STELLAR_LENDING_TOPICS = Object.freeze(
   Object.keys(REGISTRY)
 ) as readonly string[]

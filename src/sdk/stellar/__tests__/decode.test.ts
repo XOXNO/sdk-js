@@ -627,4 +627,106 @@ describe('decodeStellarLendingEvent — real fixtures', () => {
     expect(ev.data.accountId).toBe('9')
     expect((ev.data as { usdValueWad?: string }).usdValueWad).toBeUndefined()
   })
+
+  describe('full contract event coverage', () => {
+    const bool = (b: boolean): xdr.ScVal => xdr.ScVal.scvBool(b)
+    const bytes32 = (fill: number): xdr.ScVal => xdr.ScVal.scvBytes(Buffer.alloc(32, fill))
+    const decode = (domain: string, action: string, data: xdr.ScVal) =>
+      decodeStellarLendingEvent(topicsFor(domain, action), b64(data))
+
+    it('registers every topic the contracts emit', () => {
+      for (const topic of [
+        'position:flash_position', 'revenue:claim', 'account:delegate', 'config:hub',
+        'config:spoke_asset', 'config:remove_spoke_asset', 'strategy:blend_migration',
+        'strategy:harvest', 'governance:deploy_controller', 'governance:deploy_price_aggregator',
+      ]) {
+        expect(STELLAR_LENDING_TOPICS).toContain(topic)
+      }
+    })
+
+    it('position:flash_position', () => {
+      const ev = decode('position', 'flash_position', mapV({
+        account_id: u64(7n), hub_id: u32(1), asset: addrV(ASSET_A), receiver: addrV(ASSET_B),
+        caller: addrV(OWNER), amount: i128(1000n), amount_received: i128(990n), fee: i128(0n),
+      }))
+      if (ev?.topic !== 'position:flash_position') throw new Error('narrow')
+      expect(ev.data).toEqual({
+        accountId: '7', hubId: 1, asset: ASSET_A, receiver: ASSET_B, caller: OWNER,
+        amount: '1000', amountReceived: '990', fee: '0',
+      })
+    })
+
+    it('config:spoke_asset decodes the nested listing config', () => {
+      const ev = decode('config', 'spoke_asset', mapV({
+        asset: addrV(ASSET_A), spoke_id: u32(4), hub_id: u32(2),
+        config: mapV({
+          is_collateralizable: bool(true), is_borrowable: bool(false), paused: bool(false),
+          frozen: bool(true), no_seize: bool(false), loan_to_value: u32(7500),
+          liquidation_threshold: u32(8000), liquidation_bonus: u32(500), liquidation_fees: u32(100),
+          supply_cap: i128(10n ** 12n), borrow_cap: i128(0n),
+        }),
+      }))
+      if (ev?.topic !== 'config:spoke_asset') throw new Error('narrow')
+      expect(ev.data.spokeId).toBe(4)
+      expect(ev.data.hubId).toBe(2)
+      expect(ev.data.config).toEqual({
+        isCollateralizable: true, isBorrowable: false, paused: false, frozen: true, noSeize: false,
+        loanToValueBps: 7500, liquidationThresholdBps: 8000, liquidationBonusBps: 500,
+        liquidationFeesBps: 100, supplyCap: '1000000000000', borrowCap: '0',
+      })
+    })
+
+    it('account:delegate, revenue:claim, config:hub, config:remove_spoke_asset', () => {
+      const del = decode('account', 'delegate', mapV({
+        account_id: u64(9n), owner: addrV(OWNER), delegate: addrV(ASSET_B), granted: bool(false),
+      }))
+      if (del?.topic !== 'account:delegate') throw new Error('narrow')
+      expect(del.data).toEqual({ accountId: '9', owner: OWNER, delegate: ASSET_B, granted: false })
+
+      const rev = decode('revenue', 'claim', mapV({
+        hub_id: u32(1), asset: addrV(ASSET_A), caller: addrV(OWNER), accumulator: addrV(ASSET_B), amount: i128(55n),
+      }))
+      if (rev?.topic !== 'revenue:claim') throw new Error('narrow')
+      expect(rev.data).toEqual({ hubId: 1, asset: ASSET_A, caller: OWNER, accumulator: ASSET_B, amount: '55' })
+
+      const hub = decode('config', 'hub', mapV({ hub_id: u32(3) }))
+      if (hub?.topic !== 'config:hub') throw new Error('narrow')
+      expect(hub.data).toEqual({ hubId: 3 })
+
+      const rm = decode('config', 'remove_spoke_asset', mapV({ asset: addrV(ASSET_A), spoke_id: u32(2), hub_id: u32(1) }))
+      if (rm?.topic !== 'config:remove_spoke_asset') throw new Error('narrow')
+      expect(rm.data).toEqual({ spokeId: 2, hubId: 1, asset: ASSET_A })
+    })
+
+    it('strategy:blend_migration and strategy:harvest', () => {
+      const mig = decode('strategy', 'blend_migration', mapV({
+        account_id: u64(12n), blend_pool: addrV(ASSET_B), collateral_count: u32(2), supply_count: u32(0), debt_count: u32(1),
+      }))
+      if (mig?.topic !== 'strategy:blend_migration') throw new Error('narrow')
+      expect(mig.data).toEqual({ accountId: '12', blendPool: ASSET_B, collateralCount: 2, supplyCount: 0, debtCount: 1 })
+
+      const hv = decode('strategy', 'harvest', mapV({ from: addrV(OWNER), amount: i128(100n), price_per_share: i128(10n ** 12n) }))
+      if (hv?.topic !== 'strategy:harvest') throw new Error('narrow')
+      expect(hv.data).toEqual({ from: OWNER, amount: '100', pricePerShare: '1000000000000' })
+    })
+
+    it('governance deploy events render the wasm hash as hex', () => {
+      const ctl = decode('governance', 'deploy_controller', mapV({ controller: addrV(ASSET_A), wasm_hash: bytes32(0xab) }))
+      if (ctl?.topic !== 'governance:deploy_controller') throw new Error('narrow')
+      expect(ctl.data).toEqual({ controller: ASSET_A, wasmHash: 'ab'.repeat(32) })
+
+      const agg = decode('governance', 'deploy_price_aggregator', mapV({ price_aggregator: addrV(ASSET_B), wasm_hash: bytes32(1) }))
+      if (agg?.topic !== 'governance:deploy_price_aggregator') throw new Error('narrow')
+      expect(agg.data).toEqual({ priceAggregator: ASSET_B, wasmHash: '01'.repeat(32) })
+    })
+
+    it('strategy:initial_payment keeps usd_value_wad from older ledgers', () => {
+      const ev = decode('strategy', 'initial_payment', mapV({
+        token: addrV(ASSET_A), amount: i128(5n), usd_value_wad: i128(10n ** 18n), account_id: u64(1n),
+      }))
+      if (ev?.topic !== 'strategy:initial_payment') throw new Error('narrow')
+      expect(ev.data.usdValueWad).toBe('1000000000000000000')
+    })
+  })
 })
+
