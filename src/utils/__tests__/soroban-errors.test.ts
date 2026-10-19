@@ -97,5 +97,15 @@ describe('mapSorobanError', () => {
       expect(mapSorobanError(raw, { contracts: [CTRL] })!.name).toBe('AmountMustBePositive')
       expect(mapSorobanError(raw, { contracts: [OTHER] })).toBeNull()
     })
+
+    it.each([1, 3, 6, 10, 11, 12])('treats tag-only #%i as a nested token error, not a lending error', code => {
+      const raw = `[xoxno-invoked:${CTRL}] HostError: Error(Contract, #${code})`
+      expect(mapSorobanError(raw, { contracts: [CTRL] })).toBeNull()
+    })
+
+    it('still maps a governance-only code when the event log names the emitter', () => {
+      const raw = `0: [Diagnostic Event] contract:${CTRL}, topics:[error, Error(Contract, #10)]`
+      expect(mapSorobanError(raw, { contracts: [CTRL] })!.name).toBe('InvalidWasmHash')
+    })
   })
 })

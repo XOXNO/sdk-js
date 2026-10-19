@@ -149,11 +149,23 @@ export interface MapSorobanErrorOptions {
    *
    * RPC simulation errors usually carry only the top-level code
    * (`HostError: Error(Contract, #N)`). With only the tag, a code raised by a
-   * nested contract (for example the swap aggregator) cannot be told apart;
-   * read the simulation's diagnostic events when that matters.
+   * nested contract (for example the swap aggregator or a token) cannot be told
+   * apart; read the simulation's diagnostic events when that matters.
+   * Tag-only matches on codes 1, 3, 6, 10, 11 and 12 return `null`.
    */
   contracts?: readonly string[]
 }
+
+/**
+ * Stellar Asset Contract (token) errors 1–13 share numbers with GenericError,
+ * and a failed nested token call surfaces as the caller's top-level code. The
+ * lending contracts never raise these codes on user paths: 1, 3, 11 and 12 are
+ * reserved, 6 and 10 are governance-only. A tag-only match on them is a nested
+ * token error (for example #10 BalanceError), not InvalidWasmHash.
+ * Other overlaps (such as #13 TrustlineMissingError vs AccountNotInMarket)
+ * stay ambiguous without diagnostic events.
+ */
+const NESTED_ONLY_CODES: ReadonlySet<number> = new Set([1, 3, 6, 10, 11, 12])
 
 const ERROR_CODE = /Error\(Contract,\s*#(\d+)\)/
 const EMITTED_ERROR = /contract:(C[A-Z2-7]{55})[^\n]*?Error\(Contract,\s*#(\d+)\)/g
@@ -167,7 +179,9 @@ const scopedCode = (raw: string, allowed: ReadonlySet<string>): number | null =>
   if (HAS_EVENT_LOG.test(raw)) return null
   const tag = raw.match(INVOKED_TAG)
   const first = raw.match(ERROR_CODE)
-  return tag && allowed.has(tag[1]!) && first ? Number(first[1]) : null
+  if (!tag || !allowed.has(tag[1]!) || !first) return null
+  const code = Number(first[1])
+  return NESTED_ONLY_CODES.has(code) ? null : code
 }
 
 /**
@@ -177,7 +191,11 @@ const scopedCode = (raw: string, allowed: ReadonlySet<string>): number | null =>
  * strings can contain unrelated numbers (fees, ledgers, sequence numbers).
  *
  * Without `opts.contracts` it maps the first code in the string, whichever
- * contract emitted it.
+ * contract emitted it. A failed nested call (token, swap aggregator, oracle)
+ * reports its own code at the top level, so an unscoped or tag-only result can
+ * name the wrong lending error: a token's `#10` BalanceError reads as
+ * InvalidWasmHash. Pass `contracts` and, where available, the simulation's
+ * diagnostic event log to attribute the code to its emitter.
  */
 export function mapSorobanError(
   raw: string,
