@@ -1,8 +1,9 @@
 /** Typed Stellar lending reads. Configure the API deployment with XOXNOClient.apiUrl.
  * These cached HTTP reads do not simulate transactions or authorize spending.
  */
-import type { OurRequestInit, XOXNOClient } from '../../utils/api'
+import { Chain, type OurRequestInit, type XOXNOClient } from '../../utils/api'
 import type * as Api from './lending-api-types'
+import type { UserTokenInventoryResponseDto } from '@xoxno/types'
 import type { StellarLendingMarketSide, StellarLendingHoldersSide, StellarMarketGraphQuery, StellarReservesParams, StellarActivityQuery, StellarActivityPageQuery, StellarGovernanceQuery, StellarPositionsQuery, StellarRevenueQuery, StellarFeeRevenueQuery, StellarParticipantsQuery, StellarLiquidationsQuery, StellarLiquidationsLeaderboardQuery, StellarVolumeQuery, StellarDistributionQuery, StellarRateSpreadQuery } from './lending-read-types'
 
 const BASE = '/stellar-lending'
@@ -134,16 +135,50 @@ export const getStellarAccountPositions = (
 ): Promise<Api.AccountPositionsDto> =>
   client.fetchWithTimeout<Api.AccountPositionsDto>(`${BASE}/accounts/${enc(accountId)}/positions`, init)
 
-/** Read exact token base-unit holdings for a G or C wallet. Holdings may exceed spendable funds. Requires the API release exposing this route; older deployments return 404.
+/** Read a G or C wallet's token holdings from `/user/{owner}/token-inventory`:
+ * Horizon balances (native XLM and classic assets, keyed by their SAC id) plus
+ * indexed Soroban tokens, cached for about 10 seconds. Each token's
+ * `identifier` is its contract id and `balance` is base units as a decimal
+ * string. Tokens without a balance or trustline are absent.
  * @category Stellar lending reads
  */
-export const getStellarWalletBalance = (
+export const getStellarWalletTokens = (
+  client: XOXNOClient,
+  owner: string,
+  init?: OurRequestInit
+): Promise<UserTokenInventoryResponseDto> =>
+  client.fetchWithTimeout<UserTokenInventoryResponseDto>(`/user/${enc(owner)}/token-inventory`, init)
+
+/** Read exact token base-unit holdings of one asset for a G or C wallet, from
+ * {@link getStellarWalletTokens}. An asset the wallet does not hold returns
+ * `amount: '0'`, with decimals read from the lending asset. Holdings may exceed
+ * spendable funds (reserves, liabilities).
+ * @category Stellar lending reads
+ */
+export const getStellarWalletBalance = async (
   client: XOXNOClient,
   owner: string,
   asset: string,
   init?: OurRequestInit
-): Promise<Api.StellarWalletBalanceDto> =>
-  client.fetchWithTimeout<Api.StellarWalletBalanceDto>(`${BASE}/users/${enc(owner)}/assets/${enc(asset)}/balance`, init)
+): Promise<Api.StellarWalletBalanceDto> => {
+  const inventory = await getStellarWalletTokens(client, owner, init)
+  const network = client.chain === Chain.MAINNET ? 'mainnet' : 'testnet'
+  const token = (inventory?.tokens ?? []).find((t) => t.identifier === asset)
+  if (token) {
+    return {
+      owner,
+      network: token.stellarNetwork ?? network,
+      asset,
+      amount: String(token.balance),
+      decimals: token.decimals,
+    }
+  }
+  const { decimals } = await getStellarAsset(client, asset, init)
+  if (typeof decimals !== 'number') {
+    throw new Error(`Stellar lending: no decimals for ${asset}; it is not a lending asset`)
+  }
+  return { owner, network, asset, amount: '0', decimals }
+}
 
 /** Load overview, deposit/borrow markets and chart series for an asset page.
  * @category Stellar lending reads
@@ -493,6 +528,8 @@ export const stellarLendingRead = (client: XOXNOClient) => ({
   userPositions: (owner: string, init?: OurRequestInit) => getStellarUserPositions(client, owner, init),
   /** {@inheritDoc getStellarAccountPositions} */
   accountPositions: (accountId: string, init?: OurRequestInit) => getStellarAccountPositions(client, accountId, init),
+  /** {@inheritDoc getStellarWalletTokens} */
+  walletTokens: (owner: string, init?: OurRequestInit) => getStellarWalletTokens(client, owner, init),
   /** {@inheritDoc getStellarWalletBalance} */
   walletBalance: (owner: string, asset: string, init?: OurRequestInit) => getStellarWalletBalance(client, owner, asset, init),
   /** {@inheritDoc getStellarAssetPage} */

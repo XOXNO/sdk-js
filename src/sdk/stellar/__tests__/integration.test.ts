@@ -84,9 +84,9 @@ it('preserves init with empty reserve filters and exposes the supported reader s
   expect(calls[0]?.init.signal?.aborted).toBe(true)
   await read.assetPage('token', { from: '2026-09-01', to: '2026-09-02', bin: '1d' })
   expect(calls[1]?.url.pathname).toBe('/stellar-lending/assets/token/page')
-  await read.walletBalance('wallet', 'token')
-  expect(calls[2]?.url.pathname).toBe('/stellar-lending/users/wallet/assets/token/balance')
-  expect(Object.keys(read)).toHaveLength(43)
+  await read.walletTokens('wallet')
+  expect(calls[2]?.url.pathname).toBe('/user/wallet/token-inventory')
+  expect(Object.keys(read)).toHaveLength(44)
   expect('protocolConfig' in read).toBe(false)
   expect('blendPools' in read).toBe(false)
 })
@@ -174,3 +174,40 @@ it('renders nested, nullable and enum OpenAPI contracts and fails on dangling re
   expect(rendered).toContain('Exact display count.')
   expect(() => types.type({ $ref: '#/components/schemas/Missing' })).toThrow(/Missing Stellar schema/)
 })
+
+describe('wallet balance via token inventory', () => {
+  const SAC = 'CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA'
+  const respond = (routes: Record<string, unknown>) => {
+    const calls: string[] = []
+    globalThis.fetch = jest.fn(async (input: string | URL | Request) => {
+      const path = new URL(String(input)).pathname
+      calls.push(path)
+      return new Response(JSON.stringify(routes[path] ?? {}), { status: 200 })
+    }) as typeof fetch
+    return calls
+  }
+
+  it('returns the held balance from the inventory', async () => {
+    const calls = respond({
+      '/user/G1/token-inventory': {
+        tokens: [{ identifier: SAC, balance: '331665700', decimals: 7, stellarNetwork: 'mainnet' }],
+      },
+    })
+    const read = stellarLendingRead(new XOXNOClient({ apiUrl: 'https://example.invalid' }))
+    await expect(read.walletBalance('G1', SAC)).resolves.toEqual({
+      owner: 'G1', network: 'mainnet', asset: SAC, amount: '331665700', decimals: 7,
+    })
+    expect(calls).toEqual(['/user/G1/token-inventory'])
+  })
+
+  it('returns zero with lending-asset decimals when the wallet does not hold it', async () => {
+    const calls = respond({
+      '/user/G1/token-inventory': { tokens: [] },
+      [`/stellar-lending/assets/${SAC}`]: { asset: SAC, decimals: 7 },
+    })
+    const read = stellarLendingRead(new XOXNOClient({ apiUrl: 'https://example.invalid' }))
+    await expect(read.walletBalance('G1', SAC)).resolves.toMatchObject({ amount: '0', decimals: 7 })
+    expect(calls).toEqual(['/user/G1/token-inventory', `/stellar-lending/assets/${SAC}`])
+  })
+})
+
