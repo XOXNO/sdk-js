@@ -576,11 +576,11 @@ export type StellarMarketIndexByHub = {
 export type ReserveIrmCurveDto = {
 /** Base borrow rate (ray, 1e27). */
 "baseRateRay": string;
-/** Slope below the optimal utilization (ray). */
+/** Rate added from zero to the mid utilization kink (ray). */
 "slope1Ray": string;
-/** Slope between optimal and mid utilization (ray). */
+/** Rate added between the mid and optimal utilization kinks (ray). */
 "slope2Ray": string;
-/** Slope above the mid utilization (ray). */
+/** Rate added from the optimal kink to full utilization (ray). */
 "slope3Ray": string;
 /** Optimal utilization kink (ray). */
 "optimalUtilizationRay": string;
