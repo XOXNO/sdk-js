@@ -13,6 +13,12 @@ const esm = new vm.SourceTextModule(readFileSync('dist/sdk/stellar/read/index.es
 await esm.link(specifier => { throw new Error(`Unexpected read runtime import: ${specifier}`) })
 await esm.evaluate()
 assert.equal(typeof esm.namespace.createStellarLendingReadClient, 'function')
+for (const schema of [esm.namespace.lendingAssetsSchema.items,
+  esm.namespace.lendingPositionsSchema.items.properties.supplied.items,
+  esm.namespace.lendingPositionsSchema.items.properties.borrow.items]) {
+  assert.equal(schema.required.includes('extraApy'), false)
+  assert.equal(schema.properties.extraApy.properties.nativeApy.type, 'number')
+}
 assert.equal(vm.runInContext('typeof process', context), 'undefined')
 assert.equal(vm.runInContext('typeof Buffer', context), 'undefined')
 assert.equal(vm.runInContext('typeof self', context), 'undefined')

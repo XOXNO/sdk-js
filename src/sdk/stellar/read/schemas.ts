@@ -7,8 +7,8 @@ const nullableNumber = { ...number, nullable: true }
 const network = { ...string, enum: ['mainnet', 'testnet'] }
 const dataStatus = { ...string, enum: ['ready', 'stale', 'incomplete'] }
 
-function object<T extends Record<string, unknown>>(properties: T) {
-  return { type: 'object' as const, required: Object.keys(properties), properties }
+function object<T extends Record<string, unknown>>(properties: T, optional: readonly (keyof T)[] = []) {
+  return { type: 'object' as const, required: Object.keys(properties).filter(key => !optional.includes(key)), properties }
 }
 
 const token = {
@@ -18,14 +18,16 @@ const token = {
 const priceStatus = object({
   valid: boolean, stale: boolean, deviation: boolean, timestamp: nullableNumber,
 })
+const extraApy = { type: 'object' as const, properties: { nativeApy: number, feesApr: number }, description: 'Embedded annualized yield fractions, separate from base lending interest.' }
 const positionAsset = object({
+  extraApy,
   ...token, hubId: number, hubName: string,
   amountRaw: { ...nullableString, description: 'Integer token base units, never scaled shares.' },
   amount: nullableString,
   apy: { ...nullableNumber, description: 'Fraction: 0.05 means 5%.' },
   priceUsd: nullableNumber, valueUsd: nullableNumber, priceStatus,
   indexRay: nullableString, indexedAt: number, indexedLedger: number,
-})
+}, ['extraApy'])
 const capacity = object({
   amountRaw: nullableString, amount: nullableString, usd: nullableNumber,
 })
@@ -36,7 +38,7 @@ const spoke = object({
   canOpenAccount: { ...boolean, description: 'Spoke admits new accounts; other entry gates still apply.' },
 })
 
-/** OpenAPI response schema for LendingPosition[]. Every property is required; nullable data remains explicit. */
+/** OpenAPI response schema for LendingPosition[]. Nullable data remains explicit; underlying yield is optional. */
 export const lendingPositionsSchema = {
   type: 'array' as const,
   items: object({
@@ -58,6 +60,7 @@ export const lendingPositionsSchema = {
 export const lendingAssetsSchema = {
   type: 'array' as const,
   items: object({
+    extraApy,
     ...token, hubId: number, hubName: string, network,
     supplyApy: { ...nullableNumber, description: 'Fraction: 0.05 means 5%.' },
     borrowApy: { ...nullableNumber, description: 'Fraction: 0.05 means 5%.' },
@@ -66,5 +69,5 @@ export const lendingAssetsSchema = {
     dataStatus,
     indexedAt: { ...number, description: 'Pool state timestamp. Capacities are indexed snapshot estimates; prepare/simulate before signing.' },
     indexedLedger: number,
-  }),
+  }, ['extraApy']),
 }

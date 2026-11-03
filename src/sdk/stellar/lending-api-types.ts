@@ -31,6 +31,8 @@ export type StellarAssetListItemDto = {
 "marketCount": number;
 /** The two underlying token SACs when this asset is an AMM LP share, so clients can render the pair instead of the share itself, which has no logo. Present only when both oracle legs are Token price keys — a Ref leg is registry-only and has no SAC — so "present" means "renderable pair", with no partial case to handle. */
 "lpUnderlying"?: StellarDomain.StellarLpUnderlying;
+/** Estimated underlying annualized yield, separate from base lending APY. Fractions: 0.05 = 5%. */
+"extraApy"?: (MarketExtraApy);
 }
 
 export type StellarLendingContextDto = {
@@ -136,6 +138,8 @@ export type StellarReserveListItemDto = {
 "useAsCollateral": boolean;
 /** Interest-rate-model curve (ray-scaled) for APY simulation in supply/borrow modals. */
 "irm"?: (ReserveIrmCurveDto);
+/** Estimated underlying annualized yield, separate from base lending APY. Fractions: 0.05 = 5%. */
+"extraApy"?: (MarketExtraApy);
 }
 
 export type ReserveDto = {
@@ -209,6 +213,8 @@ export type ReserveDto = {
 "supportedCollateral": Array<string>;
 /** Assets borrowable in this spoke (token addresses). */
 "borrowable": Array<string>;
+/** Estimated underlying annualized yield, separate from base lending APY. Fractions: 0.05 = 5%. */
+"extraApy"?: (MarketExtraApy);
 }
 
 export type TopHoldersDto = {
@@ -252,6 +258,8 @@ export type AssetDto = {
 "maxBorrowApy": number;
 /** Current indexed oracle configuration; null until first configure. */
 "oracleProvider": ((AssetOracleConfigDto)) | null;
+/** Estimated underlying annualized yield, separate from base lending APY. Fractions: 0.05 = 5%. */
+"extraApy"?: (MarketExtraApy);
 }
 
 export type AssetPageDto = {
@@ -340,6 +348,8 @@ export type AssetMarketDto = {
 "liveSupplyIndexRay": string;
 /** Live borrow index applied (ray, 1e27). */
 "liveBorrowIndexRay": string;
+/** Estimated underlying annualized yield, separate from base lending APY. Fractions: 0.05 = 5%. */
+"extraApy"?: (MarketExtraApy);
 }
 
 export type HubDto = {
@@ -552,6 +562,13 @@ export type StellarActivityPageDto = {
 "continuationToken"?: string;
 }
 
+export type MarketExtraApy = {
+/** Native APY for derivatives tokes */
+"nativeApy"?: number;
+/** LP fees APR */
+"feesApr"?: number;
+}
+
 export type StellarMarketIndexByHub = {
 "hubId": number;
 "asset": string;
@@ -649,6 +666,8 @@ export type HubAssetDto = {
 "liveSupplyIndexRay": string;
 /** Live borrow index applied (ray, 1e27). */
 "liveBorrowIndexRay": string;
+/** Estimated underlying annualized yield, separate from base lending APY. Fractions: 0.05 = 5%. */
+"extraApy"?: (MarketExtraApy);
 }
 
 export type SpokeConnectedHubDto = {
@@ -699,6 +718,8 @@ export type SpokeMarketDto = {
 "liveSupplyIndexRay": string;
 /** Live borrow index applied (ray, 1e27). */
 "liveBorrowIndexRay": string;
+/** Estimated underlying annualized yield, separate from base lending APY. Fractions: 0.05 = 5%. */
+"extraApy"?: (MarketExtraApy);
 }
 
 export type AccountPositionDto = {

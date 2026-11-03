@@ -17,7 +17,15 @@ export interface LendingPriceStatus {
   timestamp: number | null
 }
 
+/** Yield fractions: 0.05 means 5%; separate from base lending interest. */
+export interface LendingExtraApy {
+  nativeApy?: number
+  feesApr?: number
+}
+
 export interface PositionAsset extends LendingToken {
+  /** Embedded annualized yield; apy remains base lending interest. */
+  extraApy?: LendingExtraApy
   hubId: number
   hubName: string
   /** Integer token base units, never scaled shares. */
@@ -75,6 +83,8 @@ export interface AssetSpoke {
 }
 
 export interface LendingAsset extends LendingToken {
+  /** Embedded annualized yield; supplyApy/borrowApy remain base lending interest. */
+  extraApy?: LendingExtraApy
   hubId: number
   hubName: string
   network: 'mainnet' | 'testnet'
