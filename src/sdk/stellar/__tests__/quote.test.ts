@@ -15,6 +15,16 @@ const mockFetch = () => {
 }
 
 describe('getStellarAggregatorQuote', () => {
+  it('forwards a smart sender and its distinct G transaction source', async () => {
+    const fetchMock = mockFetch()
+    await getStellarAggregatorQuote({
+      from: FROM, to: TO, amountIn: '100', sender: FROM, sourceAccount: 'G-relayer', slippage: 0.01,
+    }, { baseUrl: 'https://stellar-swap.example' })
+    const url = new URL(fetchMock.mock.calls[0][0])
+    expect(url.searchParams.get('sender')).toBe(FROM)
+    expect(url.searchParams.get('sourceAccount')).toBe('G-relayer')
+  })
+
   it('sends simulate and never sends the ignored router field', async () => {
     const fetchMock = mockFetch()
 

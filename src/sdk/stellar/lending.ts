@@ -2,7 +2,7 @@
  * Stellar lending user-operation transaction builders.
  *
  * Each builder takes a typed Stellar argument object plus shared
- * `StellarLendingBuilderOptions` ({ network, caller, sourceSequence,
+ * `StellarLendingBuilderOptions` ({ network, caller, sourceAccount?, sourceSequence,
  * controllerAddress, ... }) and returns
  * unsigned transaction XDR that must be prepared before wallet signing.
  *
@@ -12,7 +12,7 @@
  *
  * Builders are RPC-free: they accept a caller-supplied `sourceSequence` so the
  * returned XDR is deterministic and snapshot-testable. The caller fetches the
- * current sequence via `rpc.Server.getAccount(caller)` and runs
+ * current sequence via `rpc.Server.getAccount(sourceAccount ?? caller)` and runs
  * `rpc.Server.prepareTransaction` (simulation + Soroban footprint/auth/resource
  * fee) before handing the XDR to the wallet to sign.
  */
@@ -77,18 +77,20 @@ export function parseStellarTokenAmount(amount: string, decimals: number | null)
 // -----------------------------------------------------------------------------
 
 /**
- * Stellar `G...` public key of the caller (tx source account).
+ * Stellar `G...` public key of a transaction source account.
  */
 export type StellarAccountAddress = string
 
 export interface StellarBuilderOptions {
   /** Must match the API deployment, RPC and signing wallet. */
   network: StellarNetwork
-  /** Transaction source and authorizing wallet public key (G...). */
-  caller: StellarAccountAddress
+  /** Authorizing asset owner (G... account or C... smart account). */
+  caller: string
+  /** G... transaction source; defaults to caller. Required for a C... caller. */
+  sourceAccount?: StellarAccountAddress
   /**
-   * Current sequence number of the caller account, as a decimal string.
-   * Callers fetch this from Soroban RPC (`server.getAccount(caller)`) before
+   * Current sequence number of sourceAccount ?? caller, as a decimal string.
+   * Fetch this from Soroban RPC (`server.getAccount(sourceAccount ?? caller)`) before
    * building. Keeping it as an input (rather than fetching inside the builder)
    * makes builders sync-friendly, RPC-free, and deterministic for snapshot tests.
    */
@@ -154,7 +156,7 @@ export function buildTx(
   }
   const contract = new Contract(opts.controllerAddress)
 
-  const source = new Account(opts.caller, opts.sourceSequence)
+  const source = new Account(opts.sourceAccount ?? opts.caller, opts.sourceSequence)
 
   const tx = new TransactionBuilder(source, {
     fee: opts.fee ?? BASE_FEE,

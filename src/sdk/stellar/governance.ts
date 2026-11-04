@@ -274,7 +274,7 @@ function buildGovernanceTx(
   }
   const contract = new Contract(opts.governanceAddress)
 
-  const source = new Account(opts.caller, opts.sourceSequence)
+  const source = new Account(opts.sourceAccount ?? opts.caller, opts.sourceSequence)
 
   const tx = new TransactionBuilder(source, {
     fee: opts.fee ?? BASE_FEE,

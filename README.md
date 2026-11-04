@@ -34,6 +34,15 @@ For Stellar lending, start with the [integration guide](md/stellar-lending.md)
 and [checked example](examples/stellar-lending.ts). They cover typed market
 discovery and unsigned XDR preparation, wallet signing, submission and confirmation.
 Generate focused API documentation with `npm run docs:stellar`.
+
+Smart-account callers use `caller: 'C…'` with a separate `sourceAccount: 'G…'`;
+`sourceSequence` belongs to that G source. Pass `authorization` to
+`prepareStellarBuiltTx` to validate the recorded auth tree, authorize entries
+through your account's signing callback, and simulate with authorization
+enforced before the G source signs. Existing G callers need no new options.
+See the [smart-account flow](md/stellar-lending.md#smart-account-callers) and
+[checked example](examples/stellar-smart-account.ts).
+
 Decode direct XOXNO swap history synchronously with
 `decodeStellarSwapEnvelope` from `@xoxno/sdk-js/stellar-swap`:
 

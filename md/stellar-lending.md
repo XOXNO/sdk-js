@@ -200,14 +200,71 @@ Set `instructionLeeway` in the prepare options
 to an integer from 0 to 4294967295 when measured execution variance needs a different
 margin. This default does not guarantee coverage of maximum-position flows or
 later state changes; the resulting resource declaration must fit network limits.
-Custom `StellarTxPreparer` adapters must expose `simulateTransaction(tx, resources)`;
-passing a Stellar `rpc.Server` continues to work unchanged.
+Custom `StellarTxPreparer` adapters expose `simulateTransaction(tx, resources)`;
+address authorization also requires forwarding its third `authMode` argument.
+Passing a Stellar `rpc.Server` continues to work unchanged.
 
 `PENDING` and `DUPLICATE` are not execution success. Persist the transaction hash,
 poll with a bounded timeout, and refresh the portfolio after `SUCCESS`. If a
 network call fails or confirmation times out, check that hash before building a
-replacement. The checked example preserves it in recovery errors. Contract-account
-authorization or multi-signer wallets may require additional host-side signing logic.
+replacement. The checked example preserves it in recovery errors. Multi-signer
+source wallets still use their own transaction-signing flow.
+
+### Smart-account callers
+
+Set `caller` to the authorizing C address and `sourceAccount` to the G address
+that supplies the transaction sequence and fees. The source does not become the
+asset owner or output recipient. The same options apply to lending/admin,
+swap, governance and CCTP builders. Existing G callers omit `sourceAccount`.
+
+```ts
+const source = await server.getAccount(sourceAccount)
+const built = buildStellarSupplyTx({
+  network, controllerAddress, caller: smartAccount, sourceAccount,
+  sourceSequence: source.sequenceNumber(),
+}, { spokeId, hubId, asset, amount: '10000000', accountNonce: '0' })
+const preparedXdr = await prepareStellarBuiltTx(server, built, {
+  network,
+  authorization: {
+    caller: smartAccount,
+    authorizeEntry: async (entryXdr, context) => {
+      // Application callback: use the account's own signature/policy implementation.
+      return signSmartAccountEntry(entryXdr, context)
+    },
+  },
+})
+// The G source wallet signs preparedXdr after custom authorization is checked.
+```
+
+`authorizeEntry` receives and returns base64 `SorobanAuthorizationEntry` XDR,
+plus the selected network passphrase and simulation ledger. Return the same
+address, nonce and invocation tree, with your signature and a valid
+`signatureExpirationLedger`. Signature shape and expiry policy belong to the
+smart account. For G callers using a separate G source, the callback instead
+authorizes the caller's address entry with that account's signing method.
+
+The helper clears old auth, records fresh entries, checks the caller's policy
+and rejects source-account spending authority before invoking the callback.
+It then enforces authorization in a second simulation, whose footprint and fees
+include `__check_auth`. It never records again after signing. The result remains
+unsigned by the G transaction source. Callback or enforced-simulation failures
+return no prepared result.
+
+Built-in policies cover user lending operations, direct swaps and governance.
+For other contracts or controller administrative methods without a caller
+argument, provide an explicit `authorization.policy` (and deployment overrides
+when applicable). The policy is an allowlist of the expected root and permitted
+caller sub-invocations; include only the transfers the operation needs.
+The authorization flow expects the full built invocation as the auth root;
+custom `require_auth_for_args` protocols need their own preparation integration.
+
+Quote requests use `sender: smartAccount, sourceAccount` with slippage. A
+different source selects Soroban execution, including when `platform` defaults
+to `all`. `transaction.authorizationRequired` means recorded address entries
+still need authorization and enforced simulation; `simulated: true` alone does
+not establish smart-account authorization. For two-step LP conversion, authorize,
+sign and confirm each step in order, then prepare the next step with its current
+G source sequence. A source transaction signature cannot replace C authorization.
 
 | User action | Builder |
 | --- | --- |

@@ -31,6 +31,7 @@ import { xdrBytes, xdrField, xdrOpaque, xdrType } from './xdr-compat'
 export type StellarAuthPolicyErrorCode =
   | 'MALFORMED_TRANSACTION'
   | 'INVOCATION_CHANGED'
+  | 'SOURCE_CHANGED'
   | 'UNSUPPORTED_CONTRACT'
   | 'CALLER_MISMATCH'
   | 'DUPLICATE_ENTRY'
@@ -375,7 +376,7 @@ const accountOf = (muxed: xdr.MuxedAccount): string =>
 
 const singleInvocation = (
   envelopeXdr: string
-): { source: string; op: xdr.InvokeHostFunctionOp; call: xdr.InvokeContractArgs } => {
+): { source: string; transactionSource: string; op: xdr.InvokeHostFunctionOp; call: xdr.InvokeContractArgs } => {
   let envelope: xdr.TransactionEnvelope
   try {
     envelope = xdr.TransactionEnvelope.fromXDR(envelopeXdr, 'base64')
@@ -400,6 +401,7 @@ const singleInvocation = (
   }
   return {
     source: accountOf(xdrField(operation, 'sourceAccount') ?? xdrField(tx, 'sourceAccount')),
+    transactionSource: accountOf(xdrField(tx, 'sourceAccount')),
     op,
     call: xdrField(xdrField(op, 'hostFunction'), 'invokeContract'),
   }
@@ -407,11 +409,11 @@ const singleInvocation = (
 
 export interface StellarPreparedTxAuthOptions {
   network: StellarNetwork
-  /** The wallet address that will sign. */
+  /** Authorizing G... account or C... smart account, independently of the source. */
   caller: string
   /**
    * The unsigned builder output that was sent to `prepareTransaction`. When
-   * given, the prepared invocation must be byte-identical to it.
+   * given, the prepared invocation and effective source must match it.
    */
   builtXdr?: string
   /** Replaces the derived policy (other contracts, custom flash receivers). */
@@ -431,6 +433,12 @@ export function assertStellarPreparedTxAuth(
   opts: StellarPreparedTxAuthOptions
 ): void {
   const prepared = singleInvocation(preparedXdr)
+  if (opts.builtXdr !== undefined) {
+    const built = singleInvocation(opts.builtXdr)
+    if (built.source !== prepared.source || built.transactionSource !== prepared.transactionSource) {
+      throw new StellarAuthPolicyError('SOURCE_CHANGED', 'the prepared transaction changes the source account')
+    }
+  }
   if (
     opts.builtXdr !== undefined &&
     xdrField(singleInvocation(opts.builtXdr).op, 'hostFunction').toXDR('base64') !==
@@ -448,5 +456,18 @@ export function assertStellarPreparedTxAuth(
       ...getStellarDeployment(opts.network),
       ...opts.deployment,
     })
+  if (policy.caller !== opts.caller) {
+    throw new StellarAuthPolicyError('CALLER_MISMATCH', 'the policy caller differs from the authorizing caller')
+  }
+  if (opts.caller !== prepared.source) {
+    for (const entry of xdrField(prepared.op, 'auth')) {
+      const credentials = xdrField(entry, 'credentials')
+      if (xdrType(credentials) === 'sorobanCredentialsSourceAccount' ||
+        (xdrType(credentials) === 'sorobanCredentialsAddress' &&
+          Address.fromScAddress(xdrField(xdrField(credentials, 'address'), 'address')).toString() === prepared.source)) {
+        throw new StellarAuthPolicyError('UNEXPECTED_SENDER', 'the separate source account must not authorize contract calls')
+      }
+    }
+  }
   assertStellarAuthEntries(xdrField(prepared.op, 'auth'), policy, prepared.source)
 }

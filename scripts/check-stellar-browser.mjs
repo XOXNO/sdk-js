@@ -37,6 +37,10 @@ const built = sdk.buildStellarSupplyTx(opts, {
   spokeId: 1, hubId: 1, asset: opts.controllerAddress, amount: '100',
 })
 assert.equal(stellar.TransactionBuilder.fromXDR(built.xdr, stellar.Networks.TESTNET).operations.length, 1)
+const smartBuilt = sdk.buildStellarSupplyTx({
+  ...opts, caller: opts.controllerAddress, sourceAccount: opts.caller,
+}, { spokeId: 1, hubId: 1, asset: opts.controllerAddress, amount: '100' })
+assert.equal(stellar.TransactionBuilder.fromXDR(smartBuilt.xdr, stellar.Networks.TESTNET).source, opts.caller)
 // Exercise an SDK path that needs Buffer, beyond module import.
 const strategy = sdk.buildStellarSwapCollateralTx(opts, {
   accountNonce: 1,

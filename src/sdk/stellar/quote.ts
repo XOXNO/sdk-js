@@ -82,16 +82,24 @@ export interface StellarQuoteLp {
  * fields the DTO does not yet declare. `alternatives` is still on the DTO but
  * the service no longer returns it.
  */
+export type StellarQuoteTransactionPayload = StellarQuoteTransactionPayloadDto & {
+  /** Address auth entries still need authorization and enforced simulation. */
+  authorizationRequired?: boolean
+}
+
 export type StellarQuoteResponse = StellarAggregatorQuoteResponseDto & {
   snapshot?: StellarQuoteSnapshot | null
   degraded?: StellarQuoteDegraded | null
   lp?: StellarQuoteLp | null
   /** Ordered LP-conversion steps; mutually exclusive with `transaction`. */
-  transactions?: StellarQuoteTransactionPayloadDto[] | null
+  transactions?: StellarQuoteTransactionPayload[] | null
+  transaction?: StellarQuoteTransactionPayload | null
 }
 
 /** Quote request; adds `simulate`, which the DTO does not yet declare. */
 export type StellarQuoteRequest = StellarAggregatorQuoteRequestDto & {
+  /** G... transaction source. Required with a C... sender; otherwise defaults to sender. */
+  sourceAccount?: string
   /** With `sender`: simulate and prepare resource data (service default `true`). */
   simulate?: boolean
 }
@@ -131,11 +139,13 @@ const buildUrl = (
  * `steps`. Amounts are token base-unit decimal strings. Requote after changes
  * to amount, direction or slippage; preparation is the execution check.
  *
- * Passing `sender` (G...) together with `slippage` returns a direct-swap
+ * Passing `sender` (G... or C...) together with `slippage` returns a direct-swap
  * envelope under `transaction.envelopeXdr`. The router comes from the service's
  * `/api/v1/config`; the `router` request field is ignored by the service and is
  * no longer sent. Prepare the envelope before wallet signing unless
- * `transaction.simulated` is true.
+ * `transaction.simulated` is true. C... senders require a G... `sourceAccount`.
+ * A distinct source selects Soroban execution. If `authorizationRequired` is
+ * true, authorize the address entries and enforce simulation before source signing.
  * @param request - Exactly one of amountIn or amountOut; optional referralId is forwarded unchanged.
  * @param opts - Quote-server URL and optional fetch options supplied by the host.
  * @returns Quote estimates and opaque route bytes; does not execute a swap.
@@ -164,6 +174,7 @@ export async function getStellarAggregatorQuote(
     slippage: request.slippage,
     includePaths: request.includePaths,
     sender: request.sender,
+    sourceAccount: request.sourceAccount,
     simulate: request.simulate,
     referralId: request.referralId,
     platform: request.platform,

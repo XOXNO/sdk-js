@@ -120,7 +120,7 @@ export function buildStellarExecuteStrategyTx(
   }
   const contract = new Contract(opts.routerAddress)
 
-  const source = new Account(opts.caller, opts.sourceSequence)
+  const source = new Account(opts.sourceAccount ?? opts.caller, opts.sourceSequence)
   const swapBytes = asStellarStrategySwapBytes(
     withDefaultReferral(swap, opts.referralId)
   )

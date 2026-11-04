@@ -28,7 +28,7 @@ export interface BuildStellarCctpForwardTxArgs extends StellarBuilderOptions {
 export function buildStellarCctpForwardTx(
   opts: BuildStellarCctpForwardTxArgs
 ): BuiltStellarTx {
-  const source = new Account(opts.caller, opts.sourceSequence)
+  const source = new Account(opts.sourceAccount ?? opts.caller, opts.sourceSequence)
   const operation = new Contract(opts.forwarderAddress).call(
     'mint_and_forward',
     xdr.ScVal.scvBytes(hexToBuffer(opts.message)),
