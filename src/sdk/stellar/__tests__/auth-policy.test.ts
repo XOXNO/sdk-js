@@ -277,6 +277,23 @@ describe('direct router swap policy', () => {
     expect(() => check(prepare(built, [transfer(USDC, CALLER, ROUTER, '1000')]))).not.toThrow()
   })
 
+  it('accepts the router opening the sender trustline for the output token, once', () => {
+    const pull = transfer(USDC, CALLER, ROUTER, '1000')
+    expect(() => check(prepare(built, [pull, call(XLM, 'trust', [addr(CALLER)])]))).not.toThrow()
+    expectCode(
+      () => check(prepare(built, [pull, call(XLM, 'trust', [addr(CALLER)]), call(XLM, 'trust', [addr(CALLER)])])),
+      'UNEXPECTED_CALL'
+    )
+  })
+
+  it('rejects trust on another token or for another account', () => {
+    const pull = transfer(USDC, CALLER, ROUTER, '1000')
+    expectCode(() => check(prepare(built, [pull, call(WALLET_TOKEN, 'trust', [addr(CALLER)])])), 'UNEXPECTED_CALL')
+    expectCode(() => check(prepare(built, [pull, call(USDC, 'trust', [addr(CALLER)])])), 'UNEXPECTED_CALL')
+    expectCode(() => check(prepare(built, [pull, call(XLM, 'trust', [addr(ATTACKER)])])), 'UNEXPECTED_CALL')
+    expectCode(() => check(prepare(built, [pull, call(XLM, 'trust', [addr(CALLER), addr(CALLER)])])), 'UNEXPECTED_CALL')
+  })
+
   it('rejects an extra rogue child, the output token, and an unknown contract', () => {
     expectCode(
       () =>

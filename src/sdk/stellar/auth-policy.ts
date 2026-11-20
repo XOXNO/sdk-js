@@ -19,7 +19,7 @@
  * | controller `migrate_from_blend` | `blend_pool.submit(caller, controller, controller, [withdraw / withdraw_collateral / repay])`, at most twice | `contracts/controller/src/external/blend.rs:46-97` |
  * | controller `borrow`, `withdraw`, `swap_debt`, `swap_collateral`, `repay_debt_with_collateral`, `flash_loan`, `flash_position`, any other | none | the controller funds these from its own custody (`strategies/legs.rs:50`, `strategies/flash_position.rs:285`) |
  * | governance, any | none | proposer auth only |
- * | router `execute_strategy` | `token_in.transfer(sender, router, <= total_in)` | `contracts/swap-aggregator/src/execute/mod.rs:81` |
+ * | router `execute_strategy` | `token_in.transfer(sender, router, <= total_in)`; `token_out.trust(sender)` at most once, when the sender has no trustline for a Stellar Asset Contract output (CAP-73) | `contracts/swap-aggregator/src/execute/mod.rs:81`, `:139` |
  */
 
 import { Address, scValToBigInt, StrKey, xdr } from '@stellar/stellar-sdk'
@@ -330,6 +330,16 @@ export function stellarAuthPolicyForInvocation(
     }
     const route = decodeStellarRouteBytes(xdrBytes(args[2]))
     policy.transfers = [{ token: route.tokenIn, to: contract, maxAmount: totalIn }]
+    // `ensure_trustline` opens the sender's missing trustline for the output token before the payout.
+    policy.calls = [
+      {
+        contract: route.tokenOut,
+        fn: 'trust',
+        maxCount: 1,
+        reject: (trustArgs) =>
+          trustArgs.length === 1 && addressOf(trustArgs[0]) === caller ? undefined : '`trust` is not for the caller',
+      },
+    ]
     return policy
   }
 
