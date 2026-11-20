@@ -284,10 +284,6 @@ export const endpoints = {
     "input": {},
     "output": {} as XoxnoLiquidStatsDto
   },
-  "/liquid/sui/stats": {
-    "input": {},
-    "output": {} as XoxnoLiquidStatsDto
-  },
   "/analytics/marketplace-unique-users": {
     "input": {} as {before: string, after: string, bin: string},
     "output": {} as AnalyticsMarketplaceUniqueUsers[]

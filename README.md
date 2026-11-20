@@ -675,9 +675,6 @@ sdk.liquid.xoxno.stats(...); // XoxnoLiquidStatsDto
 // GET /liquid/egld/stats
 sdk.liquid.egld.stats(...); // XoxnoLiquidStatsDto
 
-// GET /liquid/sui/stats
-sdk.liquid.sui.stats(...); // XoxnoLiquidStatsDto
-
 // GET /liquid/egld/rate
 sdk.liquid.egld.rate(...); // RateType
 

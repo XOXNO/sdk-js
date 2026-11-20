@@ -20,6 +20,7 @@ describe('isValidCollectionTicker', () => {
       )
     ).toBe(false)
     expect(isValidCollectionTicker('not-a-ticker!')).toBe(false)
+    expect(isValidCollectionTicker('0x2-module-Type')).toBe(false)
   })
 })
 
@@ -36,5 +37,6 @@ describe('isValidNftIdentifier', () => {
   it('rejects Stellar ids with hex or missing token id', () => {
     expect(isValidNftIdentifier(`${STELLAR_NFT}-2a`)).toBe(false)
     expect(isValidNftIdentifier(STELLAR_NFT)).toBe(false)
+    expect(isValidNftIdentifier('0x123')).toBe(false)
   })
 })
