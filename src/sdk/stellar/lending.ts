@@ -72,6 +72,15 @@ export function parseStellarTokenAmount(amount: string, decimals: number | null)
   return raw
 }
 
+/**
+ * Withdraw amount for a whole supply position: `i128::MAX` as a decimal
+ * base-unit string. Any amount at or above the position withdraws all of it.
+ * Amount '0' also does today, but is deprecated: a later controller release
+ * rejects it.
+ * @category Lending transactions
+ */
+export const STELLAR_WITHDRAW_ALL = '170141183460469231731687303715884105727'
+
 // -----------------------------------------------------------------------------
 // Shared types
 // -----------------------------------------------------------------------------
@@ -421,7 +430,8 @@ export function buildStellarWithdrawBatchTx(
   ])
 }
 
-/** Single-asset `withdraw`. Amount "0" withdraws the full supplied position.
+/** Single-asset `withdraw`. Amount `STELLAR_WITHDRAW_ALL` withdraws the full
+ * supplied position.
  * @param opts - Network, caller, current source sequence and deployment addresses.
  * @param args - Operation arguments; token amounts are decimal base-unit strings.
  * @returns Unsigned XDR; prepare with prepareStellarBuiltTx before wallet signing.

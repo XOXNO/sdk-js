@@ -45,6 +45,7 @@ import {
   buildStellarWithdrawTx,
   decodeStellarLiquidateReturn,
   decodeStellarLiquidationEstimate,
+  STELLAR_WITHDRAW_ALL,
   type StellarLendingBuilderOptions,
   type StellarFlashLoanArgs,
   type StellarLiquidateArgs,
@@ -499,6 +500,22 @@ describe('Stellar lending builders — input validation', () => {
 // -----------------------------------------------------------------------------
 // liquidate — SeizeMode encoding + u64 return decoding
 // -----------------------------------------------------------------------------
+
+describe('withdraw — full position', () => {
+  it('STELLAR_WITHDRAW_ALL encodes as i128::MAX', () => {
+    expect(STELLAR_WITHDRAW_ALL).toBe(((1n << 127n) - 1n).toString())
+    const built = buildStellarWithdrawTx(BASE_OPTS, {
+      ...withdrawArgs,
+      amount: STELLAR_WITHDRAW_ALL,
+    })
+    const tx = new Transaction(built.xdr, Networks.TESTNET)
+    const op = tx.operations[0] as unknown as { func: stellarXdr.HostFunction }
+    // caller, account_id, withdrawals, to
+    const withdrawals = xdrField(xdrField(op.func, 'invokeContract'), 'args')[2]!
+    const [leg] = scValToNative(withdrawals) as Array<[unknown, bigint]>
+    expect(leg![1]).toBe((1n << 127n) - 1n)
+  })
+})
 
 /**
  * `SeizeMode` is a Soroban `#[contracttype]` enum, so both arms serialize as
