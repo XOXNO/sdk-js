@@ -15,14 +15,6 @@ const mockFetch = () => {
 }
 
 describe('getStellarAggregatorQuote', () => {
-  it.each([undefined, 'exact_in'] as const)('serializes reverse execution %s', async (execution) => {
-    const fetchMock = mockFetch()
-    await getStellarAggregatorQuote({ from: FROM, to: TO, amountOut: '1000000000', execution }, { baseUrl: 'https://stellar-swap.example' })
-    const params = new URL(fetchMock.mock.calls[0][0]).searchParams
-    expect(params.get('execution')).toBe(execution ?? null)
-    expect(params.has('amountIn')).toBe(false)
-  })
-
   it('forwards a smart sender and its distinct G transaction source', async () => {
     const fetchMock = mockFetch()
     await getStellarAggregatorQuote({

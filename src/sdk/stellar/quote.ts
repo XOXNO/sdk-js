@@ -98,8 +98,6 @@ export type StellarQuoteResponse = StellarAggregatorQuoteResponseDto & {
 
 /** Quote request; adds `simulate`, which the DTO does not yet declare. */
 export type StellarQuoteRequest = StellarAggregatorQuoteRequestDto & {
-  /** Spend the quoted input via Soroban and receive all net output, with amountOut as a minimum. */
-  execution?: 'exact_in'
   /** G... transaction source. Required with a C... sender; otherwise defaults to sender. */
   sourceAccount?: string
   /** With `sender`: simulate and prepare resource data (service default `true`). */
@@ -134,9 +132,9 @@ const buildUrl = (
  * Fetch a route quote from the Stellar aggregator quote server.
  *
  * Forward mode: pass `amountIn` to compute the maximum reachable
- * `amountOut`. Reverse mode: pass `amountOut` to compute the minimum
- * input cap for an exact payout on v2-enabled networks. Lending can set
- * `execution: 'exact_in'` to spend the quoted input and receive at least `amountOut`.
+ * `amountOut`. For a reverse Soroban swap, pass `amountOut`. On v2-enabled
+ * networks this is an exact payout and `amountIn` caps the spend. On v1
+ * networks the requested output is a minimum.
  *
  * For lending strategies, pass the quote's `routeXdr` to the builder's
  * `steps`. Amounts are token base-unit decimal strings. Requote after changes
@@ -172,7 +170,6 @@ export async function getStellarAggregatorQuote(
     to: request.to,
     amountIn: request.amountIn,
     amountOut: request.amountOut,
-    execution: request.execution,
     maxHops: request.maxHops,
     maxSplits: request.maxSplits,
     slippage: request.slippage,
