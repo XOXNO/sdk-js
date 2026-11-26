@@ -68,6 +68,8 @@ export function decodeStellarSwapEnvelope(
       const amountIn = scValToBigInt(amount)
       if (amountIn <= 0n) return null
       const route = decodeStellarRouteBytes(xdrBytes(routeBytes))
+      // A v2 envelope contains the input cap. Actual spend needs the swap event.
+      if (route.fixedAmountOut !== undefined) return null
       if (route.tokenIn === route.tokenOut || !StrKey.isValidContract(route.tokenIn) || !StrKey.isValidContract(route.tokenOut)) return null
       if (found) return null
       found = { tokenIn: route.tokenIn, tokenOut: route.tokenOut, amountInAtoms: amountIn.toString(), operationIndex: index }

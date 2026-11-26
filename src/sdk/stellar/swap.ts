@@ -21,6 +21,7 @@ import {
 
 import { STELLAR_NETWORK_PASSPHRASE, type StellarNetwork } from './contracts'
 import type { BuiltStellarTx, StellarBuilderOptions } from './lending'
+import type { StellarQuoteResponse } from './quote'
 import {
   StellarRouteVerificationError,
   stellarTokenContractId,
@@ -48,6 +49,8 @@ export interface StellarQuoteExpectation {
   tokenOut?: string
   /** Lowest acceptable minimum output, base units. */
   minOut?: string | bigint
+  /** Expected exact payout for v2, in base units. */
+  fixedAmountOut?: string | bigint
   amountIn?: string | bigint
 }
 
@@ -183,7 +186,7 @@ export function mapQuoteResponseToStrategyPayload(
  * @throws StellarRouteVerificationError — never sign a quote that throws here.
  */
 export function mapQuoteResponseToStrategySwap(
-  quote: StellarAggregatorQuoteResponseDto,
+  quote: StellarQuoteResponse,
   opts: StellarQuoteMapOptions = {}
 ): StellarStrategySwapInput {
   const expected = opts.expected ?? {}
@@ -220,12 +223,20 @@ export function mapQuoteResponseToStrategySwap(
     )
   }
   // The caller's pair is authoritative; the JSON pair only labels the response.
-  verifyStellarRouteBytes(swap, {
+  const decoded = verifyStellarRouteBytes(swap, {
     tokenIn: stellarTokenContractId(expected.tokenIn ?? quote.from, opts.network),
     tokenOut: stellarTokenContractId(expected.tokenOut ?? quote.to, opts.network),
     minOut,
+    fixedAmountOut: expected.fixedAmountOut ?? quote.fixedAmountOut,
     amountIn: expected.amountIn ?? quote.amountIn,
   })
+  if (
+    decoded.fixedAmountOut !== undefined &&
+    (quote.mode !== 'reverse' || quote.fixedAmountOut !== decoded.fixedAmountOut.toString() ||
+      quote.amountOut !== quote.fixedAmountOut || quote.amountOutMin !== quote.fixedAmountOut)
+  ) {
+    throw new StellarRouteVerificationError('FIXED_OUT_MISMATCH', 'quote does not match the encoded exact payout')
+  }
   return swap
 }
 

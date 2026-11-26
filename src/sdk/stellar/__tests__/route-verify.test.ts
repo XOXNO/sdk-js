@@ -113,6 +113,38 @@ describe('Curve opcode 7', () => {
   })
 })
 
+describe('reverse v2 route', () => {
+  const tokenIn = 'CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA'
+  const tokenOut = 'CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75'
+  // Mainnet quote captured from arb-algo for an exact 100 USDC payout.
+  const routeXdr = 'AAAAEQAAAAEAAAADAAAADwAAAAdhbW91bnRzAAAAABAAAAABAAAAAgAAAAoAAAAAAAAAAAAAAAA7msoAAAAACgAAAAAAAAAAAAAAADuaygAAAAAPAAAABmFzc2V0cwAAAAAAEAAAAAEAAAADAAAAEgAAAAEltPzYWa7C+mNIQ4xImzw8EMmLbSG+T9PLMMtolT75dwAAABIAAAABre/OWa7lKWj3YGHUlMJSW3Vln6QpamX0me8p5WR35JYAAAASAAAAAULIBacOi4rnFf1adyT0ZMqVx4+jI1hhtvROhWXabBiAAAAADwAAAANvcHMAAAAADQAAAA8CAAEAAAAAAAEAAQMCAAEA'
+  const expected = { tokenIn, tokenOut, minOut: '1000000000', fixedAmountOut: '1000000000', amountIn: '7938208120' }
+
+  it.each([false, true])('verifies exact payout and output weights (flagged=%s)', (flagged) => {
+    const route = flagged ? withProgram(routeXdr, (ops) => { ops[8] = 0x81; return ops }) : routeXdr
+    const decoded = verifyStellarRouteBytes(route, expected)
+    expect(decoded.fixedAmountOut).toBe(1000000000n)
+    expect(decoded.ops[0]).toMatchObject({ kind: 'swap', mode: { kind: 'outputWeight', weight: 1000000000n } })
+  })
+
+  it('checks the requested payout exactly and treats weights as output units', () => {
+    expect(verifyStellarRouteBytes(routeXdr, { ...expected, amountIn: '100' }).version).toBe(2)
+    expectCode(() => verifyStellarRouteBytes(routeXdr, { ...expected, fixedAmountOut: '999999999' }), 'FIXED_OUT_MISMATCH')
+    expectCode(() => verifyStellarRouteBytes(routeXdr, { ...expected, amountIn: '0' }), 'AMOUNT_IN_EXCEEDED')
+  })
+
+  it('rejects invalid v2 swap modes, liquidity ops and repeated pools', () => {
+    const altered = (index: number, value: number) => withProgram(routeXdr, (ops) => { ops[index] = value; return ops })
+    expectCode(() => decodeStellarRouteBytes(altered(11, 0)), 'INVALID_STRUCTURE')
+    expectCode(() => decodeStellarRouteBytes(altered(10, 5)), 'INVALID_STRUCTURE')
+    const repeated = withProgram(routeXdr, (ops) => {
+      ops[8] = 2
+      return Buffer.concat([ops, ops.subarray(10)])
+    })
+    expectCode(() => decodeStellarRouteBytes(repeated), 'INVALID_STRUCTURE')
+  })
+})
+
 describe('decodeStellarRouteBytes round trip', () => {
   it('decodes a single hop', () => {
     const route = decodeStellarRouteBytes(encodeStrategyPayloadToRouteXdr(singleHop))
@@ -293,7 +325,7 @@ describe('verifyStellarRouteBytes', () => {
       copy[at] = value
       return copy
     }
-    expectCode(() => decodeStellarRouteBytes(withProgram(routeXdr, patch(0, 2))), 'UNSUPPORTED_VERSION')
+    expectCode(() => decodeStellarRouteBytes(withProgram(routeXdr, patch(0, 3))), 'UNSUPPORTED_VERSION')
     expectCode(() => decodeStellarRouteBytes(withProgram(routeXdr, patch(10, 8))), 'UNKNOWN_OPCODE')
     expectCode(() => decodeStellarRouteBytes(new Uint8Array(17 * 1024)), 'OVERSIZED')
     expectCode(() => decodeStellarRouteBytes('AQIDBA=='), 'MALFORMED')

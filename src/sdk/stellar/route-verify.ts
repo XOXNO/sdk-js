@@ -35,6 +35,9 @@ import {
   type StellarSwapVenue,
 } from './scval-encode'
 
+const FIXED_OUT_PROGRAM_VERSION = 2
+const FLAGGED_V2_OP_COUNT = 0x80
+const MAX_I128 = (1n << 127n) - 1n
 const HEADER_LEN = 10
 const OP_LEN = 5
 const WEIGHT_LEN = 3
@@ -55,6 +58,7 @@ export type StellarRouteErrorCode =
   | 'TOKEN_IN_MISMATCH'
   | 'TOKEN_OUT_MISMATCH'
   | 'MIN_OUT_TOO_LOW'
+  | 'FIXED_OUT_MISMATCH'
   | 'AMOUNT_IN_EXCEEDED'
   | 'EXPECTATION_MISSING'
 
@@ -77,6 +81,7 @@ export type DecodedStellarRouteMode =
   | { kind: 'all' }
   | { kind: 'prev' }
   | { kind: 'fixed'; amount: bigint }
+  | { kind: 'outputWeight'; weight: bigint }
   | { kind: 'ppm'; ppm: number }
 
 export type DecodedStellarRouteOp =
@@ -102,6 +107,8 @@ export interface DecodedStellarRoute {
   tokenOut: string
   /** The minimum output the router enforces on chain (`amounts[min_out]`). */
   totalMinOut: bigint
+  /** Exact net payout encoded by a v2 reverse route. */
+  fixedAmountOut?: bigint
   referralId: number
   assets: string[]
   amounts: bigint[]
@@ -223,11 +230,16 @@ export function decodeStellarRouteBytes(route: StellarRouteBytesInput): DecodedS
   }
 
   const version = byte(0)
-  if (version !== STELLAR_PROGRAM_VERSION) {
-    fail('UNSUPPORTED_VERSION', `program version ${version}, expected ${STELLAR_PROGRAM_VERSION}`)
+  const fixedOutput = version === FIXED_OUT_PROGRAM_VERSION
+  if (version !== STELLAR_PROGRAM_VERSION && !fixedOutput) {
+    fail('UNSUPPORTED_VERSION', `program version ${version}, expected 1 or 2`)
   }
-  const opCount = byte(8)
+  // The earlier testnet v2 router marks its op count with the high bit.
+  const opCount = fixedOutput ? byte(8) & ~FLAGGED_V2_OP_COUNT : byte(8)
   const weightCount = byte(9)
+  if (fixedOutput && weightCount !== 0) {
+    fail('INVALID_STRUCTURE', 'v2 stores output weights in the amount registry')
+  }
   if (opCount === 0) fail('INVALID_STRUCTURE', 'program has no instructions')
   if (opCount > MAX_OPS || weightCount > MAX_WEIGHTS) {
     fail('OVERSIZED', `program declares ${opCount} instructions and ${weightCount} weights`)
@@ -276,7 +288,14 @@ export function decodeStellarRouteBytes(route: StellarRouteBytesInput): DecodedS
     }
 
     let mode: DecodedStellarRouteMode
-    if (modeByte === MODE_ALL) {
+    if (fixedOutput) {
+      if (!venue || modeByte < MODE_FIXED_BASE || modeByte >= MODE_PPM_BASE) {
+        fail('INVALID_STRUCTURE', `v2 instruction ${i} must be a swap with an output weight`)
+      }
+      const weight = amount(modeByte - MODE_FIXED_BASE)
+      if (weight <= 0n) fail('INVALID_STRUCTURE', `v2 instruction ${i} has a non-positive output weight`)
+      mode = { kind: 'outputWeight', weight }
+    } else if (modeByte === MODE_ALL) {
       mode = { kind: 'all' }
     } else if (modeByte === MODE_PREV) {
       // `Prev` needs a predecessor with one output, and that output must be
@@ -322,16 +341,53 @@ export function decodeStellarRouteBytes(route: StellarRouteBytesInput): DecodedS
   // `execute::run` rejects a non-positive minimum.
   if (totalMinOut <= 0n) fail('MIN_OUT_TOO_LOW', `encoded total_min_out is ${totalMinOut}`)
 
+  const tokenIn = asset(tokenInIdx)
+  const tokenOut = asset(tokenOutIdx)
+  if (fixedOutput) validateReverseGraph(decoded, tokenIn, tokenOut)
+
   return {
     version,
-    tokenIn: asset(tokenInIdx),
-    tokenOut: asset(tokenOutIdx),
+    tokenIn,
+    tokenOut,
     totalMinOut,
+    ...(fixedOutput ? { fixedAmountOut: totalMinOut } : {}),
     referralId,
     assets,
     amounts,
     ops: decoded,
     weights,
+  }
+}
+
+function validateReverseGraph(ops: DecodedStellarRouteOp[], source: string, sink: string): void {
+  const pools = new Set<string>()
+  const consumed = new Set<string>()
+  const produced = new Map<string, bigint>()
+  for (const op of ops) {
+    if (op.kind !== 'swap' || op.mode.kind !== 'outputWeight') {
+      return fail('INVALID_STRUCTURE', 'v2 requires output-weighted swaps')
+    }
+    const { pool, tokenIn, tokenOut } = op
+    if (
+      tokenIn === tokenOut || tokenIn === sink || tokenOut === source ||
+      pools.has(pool) || consumed.has(tokenOut) || (tokenIn !== source && !produced.has(tokenIn))
+    ) {
+      fail('INVALID_STRUCTURE', 'v2 swap graph is cyclic, disconnected, or reuses a pool')
+    }
+    const weight = (produced.get(tokenOut) ?? 0n) + op.mode.weight
+    if (weight > MAX_I128) fail('INVALID_STRUCTURE', 'v2 output weights exceed i128')
+    pools.add(pool)
+    consumed.add(tokenIn)
+    produced.set(tokenOut, weight)
+  }
+  // Each swap has to feed the payout. A dead-end leg would have zero demand.
+  const needed = new Set([sink])
+  for (let i = ops.length - 1; i >= 0; i -= 1) {
+    const op = ops[i]
+    if (op?.kind !== 'swap' || !needed.has(op.tokenOut)) {
+      return fail('INVALID_STRUCTURE', 'v2 instruction does not feed the payout')
+    }
+    needed.add(op.tokenIn)
   }
 }
 
@@ -368,7 +424,9 @@ export interface StellarRouteExpectation {
   tokenOut: string
   /** Lowest acceptable encoded `total_min_out`, base units. This is the value shown to the user. */
   minOut: string | bigint
-  /** Input amount, base units. When given, no fixed-size leg may spend more of `tokenIn`. */
+  /** Expected exact net payout, base units. Requires a v2 route. */
+  fixedAmountOut?: string | bigint
+  /** Input amount or v2 input cap, base units. */
   amountIn?: string | bigint
 }
 
@@ -400,6 +458,12 @@ export function verifyStellarRouteBytes(
   if (decoded.tokenOut !== expected.tokenOut) {
     fail('TOKEN_OUT_MISMATCH', `route delivers ${decoded.tokenOut}, expected ${expected.tokenOut}`)
   }
+  if (
+    expected.fixedAmountOut !== undefined &&
+    decoded.fixedAmountOut !== toAmount(expected.fixedAmountOut, 'expected.fixedAmountOut')
+  ) {
+    fail('FIXED_OUT_MISMATCH', 'route does not enforce the expected exact payout')
+  }
   if (decoded.totalMinOut < minOut) {
     fail(
       'MIN_OUT_TOO_LOW',
@@ -408,6 +472,9 @@ export function verifyStellarRouteBytes(
   }
   if (expected.amountIn !== undefined) {
     const amountIn = toAmount(expected.amountIn, 'expected.amountIn')
+    if (decoded.fixedAmountOut !== undefined && (amountIn <= 0n || amountIn > MAX_I128)) {
+      fail('AMOUNT_IN_EXCEEDED', 'v2 input cap must be a positive i128')
+    }
     for (const op of decoded.ops) {
       if (
         op.kind === 'swap' &&

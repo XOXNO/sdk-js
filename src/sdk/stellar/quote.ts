@@ -88,6 +88,10 @@ export type StellarQuoteTransactionPayload = StellarQuoteTransactionPayloadDto &
 }
 
 export type StellarQuoteResponse = StellarAggregatorQuoteResponseDto & {
+  /** The exact net payout enforced by a reverse v2 program, in base units. */
+  fixedAmountOut?: string
+  /** Simulated net input, after any v2 refund, in base units. */
+  simulatedAmountIn?: string
   snapshot?: StellarQuoteSnapshot | null
   degraded?: StellarQuoteDegraded | null
   lp?: StellarQuoteLp | null
